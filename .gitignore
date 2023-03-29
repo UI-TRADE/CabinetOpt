@@ -10,7 +10,6 @@ __pycache__
 *.pytest_cache
 postgres-data
 *.env
-static
 media
 *.*.pyc
 .vscode
