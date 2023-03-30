@@ -21,5 +21,5 @@ from django.shortcuts import render
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', render, kwargs={'template_name': 'index.html'}, name='start_page'),
-    path('cabinet/', include('cabinet.urls')),
+    path('client/', include('clients.urls')),
 ]

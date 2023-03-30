@@ -25,9 +25,9 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
         'email',
         'phone',
         'status',
-        'name',
-
     ]
     list_display = [
         f.name for f in RegistrationOrder._meta.get_fields() if f.name != 'id'
     ]
+    fields = [('name', 'inn'), ('manager', 'email', 'phone'), 'priority_direction', 'status']
+    readonly_fields = ['status']

@@ -1,8 +1,5 @@
 from django.db import models
-from django.utils import timezone
-from django.core.validators import MinValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
-from django.db.models import Sum
 
 
 class PriorityDirection(models.Model):
@@ -12,41 +9,6 @@ class PriorityDirection(models.Model):
         verbose_name = 'Приоритетное направление'
         verbose_name_plural = 'Приоритетные направления'
 
-    def __str__(self):
-        return self.name
-
-
-class User(models.Model):
-    """
-    Модель хранит внутренних пользователей приложения, включая менеджеров, занимающихся
-    оформлением клиентов и потдверждением заказов .
-    """
-
-    name = models.CharField('ФИО', max_length=150)
-    email = models.EmailField('email', blank=True, db_index=True)
-    phone = PhoneNumberField('Контактный телефон', db_index=True)
-    gender = models.CharField(
-        'Пол', max_length=10, default='male', choices=(
-            ('male'  , 'Мужской'),
-            ('female', 'Женский')
-    ))
-    date_of_birth = models.DateTimeField(
-        'Дата рождения', blank=True, null=True, db_index=True
-    )
-    created_at = models.DateTimeField(
-        'Дата создания', db_index=True, auto_now_add=True
-    )
-    priority_direction = models.ManyToManyField(
-        PriorityDirection,
-        blank=True,
-        verbose_name='Приоритетное направление',
-        related_name='users'
-    )
-
-    class Meta:
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
-    
     def __str__(self):
         return self.name
 
@@ -82,4 +44,3 @@ class RegistrationOrder(models.Model):
     
     def __str__(self):
         return self.name
-  
