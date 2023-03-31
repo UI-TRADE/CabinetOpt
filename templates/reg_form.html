@@ -5,7 +5,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-        <title>Личный кабинет ЮЛ</title>
+        <title>Регистрация нового клиента</title>
 
         <link rel="icon" href="{% static 'icon.png' %}" type="image/x-icon">
 
@@ -13,9 +13,15 @@
         <link rel="stylesheet" href="{% static 'index.css' %}">
     </head>
     <body>
-        <div id="root">
-            <h1>Регистрация в личном кабинете:</h1>
-            <a href="client"><h3>Добавить нового клиента</h3></a>
+
+        <div class="container">
+            <form action="" method="POST">
+                {% csrf_token %}
+
+                {{ form.as_p }}
+
+                <input type="submit" value="Submit" />
+            </form>
         </div>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>

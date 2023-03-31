@@ -1,10 +1,10 @@
 from django.urls import path
 
-from .views import reg_client
+from . import views
 
 
 app_name = "clients"
 
 urlpatterns = [
-    path('', reg_client),
+    path('', views.RegFormView.as_view(), name="registration"),
 ]
