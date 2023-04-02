@@ -1,3 +1,34 @@
-h3 {
-    padding-left: 10px;
+a:hover, a:focus{
+    text-decoration: none;
+    outline: none;
+}
+
+.btn-gradient-primary{
+    color: #fff;
+    border: none;
+    background: #7a5449;
+    background: linear-gradient(45deg, #7a5449, #6640b2) !important;
+    background: -webkit-bg-linear-gradient(45deg, #7a5449, #6640b2) !important;
+}
+
+.btn-gradient-primary:hover, .btn-gradient-primary:focus {
+    color: #fff;
+    background: #6f483d;
+    background: linear-gradient(45deg, #6f483d, #603bab) !important;
+    background: -webkit-bg-linear-gradient(45deg, #6f483d, #603bab) !important;
+}
+
+.btn-gradient-primary:not(:disabled):not(.disabled).active,
+.btn-gradient-primary:not(:disabled):not(.disabled):active {
+    color: #fff;
+    background: #633d32;
+    background: linear-gradient(45deg, #633d32, #5935a3) !important;
+    background: -webkit-bg-linear-gradient(45deg, #633d32, #5935a3) !important;
+}
+
+.btn-gradient-primary.disabled, .btn-gradient-primary:disabled {
+    color: #fff;
+    background: #bca9a4;
+    background: linear-gradient(45deg, #bca9a4, #b29fd8) !important;
+    background: -webkit-bg-linear-gradient(45deg, #bca9a4, #b29fd8) !important;
 }

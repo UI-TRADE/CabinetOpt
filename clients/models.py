@@ -16,7 +16,7 @@ class PriorityDirection(models.Model):
 class RegistrationOrder(models.Model):
 
     name = models.CharField('Организация', max_length=150)
-    inn = models.CharField('ИНН', max_length=12, unique=True)
+    inn = models.CharField('ИНН', max_length=12)
     manager = models.CharField('ФИО менеджера', max_length=150)
     email = models.EmailField('email менеджера', db_index=True)
     phone = PhoneNumberField('Контактный телефон менеджера', db_index=True)
