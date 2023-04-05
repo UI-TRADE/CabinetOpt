@@ -5,8 +5,10 @@ from django.db import migrations
 
 def fill_priority_directions(apps, schema_editor):
     PriorityDirection = apps.get_model('clients', 'PriorityDirection')
-    PriorityDirection.objects.get_or_create(name="Золото")
-    PriorityDirection.objects.get_or_create(name="Серебро")
+    PriorityDirection.objects.get_or_create(name="Talant")
+    PriorityDirection.objects.get_or_create(name="Салам")
+    PriorityDirection.objects.get_or_create(name="Diamonds")
+    PriorityDirection.objects.get_or_create(name="Silver")
 
 
 class Migration(migrations.Migration):
