@@ -16,11 +16,22 @@
         <div class="container">
             <h1>Регистрация в личном кабинете:</h1>
             <div class="row">
-                <button id="regRequestButton" class="btn btn-gradient-primary btn-lg btn-block" data-toggle="modal" data-target="#regRequestForm">
+                <button 
+                    id="regRequestButton"
+                    class="btn btn-gradient-primary btn-lg btn-block"
+                    data-toggle="modal"
+                    data-target="#regRequestForm"
+                    data-url="{% url 'clients:add_request' %}" 
+                >
+                <!--                      
+                    атрибут data-url исп. для передачи относительного адреса в файл index.js
+                    так как он не имеет доступа к контексту Django 
+                -->
                     <span><i class="fa fa-money"></i></span>
                     <span class="btn-text text-default">Зарегистрироваться</span>
                 </button> 
             </div>
+            <div id="test"></div>
         </div>
 
         <div class="modal fade" id="regRequestForm" tabindex="-1" role="dialog">
@@ -31,22 +42,6 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
         {% csrf_token %}
-        <script>
-            $(document).ready(() => {
-                $('#regRequestForm').on('shown.bs.modal', () => {
-                    $.ajax({
-                        url: "{% url 'clients:add_request' %}",
-                        success: (data) => {
-                            console.log(data)
-                            $('.modal').html(data);
-                        },
-                        error: (xhr, status, error) => {
-                            alert('Ошибка: ' + error);
-                        }
-                    });
-                })
-            });
-        </script>
-        <!-- <script src="{% static 'index.js' %}"></script> -->
+        <script src="{% static 'index.js' %}"></script>
     </body>
 </html>

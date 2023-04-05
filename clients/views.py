@@ -3,7 +3,7 @@ import pdb
 from django import forms
 from django.shortcuts import render, redirect
 from django.views import View
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.core.exceptions import ValidationError
 
 from clients.models import RegistrationOrder
@@ -32,9 +32,9 @@ def update_reg_order(request):
     if request.method == 'POST':
         form = RegForm(request.POST)
         if not form.is_valid():
-            return redirect("start_page") 
+            return JsonResponse({'errors': form.errors.as_json()})
           
-        _, created = RegistrationOrder.objects.get_or_create(
+        RegistrationOrder.objects.get_or_create(
             inn=form.cleaned_data['inn'], defaults=form.cleaned_data,
         )
         
