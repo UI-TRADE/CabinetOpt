@@ -1,8 +1,5 @@
-import pdb
-
 from django import forms
 from django.shortcuts import render, redirect
-from django.views import View
 from django.http import HttpResponse, JsonResponse
 from django.core.exceptions import ValidationError
 
@@ -28,19 +25,18 @@ class RegForm(forms.ModelForm):
         return value
 
 
-def update_reg_order(request):
-    if request.method == 'POST':
-        form = RegForm(request.POST)
-        if not form.is_valid():
-            return JsonResponse({'errors': form.errors.as_json()})
-          
-        RegistrationOrder.objects.get_or_create(
-            inn=form.cleaned_data['inn'], defaults=form.cleaned_data,
-        )
+def register(request):
+    if request.method != 'POST':
+        form = RegForm()
+        return render(request, 'reg_order.html', {'form': form})
+
+    form = RegForm(request.POST)
+    if not form.is_valid():
+        print(form.errors.as_json())
+        return JsonResponse({'errors': form.errors.as_json()})
         
+    RegistrationOrder.objects.get_or_create(
+        inn=form.cleaned_data['inn'], defaults=form.cleaned_data,
+    )
+
     return redirect("start_page")
-
-
-def reg_order_view(request):
-    form = RegForm()
-    return render(request, 'reg_order.html', {'form': form})

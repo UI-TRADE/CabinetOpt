@@ -22,4 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', render, kwargs={'template_name': 'index.html'}, name='start_page'),
     path('clients/', include('clients.urls')),
+    path('users/', include('users.urls')),
 ]

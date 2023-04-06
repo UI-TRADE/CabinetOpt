@@ -1,5 +1,14 @@
+.title {
+    margin-bottom: 30px;
+}
+
+.login-btn {
+    margin-right: 5px;
+}
+
 .errors {
     color: red;
+    font-size: small;
     font-style: italic;
     position: relative;
     margin-top: -15px;

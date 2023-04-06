@@ -1,5 +1,7 @@
 const removeErrors = function() {
-    Array.from(document.getElementsByClassName('errors')).forEach((item) => {
+    Array.from(
+        document.getElementsByClassName('errors')
+    ).forEach((item) => {
         while (item.firstChild) {
             item.removeChild(item.firstChild);
         }
@@ -13,7 +15,9 @@ const showErrors = function(errors) {
         error.forEach((item) => {
             const newError = document.createElement('p');
             newError.textContent = item['message'];
-            Array.from(document.getElementsByClassName(`${name}-error`)).forEach((element) => {
+            Array.from(
+                document.getElementsByClassName(`${name}-error`)
+            ).forEach((element) => {
                 element.appendChild(newError);
             });
         });
@@ -21,28 +25,30 @@ const showErrors = function(errors) {
 }
 
 
-$(document).ready(() => {
-    // show modal form
-    $('#regRequestForm').on('shown.bs.modal', (event) => {
+const showModalForm = function(formId) {
+    $(`#${formId}`).on('shown.bs.modal', (event) => {
         $.ajax({
             url: event.relatedTarget.getAttribute('data-url'),
             success: (data) => {
-                $('.modal').html(data);
+                $(`#${formId}`).html(data);
             },
             error: (xhr, status, error) => {
                 alert('Ошибка: ' + error);
             }
         });
     });
-    // update and close modal form
-    $('#regRequestForm').on('submit', (event) => {
+    updateModalForm(formId);   
+}
+
+
+const updateModalForm = function(formId) {
+    $(`#${formId}`).on('submit', (event) => {
         event.preventDefault();
         $.ajax({
             type: 'POST',
             url: event.target.action,
-            data: $('.registration-form').serialize(),
+            data: $(`.${formId}`).serialize(),
             success: (data) => {
-                console.log(data['errors']);
                 if(data['errors']) {
                     showErrors(data['errors']);
                     data['errors'] = {}
@@ -57,4 +63,10 @@ $(document).ready(() => {
             }
         });
     });
-});
+}
+
+
+$(document).ready(() => {
+    showModalForm('loginForm'); 
+    showModalForm('regRequestForm');
+})
