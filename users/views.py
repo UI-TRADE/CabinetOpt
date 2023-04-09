@@ -3,10 +3,8 @@ import json
 from django import forms
 from django.shortcuts import render, redirect
 from django.views import View
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.contrib.auth import authenticate
-
-from users.models import CustomUser
 
 
 class LoginForm(forms.Form):

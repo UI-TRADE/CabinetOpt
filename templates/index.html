@@ -13,24 +13,25 @@
         <link rel="stylesheet" href="{% static 'index.css' %}">
     </head>
     <body>
-        <div class="container">
-            <h1 class="title">Регистрация в личном кабинете:</h1>
-            <div class="row">
-                <button 
+
+        <nav class="navbar navbar-light fixed-top bg-light flex-md-nowrap p-0 shadow">
+            <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">
+                <h1>Talant</h1>
+            </a>
+            <div>
+                <button
                     id="loginButton"
                     class="btn btn-outline-primary login-btn"
                     data-toggle="modal"
                     data-target="#loginForm"
-                    data-url="{% url 'users:login' %}" 
-                >
-                <!--                      
-                    атрибут data-url исп. для передачи относительного адреса в файл index.js
-                    так как он не имеет доступа к контексту Django 
-                -->
+                    data-url="{% url 'clients:login' %}" 
+                >                    
+                    <!-- атрибут data-url исп. для передачи относительного адреса в файл index.js
+                    так как он не имеет доступа к контексту Django  -->
                     <span><i class="fa fa-money"></i></span>
                     <span class="btn-text text-default">Войти</span>
                 </button>
-                <button 
+                <button
                     id="regRequestButton"
                     class="btn btn-outline-secondary login-btn"
                     data-toggle="modal"
@@ -39,8 +40,18 @@
                 >
                     <span><i class="fa fa-money"></i></span>
                     <span class="btn-text text-default">Зарегистрироваться</span>
-                </button> 
+                </button>
             </div>
+        </nav>
+
+        <div class="container-fluid">
+            <div class="row"> 
+                {% include 'sidebar.html' %}             
+            </div>
+
+            <main role="main" class="ml-sm-auto col-lg-10 px-4">
+                {% include 'contact.html' %} 
+            </main>
         </div>
 
         <div class="modal fade" id="loginForm" tabindex="-1" role="dialog">

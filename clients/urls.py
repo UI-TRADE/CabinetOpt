@@ -6,4 +6,5 @@ app_name = "clients"
 
 urlpatterns = [
     path('reg_request/', views.register, name='reg_request'),
+    path('login/', views.LoginFormView.as_view(), name='login'),
 ]
