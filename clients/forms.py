@@ -7,18 +7,10 @@ from .utils import parse_of_name
 
 
 class CustomRegOrderForm(forms.ModelForm):
-    login    = forms.CharField(
-        required=False
-        # error_messages={
-        #     'required': 'укажите логин мненеджера'
-    # }
-    )
+    login    = forms.CharField(required=False)
     password = forms.CharField(
         widget=forms.PasswordInput(),
         required=False
-        # error_messages={
-        #     'required': 'введите пароль менеджера'
-    # }
     )
 
     class Meta:
@@ -27,7 +19,6 @@ class CustomRegOrderForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # self.fields['login'].initial = ''
 
     def clean(self):
         super().clean() 

@@ -1,9 +1,8 @@
-import pdb
 
-from contextlib import suppress
 from django.contrib import admin
 from django.db import transaction
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ValidationError
+from django.contrib.admin import SimpleListFilter
 
 from .models import (
     PriorityDirection,
@@ -14,6 +13,28 @@ from .models import (
 )
 from .forms import CustomRegOrderForm
 from .utils import parse_of_name
+
+
+class RegistrationOrderFilter(SimpleListFilter):
+    title = 'Статусы заявок'
+    parameter_name = 'status'
+
+    def default_value(self):
+        return 'not_registered'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('not_registered', 'Не зарегистрированные'),
+            ('registered', 'Зарегистрированные'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'not_registered':
+            return queryset.filter(
+                status__in=['pending', 'considered']
+            )
+        if self.value() == 'registered':
+            return queryset.filter(status='registered')
 
 
 class ManagerInLine(admin.TabularInline):
@@ -35,7 +56,6 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
     search_fields = [
         'name',
         'inn',
-        'name_of_manager',
         'email',
         'phone',
         'status',
@@ -43,7 +63,6 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
     list_display = [
         'name',
         'inn',
-        'name_of_manager',
         'email',
         'phone',
         'status',
@@ -59,6 +78,7 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
         ('login', 'password'),
         'priority_direction',
     ]
+    list_filter = (RegistrationOrderFilter,)
 
     def check_registration(self, obj):
         return obj.status == 'registered' and \
