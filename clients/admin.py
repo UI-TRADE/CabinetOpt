@@ -1,8 +1,9 @@
 import pdb
 
+from contextlib import suppress
 from django.contrib import admin
 from django.db import transaction
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 
 from .models import (
     PriorityDirection,
@@ -12,6 +13,7 @@ from .models import (
     ContactDetail
 )
 from .forms import CustomRegOrderForm
+from .utils import parse_of_name
 
 
 class ManagerInLine(admin.TabularInline):
@@ -58,46 +60,69 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
         'priority_direction',
     ]
 
+    def check_registration(self, obj):
+        return obj.status == 'registered' and \
+            Client.objects.filter(registration_order=obj).exists()
+
     def get_readonly_fields(self, request, obj=None):
+        if self.check_registration(obj):
+            return [f.name for f in self.model._meta.fields]
         return self.readonly_fields
 
     def get_fieldsets(self, request, obj=None):
-        fieldsets = super().get_fieldsets(request, obj)
-        print(fieldsets)
-        # newfieldsets = list(fieldsets)
-        # fields = ['foo', 'bar', 'baz']
-        # newfieldsets.append(['Dynamic Fields', { 'fields': fields }])
 
+        def remove_login_group(fields):
+            if ('login', 'password') in fields:
+                fields.remove(('login', 'password'))
+            return fields
+        
+        fieldsets = super().get_fieldsets(request, obj)
+        if self.check_registration(obj): 
+            return [
+                tuple((
+                    lambda f: {
+                        'fields': remove_login_group(f['fields'])
+                    } if f else f
+                )(fields) for fields in fieldset) for fieldset in fieldsets
+            ]
+        
         return fieldsets
 
     def get_form(self, request, obj=None, **kwargs):
-        return super().get_form(request, obj, **kwargs)
+        form = super().get_form(request, obj, **kwargs)
+        return form
 
     def save_model(self, request, obj, form, change):
-        if not change:
-            return
-        print(form.is_valid())
         registration_order = form.cleaned_data
-
-        if registration_order['status'] != 'registered':
+        if not registration_order.get('status') or registration_order.get('status') != 'registered':
             return super().save_model(request, obj, form, change)
-
-        with transaction.atomic():
-            manager = Manager.objects.create(
-                **{key: value for key, value in registration_order.items()}
-            )
-            Client.objects.create(**{
-                'name': registration_order['name'],
-                'inn': registration_order['inn'],
-                'registration_order': obj,
-                'manager': manager,
-                'approved_by': request.user,
-            })
-            return super().save_model(request, obj, form, change)
-
-
-
         
+        parsed_manager_name = parse_of_name(registration_order.get('name_of_manager'))
+        if not parsed_manager_name:
+            raise ValidationError('Не указано ФИО персонального менеджера', code='')
+        
+        with transaction.atomic():
+            personal_manager, _ = Manager.objects.get_or_create(
+                last_name = parsed_manager_name['last_name'],
+                first_name = parsed_manager_name['first_name'],
+                defaults = {
+                    key: value for key, value  in registration_order.items() if \
+                        key in ['email', 'phone', 'login', 'password']
+                } | parsed_manager_name
+            )
+            client = Client.objects.create(**{
+                'name'              : registration_order['name'],
+                'inn'               : registration_order['inn'],
+                'registration_order': obj,
+                'approved_by'       : request.user,
+            })
+            client.manager.add(personal_manager)
+            return super().save_model(request, obj, form, change)
+
+
+@admin.register(Manager)
+class ManagerAdmin(admin.ModelAdmin):
+    pass
 
 
 @admin.register(Client)
@@ -110,7 +135,11 @@ class ClientAdmin(admin.ModelAdmin):
         'updated_by',
     ]
     list_display = [
-        f.name for f in Client._meta.get_fields() if not f.name in ['id', 'manager']
+        'name',
+        'inn',
+        'registration_order',
+        'created_at',
+        'approved_by',
     ]
     fields = [
         ('name', 'inn'),

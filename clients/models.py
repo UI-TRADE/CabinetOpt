@@ -1,3 +1,4 @@
+import datetime
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from django.conf import settings
@@ -67,7 +68,7 @@ class Manager(models.Model):
         verbose_name_plural = 'Персональные менеджеры'
     
     def __str__(self):
-        return f'{self.name} ({self.inn})'
+        return f'{self.last_name} {self.first_name}'
 
 
 class Client(models.Model):
@@ -85,7 +86,7 @@ class Client(models.Model):
         'Дата создания', db_index=True, auto_now_add=True
     )
     updated_at = models.DateTimeField(
-        'Дата обновления', db_index=True, blank=True
+        'Дата обновления', db_index=True, default=datetime.datetime.now
     )
     approved_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
