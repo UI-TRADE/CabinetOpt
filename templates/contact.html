@@ -1,14 +1,38 @@
-<h4>Контактная информация</h4>
-<hr>
 
-<div class="row">
-    <div class="col-lg-10">
-      <div class="card">
-        <div class="card-body">
-          <!-- <h5 class="card-title">Invoice #184382</h5> -->
-          <p class="card-text">Donec nec justo eget felis facilisis fermentum. Aliquam porttitor mauris sit amet orci. Aenean dignissim pellentesque felis.</p>
-          <a href="#" class="btn btn-outline-primary">Редактировать</a>
+<form class="contactForm" id="contactForm" method="post" action="{% url 'clients:contact' %}">
+    <div class="row">
+        <div class="col-12">
+            <div class="card" style="width: 18rem;">
+                <div class="card-body contact-item">
+                    <h5 class="card-title">Город:</h5>
+                    <p class="card-text">{{ data.city }}</p>
+                </div>
+            </div>
         </div>
-      </div>
+        <div class="col-6">
+            <div class="card" style="width: 18rem;">
+                <div class="card-body contact-item">
+                    <h5 class="card-title">Юридический адрес:</h5>
+                    <p class="card-text">{{ data.legal_address }}</p>
+                </div>
+            </div>    
+        </div>
+        <div class="col-6">
+            <div class="card" style="width: 18rem;">
+                <div class="card-body contact-item">
+                    <h5 class="card-title">Адрес доставки:</h5>
+                    <p class="card-text">{{ data.shoping_address }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card" style="width: 18rem;">
+                <div class="card-body contact-item">
+                    <h5 class="card-title">Вид оплаты:</h5>
+                    <p class="card-text">{{ data.payment_type }}</p>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
+    <a href="{% url 'clients:contact' 15 %}" class="btn btn-outline-primary">Редактировать</a>
+</form>

@@ -66,7 +66,22 @@ const updateModalForm = function(formId) {
 }
 
 
+const updateForm = function(formId) {
+    $.ajax({
+        url: $(`#${formId}`).attr('action'),
+        success: (data) => {
+            console.log(data);
+            $(`#${formId}`).html(data);
+        },
+        error: (xhr, status, error) => {
+            alert('Ошибка: ' + error);
+        }
+    });
+}
+
+
 $(document).ready(() => {
     showModalForm('loginForm'); 
     showModalForm('regRequestForm');
+    updateForm('contactForm');
 })

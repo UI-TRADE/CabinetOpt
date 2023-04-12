@@ -16,7 +16,6 @@ class PriorityDirection(models.Model):
 
 
 class RegistrationOrder(models.Model):
-
     name = models.CharField('Организация', max_length=150)
     inn = models.CharField('ИНН', max_length=12, db_index=True)
     name_of_manager = models.CharField('ФИО менеджера', max_length=150, blank=True)
@@ -119,9 +118,10 @@ class Client(models.Model):
 
 
 class ContactDetail(models.Model):
-    client = models.ForeignKey(
+    client = models.OneToOneField(
         Client,
         on_delete=models.CASCADE,
+        primary_key = True,
         verbose_name='Клиент',
         related_name='contact_details'
     )

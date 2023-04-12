@@ -1,9 +1,13 @@
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from contextlib import suppress
-from clients.models import RegistrationOrder, Manager
 
 from .utils import parse_of_name
+from .models import (
+    RegistrationOrder,
+    Manager,
+    ContactDetail
+)
 
 
 class CustomRegOrderForm(forms.ModelForm):
@@ -43,3 +47,48 @@ class CustomRegOrderForm(forms.ModelForm):
         
         if not self.cleaned_data.get('password'):
             self.add_error('password', 'Не указан пароль персонального менеджера')
+
+
+class RegForm(forms.ModelForm):
+    inn = forms.CharField(validators = [])
+
+    class Meta:
+        model = RegistrationOrder
+        fields = ('name', 'inn', 'name_of_manager', 'email', 'phone', 'priority_direction')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'form-control'
+
+    def clean_inn(self):
+        value = self.cleaned_data['inn']
+        if RegistrationOrder.objects.filter(inn=value).exists():
+            raise ValidationError('Заявка на регистрацию с таким ИНН уже существует')
+        return value
+
+
+class LoginForm(forms.Form):
+    login = forms.CharField(
+        widget=forms.TextInput(
+            attrs={'class': 'form-control', 'placeholder': 'ИНН / email'}
+        )
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(
+            attrs={'class': 'form-control', 'placeholder': 'Пароль'}
+        )
+    )
+    fields = ['login', 'password']
+
+
+class ContactDetailForm(forms.ModelForm):
+    
+    class Meta:
+        model = ContactDetail
+        fields = ['city', 'legal_address', 'shoping_address', 'payment_type']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'form-control'

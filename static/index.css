@@ -16,6 +16,18 @@ html {
     margin-top: -15px;
 }
 
+.login_block {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items:center;
+}
+
+.login_text {
+    padding-right: 10px;
+    color: blue;
+}
+
 .sidebar {
     position: fixed;
     left: 0;
@@ -43,4 +55,9 @@ main {
 
 main .card {
     margin-bottom: 20px;
+    border: 0px;
+}
+
+.contact-item {
+    padding: 0px;
 }

@@ -44,6 +44,13 @@ class ManagerInLine(admin.TabularInline):
     verbose_name_plural = "Персональные менеджеры"
 
 
+class ContactDetailInLine(admin.TabularInline):
+    model = ContactDetail
+    extra = 0
+    verbose_name = "Контактная информация"
+    verbose_name_plural = "Контактная информация"
+
+
 @admin.register(PriorityDirection)
 class PriorityDirectionAdmin(admin.ModelAdmin):
     search_fields = ['name',]
@@ -145,6 +152,21 @@ class ManagerAdmin(admin.ModelAdmin):
     pass
 
 
+@admin.register(ContactDetail)
+class ContactDetailAdmin(admin.ModelAdmin):
+    search_fields = [
+        'client',
+        'city',
+        'legal_address',
+        'shoping_address',
+        'payment_type',
+    ]
+    list_display = [
+        f.name for f in ContactDetail._meta.get_fields() if f.name != 'id'
+    ]
+    fields = [('client', 'city'), ('legal_address', 'shoping_address'), 'payment_type']
+
+
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
     search_fields = [
@@ -174,19 +196,4 @@ class ClientAdmin(admin.ModelAdmin):
         'approved_by',
         'updated_by',
     ]
-    inlines = [ManagerInLine]
-
-
-@admin.register(ContactDetail)
-class ContactDetailAdmin(admin.ModelAdmin):
-    search_fields = [
-        'client',
-        'city',
-        'legal_address',
-        'shoping_address',
-        'payment_type',
-    ]
-    list_display = [
-        f.name for f in ContactDetail._meta.get_fields() if f.name != 'id'
-    ]
-    fields = [('client', 'city'), ('legal_address', 'shoping_address'), 'payment_type']
+    inlines = [ManagerInLine, ContactDetailInLine]

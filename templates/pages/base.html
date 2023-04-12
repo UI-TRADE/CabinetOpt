@@ -66,9 +66,10 @@
                 </div>
 
                 <main role="main" class="ml-sm-auto col-lg-10 px-4">
-                    <h4>Контактная информация</h4>
-                    <hr>
-                    {% include 'contact.html' %} 
+                    {% block page %}
+                        {% block content %}
+                        {% endblock %}
+                    {% endblock %}
                 </main>
             {% endif %}
         </div>
