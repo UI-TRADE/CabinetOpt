@@ -92,3 +92,13 @@ class ContactDetailForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for field in self.fields:
             self.fields[field].widget.attrs['class'] = 'form-control'
+
+
+# class ManagersForm(forms.ModelForm):
+    
+#     class Meta:
+#         model = Manager
+#         fields = ['last_name', 'first_name', 'surname', 'email', 'phone']
+
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)

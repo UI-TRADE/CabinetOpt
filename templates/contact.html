@@ -34,5 +34,9 @@
             </div>
         </div>
     </div>
-    <a href="{% url 'clients:contact' 15 %}" class="btn btn-outline-primary">Редактировать</a>
+    {% if id %}
+        <a href="{% url 'clients:edit' %}{{ id }}/" class="btn btn-outline-primary">Редактировать</a>
+    {% else %}
+        <a href="{% url 'clients:edit' %}" class="btn btn-outline-primary">Редактировать</a>
+    {% endif %}
 </form>
