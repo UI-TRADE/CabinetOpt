@@ -1,3 +1,6 @@
+* {
+    box-sizing: border-box;
+}
 html {
     position: relative;
     min-height: 100%;
@@ -6,6 +9,10 @@ html {
 .login-btn {
     margin-right: 0px;
     border: 0px;
+}
+
+.login-btn-icon:hover {
+    background-color: blue;
 }
 
 .errors {
@@ -23,34 +30,59 @@ html {
     align-items:center;
 }
 
+.login_icon {
+    padding-right: 10px;
+    font-size: 40px;
+    color: white;
+}
+
 .login_text {
     padding-right: 10px;
+    color: black;
+}
+
+.header-line {
+    position: relative;
+}
+
+.main-menu {
+    /* position: absolute; */
+    height: 70px;
+    border-bottom: 15px solid rgb(238, 238, 238);
+    padding-top: 15px;
+}
+
+.main-menu .nav {
+    justify-content: space-between;
+    align-items: center;
+}
+
+.main-menu-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    color: rgb(202, 202, 202);
+}
+
+.main-menu-item:hover {
     color: blue;
 }
 
-.sidebar {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    top: 0;
-    z-index: 100;
-    padding: 70px 0 0 10px;
-    border-right: 0px solid #d3d3d3;
+.main-menu-item i {
+    padding-right: 5px;
 }
 
-.left-sidebar {
-    position: sticky;
-    top:0;
-    height: calc(100vh - 70px)
+.main-menu-item a {
+    padding: 0px;
+    color: rgb(114, 114, 114);
 }
 
-.sidebar-nav li .nav-link {
-    color: #333;
-    font-weight: 500;
+.main-menu-item a:hover {
+    color: blue;
 }
 
 main {
-    padding-top: 90px;
+    padding-top: 30px;
 }
 
 main .card {
@@ -60,4 +92,24 @@ main .card {
 
 .contact-item {
     padding: 0px;
+}
+
+.table {
+    margin-top: 10px;
+}
+
+.table td, .table th {
+    border-top: 0px solid #dee2e6;
+}
+
+.content-menu {
+    margin-top: 15px;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.search {
+    width: 210px;
+    margin-top: 1px;
+    margin-bottom: 1px;
 }

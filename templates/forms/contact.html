@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block page %}
+	{% block content %}
+        <h4>Контактная информация</h4>
+        <hr>
+        <div class="row">
+            <div class="col-lg-12">
+              <div class="card">
+                <div class="card-body">
+                    {% if id %}
+                    <form class="contactForm" method="post" action="{% url 'clients:edit' id %}">
+                    {% else %}
+                    <form class="contactForm" method="post" action="{% url 'clients:edit' %}">
+                    {% endif %}
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="form-group row {{ field.name }}-row">
+                                {% if not field.is_hidden %}
+                                    <label class="col-sm-4 col-form-label">{{ field.label_tag }}</label>
+                                {% endif %}
+                                <div class="col-sm-8">
+                                    {{ field }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-8 offset-sm-4 errors {{ field.name }}-error"></div>
+                            </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                    </form>
+                </div>
+              </div>
+            </div>
+        </div> 
+
+	{% endblock %}
+{% endblock %}

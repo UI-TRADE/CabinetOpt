@@ -10,11 +10,12 @@
         <link rel="icon" href="{% static 'icon.png' %}" type="image/x-icon">
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <link rel="stylesheet" href="{% static '/font-awesome/css/font-awesome.min.css' %}">
         <link rel="stylesheet" href="{% static 'index.css' %}">
     </head>
     <body>
 
-        <nav class="navbar navbar-light fixed-top bg-light flex-md-nowrap p-0 shadow">
+        <nav class="header-line navbar navbar-dark fixed-top flex-md-nowrap p-0 shadow" style="background-color:blue;">
             <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">
                 <h1>Talant</h1>
             </a>    
@@ -29,8 +30,9 @@
                     >                    
                         <!-- атрибут data-url исп. для передачи относительного адреса в файл index.js
                         так как он не имеет доступа к контексту Django  -->
-                        <span><i class="fa fa-money"></i></span>
-                        <span class="btn-text text-default">Войти</span>
+                        <span>
+                            <i class="fa fa-sign-in" aria-hidden="true" style="font-size: 40px;"></i>
+                        </span>
                     </button>
                     <button
                         id="regRequestButton"
@@ -39,33 +41,84 @@
                         data-target="#regRequestForm"
                         data-url="{% url 'clients:reg_request' %}" 
                     >
-                        <span><i class="fa fa-money"></i></span>
-                        <span class="btn-text text-default">Зарегистрироваться</span>
+                        <span>
+                            <i class="fa fa-user-plus" aria-hidden="true" style="font-size: 40px;"></i>
+                        </span>
                     </button>
                 </div>
             {% else %}
                 <div class="login_block">
+                    <i class="fa fa-user-o login_icon" aria-hidden="true"></i>
                     <div class="login_text">{{ request.session.login }}</div>
                     <a href="{% url 'clients:logout' %}">
                         <button
                             id="logoutButton"
                             class="btn btn-outline-secondary login-btn"
                         >
-                            <span><i class="fa fa-money"></i></span>
-                            <span class="btn-text text-default">Выйти</span>
+                        <span>
+                            <i class="fa fa-sign-out" aria-hidden="true" style="font-size: 40px;"></i>
+                        </span>
                         </button>
                     </a>
                 </div>
             {% endif %}
         </nav>
 
+        <div class="main-menu col-lg-12">
+            <ul class="nav">
+                <li class="nav-item">
+                    <div class="main-menu-item">
+                        <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                        <a class="nav-link" href="#">Заказы</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <div class="main-menu-item">
+                        <i class="fa fa-folder-open" aria-hidden="true"></i>
+                        <a class="nav-link" href="#">Каталог</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <div class="main-menu-item">
+                        <a class="nav-link" href="#">Акции</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <div class="main-menu-item">
+                        <i class="fa fa-users" aria-hidden="true"></i>
+                        <a class="nav-link" href="{% url 'clients:manager' %}">Менеджеры</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <div class="main-menu-item">
+                        <i class="fa fa-line-chart" aria-hidden="true"></i>
+                        <a class="nav-link" href="#">Отчеты</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <div class="main-menu-item">
+                        <i class="fa fa-envelope" aria-hidden="true"></i>
+                        <a class="nav-link" href="#">Уведомления</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <div class="main-menu-item">
+                        <i class="fa fa-wrench" aria-hidden="true"></i>
+                        <a class="nav-link" href="#">Настройки</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <div class="main-menu-item">
+                        <i class="fa fa-user" aria-hidden="true"></i>
+                        <a class="nav-link" href="{% url 'clients:contact' %}">Персональная информация</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
         <div class="container-fluid">
             {% if request.session.login %}
-                <div class="row"> 
-                    {% include 'sidebar.html' %}             
-                </div>
-
-                <main role="main" class="ml-sm-auto col-lg-10 px-4">
+                <main role="main" class="col-lg-12 px-4">
                     {% block page %}
                         {% block content %}
                         {% endblock %}
@@ -75,11 +128,11 @@
         </div>
 
         <div class="modal fade" id="loginForm" tabindex="-1" role="dialog">
-            {% include 'login.html' %}
+            {% include 'forms/login.html' %}
         </div>
 
         <div class="modal fade" id="regRequestForm" tabindex="-1" role="dialog">
-            {% include 'reg_order.html' %}
+            {% include 'forms/reg_order.html' %}
         </div>
     
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>

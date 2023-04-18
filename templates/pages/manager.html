@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block page %}
+	{% block content %}
+    <ul class="nav nav-tabs">
+      <li class="nav-item">
+        <a class="nav-link active" href="#">Персональные менеджеры</a>
+      </li>
+    </ul>
+
+    <nav class="nav nav-pills nav-justified content-menu">
+      <div class="d-flex flex-column flex-md-row">
+        <button
+            id="newButton"
+            type="button"
+            class="btn btn-primary mb-2 mr-sm-2"
+        >                    
+            <span>
+                <i class="fa fa-plus" aria-hidden="true"></i>
+                Создать новый
+            </span>
+        </button>
+        <button
+            id="downloadButton"
+            type="button"
+            class="btn btn-success mb-2 mr-sm-2"
+        >                    
+            <span>
+                <i class="fa fa-download" aria-hidden="true"></i>
+                Выгрузить
+            </span>
+        </button>
+        <button
+            id="filtrButton"
+            type="button"
+            class="btn btn-warning mb-2 mr-sm-2"
+        >                    
+            <span>
+                <i class="fa fa-filter" aria-hidden="true"></i>
+                Фильтр
+            </span>
+        </button>
+        <div class="input-group search mb-2 mr-sm-2">
+          <div class="input-group-prepend">
+            <button class="btn btn-outline-secondary" type="button" style="margin-right: 0px;">
+              <i class="fa fa-search" aria-hidden="true"></i>
+            </button>
+          </div>
+          <input type="text" class="form-control" placeholder="Поиск">
+        </div>
+      </div>
+      <button
+          id="settingButton"
+          type="button"
+          class="btn btn-success mb-2 mr-sm-2 d-none d-md-block"
+      >                    
+          <span>
+              <i class="fa fa-cog" aria-hidden="true"></i>
+          </span>
+      </button>
+    </nav>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Фамилия</th>
+          <th scope="col">Имя</th>
+          <th scope="col">Отчество</th>
+          <th scope="col">Электронная почта</th>
+          <th scope="col">Телефон</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for manager in managers %}
+        <tr>
+          <th scope="row">{{ manager.last_name }}</th>
+          <td>{{ manager.first_name }}</td>
+          <td>{{ manager.surname }}</td>
+          <td>{{ manager.email }}</td>
+          <td>{{ manager.phone }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+	{% endblock %}
+{% endblock %}
