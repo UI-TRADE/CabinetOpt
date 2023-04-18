@@ -10,41 +10,41 @@
 
     <nav class="nav nav-pills nav-justified content-menu">
       <div class="d-flex flex-column flex-md-row">
-        <button
-            id="newButton"
-            type="button"
+        <a
+            role="button"
             class="btn btn-primary mb-2 mr-sm-2"
+            href="{% url 'clients:add_manager' %}"
         >                    
             <span>
                 <i class="fa fa-plus" aria-hidden="true"></i>
                 Создать новый
             </span>
-        </button>
-        <button
-            id="downloadButton"
-            type="button"
+          </a>
+        <a
+            role="button"
             class="btn btn-success mb-2 mr-sm-2"
+            href="#"
         >                    
             <span>
                 <i class="fa fa-download" aria-hidden="true"></i>
                 Выгрузить
             </span>
-        </button>
-        <button
-            id="filtrButton"
-            type="button"
+          </a>
+        <a
+            role="button"
             class="btn btn-warning mb-2 mr-sm-2"
+            href="#"
         >                    
             <span>
                 <i class="fa fa-filter" aria-hidden="true"></i>
                 Фильтр
             </span>
-        </button>
+          </a>
         <div class="input-group search mb-2 mr-sm-2">
           <div class="input-group-prepend">
-            <button class="btn btn-outline-secondary" type="button" style="margin-right: 0px;">
+            <a class="btn btn-outline-secondary" role="button" href="#" style="margin-right: 0px;">
               <i class="fa fa-search" aria-hidden="true"></i>
-            </button>
+            </a>
           </div>
           <input type="text" class="form-control" placeholder="Поиск">
         </div>

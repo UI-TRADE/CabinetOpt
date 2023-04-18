@@ -1,6 +1,7 @@
 import pdb
 from contextlib import suppress
 from django.views import View
+from django.db import transaction
 from django.views.generic import ListView, UpdateView, CreateView
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
@@ -16,7 +17,8 @@ from .models import (
 from .forms import (
     RegForm,
     LoginForm,
-    ContactDetailForm
+    ContactDetailForm,
+    ManagerForm
 )
 
 
@@ -86,8 +88,9 @@ class ContactDetailCreateView(CreateView):
     success_url = reverse_lazy('contact')
 
     def form_valid(self, form):
-        client = Client.objects.filter(inn=self.request.session['login']).get()
-        ContactDetail.objects.create(client=client, **form.cleaned_data) 
+        with transaction.atomic():
+            client = Client.objects.filter(inn=self.request.session['login']).get()
+            ContactDetail.objects.create(client=client, **form.cleaned_data) 
         return redirect('clients:contact')
     
 
@@ -125,3 +128,20 @@ class ManagerView(ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         return dict(list(context.items()))
+    
+
+class ManagerAddView(CreateView):
+    form_class = ManagerForm
+    template_name = 'forms/manager.html'
+    success_url = reverse_lazy('manager')
+
+    def form_valid(self, form):
+        with transaction.atomic():
+            client = Client.objects.filter(inn=self.request.session['login']).get()
+            personal_manager, _ = Manager.objects.get_or_create(
+                last_name = form.cleaned_data['last_name'],
+                first_name = form.cleaned_data['first_name'],
+                defaults = form.cleaned_data
+            )
+            client.manager.add(personal_manager)
+        return redirect('clients:manager')

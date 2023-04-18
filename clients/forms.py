@@ -1,3 +1,4 @@
+import pdb
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from contextlib import suppress
@@ -92,3 +93,23 @@ class ContactDetailForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for field in self.fields:
             self.fields[field].widget.attrs['class'] = 'form-control'
+
+
+class ManagerForm(forms.ModelForm):
+
+    class Meta:
+        model = Manager
+        fields = ['last_name', 'first_name', 'surname', 'email', 'phone']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'form-control'
+
+    def clean(self):
+        '''Переопределяем стандартное описание ошибки, ибо оно на английском'''
+        
+        if not self.cleaned_data.get('phone'):
+            self.errors['phone'][0] = 'Не верно указан телефон персонального менеджера (+12125552368)'
+
+        return super().clean()

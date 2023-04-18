@@ -12,4 +12,5 @@ urlpatterns = [
     path('contact/edit/<str:id>/', views.ContactDetailEditView.as_view(), name='edit'),
     path('contact/edit/', views.ContactDetailCreateView.as_view(), name='edit'),
     path('manager/', views.ManagerView.as_view(), name='manager'),
+    path('manager/add/', views.ManagerAddView.as_view(), name='add_manager'),
 ]
