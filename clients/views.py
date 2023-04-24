@@ -1,24 +1,23 @@
-import pdb
-from contextlib import suppress
 from django.views import View
 from django.db import transaction
-from django.views.generic import ListView, UpdateView, CreateView
-from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse_lazy
-from django.http import JsonResponse, HttpResponseRedirect
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
-
-from .models import (
-    RegistrationOrder,
-    ContactDetail,
-    Client,
-    Manager,
+from django.http import JsonResponse
+from django.shortcuts import (
+    render, redirect, get_object_or_404
 )
+from django.urls import reverse_lazy
+from django.views.generic import ListView, UpdateView, CreateView
+
 from .forms import (
     RegForm,
     LoginForm,
     ContactDetailForm,
     ManagerForm
+)
+from .models import (
+    RegistrationOrder,
+    ContactDetail,
+    Client,
+    Manager,
 )
 
 

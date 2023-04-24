@@ -4,3 +4,4 @@ phonenumbers==8.13.8
 django-phonenumber-field==7.0.2
 nameparser==1.1.2
 pymorphy2==0.9.1
+djangorestframework==3.14.0
