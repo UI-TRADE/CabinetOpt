@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block page %}
+	{% block content %}
+    <ul class="nav nav-tabs" style="border: none;">
+      <li class="nav-item">
+        <a class="nav-link active" href="#" style="border: none;">Каталог</a>
+      </li>
+    </ul>
+
+    <div class="container-fluid">
+      <div class="row">
+        <header class="col-md-3">
+          <div class="btn-group goods-btn-group" role="group">
+            <button id="Brend" type="button" class="btn btn-success goods-btn">Бренд</button>
+            <button id="Assortment" type="button" class="btn btn-outline-warning goods-btn">Ассортимент</button>
+          </div>
+          <div id="brend-group" class="goods-menu-blocks" style="display: block;">
+            <ul class="list-group">
+              {% for brand in brands %}
+              <li class="list-group-item">
+                <input class="form-check-input me-1 switch-change" type="checkbox" value="brand" id="{{ brand.id }}" checked>
+                <label class="form-check-label" for="{{ brand.id }}">{{ brand.name }}</label>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+          <div id="collection-group" class="goods-menu-blocks" style="display: none;">
+            <ul class="list-group">
+              {% for collection in collections %}
+              <li class="list-group-item">
+                <input class="form-check-input me-1 switch-change" type="checkbox" value="collection" id="{{ collection.id }}" checked>
+                <label class="form-check-label" for="{{ collection.id }}">{{ collection.name }}</label>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+          <div class="goods-menu-blocks"></div>
+          <div id="actions-group" class="goods-menu-blocks">
+            <ul class="list-group">
+              <li class="list-group-item">
+                <a href="{% url 'orders:products' %}">Уцененные товары</a>
+              </li>
+              <li class="list-group-item">
+                <a href="{% url 'orders:сertificates' %}">Подарочные сертификаты</a>
+              </li>
+              <li class="list-group-item">
+                <a href="{% url 'orders:services' %}">Услуги</a>
+              </li>
+            </ul>
+          </div>
+        </header>
+
+        <div style="display:none">
+          <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+        </div>
+
+        <main id="products" class="col-md-9 products">
+          {% for product in products %}
+            <div class="good-block position-relative">
+              <div class="row">
+                <div class="col-3">
+                  {% for image in product.get_images|slice:":1" %}
+                    <figure>
+                      <img 
+                        src="{{ image }}"
+                        class="img-fluid rounded img-thumbnail thumbnail-150"
+                        alt="{{ product.name }}"
+                        style="border: none;"
+                      >
+                    </figure>
+                  {% endfor %}
+                </div>
+                <div class="col-9">
+                  <div class="row good-row">
+                    <div class="col-7">
+                      <a href="{% url 'orders:product' product.id %}" class="stretched-link">Карточка товара</a>
+                    </div>
+                    <div class="col-5"><a href="#">в Корзину</a></div>
+                  </div>
+                  <div class="row good-row">
+                    <div class="col-7">{{ product.name }}</div>
+                    <div class="col-5">Цена: {{ product.price_per_gr }} руб. за грамм</div>
+                  </div>
+                  <div class="row good-row">
+                    <div class="col-7">Артикул: {{ product.articul }}</div>
+                    <div class="col-5">В наличии: {{ product.stock }} шт.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </main>
+
+      </div>
+    </div>
+
+	{% endblock %}
+{% endblock %}

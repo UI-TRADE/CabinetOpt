@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block page %}
+	{% block content %}
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb" style="background-color: white;">
+            <li class="breadcrumb-item"><a href="{% url 'orders:products' %}">Каталог</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{prod.name}}</li>
+            </ol>
+        </nav>
+        <div class="row justify-content-center" style="margin-bottom: 20px;">
+            <div class="col-4" style="margin-right: 10px;">
+                <div class="row h-70">
+                    <div class="col-12">
+                    {% for image in prod.get_images|slice:":1" %}
+                        <a href="{{ image }}" class="thumbnail">
+                            <img
+                                src="{{ image }}"
+                                class="img-fluid rounded"
+                                alt="{{ prod.name }}"
+                            >
+                        </a>
+                    {% empty %}
+                        <img
+                            src="{{ MEDIA_URL }}/0.jpg"
+                            class="img-fluid rounded"
+                            alt="Пустое изображение"
+                        >
+                    {% endfor %}
+                    </div>
+                </div>
+                <div class="row h-30 justify-content-center">
+                    <div class="col-12">
+                        {% for image in prod.get_images|slice:":10" %}                         
+                            <a href="{{ image }}">
+                                <img 
+                                    src="{{ image }}"
+                                    class="img-fluid rounded img-thumbnail thumbnail-50"
+                                    alt="{{ prod.name }}"
+                                >
+                            </a>    
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-4" style="height: 300px; border-radius: 5px; margin-right: 10px;">
+                <p>Наименование: <b>{{ prod.name }}</b></p>
+                <p>Артикул: <b>{{ prod.articul }}</b></p>
+                <p>Коллекция:  <b>{{ prod.collection }}</b></p>
+                <p>Бренд:  <b>{{ prod.brand }}</b></p>
+                <p>Вес:  <b>{{ prod.weight }} грамм</b></p>
+                <p>Размер: <b>{{ prod.size }}</b></p>
+            </div>
+            <div class="col-3" style="height: 300px; border-radius: 5px; margin-right: 10px;">
+                <p>Цена: <b>{{ prod.price_per_gr }} руб.</b></p>
+                <p>Остаток: <b>{{ prod.stock }} штук</b></p>
+                <a href="#">в Корзину</a>
+            </div>
+        </div>
+
+        <ul class="nav nav-tabs" style="height: 300px; margin-left: 20px; margin-right: 20px;">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="#">Характеристики</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Аксессуары</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Аналоги</a>
+            </li>
+        </ul>
+        
+	{% endblock %}
+{% endblock %}

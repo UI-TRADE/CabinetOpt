@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block page %}
+	{% block content %}
+    <ul class="nav nav-tabs" style="border: none;">
+      <li class="nav-item">
+        <a class="nav-link active" href="#" style="border: none;">Каталог</a>
+      </li>
+    </ul>
+
+    <div class="container-fluid">
+      <div class="row">
+        <header class="col-md-3">
+          <div class="goods-menu-blocks"></div>
+          <div id="actions-group" class="goods-menu-blocks">
+            <ul class="list-group">
+              <li class="list-group-item">
+                <a href="{% url 'orders:products' %}">Товары</a>
+              </li>
+              <li class="list-group-item">
+                <a href="{% url 'orders:products' %}">Уцененные товары</a>
+              </li>
+              <li class="list-group-item">
+                <a href="{% url 'orders:services' %}">Подарочные сертификаты</a>
+              </li>
+            </ul>
+          </div>
+        </header>
+
+        <div style="display:none">
+          <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+        </div>
+
+        <main id="products" class="col-md-9 products">
+          {% for service in services %}
+            <div class="good-block">
+              <div class="row good-row">
+                <div class="col-8"><a href="#">Карточка услуги</a></div>
+                <div class="col-4"><a href="#">в Корзину</a></div>
+              </div>
+              <div class="row good-row">
+                <div class="col-8">{{ service.name }}</div>
+                <div class="col-4">Стоимость: {{ service.price_per_gr }} руб.</div>
+              </div>
+            </div>
+          {% endfor %}
+        </main>
+
+      </div>
+    </div>
+
+	{% endblock %}
+{% endblock %}

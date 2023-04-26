@@ -2,7 +2,7 @@ from django.db import models
 from django.core.validators import MinValueValidator
 
 from clients.models import PriorityDirection
-
+from django.conf import settings
 
 class Collection(models.Model):
     name = models.CharField('Наименование', max_length=100, db_index=True)
@@ -55,7 +55,9 @@ class Product(models.Model):
     size = models.IntegerField(
         'Размер', default=0, validators=[MinValueValidator(0)]
     )
-    stock = models.PositiveIntegerField('Остаток')
+    stock = models.PositiveIntegerField(
+        'Остаток', default=0, validators=[MinValueValidator(0)]
+    )
     available_for_order = models.BooleanField(
         'Доступен для заказа', default=False, db_index=True
     )
@@ -79,6 +81,11 @@ class Product(models.Model):
 
     def __str__(self):
         return f'{self.articul} {self.name}'.strip()
+    
+    @property
+    def get_images(self):
+        product_images = ProductImage.objects.filter(product_id=self.id)
+        return [product_image.image.url for product_image in product_images]
 
 
 class ProductImage(models.Model):
@@ -94,3 +101,4 @@ class ProductImage(models.Model):
     class Meta:
         verbose_name = 'Фотография'
         verbose_name_plural = 'Фотографии'
+

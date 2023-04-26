@@ -113,3 +113,63 @@ main .card {
     margin-top: 1px;
     margin-bottom: 1px;
 }
+
+.products {
+    padding-top: 0px;
+}
+
+.goods-btn-group {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.goods-btn {
+    width: 50vh;
+}
+
+.goods-menu-blocks {
+    /* border: 1px solid rgb(177, 177, 177); */
+    /* height: 200px; */
+    margin-bottom: 10px;
+    /* border-radius: 5px; */
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.goods-menu-blocks ul li {
+    border: none;
+}
+
+#actions-group ul li {
+    padding-left: 0px;
+}
+
+.good-block {
+    /* border: 1px solid rgb(177, 177, 177); */
+    /* height: 200px; */
+    border-radius: 10px;
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 5px 0;
+}
+
+.good-row {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+figure {
+    text-align: center;
+}
+
+.thumbnail-50 {
+    height: 50px;
+    width: 50px;
+}
+
+.thumbnail-150 {
+    height: 150px;
+    width: 150px;
+}
