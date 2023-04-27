@@ -1,10 +1,12 @@
 import json
-from django.shortcuts import render, get_object_or_404
 
+from django.core.paginator import Paginator
+from django.core.paginator import EmptyPage
+from django.core.paginator import PageNotAnInteger
+from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView, UpdateView, CreateView, DetailView
 from django.conf import settings
 
-from .forms import ProductForm
 from .models import (
     Product,
     Collection,
@@ -19,6 +21,7 @@ class ProductView(ListView):
     context_object_name = 'products'
     allow_empty = True
     filters = {}
+    paginate_by = 20
 
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
@@ -41,6 +44,18 @@ class ProductView(ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
+        
+        paginator = Paginator(context['products'], self.paginate_by)
+        page = self.request.GET.get('page')
+        
+        try:
+            products_page = paginator.page(page)
+        except PageNotAnInteger:
+            products_page = paginator.page(1)
+        except EmptyPage:
+            products_page = paginator.page(paginator.num_pages)
+        
+        context['products'] = products_page
         context['collections'] = Collection.objects.all().values()
         context['brands'] = PriorityDirection.objects.all().values()
         context['MEDIA_URL'] = settings.MEDIA_URL
@@ -53,12 +68,25 @@ class CertificateView(ListView):
     context_object_name = 'сertificates'
     allow_empty = True
     filters = {}
+    paginate_by = 20
 
     def get_queryset(self):
         return Product.objects.filter(product_type='gift_сertificate')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        paginator = Paginator(context['сertificates'], self.paginate_by)
+        page = self.request.GET.get('page')
+        
+        try:
+            сertificates_page = paginator.page(page)
+        except PageNotAnInteger:
+            сertificates_page = paginator.page(1)
+        except EmptyPage:
+            сertificates_page = paginator.page(paginator.num_pages)
+        
+        context['сertificates'] = сertificates_page
         context['MEDIA_URL'] = settings.MEDIA_URL
         return dict(list(context.items()))
     
@@ -69,12 +97,25 @@ class ServiceView(ListView):
     context_object_name = 'services'
     allow_empty = True
     filters = {}
+    paginate_by = 20
 
     def get_queryset(self):
         return Product.objects.filter(product_type='service')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        paginator = Paginator(context['services'], self.paginate_by)
+        page = self.request.GET.get('page')
+        
+        try:
+            services_page = paginator.page(page)
+        except PageNotAnInteger:
+            services_page = paginator.page(1)
+        except EmptyPage:
+            services_page = paginator.page(paginator.num_pages)
+        
+        context['services'] = services_page
         context['MEDIA_URL'] = settings.MEDIA_URL
         return dict(list(context.items()))
 
