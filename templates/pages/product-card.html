@@ -54,7 +54,12 @@
             <div class="col-3" style="height: 300px; border-radius: 5px; margin-right: 10px;">
                 <p>Цена: <b>{{ prod.price_per_gr }} руб.</b></p>
                 <p>Остаток: <b>{{ prod.stock }} штук</b></p>
-                <a href="#">в Корзину</a>
+                <form id="cartForm-{{prod.id}}" method="post" action="{% url 'cart:cart_add' prod.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantity" value="1" />
+                    <input type="hidden" name="update" value="False" />
+                </form>
+                <a href="#" onclick="document.getElementById('cartForm-{{prod.id}}').submit();">в Корзину</a>
             </div>
         </div>
 

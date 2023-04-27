@@ -117,15 +117,32 @@ const showElement = function(elementId, show) {
     document.getElementById(elementId).style.display = show ? 'block' : 'none';
 }
 
+const switchCartView = function(checked) {
+    if (checked) {
+        document.getElementById('products').style.display = 'none';
+        document.getElementById('cart-table').style.display = 'block';
+    } else {
+        document.getElementById('products').style.display = 'block';
+        document.getElementById('cart-table').style.display = 'none';
+    }
+    localStorage.setItem('cartView', checked);
+}
+
+const updateCartView = function(elementId) {
+    if (localStorage.getItem('cartView') === 'true' && document.getElementById(elementId) !== null) {
+        document.getElementById(elementId).click();
+}}
+
 
 $(document).ready(() => {
     showModalForm('loginForm'); 
     showModalForm('regRequestForm');
     updateForm('contactForm');
+    updateCartView('cartView');
 })
 
 
-$('#Brend').on('click', function (event) {
+$('#Brend').on('click', (event) => {
     toggleClassButton(event.currentTarget, 'btn-success', 'btn-outline-success');
     toggleClassButton(
         document.getElementById('Assortment'), 'btn-outline-warning', 'btn-warning'
@@ -139,7 +156,7 @@ $('#Brend').on('click', function (event) {
     }
 })
 
-$('#Assortment').on('click', function (event) {
+$('#Assortment').on('click', (event) => {
     toggleClassButton(event.currentTarget, 'btn-warning', 'btn-outline-warning');
     toggleClassButton(
         document.getElementById('Brend'), 'btn-outline-success', 'btn-success'
@@ -153,7 +170,7 @@ $('#Assortment').on('click', function (event) {
     }
 })
 
-$('.switch-change').on('change', function (event) {
+$('.switch-change').on('change', (event) => {
     data = {'brand': [], 'collection': []};
     Array.from(
         document.getElementsByClassName('switch-change')
@@ -168,3 +185,8 @@ $('.switch-change').on('change', function (event) {
         'data': JSON.stringify(data)
     });
 })
+
+$('#cartView').on('change', (event) => {
+    switchCartView(event.currentTarget.checked);
+})
+

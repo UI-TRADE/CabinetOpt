@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block page %}
+	{% block content %}
+    <div class="row" style="justify-content: space-between; align-items: top;">
+        <ul class="nav nav-tabs" style="border: none; margin-bottom: 30px;">
+            <li class="nav-item">
+                <a class="nav-link active" href="#" style="border: none;">Корзина покупок</a>
+            </li>
+        </ul>
+        <div class="custom-control custom-switch" style="padding: 8px 16px 8px 16px;">
+            <input type="checkbox" class="custom-control-input" id="cartView">
+            <label class="custom-control-label" for="cartView">компактный вид</label>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row justify-content-center">    
+            <main id="products" class="col-11 products">
+                {% for item in cart %}
+                {% with product=item.product %}
+                    <div class="good-block position-relative">
+                        <div class="row good-row">
+                            <div class="col-xs-1 col-md-2 col-md-3 col-center">
+                                {% for image in product.get_images|slice:":1" %}
+                                    <figure>
+                                        <img 
+                                            src="{{ image }}"
+                                            class="img-fluid rounded img-thumbnail thumbnail-150"
+                                            alt="{{ product.name }}"
+                                            style="border: none;"
+                                        >
+                                    </figure>
+                                {% endfor %}
+                            </div>
+                            <div class="col-xs-1 col-sm-2 col-center">
+                                <div class="row px-4 px-sm-0">
+                                    <div><b>{{ product.name }}</b></div>
+                                </div>
+                                <div class="row px-4 px-sm-0">
+                                    <div>Артикул: {{ product.articul }}<br>Вес: {{ product.weight }}<br>Размер: {{ product.size }}</div>
+                                </div>
+                            </div>
+                            <div class="col-xs-1 col-sm-2 col-center">
+                                <div class="form-outline" style="width: 5rem;">
+                                    <input
+                                        value="{{ item.quantity }}"
+                                        min="0"
+                                        max="{{ product.stock }}"
+                                        step="1"
+                                        type="number"
+                                        id="typeNumber" 
+                                        class="form-control" 
+                                    />
+                                </div>
+                            </div>
+                            <div class="col-xs-1 col-sm-2 col-center">{{ item.price }} руб.</div>
+                            <div class="col-xs-1 col-sm-2 col-center">
+                                <a href="{% url 'cart:cart_remove' product.id %}">
+                                    <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endwith %}
+                {% empty %}
+                    <h5 class="text-center h-100">Ваша корзина пуста</h5>
+                {% endfor %}
+                <p class="text-right">
+                    <a 
+                        href="{% url 'orders:products' %}"
+                        role="button"
+                        class="btn btn-primary mb-2 mr-sm-2"
+                    >
+                        Продолжить покупки
+                    </a>
+                    <a
+                        href="#"
+                        role="button"
+                        class="btn btn-success mb-2 mr-sm-2"
+                    >
+                        Оформить заказ
+                    </a>
+                </p>
+            </main>
+            <main id="cart-table" class="col-11 products" style="display: none;">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Наименование</th>
+                            <th scope="col">Характеристика</th>
+                            <th scope="col">Количество, шт.</th>
+                            <th scope="col">Стоимость, руб.</th>
+                            <th scope="col">Удалить</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in cart %}
+                        {% with product=item.product %}
+                            <tr>
+                                <th scope="row">{{ product.name }}</th>
+                                <td>Артикул: {{ product.articul }}<br>Вес: {{ product.weight }}<br>Размер: {{ product.size }}</td>
+                                <td>
+                                    <div class="form-outline" style="width: 5rem;">
+                                        <input
+                                            value="{{ item.quantity }}"
+                                            min="0"
+                                            max="{{ product.stock }}"
+                                            step="1"
+                                            type="number"
+                                            id="typeNumber" 
+                                            class="form-control" 
+                                        />
+                                    </div>
+                                </td>
+                                <td>{{ item.price }}</td>
+                                <td>
+                                    <a href="{% url 'cart:cart_remove' product.id %}">
+                                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endwith %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <p class="text-right">
+                    <a 
+                        href="{% url 'orders:products' %}"
+                        role="button"
+                        class="btn btn-primary mb-2 mr-sm-2"
+                    >
+                        Продолжить покупки
+                    </a>
+                    <a
+                        href="#"
+                        role="button"
+                        class="btn btn-success mb-2 mr-sm-2"
+                    >
+                        Оформить заказ
+                    </a>
+                </p>
+            </main>
+        </div>
+    </div>
+
+	{% endblock %}
+{% endblock %}

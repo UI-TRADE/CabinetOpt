@@ -58,8 +58,8 @@
         <main id="products" class="col-md-9 products">
           {% for product in products %}
             <div class="good-block position-relative">
-              <div class="row">
-                <div class="col-3">
+              <div class="row good-row">
+                <div class="col-xs-1 col-md-2 col-md-3 col-lg-4 col-center">
                   {% for image in product.get_images|slice:":1" %}
                     <figure>
                       <img 
@@ -71,21 +71,32 @@
                     </figure>
                   {% endfor %}
                 </div>
-                <div class="col-9">
-                  <div class="row good-row">
-                    <div class="col-7">
-                      <a href="{% url 'orders:product' product.id %}" class="stretched-link">Карточка товара</a>
-                    </div>
-                    <div class="col-5"><a href="#">в Корзину</a></div>
+                <div class="col-xs-1 col-sm-3 col-md-3 col-lg-4 col-center">
+                  <div class="row px-4 px-sm-0">
+                    <a href="{% url 'orders:product' product.id %}" class="stretched-link">Карточка товара</a>
                   </div>
-                  <div class="row good-row">
-                    <div class="col-7">{{ product.name }}</div>
-                    <div class="col-5">Цена: {{ product.price_per_gr }} руб. за грамм</div>
+                  <div class="row px-4 px-sm-0">
+                    <div><b>{{ product.name }}</b></div>
                   </div>
-                  <div class="row good-row">
-                    <div class="col-7">Артикул: {{ product.articul }}</div>
-                    <div class="col-5">В наличии: {{ product.stock }} шт.</div>
+                  <div class="row px-4 px-sm-0">
+                    <div>Артикул: {{ product.articul }}</div>
                   </div>
+                </div>
+                <div class="col-xs-1 col-sm-3 col-md-3 col-lg-4 col-center">
+                  <div class="row px-4 px-sm-0">
+                    <form id="cartForm-{{product.id}}" method="post" action="{% url 'cart:cart_add' product.id %}">
+                      {% csrf_token %}
+                      <input type="hidden" name="quantity" value="1" />
+                      <input type="hidden" name="update" value="False" />
+                    </form>
+                    <a href="#" onclick="document.getElementById('cartForm-{{product.id}}').submit();">в Корзину</a>
+                  </div>
+                  <div class="row px-4 px-sm-0">
+                    <div>Цена: {{ product.price_per_gr }} руб. за грамм</div>
+                  </div>
+                  <div class="row px-4 px-sm-0">
+                    <div>В наличии: {{ product.stock }} шт.</div>
+                  </div>  
                 </div>
               </div>
             </div>
