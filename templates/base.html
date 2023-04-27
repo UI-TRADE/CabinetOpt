@@ -106,7 +106,20 @@
                 <li class="nav-item">
                     <div class="main-menu-item">
                         <i class="fa fa-shopping-cart" aria-hidden="true"></i>
-                        <a class="nav-link" href="{% url 'cart:cart_detail' %}">Корзина</a>
+                        <a class="nav-link" href="{% url 'cart:cart_detail' %}">
+                            <div>
+                                {% with total_items=cart|length %}
+                                    {% if cart|length > 0 %}
+                                        <i>
+                                            {{ total_items }} товаров,
+                                            {{ cart.get_total_price }} руб.
+                                        </i>
+                                    {% else %}
+                                        Корзина
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
+                        </a>
                     </div>
                 </li>
             </ul>
