@@ -149,9 +149,10 @@ main .card {
 }
 
 .good-block {
+    --box-shadow-color: rgb(177, 177, 177);
     border-radius: 10px;
     margin-bottom: 20px;
-    box-shadow: 0 0 5px 0;
+    box-shadow: 0 0 5px 0 var(--box-shadow-color);
 }
 
 .good-block:last-child {

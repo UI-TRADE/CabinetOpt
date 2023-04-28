@@ -4,6 +4,8 @@ from .models import (
     Collection,
     ProductImage,
     Product,
+    PriceType,
+    Price,
 )
 
 class ProductImageInLine(admin.TabularInline):
@@ -70,3 +72,45 @@ class ProductAdmin(admin.ModelAdmin):
         'created_at', 'stock'
     ]
     inlines = [ProductImageInLine]
+
+
+@admin.register(PriceType)
+class PriceTypeAdmin(admin.ModelAdmin):
+    search_fields = [
+        'name',
+    ]
+    list_display = [
+        'name',
+    ]
+    fields = [
+        'name',
+    ]
+
+
+@admin.register(Price)
+class PriceAdmin(admin.ModelAdmin):
+    search_fields = [
+        'type',
+        'product',
+        'unit',
+        'price',
+        'start_at',
+        'end_at',
+    ]
+    list_display = [
+        'type',
+        'product',
+        'unit',
+        'price',
+        'start_at',
+        'end_at',
+    ]
+    fields = [
+        'type',
+        'product',
+        ('price', 'unit'),
+        ('start_at', 'end_at'),
+    ]
+    readonly_fields = [
+        'start_at',
+    ]

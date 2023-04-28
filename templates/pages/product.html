@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load order_tags %}
 
 {% block page %}
 	{% block content %}
@@ -57,6 +58,7 @@
 
         <main id="products" class="col-md-9 products">
           {% for product in products %}
+            {% with price=prices|get_item:product.id %}
             <div class="good-block position-relative">
               <div class="row good-row">
                 <div class="col-xs-1 col-md-2 col-md-3 col-lg-4 col-center">
@@ -88,18 +90,35 @@
                       {% csrf_token %}
                       <input type="hidden" name="quantity" value="1" />
                       <input type="hidden" name="update" value="False" />
+                      {% if price %}
+                        <input type="hidden" name="price" value="{{ price.actual_price }}" />
+                        <input type="hidden" name="unit" value="{{ price.unit }}" />
+                      {% else %}
+                        <input type="hidden" name="price" value="0" />
+                        <input type="hidden" name="unit" value="--" />                      
+                      {% endif %}
                     </form>
                     <a href="#" onclick="document.getElementById('cartForm-{{product.id}}').submit();">в Корзину</a>
                   </div>
-                  <div class="row px-4 px-sm-0">
-                    <div>Цена: {{ product.price_per_gr }} руб. за грамм</div>
-                  </div>
-                  <div class="row px-4 px-sm-0">
-                    <div>В наличии: {{ product.stock }} шт.</div>
-                  </div>  
+                  {% if price %}
+                      <div class="row px-4 px-sm-0">
+                        <div>Цена: {{ price.actual_price }} руб.</div>
+                      </div>
+                      <div class="row px-4 px-sm-0">
+                        <div>В наличии: {{ product.stock }} {{ price.unit }}</div>
+                      </div>
+                  {% else %}
+                    <div class="row px-4 px-sm-0">
+                      <div>Цена: -- </div>
+                    </div>
+                    <div class="row px-4 px-sm-0">
+                      <div>В наличии: -- </div>
+                    </div>
+                  {% endif %} 
                 </div>
               </div>
             </div>
+          {% endwith %}
           {% endfor %}
           
           <nav aria-label="Pagination">

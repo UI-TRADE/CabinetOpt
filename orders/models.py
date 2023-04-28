@@ -1,8 +1,11 @@
+from contextlib import suppress
 from django.db import models
 from django.core.validators import MinValueValidator
+from django.db.models import Q, Max
+from django.utils import timezone
 
 from clients.models import PriorityDirection
-from django.conf import settings
+
 
 class Collection(models.Model):
     name = models.CharField('Наименование', max_length=100, db_index=True)
@@ -102,3 +105,76 @@ class ProductImage(models.Model):
         verbose_name = 'Фотография'
         verbose_name_plural = 'Фотографии'
 
+
+class PriceType(models.Model):
+    name = models.CharField('Наименование', max_length=100, db_index=True)
+
+    class Meta:
+        verbose_name = 'Тип цены'
+        verbose_name_plural = 'Типы цен'
+
+    def __str__(self):
+        return self.name
+
+
+class PriceQuerySet(models.QuerySet):
+    
+    def available_prices(self, products_ids, price_type = None):
+        with suppress(PriceType.DoesNotExist):
+            if not price_type:
+                price_type = PriceType.objects.get(name='Розничная')   
+            return self.distinct().filter(
+                type=price_type,
+                product_id__in=products_ids,
+                start_at__lte=timezone.now()
+            ).filter(
+                Q(end_at__isnull=True) | Q(end_at__gte=timezone.now())
+            ).values('product_id', 'unit').annotate(actual_price=Max('price'))
+
+
+class Price(models.Model):
+    type = models.ForeignKey(
+        PriceType,
+        on_delete=models.CASCADE,
+        verbose_name='Тип цены',
+        related_name='prices_by_type',
+        db_index=True,
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        verbose_name='Номенклатура',
+        related_name='prices',
+        db_index=True,
+    )
+    unit = models.CharField(
+        'Единица измерения',
+        max_length=20,
+        default='грамм',
+        db_index=True,
+        choices=(
+            ('штук', 'штук'),
+            ('грамм', 'грамм'),
+    ))
+    price = models.DecimalField(
+        'Цена',
+        max_digits=8,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)]
+    )
+    start_at = models.DateTimeField(
+        'Дата начала действия', db_index=True, auto_now_add=True
+    )
+    end_at = models.DateTimeField(
+        'Дата окончания действия', db_index=True, blank=True,null=True
+    )
+
+    objects = PriceQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = 'Цена'
+        verbose_name_plural = 'Цены'
+
+    def __str__(self):
+        return f'{self.product} {self.price} руб. ({self.type})'

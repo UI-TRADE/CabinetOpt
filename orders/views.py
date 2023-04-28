@@ -11,7 +11,7 @@ from .models import (
     Product,
     Collection,
     PriorityDirection,
-    ProductImage
+    Price
 )
 
 
@@ -55,7 +55,13 @@ class ProductView(ListView):
         except EmptyPage:
             products_page = paginator.page(paginator.num_pages)
         
+
+        actual_prices = Price.objects.available_prices(
+            products_page.object_list.values_list('id', flat=True)
+        )
+
         context['products'] = products_page
+        context['prices'] = actual_prices
         context['collections'] = Collection.objects.all().values()
         context['brands'] = PriorityDirection.objects.all().values()
         context['MEDIA_URL'] = settings.MEDIA_URL
