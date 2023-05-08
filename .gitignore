@@ -16,3 +16,4 @@ media
 *.ipynb
 *.txt
 !requirements.txt
+snippets

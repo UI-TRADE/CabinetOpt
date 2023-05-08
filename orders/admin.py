@@ -6,6 +6,8 @@ from .models import (
     Product,
     PriceType,
     Price,
+    Order,
+    OrderItem
 )
 
 class ProductImageInLine(admin.TabularInline):
@@ -14,6 +16,26 @@ class ProductImageInLine(admin.TabularInline):
     fields = ['image']
     verbose_name = "Фотография"
     verbose_name_plural = "Фотографии"
+
+
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
+    extra = 0
+    fields = [
+        'id',
+        'product',
+        'series',
+        'uin',
+        'weight',
+        'quantity',
+        'unit',
+        'price',
+        'sum',
+        'discount',
+        'price_type'
+    ]
+    verbose_name = "Номенклатура"
+    verbose_name_plural = "Номенклатура"
 
 
 @admin.register(Collection)
@@ -114,3 +136,25 @@ class PriceAdmin(admin.ModelAdmin):
     readonly_fields = [
         'start_at',
     ]
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    search_fields = [
+        'client',
+        'manager',
+        'status',
+        'id',
+    ]
+    list_display = ['id', 'created_at', 'status', 'client', 'manager']
+    list_filter = ['status', 'client', 'manager']
+    fields = [
+        'status',
+        'client',
+        'manager',
+        'created_at',
+    ]
+    readonly_fields = [
+        'created_at',
+    ]
+    inlines = [OrderItemInline]

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load cart_tags %}
 
 {% block page %}
 	{% block content %}
@@ -22,16 +23,20 @@
                     <div class="good-block position-relative">
                         <div class="row good-row">
                             <div class="col-xs-1 col-md-2 col-md-3 col-center">
-                                {% for image in product.get_images|slice:":1" %}
+                                {% first_product_image product.id as image %}
+                                    {% if item.errors %}
+                                        <div class="formset-field errors">
+                                            {{ item.errors|cut:"\n" }}
+                                        </div>
+                                    {% endif %}
                                     <figure>
                                         <img 
-                                            src="{{ image }}"
+                                            src="{{ MEDIA_URL }}{{ image }}"
                                             class="img-fluid rounded img-thumbnail thumbnail-150"
                                             alt="{{ product.name }}"
                                             style="border: none;"
                                         >
                                     </figure>
-                                {% endfor %}
                             </div>
                             <div class="col-xs-1 col-sm-2 col-center">
                                 <div class="row px-4 px-sm-0">
@@ -55,7 +60,7 @@
                                 </div>
                             </div>
                             <div class="col-xs-1 col-sm-2 col-center">{{ item.price }} руб.</div>
-                            <div class="col-xs-1 col-sm-2 col-center">
+                            <div class="col-xs-1 col-sm-2 col-center text-center">
                                 <a href="{% url 'cart:cart_remove' product.id %}">
                                     <i class="fa fa-trash-o" aria-hidden="true"></i>
                                 </a>
@@ -66,6 +71,9 @@
                 {% empty %}
                     <h5 class="text-center h-100">Ваша корзина пуста</h5>
                 {% endfor %}
+                <form id="createOrderForm" method="post" action="{% url 'cart:create' %}">
+                    {% csrf_token %}
+                </form>
                 <p class="text-right">
                     <a 
                         href="{% url 'orders:products' %}"
@@ -76,6 +84,7 @@
                     </a>
                     <a
                         href="#"
+                        onclick="document.getElementById('createOrderForm').submit();"
                         role="button"
                         class="btn btn-success mb-2 mr-sm-2"
                     >
@@ -92,6 +101,9 @@
                             <th scope="col">Количество, шт.</th>
                             <th scope="col">Стоимость, руб.</th>
                             <th scope="col">Удалить</th>
+                            {% if item.errors %}
+                                <th scope="col"></th>
+                            {% endif %}
                         </tr>
                     </thead>
                     <tbody>
@@ -114,16 +126,26 @@
                                     </div>
                                 </td>
                                 <td>{{ item.price }}</td>
-                                <td>
+                                <td class="text-center">
                                     <a href="{% url 'cart:cart_remove' product.id %}">
                                         <i class="fa fa-trash-o" aria-hidden="true"></i>
                                     </a>
                                 </td>
+                                {% if item.errors %}
+                                    <td>
+                                        <div class="formset-field errors">
+                                            {{ item.errors }}
+                                        </div>
+                                    </td>
+                                {% endif %}
                             </tr>
                         {% endwith %}
                         {% endfor %}
                     </tbody>
                 </table>
+                <form id="createOrderForm" method="post" action="{% url 'cart:create' %}">
+                    {% csrf_token %}
+                </form>
                 <p class="text-right">
                     <a 
                         href="{% url 'orders:products' %}"
@@ -134,6 +156,7 @@
                     </a>
                     <a
                         href="#"
+                        onclick="document.getElementById('createOrderForm').submit();"
                         role="button"
                         class="btn btn-success mb-2 mr-sm-2"
                     >

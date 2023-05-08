@@ -12,7 +12,7 @@ html {
     font-size: small;
     font-style: italic;
     position: relative;
-    margin-top: -15px;
+    /* margin-top: -15px; */
 }
 
 .login_block {
@@ -47,6 +47,10 @@ html {
 
 .header-line {
     position: relative;
+}
+
+.nav {
+    margin-bottom: 15px;
 }
 
 .main-menu {
@@ -107,7 +111,7 @@ main .card {
 }
 
 .content-menu {
-    margin-top: 15px;
+    /* margin-top: 15px; */
     flex-direction: row;
     justify-content: space-between;
 }

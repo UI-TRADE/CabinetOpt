@@ -139,6 +139,9 @@ $(document).ready(() => {
     showModalForm('regRequestForm');
     updateForm('contactForm');
     updateCartView('cartView');
+    $(".order-row").click((event) => {
+        window.document.location = event.currentTarget.dataset.href
+    });
 })
 
 
@@ -190,3 +193,7 @@ $('#cartView').on('change', (event) => {
     switchCartView(event.currentTarget.checked);
 })
 
+$('#table').on('click-row.bs.table', (row, $element, field) => {
+    console.log(field);
+    console.log(row);
+})

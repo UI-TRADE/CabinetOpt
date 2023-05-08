@@ -7,6 +7,8 @@ from django.shortcuts import (
 from django.urls import reverse_lazy
 from django.views.generic import ListView, UpdateView, CreateView
 
+from .login import Login
+
 from .forms import (
     RegForm,
     LoginForm,
@@ -16,7 +18,6 @@ from .forms import (
 from .models import (
     RegistrationOrder,
     ContactDetail,
-    Client,
     Manager,
 )
 
@@ -25,20 +26,20 @@ class LoginFormView(View):
 
     def get(self, request):
         form = LoginForm()
-        if request.session.has_key('login'):
-            del request.session['login']
         return render(request, 'forms/client_login.html', {'form': form})
  
-    def post(self, request):      
+    def post(self, request):
+        login = Login(request)
         form = LoginForm(request.POST)
         if not form.is_valid():
             return JsonResponse({'errors': form.errors.as_json()})
 
-        request.session['login'] = form.cleaned_data['login']
+        login.auth(**form.cleaned_data)
         return redirect("start_page")
 
 
 def register(request):
+
     if request.method != 'POST':
         form = RegForm()
         return render(request, 'forms/reg_order.html', {'form': form})
@@ -55,8 +56,8 @@ def register(request):
 
 
 def logout(request):
-    if request.session.has_key('login'):
-        del request.session['login']
+    login = Login(request)
+    login.unauth()
     return redirect("start_page")
 
 
@@ -66,8 +67,9 @@ class ContactDetailView(ListView):
     allow_empty = True
 
     def get_queryset(self):
+        login = Login(self.request)
         return self.model.objects.filter(
-            client__inn=self.request.session['login']
+            client__in=login.get_clients()
         )
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -88,7 +90,8 @@ class ContactDetailCreateView(CreateView):
 
     def form_valid(self, form):
         with transaction.atomic():
-            client = Client.objects.filter(inn=self.request.session['login']).get()
+            login = Login(self.request)
+            client = login.get_clients().get()
             ContactDetail.objects.create(client=client, **form.cleaned_data) 
         return redirect('clients:contact')
     
@@ -120,9 +123,8 @@ class ManagerView(ListView):
     allow_empty = True
 
     def get_queryset(self):
-        return Client.objects.get(
-            inn=self.request.session['login']
-        ).manager.all()
+        login = Login(self.request)
+        return login.get_managers()
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -136,7 +138,8 @@ class ManagerAddView(CreateView):
 
     def form_valid(self, form):
         with transaction.atomic():
-            client = Client.objects.filter(inn=self.request.session['login']).get()
+            login = Login(self.request)
+            client = login.get_clients().get()
             personal_manager, _ = Manager.objects.get_or_create(
                 last_name = form.cleaned_data['last_name'],
                 first_name = form.cleaned_data['first_name'],
