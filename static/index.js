@@ -134,6 +134,33 @@ const updateCartView = function(elementId) {
 }}
 
 
+const updateItem = function(element) {
+    const partsOfId = element.id.split('-');
+    const quantityId = `${partsOfId.slice(0, partsOfId.length-1).join('-')}-quantity`;
+    const priceId    = `${partsOfId.slice(0, partsOfId.length-1).join('-')}-price`;
+    const sumId      = `${partsOfId.slice(0, partsOfId.length-1).join('-')}-sum`;    
+    if (partsOfId[partsOfId.length-1] === 'quantity') {
+        const price = document.getElementById(priceId);
+        const sum = document.getElementById(sumId);
+        sum.value = price.value * element.value;
+    }
+    else if (partsOfId[partsOfId.length-1] === 'price') {
+        const quantity = document.getElementById(quantityId);
+        const sum = document.getElementById(sumId);
+        sum.value = quantity.value * element.value;
+    }
+    else if (partsOfId[partsOfId.length-1] === 'sum') {
+        const quantity = document.getElementById(quantityId);
+        const price = document.getElementById(priceId);
+        price.value = element.value / (quantity.value != 0 ? quantity.value : 1);
+    }
+    else if (partsOfId[partsOfId.length-1] === 'price_type') {
+
+    }
+
+}
+
+
 $(document).ready(() => {
     showModalForm('loginForm'); 
     showModalForm('regRequestForm');

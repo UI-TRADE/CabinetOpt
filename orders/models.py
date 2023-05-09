@@ -3,6 +3,7 @@ from django.db import models
 from django.core.validators import MinValueValidator
 from django.db.models import Q, Max
 from django.utils import timezone
+from django.utils.html import format_html
 
 from clients.models import PriorityDirection, Client, Manager
 

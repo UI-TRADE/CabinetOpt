@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'clients',
     'orders',
     'cart',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
@@ -53,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'CabinetOpt.urls'
@@ -146,3 +148,6 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
 
 SESSION_LOGIN = 'login'
 CART_SESSION_ID = 'cart'
+
+if DEBUG:
+    INTERNAL_IPS = ['127.0.0.1',]

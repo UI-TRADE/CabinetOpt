@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import format_html
 
 from .models import (
     Collection,
@@ -13,9 +14,24 @@ from .models import (
 class ProductImageInLine(admin.TabularInline):
     model = ProductImage
     extra = 0
-    fields = ['filename', 'image']
+    fields = ('filename', 'render_preview')
+    readonly_fields = ('render_preview',)
+
     verbose_name = "Фотография"
     verbose_name_plural = "Фотографии"
+
+    def render_preview(self, obj):
+        if obj.image:
+            print(format_html(
+                '<img src="{0}" width="50" height="50" />'.format(obj.image.url)
+            ))
+            return format_html(
+                '<img src="{0}" width="50" height="50" />'.format(obj.image.url)
+            )
+        else:
+            return '(No image)'
+
+    render_preview.short_description = 'Preview'
 
 
 class OrderItemInline(admin.TabularInline):
@@ -58,8 +74,6 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = [
         'name',
         'articul',
-        'collection',
-        'brand'
     ]
     list_display = [
         'product_type',
@@ -67,6 +81,7 @@ class ProductAdmin(admin.ModelAdmin):
         'articul',
         'brand',
         'collection',
+        'unit',
         'price_per_gr',
         'weight',
         'size',
@@ -76,13 +91,18 @@ class ProductAdmin(admin.ModelAdmin):
     ]
     fields = [
         'product_type',
-        ('name', 'articul'),
+        ('name', 'articul', 'unit'),
         ('brand', 'collection'),
         ('size', 'weight', 'price_per_gr'),
         'stock',
         'available_for_order',
     ]
-    list_filter = ['product_type', 'available_for_order']
+    list_filter = [
+        'brand',
+        'collection',
+        'product_type',
+        'available_for_order'
+    ]
     readonly_fields = [
         'created_at', 'stock'
     ]
@@ -105,12 +125,7 @@ class PriceTypeAdmin(admin.ModelAdmin):
 @admin.register(Price)
 class PriceAdmin(admin.ModelAdmin):
     search_fields = [
-        'type',
         'product',
-        'unit',
-        'price',
-        'start_at',
-        'end_at',
     ]
     list_display = [
         'type',
@@ -126,6 +141,9 @@ class PriceAdmin(admin.ModelAdmin):
         ('price', 'unit'),
         ('start_at', 'end_at'),
     ]
+    list_filter = [
+        'type',
+    ]
     readonly_fields = [
         'start_at',
     ]
@@ -134,9 +152,6 @@ class PriceAdmin(admin.ModelAdmin):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     search_fields = [
-        'client',
-        'manager',
-        'status',
         'id',
     ]
     list_display = ['id', 'created_at', 'status', 'client', 'manager']

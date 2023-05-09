@@ -21,6 +21,7 @@ class OrderItemInlineForm(BaseInlineFormSet):
         super().add_fields(form, index)
         for field in form.fields:
             form.fields[field].widget.attrs['class'] = 'form-control'
+            form.fields[field].widget.attrs['onchange'] = 'updateItem(this)'
 
     def clean(self):
         cleaned_data = super().clean()
