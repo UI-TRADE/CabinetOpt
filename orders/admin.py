@@ -13,7 +13,7 @@ from .models import (
 class ProductImageInLine(admin.TabularInline):
     model = ProductImage
     extra = 0
-    fields = ['image']
+    fields = ['filename', 'image']
     verbose_name = "Фотография"
     verbose_name_plural = "Фотографии"
 
@@ -59,15 +59,7 @@ class ProductAdmin(admin.ModelAdmin):
         'name',
         'articul',
         'collection',
-        'brand',
-        'image',
-        'price_per_gr',
-        'weight',
-        'size',
-        'stock',
-        'available_for_order',
-        'created_at',
-        'product_type',
+        'brand'
     ]
     list_display = [
         'product_type',
@@ -90,6 +82,7 @@ class ProductAdmin(admin.ModelAdmin):
         'stock',
         'available_for_order',
     ]
+    list_filter = ['product_type', 'available_for_order']
     readonly_fields = [
         'created_at', 'stock'
     ]

@@ -48,6 +48,15 @@ class Product(models.Model):
         verbose_name='Бренд',
         related_name='goods_by_brands'        
     )
+    unit = models.CharField(
+        'Единица измерения',
+        max_length=20,
+        default='грамм',
+        db_index=True,
+        choices=(
+            ('796', 'штук'),
+            ('163', 'грамм'),
+    ))
     price_per_gr = models.DecimalField(
         'Цена за грамм',
         max_digits=8,
@@ -105,6 +114,9 @@ class ProductImage(models.Model):
         verbose_name='Фото',
         related_name='product_images'
     )
+    filename = models.CharField(
+        'Имя файла', max_length=100, blank=True, db_index=True
+    )
     image = models.ImageField('Фото номенклатуры', upload_to='product_images')
 
     class Meta:
@@ -159,8 +171,8 @@ class Price(models.Model):
         default='грамм',
         db_index=True,
         choices=(
-            ('штук', 'штук'),
-            ('грамм', 'грамм'),
+            ('796', 'штук'),
+            ('163', 'грамм'),
     ))
     price = models.DecimalField(
         'Цена',

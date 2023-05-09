@@ -10,7 +10,7 @@ from django.views.generic import ListView, UpdateView, DetailView, CreateView
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from rest_framework.decorators import api_view
-from rest_framework.response import Response
+from django.http import JsonResponse
 
 from clients.login import Login
 
@@ -24,7 +24,7 @@ from .models import (
 )
 
 from .forms import OrderItemInline
-from .tasks import run_uploading_products
+from .tasks import run_uploading_products, run_uploading_images
 
 
 class ProductView(ListView):
@@ -287,6 +287,15 @@ class CreateOrderView(CreateView):
 
 @api_view(['POST'])
 def upload_products(request):
+    # curl -X POST -H "Content-Type: application/json" -d @media/test.json http://127.0.0.1:8000/orders/upload/products
+    errors = run_uploading_products(request.data)
+    if errors:
+        return JsonResponse(errors, status=200, safe=False)
+    return JsonResponse({'replay': 'ok'}, status=200)
 
-    run_uploading_products(request.data)
-    return Response('Ok')
+
+@api_view(['POST'])
+def upload_images(request):
+    # curl -X POST -H "Content-Type: application/json" -d @media/imgs.json http://127.0.0.1:8000/orders/upload/images
+    run_uploading_images(request.data)
+    return JsonResponse({'replay': 'ok'}, status=200)
