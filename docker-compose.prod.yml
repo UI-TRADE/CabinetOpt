@@ -8,9 +8,10 @@ services:
     container_name: CabinetOpt
     command: gunicorn CabinetOpt.wsgi:application --bind 0.0.0.0:8000
     volumes:
-      - ./:/usr/src/app/
-    ports:
-      - 8000:8000
+      - static_volume:/home/app/web/staticfiles
+      - media_volume:/home/app/web/mediafiles
+    expose:
+      - 8000
     env_file:
       - ./.env.prod
     depends_on:
@@ -27,5 +28,17 @@ services:
       - POSTGRES_PASSWORD=12345
       - POSTGRES_DB=cabinet_opt
 
+  nginx:
+    build: ./nginx
+    volumes:
+      - static_volume:/home/app/web/staticfiles
+      - media_volume:/home/app/web/mediafiles
+    ports:
+      - 8080:80
+    depends_on:
+      - web
+
 volumes:
   postgres_data:
+  static_volume:
+  media_volume:
