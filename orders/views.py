@@ -56,17 +56,16 @@ class ProductView(ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        
+
         paginator = Paginator(context['products'], self.paginate_by)
         page = self.request.GET.get('page')
-        
+
         try:
             products_page = paginator.page(page)
         except PageNotAnInteger:
             products_page = paginator.page(1)
         except EmptyPage:
             products_page = paginator.page(paginator.num_pages)
-        
 
         actual_prices = Price.objects.available_prices(
             products_page.object_list.values_list('id', flat=True)
@@ -78,7 +77,7 @@ class ProductView(ListView):
         context['brands'] = PriorityDirection.objects.all().values()
         context['MEDIA_URL'] = settings.MEDIA_URL
         return dict(list(context.items()))
-    
+
 
 class CertificateView(ListView):
     model = Product
