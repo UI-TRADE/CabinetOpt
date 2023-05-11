@@ -1,5 +1,6 @@
 environs==9.5.0
 Django==4.1.7
+django-extensions==3.2.1
 phonenumbers==8.13.8
 django-phonenumber-field==7.0.2
 nameparser==1.1.2
