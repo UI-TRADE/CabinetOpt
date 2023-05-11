@@ -8,3 +8,4 @@ pymorphy2==0.9.1
 djangorestframework==3.14.0
 Pillow==9.5.0
 more-itertools==9.1.0
+django-debug-toolbar==4.0.0
