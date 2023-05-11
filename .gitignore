@@ -10,6 +10,8 @@ __pycache__
 *.pytest_cache
 postgres-data
 *.env
+*.env.stage
+*.env.prod
 media
 *.*.pyc
 .vscode
