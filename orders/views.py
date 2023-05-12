@@ -9,7 +9,8 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, UpdateView, DetailView, CreateView
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
 
 from clients.login import Login
@@ -286,6 +287,7 @@ class CreateOrderView(CreateView):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def upload_products(request):
     # curl -X POST -H "Content-Type: application/json" -d @media/test.json http://127.0.0.1:8000/orders/upload/products
     errors = run_uploading_products(request.data)
@@ -295,6 +297,7 @@ def upload_products(request):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def upload_images(request):
     # curl -X POST -H "Content-Type: application/json" -d @media/imgs.json http://127.0.0.1:8000/orders/upload/images
     run_uploading_images(request.data)
