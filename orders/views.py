@@ -158,9 +158,10 @@ class OrderView(ListView):
 
     def get_queryset(self):
         login = Login(self.request)
-        return Order.objects.filter(
-            client__in=login.get_clients()
-        )
+        current_clients = login.get_clients()
+        if not current_clients:
+            return super().get_queryset()
+        return Order.objects.filter(client__in=current_clients)
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
