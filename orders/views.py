@@ -289,7 +289,6 @@ class CreateOrderView(CreateView):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def upload_products(request):
-    # curl -X POST -H "Content-Type: application/json" -d @media/test.json http://127.0.0.1:8000/orders/upload/products
     errors = run_uploading_products(request.data)
     if errors:
         return JsonResponse(errors, status=200, safe=False)
@@ -299,6 +298,5 @@ def upload_products(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def upload_images(request):
-    # curl -X POST -H "Content-Type: application/json" -d @media/imgs.json http://127.0.0.1:8000/orders/upload/images
     run_uploading_images(request.data)
     return JsonResponse({'replay': 'ok'}, status=200)
