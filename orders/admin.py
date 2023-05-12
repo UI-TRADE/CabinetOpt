@@ -14,7 +14,7 @@ from .models import (
 class ProductImageInLine(admin.TabularInline):
     model = ProductImage
     extra = 0
-    fields = ('filename', 'render_preview')
+    fields = ('image', 'filename', 'render_preview')
     readonly_fields = ('render_preview',)
 
     verbose_name = "Фотография"

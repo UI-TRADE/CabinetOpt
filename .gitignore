@@ -13,6 +13,7 @@ postgres-data
 *.env.stage
 *.env.prod
 media
+mediafiles
 *.*.pyc
 .vscode
 *.ipynb
