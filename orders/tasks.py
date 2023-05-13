@@ -45,7 +45,7 @@ def run_uploading_products(uploading_products):
             if transaction.get_autocommit():
                 transaction.commit()
     
-    return json.dumps(errors)
+    return errors
 
 
 def update_or_create_brand(brand):

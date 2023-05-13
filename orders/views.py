@@ -291,7 +291,7 @@ class CreateOrderView(CreateView):
 def upload_products(request):
     errors = run_uploading_products(request.data)
     if errors:
-        return JsonResponse(errors, status=200, safe=False)
+        return JsonResponse(json.dumps(errors), status=200, safe=False)
     return JsonResponse({'replay': 'ok'}, status=200)
 
 
