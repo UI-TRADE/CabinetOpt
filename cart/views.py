@@ -79,7 +79,7 @@ def order_create(request):
         with transaction.atomic():
 
             if order_form.is_valid():
-                order_instance.save()    
+                order_instance.save()  
 
             for form in formset:       
                 if not form.is_valid():
