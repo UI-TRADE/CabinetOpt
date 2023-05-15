@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load order_tags %}
 
 {% block page %}
 	{% block content %}
@@ -51,16 +52,35 @@
                 <p>Вес:  <b>{{ prod.weight }} грамм</b></p>
                 <p>Размер: <b>{{ prod.size }}</b></p>
             </div>
-            <div class="col-3" style="height: 300px; border-radius: 5px; margin-right: 10px;">
-                <p>Цена: <b>{{ prod.price_per_gr }} руб.</b></p>
-                <p>Остаток: <b>{{ prod.stock }} штук</b></p>
-                <form id="cartForm-{{prod.id}}" method="post" action="{% url 'cart:cart_add' prod.id %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="quantity" value="1" />
-                    <input type="hidden" name="update" value="False" />
-                </form>
-                <a href="#" onclick="document.getElementById('cartForm-{{prod.id}}').submit();">в Корзину</a>
-            </div>
+            {% with price=prices|get_item:prod.id %}
+            {% if price %}
+                <div class="col-3" style="height: 300px; border-radius: 5px; margin-right: 10px;">
+                    <p>Цена: <b>{{ prod.price_per_gr }} руб.</b></p>
+                    <p>Остаток: <b>{{ prod.stock }} {{ price.unit }}</b></p>
+                    <form id="cartForm-{{prod.id}}" method="post" action="{% url 'cart:cart_add' prod.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="quantity" value="1" />
+                        <input type="hidden" name="price" value="{{ price.actual_price }}" />
+                        <input type="hidden" name="unit" value="{{ price.unit }}" />
+                        <input type="hidden" name="update" value="False" />
+                    </form>
+                    <a href="#" onclick="document.getElementById('cartForm-{{prod.id}}').submit();">в Корзину</a>
+                </div>
+            {% else %}
+                <div class="col-3" style="height: 300px; border-radius: 5px; margin-right: 10px;">
+                    <p>Цена: <b>{{ prod.price_per_gr }} руб.</b></p>
+                    <p>Остаток: <b>{{ prod.stock }} штук</b></p>
+                    <form id="cartForm-{{prod.id}}" method="post" action="{% url 'cart:cart_add' prod.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="quantity" value="1" />
+                        <input type="hidden" name="price" value="0" />
+                        <input type="hidden" name="unit" value="796" />
+                        <input type="hidden" name="update" value="False" />
+                    </form>
+                    <a href="#" onclick="document.getElementById('cartForm-{{prod.id}}').submit();">в Корзину</a>
+                </div>
+            {% endif %}
+            {% endwith %}
         </div>
 
         <ul class="nav nav-tabs" style="height: 300px; margin-left: 20px; margin-right: 20px;">

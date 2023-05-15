@@ -194,7 +194,6 @@ class UpdateOrderView(UpdateView):
         context = self.get_context_data()
         order_items = context['order_items']
         if form.is_valid() and order_items.is_valid():
-            print(order_items.cleaned_data)
             with transaction.atomic():
                 form.instance.save()
                 for order_item in order_items:

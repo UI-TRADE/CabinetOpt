@@ -36,7 +36,7 @@ class CartAddProductForm(forms.Form):
     quantity = forms.TypedChoiceField(
         choices=PRODUCT_QUANTITY_CHOICES, coerce=int
     )
-    price = forms.DecimalField(required=False, initial=False)
+    price = forms.DecimalField(required=False, initial=0)
     unit = forms.CharField(required=False, initial=False)
     update = forms.BooleanField(
         required=False, initial=False, widget=forms.HiddenInput

@@ -37,7 +37,6 @@ def cart_remove(request, product_id):
 
 def cart_detail(request):
     cart = Cart(request)
-    print(settings.MEDIA_URL)
     return render(request, 'pages/cart.html', {'cart': cart, 'MEDIA_URL': settings.MEDIA_URL})
 
 

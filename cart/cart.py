@@ -30,8 +30,8 @@ class Cart(object):
             self.cart[str(product['id'])]['product'] = product
 
         for item in self.cart.values():
-            item['price'] = str(Decimal(item['price']))
-            item['total_price'] = str(Decimal(item['price']) * item['quantity'])
+            if item['price'].isnumeric():
+                item['total_price'] = str(Decimal(item['price']) * item['quantity'])
             yield item
 
     def __len__(self):
@@ -61,8 +61,10 @@ class Cart(object):
             self.save()
 
     def get_total_price(self):
-        return str(sum(Decimal(item['price']) * item['quantity'] for item in
-            self.cart.values()))
+        return str(
+            sum(Decimal(item['price']) * item['quantity'] for item in 
+                self.cart.values() if item['price'].isnumeric())
+        )
 
     def clear(self):
         del self.session[settings.CART_SESSION_ID]
