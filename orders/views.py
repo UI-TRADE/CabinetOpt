@@ -1,5 +1,5 @@
 import json
-
+from contextlib import suppress
 from django.db import transaction
 from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
@@ -8,17 +8,20 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import ListView, UpdateView, DetailView, CreateView
 from django.conf import settings
+from django.http import JsonResponse
 from django.core.exceptions import ValidationError
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from django.http import JsonResponse
+
 
 from clients.login import Login
 
 from .models import (
+    Client,
     Product,
     Collection,
     PriorityDirection,
+    PriceType,
     Price,
     Order,
     OrderItem,
@@ -68,9 +71,13 @@ class ProductView(ListView):
         except EmptyPage:
             products_page = paginator.page(paginator.num_pages)
 
-        actual_prices = Price.objects.available_prices(
-            products_page.object_list.values_list('id', flat=True)
-        )
+        actual_prices = []
+        current_clients = Login(self.request).get_clients()
+        with suppress(Client.DoesNotExist, PriceType.DoesNotExist):
+            actual_prices = Price.objects.available_prices(
+                products_page.object_list.values_list('id', flat=True),
+                PriceType.objects.get(client = current_clients.get())
+            )
 
         context['products'] = products_page
         context['prices'] = actual_prices
@@ -147,6 +154,16 @@ class ProductCardView(DetailView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        actual_prices = []
+        current_clients = Login(self.request).get_clients()
+        with suppress(Client.DoesNotExist, PriceType.DoesNotExist):
+            actual_prices = Price.objects.available_prices(
+                [self.kwargs['prod_id']],
+                PriceType.objects.get(client = current_clients.get())
+            )
+
+        context['prices'] = actual_prices
         context['MEDIA_URL'] = settings.MEDIA_URL
         return dict(list(context.items()))
 
@@ -302,7 +319,7 @@ def upload_images(request):
 
 
 @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def upload_price(request):
     errors = run_uploading_price(request.data)
     if errors:

@@ -41,7 +41,7 @@ OrderItemInline = inlineformset_factory(
         'price',
         'discount',
         'sum',
-        'price_type',
+        # 'price_type',
     ],
     formset=OrderItemInlineForm,
     extra=0,

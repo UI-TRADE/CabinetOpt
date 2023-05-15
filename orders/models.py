@@ -149,14 +149,14 @@ class PriceQuerySet(models.QuerySet):
     def available_prices(self, products_ids, price_type = None):
         with suppress(PriceType.DoesNotExist):
             if not price_type:
-                price_type = PriceType.objects.get(name='Розничная')   
+                price_type = PriceType.objects.get(name='Базовая')   
             return self.distinct().filter(
                 type=price_type,
                 product_id__in=products_ids,
                 start_at__lte=timezone.now()
             ).filter(
                 Q(end_at__isnull=True) | Q(end_at__gte=timezone.now())
-            ).values('product_id', 'unit').annotate(actual_price=Max('price'))
+            ).annotate(actual_price=Max('price'))
 
 
 class Price(models.Model):
@@ -284,8 +284,8 @@ class OrderItem(models.Model):
         default='грамм',
         db_index=True,
         choices=(
-            ('штук', 'штук'),
-            ('грамм', 'грамм'),
+            ('796', 'штук'),
+            ('163', 'грамм'),
     ))
     series = models.CharField('Серия', max_length=50, blank=True)
     uin = models.CharField('УИН', max_length=50, blank=True)

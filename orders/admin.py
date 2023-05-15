@@ -22,9 +22,6 @@ class ProductImageInLine(admin.TabularInline):
 
     def render_preview(self, obj):
         if obj.image:
-            print(format_html(
-                '<img src="{0}" width="50" height="50" />'.format(obj.image.url)
-            ))
             return format_html(
                 '<img src="{0}" width="50" height="50" />'.format(obj.image.url)
             )

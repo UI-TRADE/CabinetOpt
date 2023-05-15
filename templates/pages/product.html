@@ -88,10 +88,10 @@
                   <div class="row px-4 px-sm-0">
                     <form id="cartForm-{{product.id}}" method="post" action="{% url 'cart:cart_add' product.id %}">
                       {% csrf_token %}
-                      <input type="hidden" name="quantity" value="1" />
+                      <input type="hidden" name="quantity" value=1 />
                       <input type="hidden" name="update" value="False" />
                       {% if price %}
-                        <input type="hidden" name="price" value="{{ price.actual_price }}" />
+                        <input type="hidden" name="price" value="{{ price.actual_price|stringformat:'1.2f' }}" />
                         <input type="hidden" name="unit" value="{{ price.unit }}" />
                       {% else %}
                         <input type="hidden" name="price" value="0" />
@@ -105,7 +105,7 @@
                         <div>Цена: {{ price.actual_price }} руб.</div>
                       </div>
                       <div class="row px-4 px-sm-0">
-                        <div>В наличии: {{ product.stock }} {{ price.unit }}</div>
+                        <div>В наличии: {{ product.stock }} {{ price.get_unit_display }}</div>
                       </div>
                   {% else %}
                     <div class="row px-4 px-sm-0">

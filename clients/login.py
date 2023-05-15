@@ -55,7 +55,6 @@ class Login(object):
         
         client_id = self.login.get('client')
         if client_id:
-            print(client_id)
             return Manager.objects.filter(
                 pk__in=Client.manager.through.objects.filter(
                     client_id=client_id
