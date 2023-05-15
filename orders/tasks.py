@@ -1,15 +1,18 @@
 import io
-import json
 import base64
 from contextlib import suppress
 from django.db import transaction
 from django.core.files.images import ImageFile
+from django.core.exceptions import ValidationError
 
 from .models import (
+    Client,
     Product,
     ProductImage,
     Collection,
     PriorityDirection,
+    PriceType,
+    Price,
 )
 
 
@@ -112,4 +115,67 @@ def run_uploading_images(uploading_images):
                         'filename': item['filename'],
                         'image': image
                 })
+
+
+def run_uploading_price(uploading_price):
+    errors = []
+    for item in uploading_price:
+        try:
+            with transaction.atomic():
+                price_type = update_or_create_price_type(item['client'])
+                if not price_type:
+                    raise ValidationError('error create price type')
+                Price.objects.create(
+                    type = price_type,
+                    product = Product.objects.get(
+                        identifier_1C=item['nomenclature']['Идентификатор']
+                    ),
+                    unit = item['unit'],
+                    price = item['price'],
+                )
+
+        except ValueError as error:
+            transaction.rollback()
+            errors.append(item | {"error": str(error)})
+            continue
+
+        except ValidationError as error:
+            transaction.rollback()
+            errors.append(item | {"error": error.message})
+            continue
+
+        except Product.DoesNotExist as error:
+            transaction.rollback()
+            continue
+        
+        finally:
+            if transaction.get_autocommit():
+                transaction.commit()
+    
+    return errors
+
+
+def update_or_create_price_type(client):
+    if not client:
+        return
+
+    identifier_1C = client['Идентификатор']
+    if identifier_1C == '00000000-0000-0000-0000-000000000000':
+        return
+
+    with suppress(Client.DoesNotExist):
+        inn = client.get('ИНН', '')
+        if inn:
+            found_client = Client.objects.get(inn=inn)
+        else:
+            found_client = Client.objects.get(name=client['Наименование'])
+
+        price_type, _ = PriceType.objects.get_or_create(
+            client = found_client,
+            name = client['Наименование'],
+            defaults = {
+                'name': client['Наименование'],
+                'client': found_client
+        })
+        return price_type
 

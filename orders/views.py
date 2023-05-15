@@ -25,7 +25,7 @@ from .models import (
 )
 
 from .forms import OrderItemInline
-from .tasks import run_uploading_products, run_uploading_images
+from .tasks import run_uploading_products, run_uploading_images, run_uploading_price
 
 
 class ProductView(ListView):
@@ -298,4 +298,13 @@ def upload_products(request):
 @permission_classes([IsAuthenticated])
 def upload_images(request):
     run_uploading_images(request.data)
+    return JsonResponse({'replay': 'ok'}, status=200)
+
+
+@api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+def upload_price(request):
+    errors = run_uploading_price(request.data)
+    if errors:
+        return JsonResponse(json.dumps(errors), status=200, safe=False)
     return JsonResponse({'replay': 'ok'}, status=200)

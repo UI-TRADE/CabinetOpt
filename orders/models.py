@@ -127,7 +127,15 @@ class ProductImage(models.Model):
 
 class PriceType(models.Model):
     name = models.CharField('Наименование', max_length=100, db_index=True)
-
+    client = models.ForeignKey(
+        Client,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Клиент',
+        related_name='prices_by_client',
+        db_index=True
+    )
     class Meta:
         verbose_name = 'Тип цены'
         verbose_name_plural = 'Типы цен'

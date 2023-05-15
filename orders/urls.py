@@ -15,4 +15,5 @@ urlpatterns = [
     path('order/create/<slug:order_id>/', views.CreateOrderView.as_view(), name='create'),
     path('upload/products', views.upload_products),
     path('upload/images', views.upload_images),
+    path('upload/price', views.upload_price),
 ]

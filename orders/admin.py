@@ -113,12 +113,15 @@ class ProductAdmin(admin.ModelAdmin):
 class PriceTypeAdmin(admin.ModelAdmin):
     search_fields = [
         'name',
+        'client',
     ]
     list_display = [
         'name',
+        'client',
     ]
     fields = [
         'name',
+        'client',
     ]
 
 
