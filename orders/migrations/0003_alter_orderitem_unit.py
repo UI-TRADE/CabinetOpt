@@ -14,5 +14,5 @@ class Migration(migrations.Migration):
             model_name='orderitem',
             name='unit',
             field=models.CharField(choices=[('796', 'штук'), ('163', 'грамм')], db_index=True, default='грамм', max_length=20, verbose_name='Единица измерения'),
-        ),
+        )
     ]

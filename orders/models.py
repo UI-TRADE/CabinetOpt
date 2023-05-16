@@ -285,7 +285,7 @@ class OrderItem(models.Model):
         db_index=True,
         choices=(
             ('796', 'штук'),
-            ('163', 'грамм'),
+            ('163', 'грамм')
     ))
     series = models.CharField('Серия', max_length=50, blank=True)
     uin = models.CharField('УИН', max_length=50, blank=True)
