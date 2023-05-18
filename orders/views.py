@@ -73,7 +73,7 @@ class ProductView(ListView):
 
         actual_prices = []
         current_clients = Login(self.request).get_clients()
-        with suppress(Client.DoesNotExist, PriceType.DoesNotExist):
+        with suppress(Client.DoesNotExist, PriceType.DoesNotExist, AttributeError):
             actual_prices = Price.objects.available_prices(
                 products_page.object_list.values_list('id', flat=True),
                 PriceType.objects.get(client = current_clients.get())
