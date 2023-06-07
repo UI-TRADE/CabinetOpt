@@ -1,11 +1,8 @@
 from django import forms
 from django.forms.models import BaseInlineFormSet, inlineformset_factory
 
-from .models import (
-    Product,
-    Order,
-    OrderItem
-)
+from catalog.models import Product
+from orders.models import Order, OrderItem
 
 
 class ProductForm(forms.ModelForm):

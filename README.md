@@ -177,7 +177,7 @@ python manage.py drf_create_token admin
 Выполните загрузку номенклатуры из json файла:
 
 ```sh
-curl -X POST -H "Content-Type: application/json" -d @media/test.json http://127.0.0.1:8000/orders/upload/products -H "Authorization: Token 0000000000000000000000000000000000000000"
+curl -X POST -H "Content-Type: application/json" -d @media/test.json http://127.0.0.1:8000/catalog/upload/products -H "Authorization: Token 0000000000000000000000000000000000000000"
 ```
 формат json файла следующий:
 ```
@@ -210,7 +210,7 @@ curl -X POST -H "Content-Type: application/json" -d @media/test.json http://127.
 Выполните загрузку картинок из json файла:
 
 ```sh
-curl -X POST -H "Content-Type: application/json" -d @media/imgs.json http://127.0.0.1:8000/orders/upload/images -H "Authorization: Token 0000000000000000000000000000000000000000"
+curl -X POST -H "Content-Type: application/json" -d @media/imgs.json http://127.0.0.1:8000/catalog/upload/images -H "Authorization: Token 0000000000000000000000000000000000000000"
 ```
 формат json файла следующий:
 ```
@@ -231,7 +231,7 @@ curl -X POST -H "Content-Type: application/json" -d @media/imgs.json http://127.
 Выполните загрузку цен из json файла:
 
 ```sh
-curl -X POST -H "Content-Type: application/json" -d @media/price.json http://127.0.0.1:8000/orders/upload/price -H "Authorization: Token 0000000000000000000000000000000000000000"
+curl -X POST -H "Content-Type: application/json" -d @media/price.json http://127.0.0.1:8000/catalog/upload/price -H "Authorization: Token 0000000000000000000000000000000000000000"
 ```
 формат json файла следующий:
 ```

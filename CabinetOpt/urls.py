@@ -25,6 +25,7 @@ urlpatterns = [
     path('', render, kwargs={'template_name': 'index.html'}, name='start_page'),
     path('clients/', include('clients.urls')),
     path('users/', include('users.urls')),
+    path('catalog/', include('catalog.urls')),
     path('orders/', include('orders.urls')),
     path('cart/', include('cart.urls')),
     path('__debug__/', include('debug_toolbar.urls')),

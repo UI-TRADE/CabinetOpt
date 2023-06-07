@@ -4,7 +4,7 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 
 from clients.login import Login
-from orders.models import Product
+from catalog.models import Product
 from .cart import Cart
 from .forms import (
     CartAddProductForm, OrderForm, OrderItemForm

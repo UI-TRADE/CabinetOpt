@@ -1,7 +1,7 @@
 import simplejson as json
 from django.conf import settings
 
-from orders.models import Product
+from catalog.models import Product
 
 
 class Cart(object):

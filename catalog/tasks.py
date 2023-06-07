@@ -5,15 +5,9 @@ from django.db import transaction
 from django.core.files.images import ImageFile
 from django.core.exceptions import ValidationError
 
-from .models import (
-    Client,
-    Product,
-    ProductImage,
-    Collection,
-    PriorityDirection,
-    PriceType,
-    Price,
-)
+from clients.models import Client, PriorityDirection
+from catalog.models import Product, ProductImage, Collection
+from catalog.models import PriceType, Price
 
 
 def run_uploading_products(uploading_products):

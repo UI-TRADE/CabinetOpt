@@ -5,7 +5,7 @@
 	{% block content %}
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb" style="background-color: white;">
-            <li class="breadcrumb-item"><a href="{% url 'orders:products' %}">Каталог</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'catalog:products' %}">Каталог</a></li>
             <li class="breadcrumb-item active" aria-current="page">{{prod.name}}</li>
             </ol>
         </nav>

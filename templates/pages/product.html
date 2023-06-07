@@ -40,13 +40,13 @@
           <div id="actions-group" class="goods-menu-blocks">
             <ul class="list-group">
               <li class="list-group-item">
-                <a href="{% url 'orders:products' %}">Уцененные товары</a>
+                <a href="{% url 'catalog:products' %}">Уцененные товары</a>
               </li>
               <li class="list-group-item">
-                <a href="{% url 'orders:сertificates' %}">Подарочные сертификаты</a>
+                <a href="{% url 'catalog:сertificates' %}">Подарочные сертификаты</a>
               </li>
               <li class="list-group-item">
-                <a href="{% url 'orders:services' %}">Услуги</a>
+                <a href="{% url 'catalog:services' %}">Услуги</a>
               </li>
             </ul>
           </div>
@@ -75,7 +75,7 @@
                 </div>
                 <div class="col-xs-1 col-sm-3 col-md-3 col-lg-4 col-center">
                   <div class="row px-4 px-sm-0">
-                    <a href="{% url 'orders:product' product.id %}" class="stretched-link">Карточка товара</a>
+                    <a href="{% url 'catalog:product' product.id %}" class="stretched-link">Карточка товара</a>
                   </div>
                   <div class="row px-4 px-sm-0">
                     <div><b>{{ product.name }}</b></div>

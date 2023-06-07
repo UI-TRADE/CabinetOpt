@@ -1,7 +1,7 @@
 from django import template
 from more_itertools import first
 
-from orders.models import ProductImage
+from catalog.models import ProductImage
 
 register = template.Library()
 
