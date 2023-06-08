@@ -55,8 +55,8 @@ def update_or_create_brand(brand):
     
     if brand['Удален']:
         with suppress(PriorityDirection.DoesNotExist):
-            found_collecion = PriorityDirection.objects.get(identifier_1C=identifier_1C)
-            found_collecion.delete()
+            found_brand = PriorityDirection.objects.get(identifier_1C=identifier_1C)
+            found_brand.delete()
         return
 
     brand_obj, _ = PriorityDirection.objects.update_or_create(
