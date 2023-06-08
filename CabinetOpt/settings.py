@@ -164,3 +164,67 @@ CART_SESSION_ID = 'cart'
 
 if DEBUG:
     INTERNAL_IPS = ['127.0.0.1',]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'formatters': {
+        'django.server': {
+            '()': 'django.utils.log.ServerFormatter',
+            'format': '[{server_time}] {message}',
+            'style': '{',
+        },
+        'django': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'django',
+        },
+        'django.server': {
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'django.server',
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler',
+        },
+        'logtail': {
+            'level': 'ERROR',
+            'class': 'logtail.LogtailHandler',
+            'formatter': 'django',
+            'source_token': env('LOGTAIL_SOURCE_TOKEN'),
+        },
+        'logtail.server': {
+            'level': 'ERROR',
+            'class': 'logtail.LogtailHandler',
+            'formatter': 'django.server',
+            'source_token': env('LOGTAIL_SOURCE_TOKEN'),
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'logtail', 'mail_admins'],
+            'level': env('LOG_LEVEL', 'INFO'),
+        },
+        'django.server': {
+            'handlers': ['django.server', 'logtail.server'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
