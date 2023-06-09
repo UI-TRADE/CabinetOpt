@@ -20,8 +20,8 @@
             <ul class="list-group">
               {% for brand in brands %}
               <li class="list-group-item">
-                <input class="form-check-input me-1 switch-change" type="checkbox" value="brand" id="{{ brand.id }}" checked>
-                <label class="form-check-label" for="{{ brand.id }}">{{ brand.name }}</label>
+                <input class="form-check-input me-1 switch-change" type="checkbox" value="brand" id="brand-{{ brand.id }}" checked>
+                <label class="form-check-label" for="brand-{{ brand.id }}">{{ brand.name }}</label>
               </li>
               {% endfor %}
             </ul>
@@ -30,8 +30,8 @@
             <ul class="list-group">
               {% for collection in collections %}
               <li class="list-group-item">
-                <input class="form-check-input me-1 switch-change" type="checkbox" value="collection" id="{{ collection.id }}" checked>
-                <label class="form-check-label" for="{{ collection.id }}">{{ collection.name }}</label>
+                <input class="form-check-input me-1 switch-change" type="checkbox" value="collection" id="collection-{{ collection.id }}" checked>
+                <label class="form-check-label" for="collection-{{ collection.id }}">{{ collection.name }}</label>
               </li>
               {% endfor %}
             </ul>

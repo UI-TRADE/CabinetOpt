@@ -34,10 +34,10 @@ class ProductView(ListView):
     def get_queryset(self):
         products = Product.objects.filter(product_type='product')
         if self.filters:
-            brands = self.filters.get('brand')
+            brands = [brand.replace('brand-', '') for brand in self.filters.get('brand')]
             if brands:
                 products = products.exclude(brand_id__in=brands)
-            collections = self.filters.get('collection')
+            collections = [collection.replace('collection-', '') for collection in self.filters.get('collection')]
             if collections:
                 products = products.exclude(collection_id__in=collections)   
 

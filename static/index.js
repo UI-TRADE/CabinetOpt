@@ -118,6 +118,7 @@ const showElement = function(elementId, show) {
 }
 
 const switchCartView = function(checked) {
+    console.log('switchCartView')
     if (checked) {
         document.getElementById('products').style.display = 'none';
         document.getElementById('cart-table').style.display = 'block';
@@ -128,10 +129,27 @@ const switchCartView = function(checked) {
     localStorage.setItem('cartView', checked);
 }
 
-const updateCartView = function(elementId) {
-    if (localStorage.getItem('cartView') === 'true' && document.getElementById(elementId) !== null) {
-        document.getElementById(elementId).click();
-}}
+
+const createCartViewInput = function() {
+    const checkboxElement = document.createElement('input');
+    checkboxElement.id = 'cartView';
+    checkboxElement.type = 'checkbox';
+    checkboxElement.classList.add('custom-control-input');
+    if (localStorage.getItem('cartView') === 'true') {
+        checkboxElement.checked = true;
+    }
+    const labelElement = document.createElement('label');
+    labelElement.classList.add('custom-control-label');
+    labelElement.textContent = 'компактный вид';
+    labelElement.setAttribute('for', checkboxElement.id);
+
+    const cartViewArea = document.getElementById('cartViewArea');
+    if (cartViewArea) {
+        cartViewArea.appendChild(checkboxElement);
+        cartViewArea.appendChild(labelElement);
+    }
+    switchCartView(checkboxElement.checked);
+}
 
 
 const updateItem = function(element) {
@@ -160,67 +178,76 @@ const updateItem = function(element) {
 
 }
 
+const addEvents = function() {
+
+    $('.order-row').click((event) => {
+        window.document.location = event.currentTarget.dataset.href
+    });
+
+    $('#cartView').click((event) => {
+        switchCartView(event.currentTarget.checked);
+    });
+
+    $('#Brend').on('click', (event) => {
+        toggleClassButton(event.currentTarget, 'btn-success', 'btn-outline-success');
+        toggleClassButton(
+            document.getElementById('Assortment'), 'btn-outline-warning', 'btn-warning'
+        );
+        if ( event.currentTarget.classList.contains('btn-success') ) {
+            showElement('brend-group', true);
+            showElement('collection-group', false);
+        } else {
+            showElement('brend-group', false);
+            showElement('collection-group', true);
+        }
+    })
+    
+    $('#Assortment').on('click', (event) => {
+        toggleClassButton(event.currentTarget, 'btn-warning', 'btn-outline-warning');
+        toggleClassButton(
+            document.getElementById('Brend'), 'btn-outline-success', 'btn-success'
+        );
+        if ( event.currentTarget.classList.contains('btn-warning') ) {
+            showElement('collection-group', true);
+            showElement('brend-group', false);
+        } else {
+            showElement('collection-group', false);
+            showElement('brend-group', true);
+        }
+    })
+    
+    $('.switch-change').on('change', (event) => {
+        data = {'brand': [], 'collection': []};
+        Array.from(
+            document.getElementsByClassName('switch-change')
+        ).forEach((item) => {
+            if ( item.checked ) {
+                return;
+            }
+            data[item.value].push(item.id);
+        });
+        updateElement('products', {
+            'csrfmiddlewaretoken' : document.querySelector('input[name="csrfmiddlewaretoken"]').value,
+            'data': JSON.stringify(data)
+        });
+    })
+
+}
+
 
 $(document).ready(() => {
     showModalForm('loginForm'); 
     showModalForm('regRequestForm');
     updateForm('contactForm');
-    updateCartView('cartView');
-    $(".order-row").click((event) => {
-        window.document.location = event.currentTarget.dataset.href
-    });
-})
 
-
-$('#Brend').on('click', (event) => {
-    toggleClassButton(event.currentTarget, 'btn-success', 'btn-outline-success');
-    toggleClassButton(
-        document.getElementById('Assortment'), 'btn-outline-warning', 'btn-warning'
-    );
-    if ( event.currentTarget.classList.contains('btn-success') ) {
-        showElement('brend-group', true);
-        showElement('collection-group', false);
-    } else {
-        showElement('brend-group', false);
-        showElement('collection-group', true);
+    if (window.document.location.pathname === "/cart/") {
+        createCartViewInput();
     }
+
+    addEvents();
+
 })
 
-$('#Assortment').on('click', (event) => {
-    toggleClassButton(event.currentTarget, 'btn-warning', 'btn-outline-warning');
-    toggleClassButton(
-        document.getElementById('Brend'), 'btn-outline-success', 'btn-success'
-    );
-    if ( event.currentTarget.classList.contains('btn-warning') ) {
-        showElement('collection-group', true);
-        showElement('brend-group', false);
-    } else {
-        showElement('collection-group', false);
-        showElement('brend-group', true);
-    }
-})
 
-$('.switch-change').on('change', (event) => {
-    data = {'brand': [], 'collection': []};
-    Array.from(
-        document.getElementsByClassName('switch-change')
-    ).forEach((item) => {
-        if ( item.checked ) {
-            return;
-        }
-        data[item.value].push(item.id);
-    });
-    updateElement('products', {
-        'csrfmiddlewaretoken' : document.querySelector('input[name="csrfmiddlewaretoken"]').value,
-        'data': JSON.stringify(data)
-    });
-})
 
-$('#cartView').on('change', (event) => {
-    switchCartView(event.currentTarget.checked);
-})
 
-$('#table').on('click-row.bs.table', (row, $element, field) => {
-    console.log(field);
-    console.log(row);
-})

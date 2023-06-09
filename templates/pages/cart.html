@@ -9,9 +9,7 @@
                 <a class="nav-link active" href="#" style="border: none;">Корзина покупок</a>
             </li>
         </ul>
-        <div class="custom-control custom-switch" style="padding: 8px 16px 8px 16px;">
-            <input type="checkbox" class="custom-control-input" id="cartView">
-            <label class="custom-control-label" for="cartView">компактный вид</label>
+        <div id="cartViewArea" class="custom-control custom-switch" style="padding: 8px 16px 8px 16px;">
         </div>
     </div>
 
@@ -54,7 +52,6 @@
                                         max="{{ product.stock }}"
                                         step="1"
                                         type="number"
-                                        id="typeNumber" 
                                         class="form-control" 
                                     />
                                 </div>
@@ -119,8 +116,7 @@
                                             min="0"
                                             max="{{ product.stock }}"
                                             step="1"
-                                            type="number"
-                                            id="typeNumber" 
+                                            type="number" 
                                             class="form-control" 
                                         />
                                     </div>
@@ -143,7 +139,7 @@
                         {% endfor %}
                     </tbody>
                 </table>
-                <form id="createOrderForm" method="post" action="{% url 'cart:create' %}">
+                <form id="createOrderFromTable" method="post" action="{% url 'cart:create' %}">
                     {% csrf_token %}
                 </form>
                 <p class="text-right">
@@ -156,7 +152,7 @@
                     </a>
                     <a
                         href="#"
-                        onclick="document.getElementById('createOrderForm').submit();"
+                        onclick="document.getElementById('createOrderFromTable').submit();"
                         role="button"
                         class="btn btn-success mb-2 mr-sm-2"
                     >
