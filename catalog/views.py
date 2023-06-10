@@ -15,6 +15,7 @@ from catalog.models import Product, Collection
 from catalog.models import PriceType, Price
 
 from .tasks import run_uploading_products, run_uploading_images, run_uploading_price
+from .tree import get_tree
 
 class ProductView(ListView):
     model = Product
@@ -34,12 +35,14 @@ class ProductView(ListView):
     def get_queryset(self):
         products = Product.objects.filter(product_type='product')
         if self.filters:
-            brands = [brand.replace('brand-', '') for brand in self.filters.get('brand')]
+            brands = [brand.replace('brand-', '') for brand in \
+                      self.filters.get('brand') if 'brand-' in brand]
             if brands:
                 products = products.exclude(brand_id__in=brands)
-            collections = [collection.replace('collection-', '') for collection in self.filters.get('collection')]
+            collections = [collection.replace('collection-', '') for collection in \
+                           self.filters.get('collection') if 'collection-' in collection]
             if collections:
-                products = products.exclude(collection_id__in=collections)   
+                products = products.exclude(collection_id__in=collections)
 
         return products
 
@@ -69,6 +72,19 @@ class ProductView(ListView):
         context['collections'] = Collection.objects.all().values()
         context['brands'] = PriorityDirection.objects.all().values()
         context['MEDIA_URL'] = settings.MEDIA_URL
+        context['jsonBrands'] = json.dumps(
+            [{
+                'id': obj.id,
+                'name': obj.name
+            } for obj in PriorityDirection.objects.all()]
+        )
+        context['jsonCollections'] = get_tree(
+            [{
+                'id': obj.id,
+                'name': obj.name
+            } for obj in Collection.objects.all()]
+        )
+
         return dict(list(context.items()))
 
 

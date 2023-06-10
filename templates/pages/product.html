@@ -3,6 +3,10 @@
 
 {% block page %}
 	{% block content %}
+
+    <div style="display: none" id="jsonBrands" data-json="{{ jsonBrands }}"></div>
+    <div style="display: none" id="jsonCollections" data-json="{{ jsonCollections }}"></div>
+
     <ul class="nav nav-tabs" style="border: none;">
       <li class="nav-item">
         <a class="nav-link active" href="#" style="border: none;">Каталог</a>
@@ -17,23 +21,11 @@
             <button id="Assortment" type="button" class="btn btn-outline-warning goods-btn">Ассортимент</button>
           </div>
           <div id="brend-group" class="goods-menu-blocks" style="display: block;">
-            <ul class="list-group">
-              {% for brand in brands %}
-              <li class="list-group-item">
-                <input class="form-check-input me-1 switch-change" type="checkbox" value="brand" id="brand-{{ brand.id }}" checked>
-                <label class="form-check-label" for="brand-{{ brand.id }}">{{ brand.name }}</label>
-              </li>
-              {% endfor %}
+            <ul class="brend-group list-group">
             </ul>
           </div>
           <div id="collection-group" class="goods-menu-blocks" style="display: none;">
-            <ul class="list-group">
-              {% for collection in collections %}
-              <li class="list-group-item">
-                <input class="form-check-input me-1 switch-change" type="checkbox" value="collection" id="collection-{{ collection.id }}" checked>
-                <label class="form-check-label" for="collection-{{ collection.id }}">{{ collection.name }}</label>
-              </li>
-              {% endfor %}
+            <ul class="collection-group list-group">
             </ul>
           </div>
           <div class="goods-menu-blocks"></div>

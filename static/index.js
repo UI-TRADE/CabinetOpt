@@ -1,3 +1,7 @@
+const loadJson = function(selector) {
+    return JSON.parse(document.querySelector(selector).getAttribute('data-json'));
+}
+
 const removeErrors = function() {
     Array.from(
         document.getElementsByClassName('errors')
@@ -118,7 +122,6 @@ const showElement = function(elementId, show) {
 }
 
 const switchCartView = function(checked) {
-    console.log('switchCartView')
     if (checked) {
         document.getElementById('products').style.display = 'none';
         document.getElementById('cart-table').style.display = 'block';
@@ -151,6 +154,61 @@ const createCartViewInput = function() {
     switchCartView(checkboxElement.checked);
 }
 
+const fillCollectionTree = (jsonCollection, collectionList, excludedCollection) => {
+
+    Object.keys(jsonCollection).forEach((key) => {
+        const node = jsonCollection[key];
+        for (const nodeName in node) {
+            if (node.hasOwnProperty(nodeName)) {
+                innerHTML = 
+                    `<li class="list-group-item"><span class="collection-box">${nodeName}</span>
+                        <ul class="collection-nested list-group list-group-flush">`;
+
+                node[nodeName].forEach((item) => {
+                    const checked = (excludedCollection.includes(`collection-${item['id']}`)) ? "" : "checked"
+                    innerHTML += 
+                        `<li class="list-group-item" style="padding-top: 5px; padding-bottom: 5px;">
+                            <input class="form-check-input me-1 switch-change" type="checkbox" value="collection" id="collection-${item['id']}" ${checked}>
+                            <label class="form-check-label" for="collection-${item['id']}" style="font-size: smaller;">${item['name']}</label></li>`;
+
+                });
+                innerHTML += `</ul></li>`;
+                collectionList.innerHTML += innerHTML;
+            }
+          }
+    });
+
+}
+
+const createBrandAndCollectionLists = function() {
+    const excludedВrands = localStorage.getItem('excludedВrands');
+    const excludedCollection = localStorage.getItem('excludedCollection');
+    const jsonBrands = loadJson('#jsonBrands');
+    const jsonCollections = loadJson('#jsonCollections');
+
+    const brandList = document.querySelector('.brend-group'); 
+    jsonBrands.forEach((brand) => {
+        const checked = (excludedВrands.includes(`brand-${brand.id}`)) ? "" : "checked"
+        brandList.innerHTML += 
+        `<li class="list-group-item">
+            <input class="form-check-input me-1 switch-change" type="checkbox" value="brand" id="brand-${brand.id}" ${checked}>
+            <label class="form-check-label" for="brand-${brand.id}">${brand.name}</label>
+        </li>`
+    });
+
+    const collectionList = document.querySelector('.collection-group'); 
+    fillCollectionTree(jsonCollections, collectionList, excludedCollection);
+
+    updateElement('products', {
+        'csrfmiddlewaretoken' : document.querySelector('input[name="csrfmiddlewaretoken"]').value,
+        'data': JSON.stringify({
+            'brand': excludedВrands.split(','),
+            'collection': excludedCollection.split(',')
+        })
+    });
+    
+}
+
 
 const updateItem = function(element) {
     const partsOfId = element.id.split('-');
@@ -173,10 +231,9 @@ const updateItem = function(element) {
         price.value = element.value / (quantity.value != 0 ? quantity.value : 1);
     }
     else if (partsOfId[partsOfId.length-1] === 'price_type') {
-
     }
-
 }
+
 
 const addEvents = function() {
 
@@ -226,13 +283,39 @@ const addEvents = function() {
             }
             data[item.value].push(item.id);
         });
+        localStorage.setItem('excludedВrands', data.brand);
+        localStorage.setItem('excludedCollection', data.collection);
+        
         updateElement('products', {
             'csrfmiddlewaretoken' : document.querySelector('input[name="csrfmiddlewaretoken"]').value,
             'data': JSON.stringify(data)
         });
     })
 
+    const toggler = document.getElementsByClassName("collection-box"); let i;
+    for (i = 0; i < toggler.length; i++) {
+      toggler[i].addEventListener('click', (event) => {
+        if (event.target.parentElement) {
+            event.target.parentElement.querySelector('.collection-nested')?.classList.toggle('collection-active');
+            event.target.classList.toggle('collection-open-box');
+        }
+      });
+    }
+
 }
+
+
+$(window).on("load", function() {
+    if (localStorage.getItem('cartView') === null) {
+        localStorage.setItem('cartView', false);
+    }
+    if (localStorage.getItem('excludedВrands') === null) {
+        localStorage.setItem('excludedВrands', new Array());
+    }
+    if (localStorage.getItem('excludedCollection') === null) {
+        localStorage.setItem('excludedCollection', new Array());
+    }
+});
 
 
 $(document).ready(() => {
@@ -240,14 +323,11 @@ $(document).ready(() => {
     showModalForm('regRequestForm');
     updateForm('contactForm');
 
-    if (window.document.location.pathname === "/cart/") {
+    if (document.location.pathname === "/cart/") {
         createCartViewInput();
+    } else if (document.location.pathname === "/catalog/products/") {
+        createBrandAndCollectionLists();
     }
-
     addEvents();
-
 })
-
-
-
 

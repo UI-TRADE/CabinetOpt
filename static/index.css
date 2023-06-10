@@ -197,3 +197,32 @@ figure {
     width: 150px;
     min-width: 150px;
 }
+
+.collection-box {
+    cursor: pointer;
+    -webkit-user-select: none; /* Safari 3.1+ */
+    -moz-user-select: none; /* Firefox 2+ */
+    -ms-user-select: none; /* IE 10+ */
+    user-select: none;
+  }
+  
+  .collection-box::before {
+    content: "\203A";
+    color: black;
+    display: inline-block;
+    margin-right: 6px;
+  }
+  
+  .collection-open-box::before {
+    content: "\203A"; 
+    color: black;
+    transform: rotate(90deg);
+  }
+
+  .collection-nested {
+    display: none;
+  }
+  
+  .collection-active {
+    display: block;
+  }
