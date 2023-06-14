@@ -69,8 +69,6 @@ class ProductView(ListView):
 
         context['products'] = products_page
         context['prices'] = actual_prices
-        context['collections'] = Collection.objects.all().values()
-        context['brands'] = PriorityDirection.objects.all().values()
         context['MEDIA_URL'] = settings.MEDIA_URL
         context['jsonBrands'] = json.dumps(
             [{

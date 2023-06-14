@@ -9,13 +9,15 @@
                 <a class="nav-link active" href="#" style="border: none;">Корзина покупок</a>
             </li>
         </ul>
-        <div id="cartViewArea" class="custom-control custom-switch" style="padding: 8px 16px 8px 16px;">
+        <div id="cartViewArea" class="custom-control custom-switch" style="padding: 8px 16px 8px 16px; display: none;">
+            <input type="checkbox" class="custom-control-input" id="cartView">
+            <label class="custom-control-label" for="cartView">компактный вид</label>
         </div>
     </div>
 
     <div class="container-fluid">
         <div class="row justify-content-center">    
-            <main id="products" class="col-11 products">
+            <main id="products" class="col-11 products" style="display: none;">
                 {% for item in cart %}
                 {% with product=item.product %}
                     <div class="good-block position-relative">

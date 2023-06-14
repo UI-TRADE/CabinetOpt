@@ -2,6 +2,7 @@ const loadJson = function(selector) {
     return JSON.parse(document.querySelector(selector).getAttribute('data-json'));
 }
 
+
 const removeErrors = function() {
     Array.from(
         document.getElementsByClassName('errors')
@@ -84,9 +85,8 @@ const updateForm = function(formId) {
 
 
 const extractContent = function(html, elementId){
-    const DOMModel = new DOMParser()
-        .parseFromString(html, 'text/html');
-    return DOMModel.getElementById(elementId).innerHTML;
+    const DOMModel = new DOMParser().parseFromString(html, 'text/html');
+    return DOMModel.getElementById(elementId)?.innerHTML;
 }
 
 
@@ -98,7 +98,9 @@ const updateElement = function(elementId, data) {
         success: (data) => {
             $(`#${elementId}`).html(
                 extractContent(data, elementId)
-        )},
+            );
+            document.getElementById(elementId).style.display = 'block';
+        },
         error: (xhr, status, error) => {
             alert('Ошибка: ' + error);
         }
@@ -117,42 +119,30 @@ const toggleClassButton = function(target, fromClass, toClass) {
     }
 }
 
+
 const showElement = function(elementId, show) {
     document.getElementById(elementId).style.display = show ? 'block' : 'none';
 }
 
+
 const switchCartView = function(checked) {
-    if (checked) {
-        document.getElementById('products').style.display = 'none';
-        document.getElementById('cart-table').style.display = 'block';
-    } else {
-        document.getElementById('products').style.display = 'block';
-        document.getElementById('cart-table').style.display = 'none';
-    }
+    document.getElementById('products').style.display = checked ? 'none' : 'block';
+    document.getElementById('cart-table').style.display = checked ? 'block' : 'none';
     localStorage.setItem('cartView', checked);
 }
 
-
-const createCartViewInput = function() {
-    const checkboxElement = document.createElement('input');
-    checkboxElement.id = 'cartView';
-    checkboxElement.type = 'checkbox';
-    checkboxElement.classList.add('custom-control-input');
+const updateCartView = function(elementId) {
+    const switchElement = document.getElementById(elementId);
+    if (switchElement === null) {
+        return;
+    }
     if (localStorage.getItem('cartView') === 'true') {
-        checkboxElement.checked = true;
+        switchElement.click();
     }
-    const labelElement = document.createElement('label');
-    labelElement.classList.add('custom-control-label');
-    labelElement.textContent = 'компактный вид';
-    labelElement.setAttribute('for', checkboxElement.id);
-
-    const cartViewArea = document.getElementById('cartViewArea');
-    if (cartViewArea) {
-        cartViewArea.appendChild(checkboxElement);
-        cartViewArea.appendChild(labelElement);
-    }
-    switchCartView(checkboxElement.checked);
+    switchCartView(switchElement.checked)
+    document.getElementById('cartViewArea').style.display = 'block';
 }
+
 
 const fillCollectionTree = (jsonCollection, collectionList, excludedCollection) => {
 
@@ -167,7 +157,7 @@ const fillCollectionTree = (jsonCollection, collectionList, excludedCollection) 
                 node[nodeName].forEach((item) => {
                     const checked = (excludedCollection.includes(`collection-${item['id']}`)) ? "" : "checked"
                     innerHTML += 
-                        `<li class="list-group-item" style="padding-top: 5px; padding-bottom: 5px;">
+                        `<li class="list-group-item" style="padding-top: 5px; padding-bottom: 5px; margin-left: 25px;">
                             <input class="form-check-input me-1 switch-change" type="checkbox" value="collection" id="collection-${item['id']}" ${checked}>
                             <label class="form-check-label" for="collection-${item['id']}" style="font-size: smaller;">${item['name']}</label></li>`;
 
@@ -180,7 +170,11 @@ const fillCollectionTree = (jsonCollection, collectionList, excludedCollection) 
 
 }
 
+
 const createBrandAndCollectionLists = function() {
+    if (document.location.pathname !== "/catalog/products/") {
+        return;
+    }
     const excludedВrands = localStorage.getItem('excludedВrands');
     const excludedCollection = localStorage.getItem('excludedCollection');
     const jsonBrands = loadJson('#jsonBrands');
@@ -205,8 +199,7 @@ const createBrandAndCollectionLists = function() {
             'brand': excludedВrands.split(','),
             'collection': excludedCollection.split(',')
         })
-    });
-    
+    }); 
 }
 
 
@@ -242,6 +235,7 @@ const addEvents = function() {
     });
 
     $('#cartView').click((event) => {
+        console.log('#cartView click');
         switchCartView(event.currentTarget.checked);
     });
 
@@ -322,12 +316,8 @@ $(document).ready(() => {
     showModalForm('loginForm'); 
     showModalForm('regRequestForm');
     updateForm('contactForm');
-
-    if (document.location.pathname === "/cart/") {
-        createCartViewInput();
-    } else if (document.location.pathname === "/catalog/products/") {
-        createBrandAndCollectionLists();
-    }
+    updateCartView('cartView');
+    createBrandAndCollectionLists();
     addEvents();
 })
 

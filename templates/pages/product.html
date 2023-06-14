@@ -48,7 +48,7 @@
           <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
         </div>
 
-        <main id="products" class="col-md-9 products">
+        <main id="products" class="col-md-9 products" style="display: none;">
           {% for product in products %}
             {% with price=prices|get_item:product.id %}
             <div class="good-block position-relative">
