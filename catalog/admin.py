@@ -6,7 +6,8 @@ from .models import (
     ProductImage,
     Product,
     PriceType,
-    Price
+    Price,
+    ProductCost
 )
 
 class ProductImageInLine(admin.TabularInline):
@@ -27,6 +28,16 @@ class ProductImageInLine(admin.TabularInline):
             return '(No image)'
 
     render_preview.short_description = 'Preview'
+
+
+class ProductCostInLine(admin.TabularInline):
+    model = ProductCost
+    extra = 0
+    fields = ('weight', 'size', 'cost')
+    readonly_fields = ()
+
+    verbose_name = "Стоимость изделия"
+    verbose_name_plural = "Стоимость изделий"
 
 
 @admin.register(Collection)
@@ -81,7 +92,7 @@ class ProductAdmin(admin.ModelAdmin):
     readonly_fields = [
         'created_at', 'stock'
     ]
-    inlines = [ProductImageInLine]
+    inlines = [ProductCostInLine, ProductImageInLine]
 
 
 @admin.register(PriceType)

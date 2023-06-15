@@ -89,6 +89,8 @@ class Product(models.Model):
             ('service', 'услуга'),
             ('gift_сertificate', 'подарочный сертификат')
     ))
+    metal = models.CharField('Металл', max_length=50, blank=True, db_index=True)
+    metal_content = models.CharField('Проба', max_length=30, blank=True, db_index=True)
     identifier_1C = models.CharField(
         'Идентификатор 1С', max_length=50, blank=True, db_index=True
     )
@@ -104,6 +106,33 @@ class Product(models.Model):
     def get_images(self):
         product_images = ProductImage.objects.filter(product_id=self.id)
         return [product_image.image.url for product_image in product_images]
+
+
+class ProductCost(models.Model):
+    product = models.ForeignKey(
+        Product,
+        null=True,
+        on_delete=models.CASCADE,
+        verbose_name='Номенклатура',
+        related_name='product_cost'
+    )
+    weight = models.FloatField(
+        'Вес', default=0, validators=[MinValueValidator(0)]
+    )
+    size = models.IntegerField(
+        'Размер', default=0, validators=[MinValueValidator(0)]
+    )
+    cost = models.DecimalField(
+        'Стоимость',
+        max_digits=8,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)]
+    )
+
+    class Meta:
+        verbose_name = 'Стоимость изделия'
+        verbose_name_plural = 'Стоимость изделий'
 
 
 class ProductImage(models.Model):
@@ -155,7 +184,7 @@ class PriceQuerySet(models.QuerySet):
                 start_at__lte=timezone.now()
             ).filter(
                 Q(end_at__isnull=True) | Q(end_at__gte=timezone.now())
-            ).annotate(actual_price=Max('price'))
+            ).annotate(actual_price=Max('price', 'discount'))
 
 
 class Price(models.Model):
@@ -184,6 +213,13 @@ class Price(models.Model):
     ))
     price = models.DecimalField(
         'Цена',
+        max_digits=8,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)]
+    )
+    discount = models.DecimalField(
+        'Скидка',
         max_digits=8,
         decimal_places=2,
         default=0,

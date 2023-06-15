@@ -177,21 +177,20 @@ const createBrandAndCollectionLists = function() {
     }
     const excludedВrands = localStorage.getItem('excludedВrands');
     const excludedCollection = localStorage.getItem('excludedCollection');
-    const jsonBrands = loadJson('#jsonBrands');
-    const jsonCollections = loadJson('#jsonCollections');
 
     const brandList = document.querySelector('.brend-group'); 
-    jsonBrands.forEach((brand) => {
-        const checked = (excludedВrands.includes(`brand-${brand.id}`)) ? "" : "checked"
+    loadJson('#brands').forEach((brand) => {
+        const checked = (excludedВrands.includes(`brand-${brand.pk}`)) ? "" : "checked"
         brandList.innerHTML += 
         `<li class="list-group-item">
-            <input class="form-check-input me-1 switch-change" type="checkbox" value="brand" id="brand-${brand.id}" ${checked}>
-            <label class="form-check-label" for="brand-${brand.id}">${brand.name}</label>
+            <input class="form-check-input me-1 switch-change" type="checkbox" value="brand" id="brand-${brand.pk}" ${checked}>
+            <label class="form-check-label" for="brand-${brand.pk}">${brand.fields.name}</label>
         </li>`
     });
 
-    const collectionList = document.querySelector('.collection-group'); 
-    fillCollectionTree(jsonCollections, collectionList, excludedCollection);
+    const сollections = loadJson('#jsonCollections');
+    const collectionGroup = document.querySelector('.collection-group'); 
+    fillCollectionTree(сollections, collectionGroup, excludedCollection);
 
     updateElement('products', {
         'csrfmiddlewaretoken' : document.querySelector('input[name="csrfmiddlewaretoken"]').value,
@@ -227,6 +226,31 @@ const updateItem = function(element) {
     }
 }
 
+const updateProductWeight = function(size) {
+    loadJson('#sizes').forEach((element) => {
+        if (element.fields.size == size) {
+            document.getElementById('product_weigth').textContent = `${element.fields.weight} грамм`;
+        }
+    });
+}
+
+const updateProductPrice = function(size) {
+    const priceItem = loadJson('#price').find(Boolean)?.fields;
+    let currentPrice = priceItem.price;
+    const currentDiscount = priceItem.discount;
+    loadJson('#sizes').forEach((element) => {
+        if (element.fields.size == size) {
+            const maxPrice = element.fields.cost;
+            if (maxPrice > 0) {
+                currentPrice = maxPrice;   
+            }
+            if (currentDiscount > 0) {
+                currentPrice = currentPrice - (currentPrice * currentDiscount / 100)   
+            }
+        }
+    });
+    document.getElementById('product_price').textContent = `${currentPrice} руб.`;
+}
 
 const addEvents = function() {
 
@@ -286,9 +310,21 @@ const addEvents = function() {
         });
     })
 
-    const toggler = document.getElementsByClassName("collection-box"); let i;
-    for (i = 0; i < toggler.length; i++) {
-      toggler[i].addEventListener('click', (event) => {
+    $('.product__size__block').on('click', (event) => {
+        const toggler = document.getElementsByClassName('product__size__block'); var i;
+        for (i=0; i < toggler.length; i++) {
+            if (toggler[i].classList.contains('product__size__block--select')) {
+                toggler[i].classList.remove('product__size__block--select');    
+            }
+        }
+        event.target.classList.add('product__size__block--select');
+        updateProductWeight(event.target.innerText);
+        updateProductPrice(event.target.innerText);
+    })
+
+    const collectionBoxToggler = document.getElementsByClassName('collection-box'); var i;
+    for (i = 0; i < collectionBoxToggler.length; i++) {
+        collectionBoxToggler[i].addEventListener('click', (event) => {
         if (event.target.parentElement) {
             event.target.parentElement.querySelector('.collection-nested')?.classList.toggle('collection-active');
             event.target.classList.toggle('collection-open-box');

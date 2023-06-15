@@ -1,4 +1,4 @@
-import json
+import simplejson as json
 from contextlib import suppress
 from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
@@ -6,12 +6,13 @@ from django.core.paginator import PageNotAnInteger
 from django.views.generic import ListView, DetailView
 from django.conf import settings
 from django.http import JsonResponse
+from django.core.serializers import serialize
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
 from clients.login import Login
 from clients.models import Client, PriorityDirection
-from catalog.models import Product, Collection
+from catalog.models import Product, Collection, ProductCost
 from catalog.models import PriceType, Price
 
 from .tasks import run_uploading_products, run_uploading_images, run_uploading_price
@@ -69,19 +70,14 @@ class ProductView(ListView):
 
         context['products'] = products_page
         context['prices'] = actual_prices
-        context['MEDIA_URL'] = settings.MEDIA_URL
-        context['jsonBrands'] = json.dumps(
-            [{
-                'id': obj.id,
-                'name': obj.name
-            } for obj in PriorityDirection.objects.all()]
-        )
+        context['brands'] = serialize("json", PriorityDirection.objects.all())
         context['jsonCollections'] = get_tree(
             [{
                 'id': obj.id,
                 'name': obj.name
             } for obj in Collection.objects.all()]
         )
+        context['MEDIA_URL'] = settings.MEDIA_URL
 
         return dict(list(context.items()))
 
@@ -156,13 +152,14 @@ class ProductCardView(DetailView):
 
         actual_prices = []
         current_clients = Login(self.request).get_clients()
+        available_sizes = ProductCost.objects.filter(product_id = self.kwargs['prod_id'])
         with suppress(Client.DoesNotExist, PriceType.DoesNotExist):
             actual_prices = Price.objects.available_prices(
                 [self.kwargs['prod_id']],
                 PriceType.objects.get(client = current_clients.get())
             )
-
-        context['prices'] = actual_prices
+        context['sizes'] = serialize("json", available_sizes)
+        context['price'] = serialize("json", actual_prices)
         context['MEDIA_URL'] = settings.MEDIA_URL
         return dict(list(context.items()))
 
