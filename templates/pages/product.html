@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% load order_tags %}
+{% load catalog_tags %}
 
 {% block page %}
 	{% block content %}
 
     <div style="display: none" id="brands" data-json="{{ brands }}"></div>
-    <div style="display: none" id="jsonCollections" data-json="{{ jsonCollections }}"></div>
+    <div style="display: none" id="collections" data-json="{{ collections }}"></div>
 
     <ul class="nav nav-tabs" style="border: none;">
       <li class="nav-item">
@@ -49,9 +49,18 @@
         </div>
 
         <main id="products" class="col-md-9 products" style="display: none;">
+          <div style="display: none" id="sizes" data-json="{{ sizes }}"></div>
           {% for product in products %}
-            {% with price=prices|get_item:product.id %}
+            {% with price=prices|loadjson|get_item_by_id:product.id %}
             <div class="good-block position-relative">
+              {% with gender="gender"|addparam:product.get_gender_display collection="collection"|addparam:product.collection.id instok="instok"|addparam:product.stock %}
+              <div 
+                id="product-{{product.id}}"
+                class="good-block-info"
+                style="display: none;"
+                data-json="{{ price|addtojson:gender|addtojson:collection|addtojson:instok|tojson }}"
+              ></div>
+              {% endwith %}
               <div class="row good-row">
                 <div class="col-xs-1 col-md-2 col-md-3 col-lg-4 col-center">
                   {% for image in product.get_images|slice:":1" %}
@@ -76,37 +85,23 @@
                     <div>Артикул: {{ product.articul }}</div>
                   </div>
                 </div>
-                <div class="col-xs-1 col-sm-3 col-md-3 col-lg-4 col-center">
+                <div class="col-xs-1 col-sm-3 col-md-3 col-lg-4 col-center price-block">
                   <div class="row px-4 px-sm-0">
                     <form id="cartForm-{{product.id}}" method="post" action="{% url 'cart:cart_add' product.id %}">
                       {% csrf_token %}
                       <input type="hidden" name="quantity" value=1 />
                       <input type="hidden" name="update" value="False" />
-                      {% if price %}
-                        <input type="hidden" name="price" value="{{ price.actual_price|stringformat:'1.2f' }}" />
-                        <input type="hidden" name="unit" value="{{ price.unit }}" />
-                      {% else %}
-                        <input type="hidden" name="price" value="0" />
-                        <input type="hidden" name="unit" value="796" />                      
-                      {% endif %}
+                      <input type="hidden" name="price" value="0" />
+                      <input type="hidden" name="unit" value="796" />
                     </form>
                     <a href="#" onclick="document.getElementById('cartForm-{{product.id}}').submit();">в Корзину</a>
                   </div>
-                  {% if price %}
-                      <div class="row px-4 px-sm-0">
-                        <div>Цена: {{ price.actual_price }} руб.</div>
-                      </div>
-                      <div class="row px-4 px-sm-0">
-                        <div>В наличии: {{ product.stock }} {{ price.get_unit_display }}</div>
-                      </div>
-                  {% else %}
-                    <div class="row px-4 px-sm-0">
-                      <div>Цена: -- </div>
+                    <div class="row px-4 px-sm-0 price">
+                      Цена: --
                     </div>
-                    <div class="row px-4 px-sm-0">
-                      <div>В наличии: -- </div>
+                    <div class="row px-4 px-sm-0 in_stock">
+                      В наличии: --
                     </div>
-                  {% endif %} 
                 </div>
               </div>
             </div>

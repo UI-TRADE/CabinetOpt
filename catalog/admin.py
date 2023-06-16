@@ -83,6 +83,7 @@ class ProductAdmin(admin.ModelAdmin):
         ('brand', 'collection'),
         ('metal', 'metal_content'),
         ('size', 'weight', 'price_per_gr'),
+        'gender',
         'stock',
         'available_for_order',
     ]
@@ -92,6 +93,7 @@ class ProductAdmin(admin.ModelAdmin):
         'product_type',
         'metal',
         'metal_content',
+        'gender',
         'available_for_order'
     ]
     readonly_fields = [

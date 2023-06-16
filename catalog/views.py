@@ -62,23 +62,25 @@ class ProductView(ListView):
 
         actual_prices = []
         current_clients = Login(self.request).get_clients()
+        ids_selected_prods = products_page.object_list.values_list('id', flat=True)
         with suppress(Client.DoesNotExist, PriceType.DoesNotExist, AttributeError):
             actual_prices = Price.objects.available_prices(
-                products_page.object_list.values_list('id', flat=True),
+                ids_selected_prods,
                 PriceType.objects.get(client = current_clients.get())
             )
 
         context['products'] = products_page
-        context['prices'] = actual_prices
+        context['prices'] = serialize("json", actual_prices)
         context['brands'] = serialize("json", PriorityDirection.objects.all())
-        context['jsonCollections'] = get_tree(
+        context['collections'] = get_tree(
             [{
-                'id': obj.id,
-                'name': obj.name
+                'id': obj.id, 'name': obj.name
             } for obj in Collection.objects.all()]
         )
+        context['sizes'] = serialize(
+            "json", ProductCost.objects.filter(product_id__in=ids_selected_prods)
+        )
         context['MEDIA_URL'] = settings.MEDIA_URL
-
         return dict(list(context.items()))
 
 
@@ -158,8 +160,14 @@ class ProductCardView(DetailView):
                 [self.kwargs['prod_id']],
                 PriceType.objects.get(client = current_clients.get())
             )
+        context['collections'] = get_tree(
+            [{
+                'id': obj.id, 'name': obj.name
+            } for obj in Collection.objects.all()]
+        )
         context['sizes'] = serialize("json", available_sizes)
         context['price'] = serialize("json", actual_prices)
+        context['product_info'] = {'product': self.kwargs['prod_id']}
         context['MEDIA_URL'] = settings.MEDIA_URL
         return dict(list(context.items()))
 

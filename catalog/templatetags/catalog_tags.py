@@ -1,19 +1,23 @@
 import simplejson as json
 from django import template
-from more_itertools import first
 
 register = template.Library()
 
-# @register.filter
-# def get_item(seq, id):
-#     if seq:
-#         return first([item for item in seq if item.product_id == id], [])
-#     return []
+@register.filter
+def get_item_by_id(seq, id):
+    try:
+        return [item for item in seq if item['fields']['product'] == id][0]
+    except (IndexError, ValueError):
+        return {}
+
 
 @register.filter
 def loadjson(seq):
     return json.loads(seq)
 
+@register.filter
+def tojson(seq):
+    return json.dumps(seq)
 
 @register.filter
 def get_unit_repr(unit):
@@ -21,3 +25,10 @@ def get_unit_repr(unit):
         return 'грамм'
     return 'штук'
 
+@register.filter
+def addparam(key, param):
+    return {key: param}
+
+@register.filter
+def addtojson(seq, param):
+    return seq | param

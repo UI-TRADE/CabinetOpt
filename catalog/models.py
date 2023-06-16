@@ -91,6 +91,16 @@ class Product(models.Model):
     ))
     metal = models.CharField('Металл', max_length=50, blank=True, db_index=True)
     metal_content = models.CharField('Проба', max_length=30, blank=True, db_index=True)
+    gender = models.CharField(
+        'Гендер',
+        max_length=10,
+        default='-',
+        db_index=True,
+        choices=(
+            ('М', 'мужской'),
+            ('Ж', 'женский'),
+            ('-', 'мужской, женский'),
+    ))
     identifier_1C = models.CharField(
         'Идентификатор 1С', max_length=50, blank=True, db_index=True
     )

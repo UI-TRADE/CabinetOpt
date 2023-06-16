@@ -3,9 +3,17 @@
 
 {% block page %}
 	{% block content %}
+        <div style="display: none" id="collections" data-json="{{ collections }}"></div>
         <div style="display: none" id="sizes" data-json="{{ sizes }}"></div>
         <div style="display: none" id="price" data-json="{{ price }}"></div>
-
+        {% with gender="gender"|addparam:prod.get_gender_display collection="collection"|addparam:prod.collection.id instok="instok"|addparam:prod.stock %}
+            <div 
+            id="product-{{product.id}}"
+            class="good-block-info"
+            style="display: none;"
+            data-json="{{ product_info|addtojson:gender|addtojson:collection|addtojson:instok|tojson }}"
+            ></div>
+        {% endwith %}
         <div class="product__block--position">
 
             <nav aria-label="breadcrumb">
@@ -59,6 +67,7 @@
                     <p>Артикул: <b>{{ prod.articul }}</b></p>
                     <p>Коллекция:  <b>{{ prod.collection }}</b></p>
                     <p>Бренд:  <b>{{ prod.brand }}</b></p>
+                    <p>Гендер:  <b>{{ prod.get_gender_display }}</b></p>
                     <p>Металл:  <b>{{ prod.metal }} {{ prod.metal_content }}</b></p>
 
                     <p>Размеры:</p>
