@@ -302,3 +302,7 @@ figure {
   .product__block__img--position {
     margin-bottom: 20px;
   }
+
+  .page-item-selected--background {
+    background-color: #ffc107;
+  }
