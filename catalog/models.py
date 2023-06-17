@@ -101,6 +101,17 @@ class Product(models.Model):
             ('Ж', 'женский'),
             ('-', 'мужской, женский'),
     ))
+    status = models.CharField(
+        'Статус',
+        max_length=20,
+        blank=True,
+        db_index=True,
+        choices=(
+            ('novelty', 'Новинка'),
+            ('order'  , 'Заказ'),
+            ('hit'    , 'Хит'),
+            ('sale'   , 'Распродажа'),
+    ))
     identifier_1C = models.CharField(
         'Идентификатор 1С', max_length=50, blank=True, db_index=True
     )

@@ -63,8 +63,8 @@ class ProductAdmin(admin.ModelAdmin):
     ]
     list_display = [
         'product_type',
-        'name',
         'articul',
+        'name',
         'brand',
         'collection',
         'metal',
@@ -75,10 +75,12 @@ class ProductAdmin(admin.ModelAdmin):
         'size',
         'stock',
         'available_for_order',
+        'status',
         'created_at',
     ]
     fields = [
         'product_type',
+        'status',
         ('name', 'articul', 'unit'),
         ('brand', 'collection'),
         ('metal', 'metal_content'),
@@ -91,6 +93,7 @@ class ProductAdmin(admin.ModelAdmin):
         'brand',
         'collection',
         'product_type',
+        'status',
         'metal',
         'metal_content',
         'gender',

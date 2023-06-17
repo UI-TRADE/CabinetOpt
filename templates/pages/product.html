@@ -78,6 +78,11 @@
                   <div class="row px-4 px-sm-0">
                     <a href="{% url 'catalog:product' product.id %}" class="stretched-link">Карточка товара</a>
                   </div>
+                  {% if product.status %}
+                  <div class="row px-4 px-sm-0">
+                    <div><b>{{ product.get_status_display }}</b></div>
+                  </div>
+                  {% endif %}
                   <div class="row px-4 px-sm-0">
                     <div><b>{{ product.name }}</b></div>
                   </div>
