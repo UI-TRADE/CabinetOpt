@@ -179,38 +179,6 @@ const fillCollectionTree = (collection, collectionList, excludedCollection) => {
 
 }
 
-const getRings = () => {
-    const rings = [];
-    const collection = loadJson('#collections');
-    Object.keys(collection).forEach((key) => {
-        const node = collection[key];
-        for (const nodeName in node) {
-            if (nodeName === 'Кольцо') {
-                node[nodeName].forEach((item) => {
-                    rings.push(item.id);
-                });
-            }
-        }
-    });
-    return rings;
-}
-
-const getChains = () => {
-    const chains = [];
-    const collection = loadJson('#collections');
-    Object.keys(collection).forEach((key) => {
-        const node = collection[key];
-        for (const nodeName in node) {
-            if (nodeName === 'Цепь') {
-                node[nodeName].forEach((item) => {
-                    chains.push(item.id);
-                });
-            }
-        }
-    });
-    return chains;
-}
-
 
 const createBrandAndCollectionLists = () => {
     if (document.location.pathname !== "/catalog/products/") {
@@ -301,16 +269,16 @@ const updateProductCardPrice = (size) => {
 }
 
 
-const getDefaultSize = (productId, collectionId, sizes, rings, chains, gender) => {
+const getDefaultSize = (productId, collection, sizes, gender) => {
     let defaultSize = 0; let size;
-    
-    if (rings.find(el => el == collectionId)) {
+
+    if (['кольцо', 'кольца', 'колечки', 'колец'].find(el => el == collection.toLowerCase().trim())) {
         defaultSize = 20;
         if (gender == 'женский') {
             defaultSize = 17;    
         }
     }
-    if (chains.find(el => el == collectionId)) {
+    if (['цепь', 'цепи', 'цепочка', 'цепочек'].find(el => el == collection)) {
         defaultSize = 50;
     }
 
@@ -330,13 +298,12 @@ const getDefaultSize = (productId, collectionId, sizes, rings, chains, gender) =
 
 const setProductsPrice = () => {
     const sizes = loadJson('#sizes');
-    const rings = getRings(); const chains = getChains();
     const elements = document.getElementsByClassName('good-block-info'); var i;
     for (i=0; i < elements.length; i++) {
         const productInfo = JSON.parse(elements[i].getAttribute('data-json'));
         const productId = elements[i].id.replace(/[^\d.]/g, '');
         const defaultSize = getDefaultSize(
-            productId, productInfo.collection, sizes, rings, chains, productInfo.gender
+            productId, productInfo.collection, sizes, productInfo.gender
         );
 
         if (!productInfo?.fields) {
@@ -380,8 +347,6 @@ const setSizeByDefault = () => {
         productInfo.product,
         productInfo.collection,
         loadJson('#sizes'),
-        getRings(),
-        getChains(),
         productInfo.gender
     );
     if (defaultSize) {

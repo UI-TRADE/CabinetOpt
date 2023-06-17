@@ -53,7 +53,7 @@
           {% for product in products %}
             {% with price=prices|loadjson|get_item_by_id:product.id %}
             <div class="good-block position-relative">
-              {% with gender="gender"|addparam:product.get_gender_display collection="collection"|addparam:product.collection.id instok="instok"|addparam:product.stock %}
+              {% with gender="gender"|addparam:product.get_gender_display collection=collections|root:product.collection.id instok="instok"|addparam:product.stock %}
               <div 
                 id="product-{{product.id}}"
                 class="good-block-info"
