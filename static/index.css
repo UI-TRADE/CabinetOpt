@@ -12,7 +12,6 @@ html {
     font-size: small;
     font-style: italic;
     position: relative;
-    /* margin-top: -15px; */
 }
 
 .login_block {
@@ -53,41 +52,59 @@ html {
     margin-bottom: 15px;
 }
 
-.main-menu {
-    /* position: absolute; */
+.main__menu--position {
     height: 70px;
-    border-bottom: 15px solid rgb(238, 238, 238);
-    padding-top: 15px;
-}
-
-.main-menu .nav {
+    border-bottom: 10px solid rgb(238, 238, 238);
     justify-content: space-between;
     align-items: center;
+    flex-wrap: nowrap;
+    padding: 0px 10px 0px 10px;
 }
 
-.main-menu-item {
+
+.main__menu__item--position {
     display: flex;
-    flex-direction: row;
+    justify-content: space-between;
     align-items: center;
+    height: 59px;
+    padding: 0px 25px 0px 25px;
+}
+
+@media screen and (max-width: 992px) {
+    .main__menu__item--position {
+        padding: 0px 5px 0px 5px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .main__menu__item--position {
+        padding: 0px 1px 0px 1px;
+    }
+}
+
+.main__menu__item--design {
+    border-radius: 5px 5px 0 0;
+    cursor: pointer;
     color: rgb(202, 202, 202);
 }
 
-.main-menu-item:hover {
-    color: blue;
+.main__menu__item--design:hover {
+    background-color: #ffc107;
+    font-weight: bold;
+    color: black;
 }
 
-.main-menu-item i {
+.main__menu__item--design i {
     padding-right: 5px;
 }
 
-.main-menu-item a {
-    padding: 0px;
-    color: rgb(114, 114, 114);
+
+.main__menu__item--selected {
+    background-color: #ffc107;
+    font-weight: bold;
+    color: black;
 }
 
-.main-menu-item a:hover {
-    color: blue;
-}
 
 main {
     padding-top: 30px;
@@ -111,7 +128,6 @@ main .card {
 }
 
 .content-menu {
-    /* margin-top: 15px; */
     flex-direction: row;
     justify-content: space-between;
 }

@@ -1,3 +1,5 @@
+var menuItem = '';
+
 const get_unit_repr = (unit) => {
     if (unit == '163') {
         return 'грамм'
@@ -364,6 +366,11 @@ const setSizeByDefault = () => {
 }
 
 
+const selectMenuItem = (element) => {
+    sessionStorage.setItem('selectedURI', element.dataset.url);
+    window.location.href = element.dataset.url;
+}
+
 const addEvents = () => {
 
     $('.order-row').click((event) => {
@@ -442,7 +449,6 @@ const addEvents = () => {
         }
       });
     }
-
 }
 
 
@@ -455,6 +461,20 @@ $(window).on("load", () => {
     }
     if (localStorage.getItem('excludedCollection') === null) {
         localStorage.setItem('excludedCollection', new Array());
+    }
+
+    const selectedURI = sessionStorage.getItem('selectedURI');
+    if (selectedURI) {
+        const mainMenuItems = document.getElementsByClassName('main__menu__item'); var i;
+        for (i=0; i < mainMenuItems.length; i++) {
+            if (mainMenuItems[i].getAttribute('data-url') == selectedURI) {
+                mainMenuItems[i].classList.add('main__menu__item--selected');
+                continue;
+            }
+            if (mainMenuItems[i].classList.contains('main__menu__item--selected')) {
+                mainMenuItems[i].classList.remove('main__menu__item--selected');    
+            }
+        }
     }
 });
 
