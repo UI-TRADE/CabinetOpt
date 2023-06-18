@@ -7,6 +7,7 @@ const get_unit_repr = (unit) => {
     return 'штук'
 }
 
+
 const loadJson = (selector) => {
     return JSON.parse(document.querySelector(selector).getAttribute('data-json'));
 }
@@ -141,6 +142,7 @@ const switchCartView = (checked) => {
     localStorage.setItem('cartView', checked);
 }
 
+
 const updateCartView = (elementId) => {
     const switchElement = document.getElementById(elementId);
     if (switchElement === null) {
@@ -237,6 +239,7 @@ const updateOrderItem = (element) => {
     }
 }
 
+
 const calculatePrice = (currentPrice, maxPrice, discount) => {
     if (maxPrice > 0) {
         currentPrice = maxPrice;
@@ -298,6 +301,7 @@ const getDefaultSize = (productId, collection, sizes, gender) => {
     return size;
 }
 
+
 const setProductsPrice = () => {
     const sizes = loadJson('#sizes');
     const elements = document.getElementsByClassName('good-block-info'); var i;
@@ -340,6 +344,7 @@ const setProductsPrice = () => {
     }
 }
 
+
 const setSizeByDefault = () => {
     if (document.location.pathname.indexOf("/catalog/product/") === -1) {
         return;
@@ -370,6 +375,7 @@ const selectMenuItem = (element) => {
     sessionStorage.setItem('selectedURI', element.dataset.url);
     window.location.href = element.dataset.url;
 }
+
 
 const addEvents = () => {
 
