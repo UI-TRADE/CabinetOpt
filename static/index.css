@@ -105,18 +105,22 @@ html {
     color: black;
 }
 
-
-.contact-item {
-    padding: 0px;
+.contact__item--head {
+    font-weight: bold;
+    height: 50px;
 }
 
-.table {
+/* .contact-item {
+    padding: 0px;
+} */
+
+/* .table {
     margin-top: 10px;
 }
 
 .table td, .table th {
     border-top: 0px solid #dee2e6;
-}
+} */
 
 .content-menu {
     flex-direction: row;

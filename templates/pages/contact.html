@@ -5,15 +5,15 @@
 
         <nav class="nav nav-pills nav-justified content-menu">
             <div class="d-flex flex-column flex-md-row">
-                {% if id %}
+                {% if client.id %}
                     <a
                     role="button"
                     class="btn btn-primary mb-2 mr-sm-2"
-                    href="{% url 'clients:edit' id %}"
+                    href="{% url 'clients:edit' client.id %}"
                     >                    
                         <span>
                             <i class="fa fa-pencil" aria-hidden="true"></i>
-                            Редактировать
+                            Редактировать контактную информацию
                         </span>
                     </a>
                 {% else %}
@@ -24,7 +24,7 @@
                     >                    
                         <span>
                             <i class="fa fa-pencil" aria-hidden="true"></i>
-                            Добавить
+                            Добавить контактную информацию
                         </span>
                     </a>
                 {% endif %}
@@ -40,24 +40,48 @@
             </button>
         </nav>  
 
-        <table class="table">
-            <thead>
-                <tr>
-                <th scope="col">Город</th>
-                <th scope="col">Юридический адрес</th>
-                <th scope="col">Адрес доставки</th>
-                <th scope="col">Вид оплаты</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                <td>{{ data.city }}</td>
-                <td>{{ data.legal_address }}</td>
-                <td>{{ data.shoping_address }}</td>
-                <td>{{ data.payment_type }}</td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="row">
+            <div class="col-3 contact__item--head">ФИО менеджера:</div>
+            <div class="col-8">
+                {{ client.registration_order.name_of_manager }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-3 contact__item--head">Компания:</div>
+            <div class="col-8">{{ client.name }}</div>
+        </div>
+        <div class="row">
+            <div class="col-3 contact__item--head">ИНН:</div>
+            <div class="col-8">{{ client.inn }}</div>
+        </div>
+        <div class="row">
+            <div class="col-3 contact__item--head">Юридический адрес:</div>
+            <div class="col-8">{{ contact.legal_address }}</div>
+        </div>
+        <div class="row">
+            <div class="col-3 contact__item--head">Телефон, e-mail:</div>
+            <div class="col-4">{{ client.registration_order.phone }}</div>
+            <div class="col-4">{{ client.registration_order.email }}</div>
+        </div>
+        <div class="row">
+            <div class="col-3 contact__item--head">Город, адрес доставки:</div>
+            <div class="col-4">{{ contact.city }}</div>
+            <div class="col-4">{{ contact.shoping_address }}</div>
+        </div>
+        <div class="row">
+            <div class="col-3 contact__item--head">Менеджер ЮИ-Трейд:</div>
+            {% with managet_name=manager.last_name|add:' '|add:manager.first_name|add:' '|add:manager.surname %}
+                <div class="col-4">{{ managet_name }}</div>
+            {% endwith %}
+        </div>
+        <div class="row">
+            <div class="col-3 contact__item--head">Вид оплаты:</div>
+            <div class="col-4">{{ contact.get_payment_type_display }}</div>
+        </div>
+        <div class="row">
+            <div class="col-3 contact__item--head">Статус:</div>
+            <div class="col-4">{{ client.get_status_display }}</div>
+        </div>
 
 	{% endblock %}
 {% endblock %}

@@ -74,6 +74,9 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
         'phone',
         'status',
     ]
+    list_filter = [
+        'status',
+    ]
     fields = [
         'status',
         ('name', 'inn'),
@@ -177,6 +180,7 @@ class ClientAdmin(admin.ModelAdmin):
         'updated_by',
     ]
     list_display = [
+        'status',
         'name',
         'inn',
         'registration_order',
@@ -184,6 +188,7 @@ class ClientAdmin(admin.ModelAdmin):
         'approved_by',
     ]
     fields = [
+        'status',
         ('name', 'inn'),
         'registration_order',
         ('created_at', 'approved_by'),
@@ -195,5 +200,8 @@ class ClientAdmin(admin.ModelAdmin):
         'registration_order',
         'approved_by',
         'updated_by',
+    ]
+    list_filter = [
+        'status',
     ]
     inlines = [ManagerInLine, ContactDetailInLine]

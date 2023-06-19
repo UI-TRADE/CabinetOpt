@@ -16,6 +16,7 @@ from .forms import (
     ManagerForm
 )
 from .models import (
+    Client,
     RegistrationOrder,
     ContactDetail,
     Manager,
@@ -75,13 +76,21 @@ class ContactDetailView(ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        contact_details = list(context['object_list'].values())
-        if not contact_details:
-            return {'data': {}}
-        return {
-            'data': contact_details[0],
-            'id': contact_details[0]['client_id']
-        }
+        contact_detail = context['object_list'].first()
+    
+        if contact_detail:
+            return {
+                'client': Client.objects.filter(
+                    pk=contact_detail.client_id
+                ).first(),
+                'manager': Manager.objects.filter(
+                    pk__in=Client.manager.through.objects.filter(
+                        client_id=contact_detail.client_id
+                    ).values_list('manager_id', flat=True)
+                ).first(),
+                'contact': contact_detail,
+            }
+        return {'contact': {}}
 
 
 class ContactDetailCreateView(CreateView):

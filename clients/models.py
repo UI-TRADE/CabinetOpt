@@ -110,6 +110,11 @@ class Client(models.Model):
         verbose_name='Персональные менеджеры',
         related_name='clients_by_managers'
     )
+    status = models.CharField(
+        'Статус', max_length=10, default='active', choices=(
+            ('active'   , 'Активный'),
+            ('locked', 'Заблокирован')
+    ))
 
     class Meta:
         verbose_name = 'Клиент'
