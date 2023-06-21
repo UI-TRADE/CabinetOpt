@@ -18,21 +18,18 @@ def cart_add(request, product_id):
     cart = Cart(request)
     product = get_object_or_404(Product, id=product_id)
     form = CartAddProductForm(request.POST)
-    if form.is_valid():
-        cd = form.cleaned_data
-        cart.add(product=product,
-                    quantity=cd['quantity'],
-                    price=cd['price'],
-                    unit=cd['unit'],
-                    update_quantity=cd['update'])
 
+    if form.is_valid():
+        selected_prod_params = form.cleaned_data
+        cart.add(product, **selected_prod_params)
+
+    print('errors: ', form.errors)
     return redirect('cart:cart_detail')
 
 
-def cart_remove(request, product_id):
+def cart_remove(request, product_id, size):
     cart = Cart(request)
-    product = get_object_or_404(Product, id=product_id)
-    cart.remove(product)
+    cart.remove(product_id, size=size)
     return redirect('cart:cart_detail')
 
 
@@ -63,14 +60,13 @@ def order_create(request):
 
     order_items = [{
         key: Product.objects.get(pk=val['id']) if key=='product' else val \
-            for key, val in  item.items()
+            for key, val in item.items()
     } for item in cart]
 
     formset = []
     for item in order_items:
         formset.append(OrderItemForm(
             item | {
-                'weight': item['product'].weight,
                 'sum': item['total_price']
         }))
 

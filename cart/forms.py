@@ -23,6 +23,7 @@ class OrderItemForm(forms.ModelForm):
             'series',
             'uin',
             'weight',
+            'size',
             'quantity',
             'unit',
             'price',
@@ -36,6 +37,8 @@ class CartAddProductForm(forms.Form):
     quantity = forms.TypedChoiceField(
         choices=PRODUCT_QUANTITY_CHOICES, coerce=int
     )
+    size = forms.IntegerField(required=False)
+    weight = forms.FloatField(required=False)
     price = forms.DecimalField(required=False)
     unit = forms.CharField(required=False)
     update = forms.BooleanField(

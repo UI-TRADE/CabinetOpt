@@ -2,7 +2,7 @@ from django.db import models
 from django.core.validators import MinValueValidator
 
 from clients.models import Client, Manager
-from catalog.models import Product, PriceType
+from catalog.models import Product, PriceType, ProductCost
 
 class Order(models.Model):
     client = models.ForeignKey(
@@ -48,7 +48,7 @@ class Order(models.Model):
         return sum(item.sum for item in self.items.all())
     
     def get_total_weight(self):
-        return sum(item.weight for item in self.items.all())
+        return round(sum(item.weight for item in self.items.all()),3)
     
     def get_total_quantity(self):
         return sum(item.quantity for item in self.items.all())
@@ -58,6 +58,9 @@ class Order(models.Model):
             item.sum for item in self.items.all() \
                 if item.product.product_type=='service'
         )
+    
+    def get_total_max_cost(self):
+        return sum(item.max_price for item in self.items.all())
 
 
 class OrderItem(models.Model):
@@ -88,6 +91,9 @@ class OrderItem(models.Model):
     uin = models.CharField('УИН', max_length=50, blank=True)
     weight = models.FloatField(
         'Вес', default=0, validators=[MinValueValidator(0)]
+    )
+    size = models.IntegerField(
+        'Размер', default=0, validators=[MinValueValidator(0)]
     )
     quantity = models.PositiveIntegerField('Количество', default=1)
     price = models.DecimalField(
@@ -123,7 +129,19 @@ class OrderItem(models.Model):
     )
 
     def __str__(self):
-            return f'{self.id}'
+        return f'{self.id}'
 
     def get_cost(self):
+        return self.price * self.quantity
+    
+    @property
+    def max_price(self):
+        max_prices = ProductCost.objects.filter(product=self.product)
+        if self.weight > 0:
+            max_prices = max_prices.filter(weight=self.weight)
+        if self.size > 0:
+            max_prices = max_prices.filter(size=self.size)
+        if max_prices.exists():
+            max_price = max_prices.first()
+            return max_price.cost * self.quantity
         return self.price * self.quantity

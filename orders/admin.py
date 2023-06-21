@@ -12,6 +12,7 @@ class OrderItemInline(admin.TabularInline):
         'series',
         'uin',
         'weight',
+        'size',
         'quantity',
         'unit',
         'price',

@@ -52,10 +52,12 @@
           <th scope="col">Дата</th>
           <th scope="col">Статус</th>
           <th scope="col">Сумма, руб.</th>
+          <th scope="col">Сумма с перс. скидкой, руб.</th>
           <th scope="col">Вес, гр.</th>
           <th scope="col">Кол-во, шт.</th>
           <th scope="col">Услуги, руб.</th>
           <th scope="col">Менеджер</th>
+          <th scope="col">Редактировать</th>
           <th scope="col">Повторить</th>
           <th scope="col">Отменить</th>
 
@@ -65,13 +67,19 @@
         {% for order in orders %}
         <tr class="order-row" data-href="{% url 'orders:edit' order.id %}">
           <td>{{ order.id }}</td>
-          <td>{{ order.created_at }}</td>
+          <td>{{ order.created_at|date:"d.m.o h:i:s" }}</td>
           <th scope="row">{{ order.get_status_display }}</th>
+          <td>{{ order.get_total_max_cost }}</td>
           <td>{{ order.get_total_cost }}</td>
           <td>{{ order.get_total_weight }}</td>
           <td>{{ order.get_total_quantity }}</td>
           <td>{{ order.get_total_service }}</td>
           <td>{{ order.manager }}</td>
+          <td class="text-center">
+            <a href="{% url 'orders:edit' order.id %}">
+              <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+            </a>
+          </td>
           <td class="text-center">
             <a href="{% url 'orders:create' order.id %}">
               <i class="fa fa-repeat" aria-hidden="true"></i>

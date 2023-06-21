@@ -38,24 +38,27 @@
                                     <div><b>{{ product.name }}</b></div>
                                 </div>
                                 <div class="row px-4 px-sm-0">
-                                    <div>Артикул: {{ product.articul }}<br>Вес: {{ product.weight }}<br>Размер: {{ product.size }}</div>
+                                    <div>Артикул: {{ product.articul }}<br>Вес: {{ item.weight }}<br>Размер: {{ item.size }}</div>
                                 </div>
                             </div>
                             <div class="col-xs-1 col-sm-2 col-center">
-                                <div class="form-outline" style="width: 5rem;">
+                                <div class="form-outline cart__quantity--position">
+                                    {% unique_id as id %}
                                     <input
+                                        id="{{ id }}"
                                         value="{{ item.quantity }}"
                                         min="0"
                                         max="{{ product.stock }}"
                                         step="1"
                                         type="number"
-                                        class="form-control" 
+                                        class="form-control"
                                     />
+                                    <label for="{{ id }}" style="margin-bottom: 0px; margin-left: 5px;">{{ item.unit|get_unit_repr }}</label>
                                 </div>
                             </div>
                             <div class="col-xs-1 col-sm-2 col-center">{{ item.price }} руб.</div>
                             <div class="col-xs-1 col-sm-2 col-center text-center">
-                                <a href="{% url 'cart:cart_remove' product.id %}">
+                                <a href="{% url 'cart:cart_remove' product.id item.size %}">
                                     <i class="fa fa-trash-o" aria-hidden="true"></i>
                                 </a>
                             </div>
@@ -69,13 +72,13 @@
                     {% csrf_token %}
                 </form>
                 <p class="text-right">
-                    <a 
+                    <!-- <a 
                         href="{% url 'catalog:products' %}"
                         role="button"
                         class="btn btn-primary mb-2 mr-sm-2"
                     >
                         Продолжить покупки
-                    </a>
+                    </a> -->
                     <a
                         href="#"
                         onclick="document.getElementById('createOrderForm').submit();"
@@ -92,7 +95,8 @@
                         <tr>
                             <th scope="col">Наименование</th>
                             <th scope="col">Характеристика</th>
-                            <th scope="col">Количество, шт.</th>
+                            <th scope="col">Количество</th>
+                            <th scope="col">Цена, руб.</th>
                             <th scope="col">Стоимость, руб.</th>
                             <th scope="col">Удалить</th>
                             {% if item.errors %}
@@ -105,22 +109,26 @@
                         {% with product=item.product %}
                             <tr>
                                 <th scope="row">{{ product.name }}</th>
-                                <td>Артикул: {{ product.articul }}<br>Вес: {{ product.weight }}<br>Размер: {{ product.size }}</td>
+                                <td>Артикул: {{ product.articul }}<br>Вес: {{ item.weight }}<br>Размер: {{ item.size }}</td>
                                 <td>
-                                    <div class="form-outline" style="width: 5rem;">
+                                    <div class="form-outline cart__quantity--position">
+                                        {% unique_id as id %}
                                         <input
+                                            id="{{ id }}"
                                             value="{{ item.quantity }}"
                                             min="0"
                                             max="{{ product.stock }}"
                                             step="1"
                                             type="number" 
-                                            class="form-control" 
+                                            class="form-control"
                                         />
+                                        <label for="{{ id }}" style="margin-bottom: 0px; margin-left: 5px;">{{ item.unit|get_unit_repr }}</label>
                                     </div>
                                 </td>
                                 <td>{{ item.price }}</td>
+                                <td>{{ item.total_price }}</td>
                                 <td class="text-center">
-                                    <a href="{% url 'cart:cart_remove' product.id %}">
+                                    <a href="{% url 'cart:cart_remove' product.id item.size %}">
                                         <i class="fa fa-trash-o" aria-hidden="true"></i>
                                     </a>
                                 </td>
@@ -140,13 +148,13 @@
                     {% csrf_token %}
                 </form>
                 <p class="text-right">
-                    <a 
+                    <!-- <a 
                         href="{% url 'catalog:products' %}"
                         role="button"
                         class="btn btn-primary mb-2 mr-sm-2"
                     >
                         Продолжить покупки
-                    </a>
+                    </a> -->
                     <a
                         href="#"
                         onclick="document.getElementById('createOrderFromTable').submit();"

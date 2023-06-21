@@ -33,6 +33,7 @@ OrderItemInline = inlineformset_factory(
         'series',
         'uin',
         'weight',
+        'size',
         'quantity',
         'unit',
         'price',

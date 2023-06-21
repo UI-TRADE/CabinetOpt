@@ -13,6 +13,16 @@ const loadJson = (selector) => {
 }
 
 
+const setInputValueByName = (elementName, value) => {
+    document.getElementsByName(elementName).forEach((node) => {
+        if (node.tagName === 'INPUT' && value) {
+            node.value = value;
+            return;
+        }
+    })
+}
+
+
 const removeErrors = () => {
     Array.from(
         document.getElementsByClassName('errors')
@@ -252,11 +262,14 @@ const calculatePrice = (currentPrice, maxPrice, discount) => {
 
 
 const updateProductCardWeight = (size) => {
+    var weight = 0;
     loadJson('#sizes').forEach((element) => {
         if (element.fields.size == size) {
-            document.getElementById('product_weigth').textContent = `${element.fields.weight} грамм`;
+            weight = element.fields.weight;
+            document.getElementById('product_weigth').textContent = `${weight} грамм`;
         }
     });
+    setInputValueByName('weight', weight);
 }
 
 
@@ -271,6 +284,14 @@ const updateProductCardPrice = (size) => {
         }
     });
     document.getElementById('product_price').textContent = `${currentPrice} руб.`;
+    setInputValueByName('price', currentPrice);
+    setInputValueByName('unit', priceItem.unit);
+
+}
+
+
+const updateProductSize = (size) => {
+    setInputValueByName('size', size);
 }
 
 
@@ -327,20 +348,29 @@ const setProductsPrice = () => {
         const priceBlock = elements[i].parentElement.querySelector('.price-block');
         if (currentPrice > 0) {
             priceBlock.querySelector('.price').textContent = `Цена: ${currentPrice} руб.`;
-            var inputFields = priceBlock.getElementsByTagName('input');
-            for (let item of inputFields) {
-                if (item.name === 'price') {
-                    item.value = currentPrice;    
-                }
-                if (item.name === 'unit') {
-                    item.value = productInfo.fields.unit;   
-                }
-            }
+
         }
         if (inStok > 0) {
             priceBlock.querySelector('.in_stock').textContent = 
                 `В наличии: ${inStok} ${get_unit_repr(productInfo.fields.unit)}`;    
         }
+
+        var inputFields = priceBlock.getElementsByTagName('input');
+        for (let item of inputFields) {
+            if (item.name === 'price' && currentPrice) {
+                item.value = currentPrice;    
+            }
+            if (item.name === 'unit') {
+                item.value = productInfo.fields.unit;   
+            }
+            if (item.name === 'size' && defaultSize?.size) {
+                item.value = defaultSize.size;
+            }
+            if (item.name === 'weight' && defaultSize?.weight) {
+                item.value = defaultSize.weight;
+            }
+        }
+
     }
 }
 
@@ -367,6 +397,7 @@ const setSizeByDefault = () => {
         }
         updateProductCardWeight(defaultSize.size);
         updateProductCardPrice(defaultSize.size);
+        updateProductSize(defaultSize.size);
     }
 }
 
@@ -379,9 +410,9 @@ const selectMenuItem = (element) => {
 
 const addEvents = () => {
 
-    $('.order-row').click((event) => {
-        window.document.location = event.currentTarget.dataset.href
-    });
+    // $('.order-row').click((event) => {
+    //     window.document.location = event.currentTarget.dataset.href
+    // });
 
     $('#cartView').click((event) => {
         switchCartView(event.currentTarget.checked);
@@ -444,6 +475,7 @@ const addEvents = () => {
         event.target.classList.add('product__size__block--select');
         updateProductCardWeight(event.target.innerText);
         updateProductCardPrice(event.target.innerText);
+        updateProductSize(event.target.innerText);
     })
 
     const collectionBoxToggler = document.getElementsByClassName('collection-box'); var i;
