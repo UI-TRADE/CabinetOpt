@@ -40,14 +40,6 @@ class Cart(object):
                     self.cart[key]['product'] = product
 
         for item in self.cart.values():
-            print(item)
-            # product_costs = ProductCost.objects.filter(
-            #     product_id = item['product']['id'],
-            #     weight = item['weight'],
-            #     size = item['size']
-            # )
-            # if product_cost:
-            #     item['max_price'] = product_cost['cost']
             item['total_price'] = (item['price'] if item['price'] else 0) * item['quantity']
             yield item
 

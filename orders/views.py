@@ -26,6 +26,7 @@ class OrderView(ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['order_items'] = OrderItem.objects.filter(order__in=context['orders'])
         return dict(list(context.items()))
 
 

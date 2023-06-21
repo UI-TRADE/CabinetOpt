@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load order_tags %}
 
 {% block page %}
 	{% block content %}
@@ -45,30 +46,31 @@
       </button>
     </nav>
 
-    <table class="table orders">
+    <table class="table orders table__thead--border">
       <thead>
         <tr>
-          <th scope="col">Номер</th>
-          <th scope="col">Дата</th>
-          <th scope="col">Статус</th>
-          <th scope="col">Сумма, руб.</th>
-          <th scope="col">Сумма с перс. скидкой, руб.</th>
-          <th scope="col">Вес, гр.</th>
-          <th scope="col">Кол-во, шт.</th>
-          <th scope="col">Услуги, руб.</th>
-          <th scope="col">Менеджер</th>
-          <th scope="col">Редактировать</th>
-          <th scope="col">Повторить</th>
-          <th scope="col">Отменить</th>
-
+          <th scope="col" ></th>
+          <th scope="col" >Номер</th>
+          <th scope="col" >Дата</th>
+          <th scope="col" >Статус</th>
+          <th scope="col" >Сумма, руб.</th>
+          <th scope="col" >Сумма с перс. скидкой, руб.</th>
+          <th scope="col" >Вес, гр.</th>
+          <th scope="col" >Кол-во, шт.</th>
+          <th scope="col" >Услуги, руб.</th>
+          <th scope="col" >Менеджер</th>
+          <th scope="col" >Редактировать</th>
+          <th scope="col" >Повторить</th>
+          <th scope="col" >Отменить</th>
         </tr>
       </thead>
       <tbody>
         {% for order in orders %}
         <tr class="order-row" data-href="{% url 'orders:edit' order.id %}">
+          <td id="order-box-{{ order.id }}" class="order-box"></td>
           <td>{{ order.id }}</td>
           <td>{{ order.created_at|date:"d.m.o h:i:s" }}</td>
-          <th scope="row">{{ order.get_status_display }}</th>
+          <td>{{ order.get_status_display }}</td>
           <td>{{ order.get_total_max_cost }}</td>
           <td>{{ order.get_total_cost }}</td>
           <td>{{ order.get_total_weight }}</td>
@@ -91,6 +93,48 @@
             </a>
           </td>
         </tr>
+
+        <tr id="order-nested-{{ order.id }}" class="order-nested">
+          {% with items=order_items|get_items_by_id:order.id %}
+          <td colspan="11" style="border: none;">
+              <table class="table nested-table--position">
+                  <thead>
+                    <tr>
+                      <th scope="col" ></th>
+                      <th scope="col" ></th>
+                      <th scope="col" >Серия</th>
+                      <th scope="col" >УИН</th>
+                      <th scope="col" >Вес</th>
+                      <th scope="col" >Размер</th>
+                      <th scope="col" >Кол-во</th>
+                      <th scope="col" >Ед.изм.</th>
+                      <th scope="col" >Цена</th>
+                      <th scope="col" >Скидка</th> 
+                      <th scope="col" >Сумма</th> 
+                    </tr>
+                  </thead>
+                  <tbody>
+                      {% for item in items%}
+                      <tr>
+                          <td>{{ forloop.counter }}</td>
+                          <td>{{ item.product }}</td>
+                          <td>{{ item.series }}</td>
+                          <td>{{ item.uin }}</td>
+                          <td>{{ item.weight }}</td>
+                          <td>{{ item.size }}</td>
+                          <td>{{ item.quantity }}</td>
+                          <td>{{ item.get_unit_display }}</td>
+                          <td>{{ item.price }}</td>
+                          <td>{{ item.discount }}</td>
+                          <td>{{ item.sum }}</td>
+                      </tr>
+                      {% endfor %}
+                  </tbody>
+              </table>
+          </td>
+          {% endwith %}
+      </tr>
+
         {% endfor %}
       </tbody>
     </table>

@@ -23,7 +23,6 @@ def cart_add(request, product_id):
         selected_prod_params = form.cleaned_data
         cart.add(product, **selected_prod_params)
 
-    print('errors: ', form.errors)
     return redirect('cart:cart_detail')
 
 

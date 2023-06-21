@@ -487,6 +487,17 @@ const addEvents = () => {
         }
       });
     }
+
+    const orderBoxToggler = document.getElementsByClassName('order-box'); var i;
+    for (i = 0; i < orderBoxToggler.length; i++) {
+        orderBoxToggler[i].addEventListener('click', (event) => {
+        const order_id = event.target.id.replace(/[^\d.]/g, '');;
+        if (order_id) {
+            document.querySelector(`#order-nested-${order_id}`)?.classList.toggle('order-active');
+            event.target.classList.toggle('order-open-box');
+        }
+      });
+    }
 }
 
 

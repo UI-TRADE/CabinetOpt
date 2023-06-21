@@ -195,6 +195,24 @@ figure {
     min-width: 150px;
 }
 
+.table__thead--border th{
+    border: none;
+}
+
+.nested-table--position {
+    margin-left: 50px;
+}
+
+.nested-table--position th{
+    border: none;
+    font-style: italic;
+    font-size: small;   
+}
+
+.nested-table--position td{
+    border: none;
+    font-size: small; 
+}
 
 .collection-box {
     cursor: pointer;
@@ -227,6 +245,40 @@ figure {
 
 .collection-active {
     display: block;
+}
+
+
+.order-box {
+    cursor: pointer;
+    -webkit-user-select: none; /* Safari 3.1+ */
+    -moz-user-select: none; /* Firefox 2+ */
+    -ms-user-select: none; /* IE 10+ */
+    user-select: none;
+}
+  
+
+.order-box::before {
+    content: "\203A";
+    color: black;
+    display: inline-block;
+    margin-right: 6px;
+}
+  
+
+.order-open-box::before {
+    content: "\203A"; 
+    color: black;
+    transform: rotate(90deg);
+}
+
+
+.order-nested {
+    display: none;
+}
+  
+
+.order-active {
+    display: table-row;
 }
 
 

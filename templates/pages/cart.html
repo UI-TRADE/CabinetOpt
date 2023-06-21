@@ -12,7 +12,7 @@
 
     <div class="container-fluid">
         <div class="row justify-content-center">    
-            <main id="products" class="col-11 products" style="display: none;">
+            <main id="products" class="col products" style="display: none;">
                 {% for item in cart %}
                 {% with product=item.product %}
                     <div class="good-block position-relative">
@@ -89,8 +89,8 @@
                     </a>
                 </p>
             </main>
-            <main id="cart-table" class="col-11 products" style="display: none;">
-                <table class="table">
+            <main id="cart-table" class="col products" style="display: none;">
+                <table class="table table__thead--border">
                     <thead>
                         <tr>
                             <th scope="col">Наименование</th>
