@@ -1,7 +1,9 @@
 {% extends "base.html" %}
+{% load order_tags %}
 
 {% block page %}
 	{% block content %}
+
     <main role="main" class="col-lg-12 px-4">
         <ul class="nav nav-tabs">
           <li class="nav-item">
@@ -10,12 +12,49 @@
         </ul>
 
         <form method="post">
-            {% csrf_token %}
-            {{ form }}
 
-            <table class="table">
+            <div id="empty-form" style="display: none;">{{ empty_items }}</div>
+
+            <div class="order__order_header--position">
+                {% csrf_token %}
+                {{ form }}
+            </div>
+
+            <div class="row order__toolbar--position">
+                <button
+                    name="add-item" 
+                    type="button"
+                    class="btn btn-outline-secondary order__toolbar__btn order__toolbar__btn--position"
+                >
+                    <i class="fa fa-plus-square-o" aria-hidden="true"></i>
+                </button>
+                <button
+                    name="delete-item"
+                    type="button"
+                    class="btn btn-outline-secondary order__toolbar__btn order__toolbar__btn--position"
+                >
+                    <i class="fa fa-trash-o" aria-hidden="true"></i>
+                </button>
+                <button
+                    name="select-items"
+                    type="button"
+                    class="btn btn-outline-secondary order__toolbar__btn order__toolbar__btn--position"
+                >
+                    <i class="fa fa-check-square-o" aria-hidden="true"></i>
+                </button>
+                <button
+                    name="unselect-items"
+                    type="button"
+                    class="btn btn-outline-secondary order__toolbar__btn order__toolbar__btn--position"
+                >
+                    <i class="fa fa-square-o" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <table id="order_items" class="table table__thead--border">
                 <thead>
                     <tr>
+                    <th scope="col"><i class="fa fa-check-square-o" aria-hidden="true"></i></th>
                     <th scope="col">Номенклатура</th>
                     <th scope="col">Серия</th>
                     <th scope="col">УИН</th>
@@ -27,21 +66,24 @@
                     <th scope="col">Скидка</th>
                     <th scope="col">Сумма</th>
                     <!-- <th scope="col">Тип цены</th> -->
-                    <th scope="col"><i class="fa fa-trash" aria-hidden="true"></i></th>
                 </thead>
-                <tbody>
+                <tbody id="order_items_formset" class="order_items">
                     {{ order_items.management_form }}
                     {% for line in order_items %}
                         {% for hidden in line.hidden_fields %}
                             {{ hidden }}
                         {% endfor %}
-                        <tr>
+                        <tr class="order-product-item" style="display: table-row">
+                            {% unique_id as id %}
+                            <td><input type="checkbox" id="{{id}}" name="order-product-item-selection"></td>
                             {% for field in line %}
                                 {% if field.name != "order" and field.name != "id" %}
                                     <td>{{ field }}
-                                        <div class="formset-field{% if field.errors %} errors{% endif %}">
-                                            {{ field.errors }}
-                                        </div>
+                                        {% if field.name != "DELETE" %}
+                                            <div class="formset-field{% if field.errors %} errors{% endif %}">
+                                                {{ field.errors }}
+                                            </div>
+                                        {% endif %}
                                     </td>
                                 {% endif %}
                             {% endfor %}

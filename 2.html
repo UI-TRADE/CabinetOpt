@@ -1,0 +1,40 @@
+
+<label for="id_items-__prefix__-product">Номенклатура:</label>
+      
+<select name="items-__prefix__-product" class="form-control" onchange="updateOrderItem(this)" id="id_items-__prefix__-product">
+    <option value="" selected="">---------</option>
+</select>
+
+<label for="id_items-__prefix__-series">Серия:</label>
+<input type="text" name="items-__prefix__-series" maxlength="50" class="form-control" onchange="updateOrderItem(this)" id="id_items-__prefix__-series">
+
+<label for="id_items-__prefix__-uin">УИН:</label>
+<input type="text" name="items-__prefix__-uin" maxlength="50" class="form-control" onchange="updateOrderItem(this)" id="id_items-__prefix__-uin">
+
+<label for="id_items-__prefix__-weight">Вес:</label>
+<input type="number" name="items-__prefix__-weight" value="0" step="any" class="form-control" onchange="updateOrderItem(this)" id="id_items-__prefix__-weight">
+
+<label for="id_items-__prefix__-size">Размер:</label>
+<input type="number" name="items-__prefix__-size" value="0" class="form-control" onchange="updateOrderItem(this)" id="id_items-__prefix__-size">
+
+<label for="id_items-__prefix__-quantity">Количество:</label>
+<input type="number" name="items-__prefix__-quantity" value="1" min="0" class="form-control" onchange="updateOrderItem(this)" id="id_items-__prefix__-quantity">
+
+<label for="id_items-__prefix__-unit">Единица измерения:</label>
+    <select name="items-__prefix__-unit" class="form-control" onchange="updateOrderItem(this)" id="id_items-__prefix__-unit">
+        <option value="796">штук</option>
+        <option value="163">грамм</option>
+</select>
+
+<label for="id_items-__prefix__-price">Цена:</label>
+<input type="number" name="items-__prefix__-price" value="0" step="0.01" class="form-control" onchange="updateOrderItem(this)" id="id_items-__prefix__-price">
+
+<label for="id_items-__prefix__-discount">Скидка:</label>
+<input type="number" name="items-__prefix__-discount" step="0.01" class="form-control" onchange="updateOrderItem(this)" id="id_items-__prefix__-discount">
+
+<label for="id_items-__prefix__-sum">Сумма:</label>
+<input type="number" name="items-__prefix__-sum" value="0" step="0.01" class="form-control" onchange="updateOrderItem(this)" id="id_items-__prefix__-sum">
+
+<input type="hidden" name="items-__prefix__-id" class="form-control" onchange="updateOrderItem(this)" id="id_items-__prefix__-id"><input type="hidden" name="items-__prefix__-order" value="14" class="form-control" onchange="updateOrderItem(this)" id="id_items-__prefix__-order">
+
+

@@ -363,3 +363,15 @@ figure {
     align-items: center;
     width: 6rem;
 }
+
+.order__order_header--position {
+    margin-bottom: 20px;
+}
+
+.order__toolbar--position {
+    padding-left: 15px;
+}
+
+.order__toolbar__btn--position {
+    margin-right: 5px;
+}

@@ -9,4 +9,5 @@ urlpatterns = [
     path('order/edit/<slug:order_id>/', views.UpdateOrderView.as_view(), name='edit'),
     path('order/remove/<slug:order_id>/', views.remove_order, name='remove'),
     path('order/create/<slug:order_id>/', views.CreateOrderView.as_view(), name='create'),
+    path('order/item/create', views.add_order_item),
 ]

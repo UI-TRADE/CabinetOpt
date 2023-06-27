@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.core.validators import MinValueValidator
 
@@ -56,7 +57,7 @@ class Order(models.Model):
     def get_total_service(self):
         return sum(
             item.sum for item in self.items.all() \
-                if item.product.product_type=='service'
+                if item.product and item.product.product_type=='service'
         )
     
     def get_total_max_cost(self):
@@ -64,6 +65,7 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
+    # id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     order = models.ForeignKey(
         Order,
         on_delete=models.CASCADE,
@@ -73,7 +75,9 @@ class OrderItem(models.Model):
     )
     product = models.ForeignKey(
         Product,
-        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
         db_index=True,
         verbose_name='Номенклатура',
         related_name='order_items'
@@ -114,8 +118,7 @@ class OrderItem(models.Model):
         'Скидка',
         max_digits=8,
         decimal_places=2,
-        null=True,
-        blank=True,
+        default=0,
         validators=[MinValueValidator(0)]
     )
     price_type = models.ForeignKey(

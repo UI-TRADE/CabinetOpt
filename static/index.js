@@ -7,6 +7,13 @@ const get_unit_repr = (unit) => {
     return 'штук'
 }
 
+function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
 
 const loadJson = (selector) => {
     return JSON.parse(document.querySelector(selector).getAttribute('data-json'));
@@ -408,6 +415,112 @@ const selectMenuItem = (element) => {
 }
 
 
+const selectOrderItems = (checked) => {
+    const checkFields = document.getElementsByName('order-product-item-selection'); var i;
+    for (i=0; i < checkFields.length; i++) {
+        checkFields[i].checked = checked;
+    }
+}
+
+
+const addNewOrderItem = (orderForm) => {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: '/orders/order/item/create',
+            data: {order_id: orderForm.querySelector('input[name="items-__prefix__-order"]').value},
+            success: (response) => {
+                orderForm.querySelector(
+                    'input[name="items-__prefix__-id"]'
+                ).value = response['item_id'];
+                resolve(orderForm);
+            },
+            error: (error) => {
+                reject(error);
+            }
+        });
+    });
+}
+
+
+const addColToTableRow = (row, element) => {
+    const newCol = document.createElement('td');
+    newCol.innerHTML = element;
+    row.appendChild(newCol);
+}
+
+
+const addOrderItem = () => {
+    if(window.document.location.pathname.indexOf("/orders/order/edit/") === -1){
+        return;
+    }
+
+    const orderTableBody = document.getElementById('order_items').getElementsByTagName('tbody')[0];
+    const __prefix__ = orderTableBody.getElementsByClassName('order-product-item').length;
+    const orderItemForm = $('#empty-form').clone()[0];
+    const newRow = document.createElement('tr');
+    newRow.classList.add('order-product-item');
+
+    addColToTableRow(
+        newRow,
+        `<td><input type="checkbox" id="${generateUUID()}" name="order-product-item-selection"></td>`
+    );
+
+    addNewOrderItem(orderItemForm)
+        .then((data) => {
+            data.querySelectorAll('*').forEach((node) => {
+                if (node.nodeName === 'INPUT' && node.type === 'hidden') {
+                    orderTableBody.innerHTML += node.outerHTML.replaceAll('__prefix__',  __prefix__);
+                    return;
+                }
+                if(node.type !== 'hidden' && (node.nodeName === 'SELECT' | node.nodeName === 'INPUT')) {
+                    const htmlElement = node.outerHTML.replaceAll('__prefix__',  __prefix__);
+                    addColToTableRow(newRow, `${htmlElement}<div class="formset-field"></div>`);
+                }
+            });
+
+            orderTableBody.appendChild(newRow);
+            orderTableBody.querySelector('input[name="items-TOTAL_FORMS"]').value = __prefix__ + 1;
+            orderTableBody.querySelector('input[name="items-INITIAL_FORMS"]').value = __prefix__ + 1;
+        })
+        .catch((error) => {
+            alert('Ошибка: ' + error);
+ёё
+        });
+}
+
+
+const deleteOrderItem = (orderTableBody, removedElement) => {
+    const randomFormElement = removedElement.querySelector('input[class="form-control"]');
+    const match = randomFormElement.name.match(/items-(\d+)-\w+/);
+    if (match) {
+        const formId = parseInt(match[1], 10);
+        orderTableBody.removeChild(removedElement);
+        orderTableBody.removeChild(orderTableBody.querySelector(`input[name="items-${formId}-id"]`));
+        orderTableBody.removeChild(orderTableBody.querySelector(`input[name="items-${formId}-order"]`));
+    }
+
+}
+
+
+const deleteOrderItems = () => {
+    const orderTableBody = document.getElementById('order_items').getElementsByTagName('tbody')[0];
+    const selectionFields = orderTableBody.querySelectorAll('input[name="order-product-item-selection"]');
+    selectionFields.forEach((el) => {
+        if(el.checked) {
+            const deletedRow = el.parentElement.parentElement;
+            const allFields = deletedRow.querySelectorAll('input');
+            var i;
+            for (i=0; i < allFields.length; i++) {
+                if (allFields[i].name.indexOf('DELETE') !== -1) {
+                    allFields[i].checked = true;
+                }
+            }
+            deletedRow.style.display = 'none';
+        }
+    });
+}
+
+
 const addEvents = () => {
 
     // $('.order-row').click((event) => {
@@ -430,7 +543,7 @@ const addEvents = () => {
             showElement('brend-group', false);
             showElement('collection-group', true);
         }
-    })
+    });
     
     $('#Assortment').on('click', (event) => {
         toggleClassButton(event.currentTarget, 'btn-warning', 'btn-outline-warning');
@@ -444,7 +557,7 @@ const addEvents = () => {
             showElement('collection-group', false);
             showElement('brend-group', true);
         }
-    })
+    });
     
     $('.switch-change').on('change', (event) => {
         data = {'brand': [], 'collection': []};
@@ -463,7 +576,7 @@ const addEvents = () => {
             'csrfmiddlewaretoken' : document.querySelector('input[name="csrfmiddlewaretoken"]').value,
             'data': JSON.stringify(data)
         });
-    })
+    });
 
     $('.product__size__block').on('click', (event) => {
         const toggler = document.getElementsByClassName('product__size__block'); var i;
@@ -476,7 +589,25 @@ const addEvents = () => {
         updateProductCardWeight(event.target.innerText);
         updateProductCardPrice(event.target.innerText);
         updateProductSize(event.target.innerText);
-    })
+    });
+
+    $('.order__toolbar__btn').on('click', (event) => {
+        let elementName = event.target.getAttribute('name');
+        if (!elementName) {
+            elementName = event.target.parentElement.getAttribute('name');
+        }
+
+        if (elementName === 'add-item') {
+            addOrderItem();
+        } else if (elementName === 'delete-item') {
+            deleteOrderItems();
+        } else if (elementName === 'select-items') {
+            selectOrderItems(true);
+        } else if (elementName === 'unselect-items') {
+            selectOrderItems(false);
+        }
+
+    });
 
     const collectionBoxToggler = document.getElementsByClassName('collection-box'); var i;
     for (i = 0; i < collectionBoxToggler.length; i++) {
