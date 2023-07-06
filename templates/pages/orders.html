@@ -95,7 +95,7 @@
         </tr>
 
         <tr id="order-nested-{{ order.id }}" class="order-nested">
-          {% with items=order_items|get_items_by_id:order.id %}
+          {% with items=order_items|filter_by_id:order.id %}
           <td colspan="11" style="border: none;">
               <table class="table nested-table--position">
                   <thead>

@@ -11,13 +11,22 @@
           </li>
         </ul>
 
-        <form method="post">
+        <form method="post" autocomplete="off">
 
             <div id="empty-form" style="display: none;">{{ empty_items }}</div>
+            <div id="sizes" style="display: none" data-json="{{ sizes }}"></div>
+            <div id="fields" style="display: none" data-json="{{ order_fields }}"></div>
 
-            <div class="order__order_header--position">
+            <div class="order__order_header--position" style="display: none">
                 {% csrf_token %}
                 {{ form }}
+            </div>
+
+            <div class="order__order_header--position">
+                {% for field in fields %}
+                    <label for="{{ field.id }}">{{ field.label }}</label>
+                    <input type="text" id="{{ field.id }}" class="form-control" value="{{ field.value }}" disabled/>
+                {% endfor %}
             </div>
 
             <div class="row order__toolbar--position">
@@ -78,13 +87,16 @@
                             <td><input type="checkbox" id="{{id}}" name="order-product-item-selection"></td>
                             {% for field in line %}
                                 {% if field.name != "order" and field.name != "id" %}
-                                    <td>{{ field }}
-                                        {% if field.name != "DELETE" %}
+                                    {% if field|is_hidden_field %}
+                                        <td style="display: none;">{{ field }}</td>
+                                    {% else %}
+                                        <td>
+                                            <div> {{ field }} </div>
                                             <div class="formset-field{% if field.errors %} errors{% endif %}">
                                                 {{ field.errors }}
                                             </div>
-                                        {% endif %}
-                                    </td>
+                                        </td>
+                                    {% endif %}
                                 {% endif %}
                             {% endfor %}
                         </tr>

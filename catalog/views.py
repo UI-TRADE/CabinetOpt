@@ -6,6 +6,8 @@ from django.core.paginator import PageNotAnInteger
 from django.views.generic import ListView, DetailView
 from django.conf import settings
 from django.http import JsonResponse
+from django.db.models import Value, FloatField
+from django.db.models.functions import Cast
 from django.core.serializers import serialize
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -195,3 +197,59 @@ def upload_price(request):
     if errors:
         return JsonResponse(json.dumps(errors), status=200, safe=False)
     return JsonResponse({'replay': 'ok'}, status=200)
+
+
+@api_view(['GET'])
+def pickup_products(request):
+    search_string = request.query_params.get('searchString')
+    if search_string:
+        results = serialize("json", Product.objects.filter(
+            articul__icontains=search_string
+        ).annotate(
+            relevance=Cast(Value(1), output_field=FloatField())
+        ).order_by('-relevance')[:5])
+    return JsonResponse({'replay': 'ok', 'data': results}, status=200, safe=False)
+
+
+@api_view(['GET'])
+def product_size_and_prices(request):
+    productId = request.query_params.get('productId')
+    size = request.query_params.get('size')
+    if productId:
+        actual_prices = []
+        current_clients = Login(request).get_clients()
+        available_sizes = ProductCost.objects.filter(product_id = productId)
+
+        if size != '0':
+            available_sizes = available_sizes.filter(size=size)
+
+        with suppress(Client.DoesNotExist, PriceType.DoesNotExist, Product.DoesNotExist):
+            current_product = Product.objects.get(pk=productId)
+            actual_prices = Price.objects.available_prices(
+                [productId],
+                PriceType.objects.get(client = current_clients.get())
+            )
+
+            collection_tree = json.loads(get_tree(
+                    [{
+                        'id': current_product.collection.id,
+                        'name': current_product.collection.name
+            }]))
+            collection = [
+                v for d in collection_tree for k, lst in d.items() \
+                          for item in lst for k, v in item.items() if k == 'root'
+            ]
+
+            return JsonResponse(
+                {
+                    'replay': 'ok',
+                    'collection': str(*collection),
+                    'gender': current_product.gender,
+                    'sizes': serialize("json", available_sizes),
+                    'price': serialize("json", actual_prices)
+                },
+                status=200,
+                safe=False
+            )
+
+    return JsonResponse({'replay': 'error'}, status=200)

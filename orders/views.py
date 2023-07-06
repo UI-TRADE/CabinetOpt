@@ -1,13 +1,17 @@
+import simplejson
+from django.forms import TextInput
 from django.db import transaction
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.http import JsonResponse
+from django.core.serializers import serialize
 from django.views.generic import ListView, UpdateView, CreateView
 from django.core.exceptions import ValidationError
+from collections import defaultdict
 from rest_framework.decorators import api_view
 
 from clients.login import Login
-from catalog.models import Product
+from catalog.models import Product, ProductCost
 from orders.models import Order, OrderItem
 
 from .forms import OrderItemInline
@@ -53,6 +57,12 @@ class UpdateOrderView(UpdateView):
             context['order_items'] = OrderItemInline(instance=self.object)
 
         context['empty_items'] = context['order_items'].empty_form
+        context['sizes'] = self.get_products_size()
+        context['fields'] = [
+            {"id": "_id_status", "label": "Статус:", "value": context['order'].get_status_display()},
+            {"id": "_id_client", "label": "Клиент:", "value": context['order'].client},
+            {"id": "_id_manager", "label": "Менеджер:", "value": context['order'].manager}
+        ]
 
         # Возможно перенести в класс Login для свободного обмена токенами через SessionStorage
         # from users.models import CustomUser
@@ -78,6 +88,17 @@ class UpdateOrderView(UpdateView):
             return redirect('orders:orders')
 
         return render(self.request, self.template_name, context)
+    
+    def get_products_size(self):
+        result = defaultdict(list)
+        sizes = ProductCost.objects.filter(
+            product__in=OrderItem.objects.filter(
+                order=self.object
+            ).values_list('product', flat=True)
+        ).values_list('product', 'size', named=True)       
+        for item in sizes:
+            result[str(item.product)].append(item.size)
+        return simplejson.dumps(result)
 
 
 class CreateOrderView(CreateView):
@@ -101,12 +122,20 @@ class CreateOrderView(CreateView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
+        order = get_object_or_404(Order, id=self.kwargs['order_id'])
         order_items = self.get_initial_data()
         if self.request.POST:
             context['order_items'] = OrderItemInline(self.request.POST)
         else:
             context['order_items'] = OrderItemInline(initial=order_items)
         context['order_items'].extra = len(order_items)
+        context['empty_items'] = context['order_items'].empty_form
+        context['sizes'] = self.get_products_size(order)
+        context['fields'] = [
+            {"id": "_id_status", "label": "Статус:", "value": order.get_status_display()},
+            {"id": "_id_client", "label": "Клиент:", "value": order.client},
+            {"id": "_id_manager", "label": "Менеджер:", "value": order.manager}
+        ]
         return context
     
     def form_valid(self, form):
@@ -140,7 +169,6 @@ class CreateOrderView(CreateView):
 
         return redirect('orders:orders')
 
-    
     def get_initial_data(self):
         order_items = list(OrderItem.objects.filter(order_id=self.kwargs['order_id']).values())
         for order_item in order_items:
@@ -151,6 +179,18 @@ class CreateOrderView(CreateView):
             ]}
 
         return order_items
+    
+        
+    def get_products_size(self, order):
+        result = defaultdict(list)
+        sizes = ProductCost.objects.filter(
+            product__in=OrderItem.objects.filter(
+                order=order
+            ).values_list('product', flat=True)
+        ).values_list('product', 'size', named=True)       
+        for item in sizes:
+            result[str(item.product)].append(item.size)
+        return simplejson.dumps(result)
 
 
 def remove_order(request, order_id):
