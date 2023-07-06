@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.db import transaction
@@ -14,7 +15,7 @@ from django.conf import settings
 
 
 @require_POST
-def cart_add(request, product_id):
+def cart_add(request, product_id=-1):
     cart = Cart(request)
     product = get_object_or_404(Product, id=product_id)
     form = CartAddProductForm(request.POST)
@@ -24,6 +25,20 @@ def cart_add(request, product_id):
         cart.add(product, **selected_prod_params)
 
     return redirect('cart:cart_detail')
+
+
+@require_POST
+def send_to_cart(request, product_id=-1):
+    cart = Cart(request)
+    product = get_object_or_404(Product, id=product_id)
+    form = CartAddProductForm(request.POST)
+
+    if form.is_valid():
+        selected_prod_params = form.cleaned_data
+        cart.add(product, **selected_prod_params)
+        return JsonResponse({'reply': 'ok'})
+    
+    return JsonResponse({'reply': '-', 'errors': form.errors})
 
 
 def cart_remove(request, product_id, size):

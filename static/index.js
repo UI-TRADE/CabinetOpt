@@ -237,6 +237,26 @@ const createBrandAndCollectionLists = () => {
 }
 
 
+const addToCart = (formId) => {
+    const productForm = document.getElementById(formId);
+    const formData = new FormData(productForm);
+
+    $.ajax({
+        url: `/cart/send/${formId.replace('cartForm-', '')}/`,
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            location.reload();
+        },
+        error: function(xhr, status, error) {
+            alert('Ошибка: ' + error);
+        }
+    });
+}
+
+
 const updateOrderItem = (element) => {
 
     const productSizeAndPrices = (productId, size=0) => {

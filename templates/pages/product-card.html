@@ -102,7 +102,7 @@
                             <input type="hidden" name="size" value=0 />
                             <input type="hidden" name="weight" value=0 />
                         </form>
-                        <a href="#" onclick="document.getElementById('cartForm-{{prod.id}}').submit();">в Корзину</a>
+                        <a href="#" onclick="addToCart('cartForm-{{prod.id}}');">в Корзину</a>
                     </div>
                 {% else %}
                     <div class="col-3 product__block--indents">
@@ -117,7 +117,7 @@
                             <input type="hidden" name="size" value=0 />
                             <input type="hidden" name="weight" value=0 />
                         </form>
-                        <a href="#" onclick="document.getElementById('cartForm-{{prod.id}}').submit();">в Корзину</a>
+                        <a href="#" onclick="addToCart('cartForm-{{prod.id}}');">в Корзину</a>
                     </div>
                 {% endif %}
                 {% endwith %}
