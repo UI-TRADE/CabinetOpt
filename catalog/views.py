@@ -22,7 +22,7 @@ from .tree import get_tree
 
 class ProductView(ListView):
     model = Product
-    template_name = 'pages/product.html'
+    template_name = 'pages/products.html'
     context_object_name = 'products'
     allow_empty = True
     filters = {}
@@ -146,7 +146,7 @@ class ServiceView(ListView):
 
 class ProductCardView(DetailView):
     model = Product
-    template_name = 'pages/product-card.html'
+    template_name = 'pages/product.html'
     slug_url_kwarg = 'prod_id'
     slug_field = 'pk'
     context_object_name = 'prod'
