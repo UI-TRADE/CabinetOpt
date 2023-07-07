@@ -103,8 +103,7 @@ class Cart(object):
         self.session.modified = True
 
 
-    def add_error(self, product, errors):
-        product_id = str(product.id)
-        if product_id in self.cart:
-            self.cart[product_id]['errors'] = errors
+    def add_error(self, product_id, errors, **kwargs):
+        key = self.get_key(product_id, **kwargs)
+        self.cart[key]['errors'] = errors
         self.save()

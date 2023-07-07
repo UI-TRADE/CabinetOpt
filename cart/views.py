@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.db import transaction
 from django.core.exceptions import ValidationError
+import simplejson as json
 
 from clients.login import Login
 from catalog.models import Product
@@ -77,30 +78,42 @@ def order_create(request):
             for key, val in item.items()
     } for item in cart]
 
-    formset = []
-    for item in order_items:
-        formset.append(OrderItemForm(
-            item | {
-                'sum': item['total_price']
-        }))
-
+    formset, errors = [], []
     try:
 
         with transaction.atomic():
+            for item in order_items:
+                formset.append(OrderItemForm(
+                    item | {
+                        'sum': item['total_price']
+                }))
 
-            if order_form.is_valid():
-                order_instance.save()  
+                if order_form.is_valid():
+                    order_instance.save()  
 
-            for form in formset:       
-                if not form.is_valid():
-                    raise ValidationError(form.errors.as_text())
-                item_instance = form.save(commit=False)
-                item_instance.order = order_instance
-                item_instance.save()
+                for form in formset:  
+                    if not form.is_valid():
+                        errors.append({
+                            'product_id': item['product'].id,
+                            'size': item['size'],
+                            'error': form.errors.as_text()
+                        })
+                        continue
+                    item_instance = form.save(commit=False)
+                    item_instance.order = order_instance
+                    item_instance.save()
 
-    except ValidationError as error:
+            if errors:
+                raise ValidationError(json.dumps(errors))
+
+    except ValidationError as errors:
         transaction.rollback()
-        cart.add_error(item['product'], error.message)
+        for error in json.loads(errors.message):
+            cart.add_error(
+                error['product_id'],
+                error['error'],
+                size=error['size']
+            )
         return redirect('cart:errors')
     
     finally:

@@ -167,6 +167,7 @@ class ProductCardView(DetailView):
                 'id': obj.id, 'name': obj.name
             } for obj in Collection.objects.all()]
         )
+        print('price', serialize("json", actual_prices))
         context['sizes'] = serialize("json", available_sizes)
         context['price'] = serialize("json", actual_prices)
         context['product_info'] = {'product': self.kwargs['prod_id']}

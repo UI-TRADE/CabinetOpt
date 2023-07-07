@@ -32,6 +32,10 @@ class OrderItemForm(forms.ModelForm):
             'price_type',
         ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['discount'].required = False
+
 
 class CartAddProductForm(forms.Form):
     quantity = forms.TypedChoiceField(
