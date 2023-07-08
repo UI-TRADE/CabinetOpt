@@ -35,10 +35,18 @@
                             </div>
                             <div class="col-xs-1 col-sm-2 col-center">
                                 <div class="row px-4 px-sm-0">
-                                    <div><b>{{ product.name }}</b></div>
+                                    Артикул: &nbsp;
+                                    <a href="{% url 'catalog:product' product.id %}">
+                                        {{ product.articul }}
+                                    </a>
                                 </div>
                                 <div class="row px-4 px-sm-0">
-                                    <div>Артикул: {{ product.articul }}<br>Вес: {{ item.weight }}<br>Размер: {{ item.size }}</div>
+                                    <div><b>{{ product.name }}</b></div>
+                                    <div>
+                                        Вес: {{ item.weight }};<br>
+                                        Размер: {{ item.size }};<br>
+                                        Металл: {{ product.metal }} {{ product.metal_content }}
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-xs-1 col-sm-2 col-center">
@@ -46,6 +54,7 @@
                                     {% unique_id as id %}
                                     <input
                                         id="{{ id }}"
+                                        name="cart-quantity"
                                         value="{{ item.quantity }}"
                                         min="0"
                                         max="{{ product.stock }}"
@@ -61,6 +70,9 @@
                                 <a href="{% url 'cart:cart_remove' product.id item.size %}">
                                     <i class="fa fa-trash-o" aria-hidden="true"></i>
                                 </a>
+                            </div>
+                            <div name="cart-key" style="display: none;">
+                                {{'{'}}"productId":"{{product.id}}","size":"{{item.size}}"{{'}'}}
                             </div>
                         </div>
                     </div>
@@ -93,6 +105,7 @@
                 <table class="table table__thead--border">
                     <thead>
                         <tr>
+                            <th scope="col">Артикул</th>
                             <th scope="col">Наименование</th>
                             <th scope="col">Характеристика</th>
                             <th scope="col">Количество</th>
@@ -108,13 +121,23 @@
                         {% for item in cart %}
                         {% with product=item.product %}
                             <tr>
-                                <th scope="row">{{ product.name }}</th>
-                                <td>Артикул: {{ product.articul }}<br>Вес: {{ item.weight }}<br>Размер: {{ item.size }}</td>
+                                <td>
+                                    <a href="{% url 'catalog:product' product.id %}">
+                                        {{ product.articul }}
+                                    </a>
+                                </td>
+                                <td>{{ product.name }}</td>
+                                <td>
+                                    Вес: {{ item.weight }};<br>
+                                    Размер: {{ item.size }};<br>
+                                    Металл: {{ product.metal }} {{ product.metal_content }}
+                                </td>
                                 <td>
                                     <div class="form-outline cart__quantity--position">
                                         {% unique_id as id %}
                                         <input
                                             id="{{ id }}"
+                                            name="cart-quantity"
                                             value="{{ item.quantity }}"
                                             min="0"
                                             max="{{ product.stock }}"
@@ -139,6 +162,9 @@
                                         </div>
                                     </td>
                                 {% endif %}
+                                <td name="cart-key" style="display: none;">
+                                    {{'{'}}"productId":"{{product.id}}","size":"{{item.size}}"{{'}'}}
+                                </td>
                             </tr>
                         {% endwith %}
                         {% endfor %}

@@ -122,6 +122,18 @@ const extractElement = (html, elementSelector) => {
     return DOMModel.querySelector(elementSelector);
 }
 
+const updateElement = (selector) => {
+    $.ajax({
+        url: location.href,
+        success: (response) => {
+            const reloadHtml = new DOMParser().parseFromString(response, 'text/html');
+            document.querySelector(selector).outerHTML = reloadHtml.querySelector(selector).outerHTML;
+        },
+        error: (xhr, status, error) => {
+            alert('Ошибка: ' + error);
+        }
+    });
+}
 
 const updateProducts = (elementId, data) => {
     $.ajax({
@@ -248,7 +260,7 @@ const addToCart = (formId) => {
         processData: false,
         contentType: false,
         success: function(response) {
-            location.reload();
+            updateElement('li[name="cart_detail"]');
         },
         error: function(xhr, status, error) {
             alert('Ошибка: ' + error);
@@ -953,6 +965,33 @@ const addEvents = () => {
                     break;  
                 }
             }           
+        });
+    }
+
+    const getCartKey = (element, i) => {
+        if (i >= 5) return ""; i++;
+        const foundElement = element.querySelector('[name="cart-key"]');
+        if (foundElement) {
+            return JSON.parse(foundElement.textContent);
+        }
+        return getCartKey(element.parentElement, i);
+    }
+
+    const cartQuantity = document.querySelectorAll(`input[name="cart-quantity"]`);
+    for (var i=0; i<cartQuantity.length; i++) {
+        cartQuantity[i].addEventListener("change", (event) => {
+            if (event.target.value == 0) {
+                const cartKey = getCartKey(event.target, 0);
+                $.ajax({
+                    url: `/cart/remove/${cartKey.productId}/${cartKey.size}/`,
+                    success: (response) => {
+                        location.reload();
+                    },
+                    error: (xhr, status, error) => {
+                        alert('Ошибка: ' + error);
+                    }
+                });
+            }
         });
     }
 }
