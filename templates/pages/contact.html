@@ -70,9 +70,11 @@
         </div>
         <div class="row">
             <div class="col-3 contact__item--head">Менеджер ЮИ-Трейд:</div>
-            {% with managet_name=manager.last_name|add:' '|add:manager.first_name|add:' '|add:manager.surname %}
-                <div class="col-4">{{ managet_name }}</div>
-            {% endwith %}
+            {% if manager %}
+                {% with managet_name=manager.last_name|add:' '|add:manager.first_name|add:' '|add:manager.surname %}
+                    <div class="col-4">{{ managet_name }}</div>
+                {% endwith %}
+            {% endif %}
         </div>
         <div class="row">
             <div class="col-3 contact__item--head">Вид оплаты:</div>

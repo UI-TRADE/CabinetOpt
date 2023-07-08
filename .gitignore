@@ -21,3 +21,4 @@ mediafiles
 *.txt
 !requirements.txt
 snippets
+*.tar.gz
