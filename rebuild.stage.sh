@@ -1,7 +1,24 @@
 #!/bin/bash
 
-if [[ `git status --porcelain` ]]; then
-  git pull origin main --quiet
-  docker-compose down --volumes --rmi all
-  docker-compose up -d --build
+# Проверить наличие изменений в репозитории
+git fetch
+
+# Проверить, есть ли локальные изменения
+if [[ $(git status -uno --porcelain) ]]; then
+    echo "Внимание: есть локальные изменения в репозитории!"
+    
+    # Проверить, есть ли незакоммиченные изменения
+    if ! git diff-index --quiet HEAD --; then
+        echo "Ошибка: есть незакоммиченные изменения в репозитории. Пожалуйста, закоммитьте или отмените изменения перед выполнением git pull."
+        exit 1
+    fi
+
+    git pull
+    if [ $? -eq 0 ]; then
+        echo "Команда git pull выполнена успешно."
+    else
+        echo "Ошибка выполнения команды git pull."
+    fi
+else
+    echo "Нет локальных изменений в репозитории."
 fi
