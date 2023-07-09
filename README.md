@@ -193,6 +193,12 @@ docker-compose -f docker-compose.prod.yml exec web python manage.py collectstati
 python manage.py drf_create_token admin
 ```
 
+Так же токен можно получить по имени пользователя и паролю, достаточно выполнить следующий запрос к сайту:
+
+```sh
+curl -X POST -H "Content-Type: application/json" -d '{"username":"username","password":"password"}' http://127.0.0.1:8000/users/api-token-auth/
+```
+
 Выполните загрузку номенклатуры из json файла:
 
 ```sh
