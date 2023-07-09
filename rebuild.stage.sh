@@ -16,6 +16,8 @@ if [[ $(git log HEAD..origin/main --oneline) ]]; then
     git pull
     if [ $? -eq 0 ]; then
         echo "Команда git pull выполнена успешно."
+        docker-compose down --volumes --rmi all
+        docker-compose up -d --build
     else
         echo "Ошибка выполнения команды git pull."
     fi
