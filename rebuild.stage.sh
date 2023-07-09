@@ -4,7 +4,7 @@
 git fetch
 
 # Проверить, есть ли локальные изменения
-if [[ $(git status -uno --porcelain) ]]; then
+if [[ $(git log HEAD..origin/main --oneline) ]]; then
     echo "Внимание: есть локальные изменения в репозитории!"
     
     # Проверить, есть ли незакоммиченные изменения
