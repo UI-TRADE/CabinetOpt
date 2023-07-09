@@ -179,7 +179,12 @@ class ProductCardView(DetailView):
 def upload_products(request):
     errors = run_uploading_products(request.data)
     if errors:
-        return JsonResponse(json.dumps(errors), status=200, safe=False)
+        return JsonResponse(
+            errors,
+            status=200,
+            safe=False,
+            json_dumps_params={'ensure_ascii': False}
+        )
     return JsonResponse({'replay': 'ok'}, status=200)
 
 
@@ -195,7 +200,12 @@ def upload_images(request):
 def upload_price(request):
     errors = run_uploading_price(request.data)
     if errors:
-        return JsonResponse(json.dumps(errors), status=200, safe=False)
+        return JsonResponse(
+            errors,
+            status=200,
+            safe=False,
+            json_dumps_params={'ensure_ascii': False}
+        )
     return JsonResponse({'replay': 'ok'}, status=200)
 
 
@@ -208,7 +218,12 @@ def pickup_products(request):
         ).annotate(
             relevance=Cast(Value(1), output_field=FloatField())
         ).order_by('-relevance')[:5])
-    return JsonResponse({'replay': 'ok', 'data': results}, status=200, safe=False)
+    return JsonResponse(
+        {'replay': 'ok', 'data': results},
+        status=200,
+        safe=False,
+        json_dumps_params={'ensure_ascii': False}
+    )
 
 
 @api_view(['GET'])
