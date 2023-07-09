@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ `git status --porcelain` ]]; then
-  echo "Changes"
-else
-  echo "No changes"
+  git pull origin main --quiet
+  docker-compose down --volumes --rmi all
+  docker-compose up -d --build
 fi
