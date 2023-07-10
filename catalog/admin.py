@@ -100,7 +100,7 @@ class ProductAdmin(admin.ModelAdmin):
         'available_for_order'
     ]
     readonly_fields = [
-        'created_at', 'stock'
+        'created_at'
     ]
     inlines = [ProductCostInLine, ProductImageInLine]
 
@@ -138,6 +138,7 @@ class PriceAdmin(admin.ModelAdmin):
         'type',
         'product',
         ('price', 'unit'),
+        'discount',
         ('start_at', 'end_at'),
     ]
     list_filter = [

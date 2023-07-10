@@ -41,7 +41,7 @@ class CartAddProductForm(forms.Form):
     quantity = forms.TypedChoiceField(
         choices=PRODUCT_QUANTITY_CHOICES, coerce=int
     )
-    size = forms.IntegerField(required=False)
+    size = forms.FloatField(required=False)
     weight = forms.FloatField(required=False)
     price = forms.DecimalField(required=False)
     unit = forms.CharField(required=False)

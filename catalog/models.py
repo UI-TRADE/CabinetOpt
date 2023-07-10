@@ -140,8 +140,10 @@ class ProductCost(models.Model):
     weight = models.FloatField(
         'Вес', default=0, validators=[MinValueValidator(0)]
     )
-    size = models.IntegerField(
-        'Размер', default=0, validators=[MinValueValidator(0)]
+    size = models.FloatField(
+        'Размер',
+        default=0.0,
+        validators=[MinValueValidator(0)]
     )
     cost = models.DecimalField(
         'Стоимость',

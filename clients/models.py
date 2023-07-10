@@ -5,13 +5,13 @@ from django.conf import settings
 
 
 class PriorityDirection(models.Model):
-    name = models.CharField('Приоритетное направление', max_length=50)
+    name = models.CharField('Наименование', max_length=50)
     identifier_1C = models.CharField(
         'Идентификатор 1С', max_length=50, blank=True, db_index=True
     )
     class Meta:
-        verbose_name = 'Приоритетное направление'
-        verbose_name_plural = 'Приоритетные направления'
+        verbose_name = 'Бренд'
+        verbose_name_plural = 'Бренды'
 
     def __str__(self):
         return self.name

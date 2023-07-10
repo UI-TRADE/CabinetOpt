@@ -80,7 +80,7 @@
                                 product__size__block--design
                                 product__size__block--position"
                             >
-                                {{ item.fields.size }}
+                                {{ item.fields.size|stringformat:".1f" }}
                             </div>
                         {% endfor %}
                     </div>
@@ -106,7 +106,7 @@
                     </div>
                 {% else %}
                     <div class="col-3 product__block--indents">
-                        <p>Цена: <b>--</b></p>
+                        <p>Цена: <b id="product_price">--</b></p>
                         <p>В наличии: <b>--</b></p>
                         <form id="cartForm-{{prod.id}}" method="post" action="{% url 'cart:cart_add' prod.id %}">
                             {% csrf_token %}

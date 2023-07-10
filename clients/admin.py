@@ -55,6 +55,8 @@ class ContactDetailInLine(admin.TabularInline):
 class PriorityDirectionAdmin(admin.ModelAdmin):
     search_fields = ['name',]
     list_display = ['name',]
+    fields = ['name',]
+    readonly_fields = ['identifier_1C',]
 
 
 @admin.register(RegistrationOrder)

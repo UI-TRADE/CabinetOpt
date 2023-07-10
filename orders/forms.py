@@ -18,7 +18,7 @@ class OrderItemForm(forms.ModelForm):
 
     def get_sizes(self):
         sizes = ProductCost.objects.all().values_list('size', flat=True).distinct()
-        return (('0', '--'),) + tuple(((item, item) for item in sizes))
+        return (('0', '--'),) + tuple((('%g' % item, '%g' % item) for item in sizes))
 
 
 class OrderItemInlineForm(BaseInlineFormSet):

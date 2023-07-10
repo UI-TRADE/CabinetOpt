@@ -307,8 +307,6 @@ const updateOrderItem = (element) => {
                 const prises = JSON.parse(data['price']);
                 const sizes  = JSON.parse(data['sizes']);
 
-                console.log('sizes: ', sizes);
-
                 let currentPrice = 0; let discount = 0;
                 if (prises.length > 0) {
                     currentPrice = prises[0]['fields']['price']; 
@@ -401,6 +399,9 @@ const calculatePrice = (currentPrice, maxPrice, discount) => {
 const updateProductCardWeight = (size) => {
     var weight = 0;
     loadJson('#sizes').forEach((element) => {
+        console.log('element.fields.size', element.fields.size, typeof element.fields.size)
+        console.log('size', size, typeof size)
+
         if (element.fields.size == size) {
             weight = element.fields.weight;
             document.getElementById('product_weigth').textContent = `${weight} грамм`;
@@ -411,18 +412,23 @@ const updateProductCardWeight = (size) => {
 
 
 const updateProductCardPrice = (size) => {
+    let currentPrice = 0; let currentDiscount = 0; let currentUnit = '';
     const priceItem = loadJson('#price').find(Boolean)?.fields;
-    let currentPrice = priceItem.price;
+    if (priceItem) {
+        currentPrice = priceItem.price;
+        currentDiscount = priceItem.discount;
+        currentUnit = priceItem.unit;
+    }   
     loadJson('#sizes').forEach((element) => {
         if (element.fields.size == size) {
             currentPrice = calculatePrice(
-                currentPrice, element.fields.cost, priceItem.discount
+                currentPrice, element.fields.cost, currentDiscount
             );
         }
     });
     document.getElementById('product_price').textContent = `${currentPrice} руб.`;
     setInputValueByName('price', currentPrice);
-    setInputValueByName('unit', priceItem.unit);
+    setInputValueByName('unit', currentUnit);
 
 }
 
@@ -903,9 +909,17 @@ const addEvents = () => {
             }
         }
         event.target.classList.add('product__size__block--select');
-        updateProductCardWeight(event.target.innerText);
-        updateProductCardPrice(event.target.innerText);
-        updateProductSize(event.target.innerText);
+        try {
+            const selectedSize = parseFloat(event.target.innerText)
+            console.log(event.target.innerText, selectedSize)
+            updateProductCardWeight(selectedSize);
+            updateProductCardPrice(selectedSize);
+            updateProductSize(selectedSize);
+        }
+        catch (error) {
+            alert('Ошибка: ' + error);
+        }
+
     });
 
     $('.order__toolbar__btn').on('click', (event) => {
