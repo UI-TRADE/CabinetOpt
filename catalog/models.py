@@ -207,7 +207,7 @@ class PriceQuerySet(models.QuerySet):
                 start_at__lte=timezone.now()
             ).filter(
                 Q(end_at__isnull=True) | Q(end_at__gte=timezone.now())
-            ).annotate(actual_price=Max('price', 'discount'))
+            ).annotate(actual_price=Max('price'))
 
 
 class Price(models.Model):
