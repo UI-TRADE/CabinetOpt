@@ -330,6 +330,8 @@ figure {
     padding: 0px;
     height: 3vw;
     margin-right: 5px;
+    max-width: 60px;
+    max-height: 60px;
 }
 
 .product__size__block--position:last-child {

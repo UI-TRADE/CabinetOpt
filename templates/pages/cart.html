@@ -3,6 +3,11 @@
 
 {% block page %}
 	{% block content %}
+
+    <div style="display:none">
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    </div>    
+
     <div class="row" style="justify-content: flex-end; align-items: top;">
         <div id="cartViewArea" class="custom-control custom-switch" style="padding: 8px 16px 8px 16px; display: none;">
             <input type="checkbox" class="custom-control-input" id="cartView">
@@ -16,7 +21,8 @@
                 {% for item in cart %}
                 {% with product=item.product %}
                     <div class="good-block position-relative">
-                        <div class="row good-row">
+                        {% unique_id as id %}
+                        <div id="{{id}}" name="cart-row" class="row good-row">
                             <div class="col-xs-1 col-md-2 col-md-3 col-center">
                                 {% first_product_image product.id as image %}
                                     {% if item.errors %}
@@ -61,11 +67,12 @@
                                         step="1"
                                         type="number"
                                         class="form-control"
+                                        onchange="OnQuantityChange(this)"
                                     />
                                     <label for="{{ id }}" style="margin-bottom: 0px; margin-left: 5px;">{{ item.unit|get_unit_repr }}</label>
                                 </div>
                             </div>
-                            <div class="col-xs-1 col-sm-2 col-center">{{ item.price }} руб.</div>
+                            <div class="col-xs-1 col-sm-2 col-center">{{ item.total_price }} руб.</div>
                             <div class="col-xs-1 col-sm-2 col-center text-center">
                                 <a href="{% url 'cart:cart_remove' product.id item.size %}">
                                     <i class="fa fa-trash-o" aria-hidden="true"></i>
@@ -120,7 +127,8 @@
                     <tbody>
                         {% for item in cart %}
                         {% with product=item.product %}
-                            <tr>
+                            {% unique_id as id %}
+                            <tr id="{{id}}" name="cart-row">
                                 <td>
                                     <a href="{% url 'catalog:product' product.id %}">
                                         {{ product.articul }}
@@ -144,6 +152,7 @@
                                             step="1"
                                             type="number" 
                                             class="form-control"
+                                            onchange="OnQuantityChange(this)"
                                         />
                                         <label for="{{ id }}" style="margin-bottom: 0px; margin-left: 5px;">{{ item.unit|get_unit_repr }}</label>
                                     </div>

@@ -5,7 +5,7 @@ from contextlib import suppress
 from itertools import chain
 import simplejson as json
 
-from catalog.models import Product, ProductCost
+from catalog.models import Product
 
 
 class Cart(object):
@@ -69,9 +69,9 @@ class Cart(object):
             self.cart[key] = kwargs | {'errors': ''}
             self.cart[key]['quantity'] = 0
         if update_quantity:
-            self.cart[key]['quantity'] = quantity
-        else:
             self.cart[key]['quantity'] += quantity
+        else:
+            self.cart[key]['quantity'] = quantity
         self.save()
 
 
@@ -88,6 +88,10 @@ class Cart(object):
             del self.keys[key]
             self.save()
 
+    def info(self, product_id, **kwargs):
+        key = self.get_key(product_id, size= kwargs['size'])
+        if key in self.cart:
+            return self.cart[key]
 
     def get_total_price(self):
         return sum(item['price'] * item['quantity'] for item in self.cart.values() if item['price'])

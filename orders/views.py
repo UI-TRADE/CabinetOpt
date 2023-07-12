@@ -11,7 +11,7 @@ from collections import defaultdict
 from rest_framework.decorators import api_view
 
 from clients.login import Login
-from catalog.models import Product, ProductCost
+from catalog.models import Product, Price, PriceType, StockAndCost
 from orders.models import Order, OrderItem
 
 from .forms import OrderItemInline
@@ -91,7 +91,7 @@ class UpdateOrderView(UpdateView):
     
     def get_products_size(self):
         result = defaultdict(list)
-        sizes = ProductCost.objects.filter(
+        sizes = StockAndCost.objects.filter(
             product__in=OrderItem.objects.filter(
                 order=self.object
             ).values_list('product', flat=True)
@@ -183,7 +183,7 @@ class CreateOrderView(CreateView):
         
     def get_products_size(self, order):
         result = defaultdict(list)
-        sizes = ProductCost.objects.filter(
+        sizes = StockAndCost.objects.filter(
             product__in=OrderItem.objects.filter(
                 order=order
             ).values_list('product', flat=True)
@@ -210,3 +210,31 @@ def add_order_item(request):
 
     newOrderItem = OrderItem.objects.create(order=Order.objects.get(pk=order_id),)
     return JsonResponse({'item_id': newOrderItem.id}, status=200)
+
+@api_view(['GET'])
+def stocks_and_costs(request):
+    order_id = request.query_params.get('orderId')
+    if order_id:
+        productIds = OrderItem.objects.filter(order_id=order_id).values_list('product_id', flat=True)
+        current_products = Product.objects.filter(pk__in = productIds)
+        current_clients = Login(request).get_clients()
+        stocks_and_costs = StockAndCost.objects.filter(product_id__in = productIds)
+        actual_prices = Price.objects.available_prices(
+            productIds, PriceType.objects.get(client = current_clients.get())
+        )
+        
+        return JsonResponse(
+            {
+                'replay'           : 'ok',
+                'products'         : serialize("json", current_products),
+                'stocks_and_costs' : serialize("json", stocks_and_costs),
+                'actual_prices'    : serialize("json", actual_prices)
+            },
+            status=200,
+            safe=False
+        )
+
+    return JsonResponse(
+        {'replay': 'error', 'message': 'Отсутствуют Продукты для получения данных'},
+        status=200
+    )

@@ -43,18 +43,10 @@
         </div>
 
         <main id="products" class="col-md-9 products" style="display: none;">
-          <div style="display: none" id="sizes" data-json="{{ sizes }}"></div>
           {% for product in products %}
-            {% with price=prices|loadjson|get_item_by_id:product.id %}
-            <div class="good-block position-relative">
-              {% with gender="gender"|addparam:product.get_gender_display collection=collections|root:product.collection.id instok="instok"|addparam:product.stock %}
-              <div 
-                id="product-{{product.id}}"
-                class="good-block-info"
-                style="display: none;"
-                data-json="{{ price|addtojson:gender|addtojson:collection|addtojson:instok|tojson }}"
-              ></div>
-              {% endwith %}
+            {% with product_id="id"|addparam:product.id%}
+            <div class="good-block position-relative" data-json="{{ product_id|tojson }}">
+            {% endwith %}
               <div class="row good-row">
                 <div class="col-xs-1 col-md-2 col-md-3 col-lg-4 col-center">
                   {% for image in product.get_images|slice:":1" %}
@@ -69,19 +61,22 @@
                   {% endfor %}
                 </div>
                 <div class="col-xs-1 col-sm-3 col-md-3 col-lg-4 col-center">
-                  <div class="row px-4 px-sm-0">
-                    <a href="{% url 'catalog:product' product.id %}" class="stretched-link">Карточка товара</a>
-                  </div>
                   {% if product.status %}
                   <div class="row px-4 px-sm-0">
                     <div><b>{{ product.get_status_display }}</b></div>
                   </div>
                   {% endif %}
                   <div class="row px-4 px-sm-0">
+                    <a href="{% url 'catalog:product' product.id %}" class="stretched-link">{{ product.articul }}</a>
+                  </div>
+                  <div class="row px-4 px-sm-0">
                     <div><b>{{ product.name }}</b></div>
                   </div>
                   <div class="row px-4 px-sm-0">
-                    <div>Артикул: {{ product.articul }}</div>
+                    <div>Металл: {{ product.metal }} {{ product.metal_content }} </div>
+                  </div>
+                  <div class="row px-4 px-sm-0">
+                    <div>Бренд: {{ product.brand }} </div>
                   </div>
                 </div>
                 <div class="col-xs-1 col-sm-3 col-md-3 col-lg-4 col-center price-block">
@@ -100,13 +95,14 @@
                     <div class="row px-4 px-sm-0 price">
                       Цена: --
                     </div>
+                    <div class="row px-4 px-sm-0 weight">
+                    </div>
                     <div class="row px-4 px-sm-0 in_stock">
                       В наличии: --
                     </div>
                 </div>
               </div>
             </div>
-          {% endwith %}
           {% endfor %}
 
           <nav aria-label="Pagination">

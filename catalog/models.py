@@ -7,7 +7,25 @@ from django.utils import timezone
 from clients.models import PriorityDirection, Client
 
 
+class CollectionGroup(models.Model):
+    name = models.CharField('Наименование', max_length=100, db_index=True)
+
+    class Meta:
+        verbose_name = 'Группа коллекций'
+        verbose_name_plural = 'Группы коллекций'
+
+    def __str__(self):
+        return self.name
+
+
 class Collection(models.Model):
+    group = models.ForeignKey(
+        CollectionGroup,
+        on_delete=models.PROTECT,
+        verbose_name='Группа',
+        related_name='collections',
+        db_index=True,
+    )
     name = models.CharField('Наименование', max_length=100, db_index=True)
     discount = models.DecimalField(
         'Скидка',
@@ -37,7 +55,7 @@ class Product(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         verbose_name='Коллекция',
-        related_name='goods',
+        related_name='collection_products',
         db_index=True,
     )
     brand = models.ForeignKey(
@@ -46,7 +64,7 @@ class Product(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         verbose_name='Бренд',
-        related_name='goods_by_brands'        
+        related_name='brand_products'        
     )
     unit = models.CharField(
         'Единица измерения',
@@ -57,22 +75,6 @@ class Product(models.Model):
             ('796', 'штук'),
             ('163', 'грамм'),
     ))
-    price_per_gr = models.DecimalField(
-        'Цена за грамм',
-        max_digits=8,
-        decimal_places=2,
-        default=0,
-        validators=[MinValueValidator(0)]
-    )
-    weight = models.FloatField(
-        'Вес', default=0, validators=[MinValueValidator(0)]
-    )
-    size = models.IntegerField(
-        'Размер', default=0, validators=[MinValueValidator(0)]
-    )
-    stock = models.PositiveIntegerField(
-        'Остаток', default=0, validators=[MinValueValidator(0)]
-    )
     available_for_order = models.BooleanField(
         'Доступен для заказа', default=False, db_index=True
     )
@@ -91,6 +93,7 @@ class Product(models.Model):
     ))
     metal = models.CharField('Металл', max_length=50, blank=True, db_index=True)
     metal_content = models.CharField('Проба', max_length=30, blank=True, db_index=True)
+    color = models.CharField('Цвет', max_length=50, blank=True, db_index=True)
     gender = models.CharField(
         'Гендер',
         max_length=10,
@@ -99,7 +102,8 @@ class Product(models.Model):
         choices=(
             ('М', 'мужской'),
             ('Ж', 'женский'),
-            ('-', 'мужской, женский'),
+            ('Д', 'детский'),
+            ('-', 'юнисекс'),
     ))
     status = models.CharField(
         'Статус',
@@ -129,13 +133,13 @@ class Product(models.Model):
         return [product_image.image.url for product_image in product_images]
 
 
-class ProductCost(models.Model):
+class StockAndCost(models.Model):
     product = models.ForeignKey(
         Product,
         null=True,
         on_delete=models.CASCADE,
         verbose_name='Номенклатура',
-        related_name='product_cost'
+        related_name='stocks_and_costs'
     )
     weight = models.FloatField(
         'Вес', default=0, validators=[MinValueValidator(0)]
@@ -145,6 +149,9 @@ class ProductCost(models.Model):
         default=0.0,
         validators=[MinValueValidator(0)]
     )
+    stock = models.PositiveIntegerField(
+        'Остаток', default=0, validators=[MinValueValidator(0)]
+    )    
     cost = models.DecimalField(
         'Стоимость',
         max_digits=8,
@@ -154,8 +161,8 @@ class ProductCost(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Стоимость изделия'
-        verbose_name_plural = 'Стоимость изделий'
+        verbose_name = 'Наличие и стоимость изделия'
+        verbose_name_plural = 'Наличие и стоимость изделий'
 
 
 class ProductImage(models.Model):
@@ -184,7 +191,7 @@ class PriceType(models.Model):
         null=True,
         blank=True,
         verbose_name='Клиент',
-        related_name='prices_by_client',
+        related_name='client_prices',
         db_index=True
     )
     class Meta:
@@ -215,14 +222,14 @@ class Price(models.Model):
         PriceType,
         on_delete=models.CASCADE,
         verbose_name='Тип цены',
-        related_name='prices_by_type',
+        related_name='prices',
         db_index=True,
     )
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
         verbose_name='Номенклатура',
-        related_name='prices',
+        related_name='product_prices',
         db_index=True,
     )
     unit = models.CharField(

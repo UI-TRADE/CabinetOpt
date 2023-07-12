@@ -1,6 +1,6 @@
 from django import forms
 from django.forms.models import BaseInlineFormSet, inlineformset_factory
-from catalog.models import ProductCost
+from catalog.models import StockAndCost
 from orders.models import Order, OrderItem
 
 
@@ -17,7 +17,7 @@ class OrderItemForm(forms.ModelForm):
         self.fields['nomenclature_size'].choices = self.get_sizes()
 
     def get_sizes(self):
-        sizes = ProductCost.objects.all().values_list('size', flat=True).distinct()
+        sizes = StockAndCost.objects.all().values_list('size', flat=True).distinct()
         return (('0', '--'),) + tuple((('%g' % item, '%g' % item) for item in sizes))
 
 
@@ -40,6 +40,7 @@ class OrderItemInlineForm(BaseInlineFormSet):
                 continue
             if field == 'nomenclature_size':
                 form.fields[field].widget.attrs['class'] = 'order__field__nomenclature_size form-control'
+                form.fields[field].widget.attrs['onchange'] = 'updateOrderItem(this)'
                 continue
             if field == 'product':
                 form.fields[field].widget.attrs['class'] = 'order__field__product form-control'

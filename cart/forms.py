@@ -38,9 +38,10 @@ class OrderItemForm(forms.ModelForm):
 
 
 class CartAddProductForm(forms.Form):
-    quantity = forms.TypedChoiceField(
-        choices=PRODUCT_QUANTITY_CHOICES, coerce=int
-    )
+    # quantity = forms.TypedChoiceField(
+    #     choices=PRODUCT_QUANTITY_CHOICES, coerce=int
+    # )
+    quantity = forms.IntegerField(required=True)
     size = forms.FloatField(required=False)
     weight = forms.FloatField(required=False)
     price = forms.DecimalField(required=False)

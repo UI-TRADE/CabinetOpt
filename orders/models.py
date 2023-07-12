@@ -3,14 +3,14 @@ from django.db import models
 from django.core.validators import MinValueValidator
 
 from clients.models import Client, Manager
-from catalog.models import Product, PriceType, ProductCost
+from catalog.models import Product, PriceType, StockAndCost
 
 class Order(models.Model):
     client = models.ForeignKey(
         Client,
         on_delete=models.CASCADE,
         verbose_name='Клиент',
-        related_name='oders_by_client',
+        related_name='client_oders',
         db_index=True,
     )
     manager = models.ForeignKey(
@@ -18,7 +18,7 @@ class Order(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name='Ответственный менеджер',
-        related_name='oders_by_manager',
+        related_name='manager_oders',
         db_index=True,
     )
     status = models.CharField(
@@ -80,7 +80,7 @@ class OrderItem(models.Model):
         on_delete=models.SET_NULL,
         db_index=True,
         verbose_name='Номенклатура',
-        related_name='order_items'
+        related_name='product_orders'
     )
     unit = models.CharField(
         'Единица измерения',
@@ -127,7 +127,7 @@ class OrderItem(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         verbose_name='Тип цены',
-        related_name='order_items_by_price',
+        related_name='price_type_orders',
         db_index=True,
     )
 
@@ -139,7 +139,7 @@ class OrderItem(models.Model):
     
     @property
     def max_price(self):
-        max_prices = ProductCost.objects.filter(product=self.product)
+        max_prices = StockAndCost.objects.filter(product=self.product)
         if self.weight > 0:
             max_prices = max_prices.filter(weight=self.weight)
         if self.size > 0:

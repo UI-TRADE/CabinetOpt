@@ -39,7 +39,12 @@ def send_to_cart(request, product_id=-1):
         cart.add(product, **selected_prod_params)
         return JsonResponse({'reply': 'ok'})
     
-    return JsonResponse({'reply': '-', 'errors': form.errors})
+    return JsonResponse({'reply': 'error', 'message': form.errors})
+
+
+def cart_info(request, product_id, size):
+    cart = Cart(request)
+    return JsonResponse(cart.info(product_id, size=size))
 
 
 def cart_remove(request, product_id, size):

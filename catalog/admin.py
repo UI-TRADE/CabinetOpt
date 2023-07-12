@@ -2,12 +2,13 @@ from django.contrib import admin
 from django.utils.html import format_html
 
 from .models import (
+    CollectionGroup,
     Collection,
     ProductImage,
     Product,
     PriceType,
     Price,
-    ProductCost
+    StockAndCost
 )
 
 class ProductImageInLine(admin.TabularInline):
@@ -30,26 +31,42 @@ class ProductImageInLine(admin.TabularInline):
     render_preview.short_description = 'Preview'
 
 
-class ProductCostInLine(admin.TabularInline):
-    model = ProductCost
+class StockAndCostInLine(admin.TabularInline):
+    model = StockAndCost
     extra = 0
-    fields = ('weight', 'size', 'cost')
+    fields = ('weight', 'size', 'stock', 'cost')
     readonly_fields = ()
 
-    verbose_name = "Стоимость изделия"
-    verbose_name_plural = "Стоимость изделий"
+    verbose_name = "Наличие и стоимость изделия"
+    verbose_name_plural = "Наличие и стоимость изделий"
+
+
+@admin.register(CollectionGroup)
+class CollectionGroupAdmin(admin.ModelAdmin):
+    search_fields = [
+        'name',
+    ]
+    fields = [
+        'name',
+    ]
+
+    def get_model_perms(self, *args, **kwargs):
+        return {}
 
 
 @admin.register(Collection)
 class CollectionAdmin(admin.ModelAdmin):
     search_fields = [
+        'group',
         'name',
     ]
     list_display = [
+        'group',
         'name',
         'discount',
     ]
     fields = [
+        'group',
         'name',
         'discount',
     ]
@@ -69,11 +86,8 @@ class ProductAdmin(admin.ModelAdmin):
         'collection',
         'metal',
         'metal_content',
+        'color',
         'unit',
-        'price_per_gr',
-        'weight',
-        'size',
-        'stock',
         'available_for_order',
         'status',
         'created_at',
@@ -83,10 +97,8 @@ class ProductAdmin(admin.ModelAdmin):
         'status',
         ('name', 'articul', 'unit'),
         ('brand', 'collection'),
-        ('metal', 'metal_content'),
-        ('size', 'weight', 'price_per_gr'),
+        ('metal', 'metal_content', 'color'),
         'gender',
-        'stock',
         'available_for_order',
     ]
     list_filter = [
@@ -96,13 +108,14 @@ class ProductAdmin(admin.ModelAdmin):
         'status',
         'metal',
         'metal_content',
+        'color',
         'gender',
         'available_for_order'
     ]
     readonly_fields = [
         'created_at'
     ]
-    inlines = [ProductCostInLine, ProductImageInLine]
+    inlines = [StockAndCostInLine, ProductImageInLine]
 
 
 @admin.register(PriceType)

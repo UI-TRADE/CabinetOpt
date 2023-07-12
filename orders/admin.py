@@ -5,7 +5,7 @@ from django.http import HttpResponse
 
 from .models import Order, OrderItem
 from clients.models import Client, Manager
-from catalog.models import Product, PriceType, ProductCost
+from catalog.models import Product
 
 
 class OrderItemInline(admin.TabularInline):
