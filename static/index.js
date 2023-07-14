@@ -575,17 +575,24 @@ const getDefaultSize = (productId, collection, sizes, gender) => {
 
     if (collection) {
         if (['кольцо', 'кольца', 'колечки', 'колец'].find(el => el == collection.toLowerCase().trim())) {
-            defaultSize = 20;
+            if (sizes.find(
+                el => el['fields'].product == productId && el['fields'].size == 20
+            )) defaultSize = 20;
             if (gender == 'женский' | gender == 'Ж') {
-                defaultSize = 17;    
+                if (sizes.find(
+                    el => el['fields'].product == productId && el['fields'].size == 17
+                )) defaultSize = 17;    
             }
         }
         if (['цепь', 'цепи', 'цепочка', 'цепочек'].find(el => el == collection)) {
-            defaultSize = 50;
+            if (sizes.find(
+                el => el['fields'].product == productId && el['fields'].size == 50
+            )) defaultSize = 50;
         }
     }
 
     const foundSizes = sizes.filter(el => el['fields'].product == productId && el['fields'].size == defaultSize);
+
     return foundSizes.sort((firstItem, nextItem) => {
         if (firstItem['fields'].weight < nextItem['fields'].weight) return 1;
         if (firstItem['fields'].weight > nextItem['fields'].weight) return -1;
@@ -787,7 +794,9 @@ const setProductPrice = () => {
                     updateSize(product, defaultSize['fields'], currentPrice, currentDiscount);
 
                     if (defaultSize['fields'].size) {
+                        const sizeTitle = elements[i].querySelector('#size-title');
                         const sizeElements = elements[i].querySelector('#size-block');
+                        if (stock_and_cost) sizeTitle.style.display = 'block';
                         stock_and_cost.forEach((item) => {
                             if (!item['fields'].size) return;
                             item['currentPrice'] = currentPrice;
