@@ -183,22 +183,27 @@ const createBrandAndCollectionLists = () => {
             if (!groups.find(el => el == item.group_name)) groups.push(item.group_name)
         });
        
+        collectionElement.innerHTML = '';
+
         groups.forEach((group) => {
+
             innerHTML = 
-            `<li class="list-group-item"><span class="collection-box">${group}</span>
+            `<li class="list-group-item">
+                <span class="collection-box">${group}</span>
                 <ul class="collection-nested list-group list-group-flush">`;
     
             const foundCollections = collections.filter(el => el.group_name == group);
             foundCollections.forEach((collection) => {
-                const checked = (excludedCollections.find(el => el === `collection-${collection['id']}`)) ? "" : "checked"
+                const checked = (excludedCollections.find(el => el === `collection-${collection['id']}`)) ? "" : "checked";
                 innerHTML += 
                     `<li class="list-group-item" style="padding-top: 5px; padding-bottom: 5px; margin-left: 25px;">
                         <input class="form-check-input me-1 switch-change" type="checkbox" value="collection" id="collection-${collection['id']}" ${checked}>
-                        <label class="form-check-label" for="collection-${collection['id']}" style="font-size: smaller;">${collection['name']}</label></li></ul></li>`;
-    
-                collectionElement.innerHTML += innerHTML;
-    
+                        <label class="form-check-label" for="collection-${collection['id']}" style="font-size: smaller;">${collection['name']}</label>
+                    </li>`;
             });
+
+            innerHTML += '</ul></li>'
+            collectionElement.innerHTML += innerHTML;
         });
     }    
 
