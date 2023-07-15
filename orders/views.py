@@ -1,5 +1,4 @@
 import simplejson
-from django.forms import TextInput
 from django.db import transaction
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
@@ -8,6 +7,7 @@ from django.core.serializers import serialize
 from django.views.generic import ListView, UpdateView, CreateView
 from django.core.exceptions import ValidationError
 from collections import defaultdict
+from contextlib import suppress
 from rest_framework.decorators import api_view
 
 from clients.login import Login
@@ -219,9 +219,14 @@ def stocks_and_costs(request):
         current_products = Product.objects.filter(pk__in = productIds)
         current_clients = Login(request).get_clients()
         stocks_and_costs = StockAndCost.objects.filter(product_id__in = productIds)
-        actual_prices = Price.objects.available_prices(
-            productIds, PriceType.objects.get(client = current_clients.get())
-        )
+        actual_prices = Price.objects.available_prices(productIds)
+        with suppress(PriceType.DoesNotExist):
+            client_prices = Price.objects.available_prices(
+                productIds, PriceType.objects.get(client = current_clients.get())
+            )
+            actual_prices = actual_prices.exclude(
+                product_id__in = client_prices.values_list('product_id', flat=True)
+            ) | client_prices
         
         return JsonResponse(
             {

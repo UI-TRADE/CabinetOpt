@@ -153,7 +153,7 @@ class StockAndCost(models.Model):
         'Остаток', default=0, validators=[MinValueValidator(0)]
     )    
     cost = models.DecimalField(
-        'Стоимость',
+        'Максимальная цена за грамм',
         max_digits=8,
         decimal_places=2,
         default=0,
@@ -256,7 +256,7 @@ class Price(models.Model):
         validators=[MinValueValidator(0)]
     )
     start_at = models.DateTimeField(
-        'Дата начала действия', db_index=True, auto_now_add=True
+        'Дата начала действия', db_index=True, default=timezone.now
     )
     end_at = models.DateTimeField(
         'Дата окончания действия', db_index=True, blank=True,null=True

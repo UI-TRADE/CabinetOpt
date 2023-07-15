@@ -157,6 +157,9 @@ class PriceAdmin(admin.ModelAdmin):
     list_filter = [
         'type',
     ]
-    readonly_fields = [
-        'start_at',
-    ]
+
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        form = super().get_form(request, obj, change, **kwargs)
+        if obj:
+            form.base_fields['price'].label = 'Цена за грамм' if obj.unit == '163' else 'Цена'
+        return form

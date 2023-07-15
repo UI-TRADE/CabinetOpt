@@ -206,9 +206,13 @@ def stocks_and_costs(request):
         stocks_and_costs = StockAndCost.objects.filter(product_id__in = productIds)
         actual_prices = Price.objects.available_prices(productIds)
         with suppress(PriceType.DoesNotExist):
-            actual_prices = Price.objects.available_prices(
+            client_prices = Price.objects.available_prices(
                 productIds, PriceType.objects.get(client = current_clients.get())
             )
+            actual_prices = actual_prices.exclude(
+                product_id__in = client_prices.values_list('product_id', flat=True)
+            ) | client_prices
+    
         collections = current_products.annotate(
             collection_name=F('collection__name'),
             collection_group=F('collection__group__name')

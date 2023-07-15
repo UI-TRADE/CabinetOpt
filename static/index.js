@@ -16,6 +16,8 @@ const generateUUID = () => {
 }
 
 const loadJson = (selector) => {
+    const element = document.querySelector(selector);
+    if (!element) return []
     return JSON.parse(document.querySelector(selector).getAttribute('data-json'));
 }
 
@@ -130,6 +132,7 @@ const updateProducts = (elementId, data) => {
             $(`#${elementId}`).html(
                 extractContent(data, elementId)
             );
+            if (!document.getElementById(elementId)) return;
             document.getElementById(elementId).style.display = 'block';
             setProductsPrice();
         },
@@ -179,6 +182,8 @@ const createBrandAndCollectionLists = () => {
         const groups = []; 
         const excludedCollections = excludedCollection.split(','); 
         
+        if (!collectionElement) return;
+
         collections.forEach((item) => {
             if (!groups.find(el => el == item.group_name)) groups.push(item.group_name)
         });
@@ -279,7 +284,8 @@ const updateOrderItem = (element) => {
         const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
         const actual_prices    = JSON.parse(data['actual_prices']);
 
-        let currentPrice = 0; let currentDiscount = 0; let inStok = 0;
+        let inStok = 0; let weight = 0; let size = 0;
+        let currentPrice = 0; let currentDiscount = 0; let maxPrice = 0;
         const product = products.find(el => el['pk'] == productId);
         const collection = collections.find(el => el['id'] == productId);
         const stock_and_cost = stocks_and_costs.filter(el => el['fields'].product == productId);
@@ -292,18 +298,27 @@ const updateOrderItem = (element) => {
             stock_and_cost, product['fields'].gender
         )
 
+        if (defaultSize) {
+            maxPrice = defaultSize['fields'].cost;
+            weight = defaultSize['fields'].weight;
+            size = defaultSize['fields'].size;
+            inStok = defaultSize['fields'].stock;   
+        }
+
         if (actual_price) { 
             currentPrice = actual_price['fields'].price;
             currentDiscount = actual_price['fields'].discount;
         }
         
         return {
-            'defaultSize': defaultSize['fields'],
+            'weight': weight,
+            'size': size,
+            'inStok': inStok,
             'currentPrice': currentPrice,
             'currentDiscount': currentDiscount,
+            'maxPrice': maxPrice,
             'unit': product['fields'].unit
         } 
-
     }
 
     const addSize = (element, value, text, selected=false, item=undefined) => {
@@ -344,32 +359,27 @@ const updateOrderItem = (element) => {
 
         productStocksAndCosts(productId)
             .then((data) => {
-
-                const itemParams = getItemParams(data, productId);
-                const defaultSize = itemParams.defaultSize
-
                 nomenclature_sizeField.innerHTML = '';
                 addSize(nomenclature_sizeField, 0, '--');
 
-                if (defaultSize) {
-                    weightField.value = defaultSize.weight; sizeField.value = defaultSize.size;
-                    currentPrice = calculatePrice(
-                        itemParams.currentPrice, defaultSize.cost,
-                        itemParams.currentDiscount, (itemParams.unit == '163') ? defaultSize.weight : 0
-                    );
-
+                const itemParams = getItemParams(data, productId);
+                const price = getPrice(
+                    itemParams.currentPrice, itemParams.maxPrice, itemParams.currentDiscount, itemParams.weight
+                );
+                if (itemParams.weight) weightField.value = itemParams.weight;
+                if (itemParams.size) {
+                    sizeField.value   = itemParams.size;
                     const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
                     const stock_and_cost = stocks_and_costs.filter(el => el['fields'].product == productId);
                     stock_and_cost.filter(el => el['fields'].size).forEach((item) => {
                         addSize(
                             nomenclature_sizeField, item['fields'].size, item['fields'].size,
-                            (item['fields'].size == defaultSize.size), item
+                            (item['fields'].size == itemParams.size), item
                         );
                     });
-
-                } 
-                priceField.value = currentPrice;
-                sumField.value = quantityField.value * currentPrice;
+                }
+                priceField.value = price.clientPrice;
+                sumField.value = quantityField.value * price.clientPrice;
             })
             .catch((error) => {
                 alert('Ошибка: ' + error);
@@ -391,20 +401,14 @@ const updateOrderItem = (element) => {
 
         productStocksAndCosts(productId, selectedSize)
             .then((data) => {
-
                 const itemParams = getItemParams(data, productId);
-                const defaultSize = itemParams.defaultSize
-
-                if (defaultSize) {
-                    weightField.value = defaultSize.weight; sizeField.value = defaultSize.size;
-                    currentPrice = calculatePrice(
-                        itemParams.currentPrice, defaultSize.cost,
-                        itemParams.currentDiscount, (itemParams.unit == '163') ? defaultSize.weight : 0
-                    );
-                } 
-                priceField.value = currentPrice;
-                sumField.value = quantityField.value * currentPrice;                
-
+                const price = getPrice(
+                    itemParams.currentPrice, itemParams.maxPrice, itemParams.currentDiscount, itemParams.weight
+                );
+                if (itemParams.weight) weightField.value = itemParams.weight;
+                if (itemParams.size)   sizeField.value   = itemParams.size;
+                priceField.value = price.clientPrice;
+                sumField.value = quantityField.value * price.clientPrice;                
             })
             .catch((error) => {
                 alert('Ошибка: ' + error);
@@ -426,21 +430,14 @@ const updateOrderItem = (element) => {
 
         productStocksAndCosts(productId, selectedSize)
             .then((data) => {
-
                 const itemParams = getItemParams(data, productId);
-                const defaultSize = itemParams.defaultSize
-
-                if (defaultSize) {
-                    weightField.value = defaultSize.weight; sizeField.value = defaultSize.size;
-                    currentPrice = calculatePrice(
-                        itemParams.currentPrice, defaultSize.cost,
-                        itemParams.currentDiscount, (itemParams.unit == '163') ? defaultSize.weight : 0
-                    );
-                }
-
-                priceField.value = currentPrice;
-                sumField.value = quantityField.value * currentPrice;                
-
+                const price = getPrice(
+                    itemParams.currentPrice, itemParams.maxPrice, itemParams.currentDiscount, itemParams.weight
+                );
+                if (itemParams.weight) weightField.value = itemParams.weight;
+                if (itemParams.size)   sizeField.value   = itemParams.size;
+                priceField.value = price.clientPrice;
+                sumField.value = quantityField.value * price.clientPrice;                
             })
             .catch((error) => {
                 alert('Ошибка: ' + error);
@@ -552,18 +549,40 @@ const OnQuantityChange = (element) => {
 }
 
 
-const calculatePrice = (currentPrice, maxPrice, discount, weight=0) => {
+const calculatePrice = (clientPrice, weight=0) => {
+    let result = parseFloat(clientPrice);
+    if (weight) result = (parseFloat(clientPrice) * weight).toFixed(2);
+
+    return result;
+}
+
+
+const calculateMaxPrice = (maxPrice, weight=0) => {
+    let result = 0;
     if (parseFloat(maxPrice) > 0) {
-        if (weight) {
-            currentPrice = (parseFloat(maxPrice) * weight).toFixed(2);
-        } else {
-            currentPrice = parseFloat(maxPrice);
-        }
+        if (weight) result = (parseFloat(maxPrice) * weight).toFixed(2);
     }
-    if (discount > 0) {
-        currentPrice = currentPrice - (currentPrice * discount / 100)   
+
+    return result;
+}
+
+
+const getPrice = (clientPrice, maxPrice, clientDiscount, weight=0) => {
+    const result = {'clientPrice': 0, 'clientDiscount': 0, 'clientDiscountPrice': 0, 'maxPrice': 0};
+
+    const price = calculatePrice(clientPrice, weight);
+    if (!price) return result;
+
+    result['clientPrice'] = price;
+    result['clientDiscount'] = clientDiscount;    
+
+    if (clientDiscount) {
+        result['clientDiscountPrice'] = (price - (price * clientDiscount / 100)).toFixed(2);
     }
-    return currentPrice;  
+
+    result['maxPrice'] = calculateMaxPrice(maxPrice, weight);
+
+    return result;
 }
 
 
@@ -645,7 +664,8 @@ const setProductsPrice = () => {
             const actual_prices    = JSON.parse(data['actual_prices']);
 
             for (var i=0; i < elements.length; i++) {
-                let currentPrice = 0; let currentDiscount = 0; let inStok = 0;
+                let inStok = 0; let weight = 0; let size = 0;
+                let currentPrice = 0; let currentDiscount = 0; let maxPrice = 0;
                 const currentId = JSON.parse(elements[i].getAttribute('data-json'));
                 const product = products.find(el => el['pk'] == currentId['id']);
                 const collection = collections.find(el => el['id'] == currentId['id']);
@@ -661,41 +681,34 @@ const setProductsPrice = () => {
                     product['fields'].gender
                 )
 
+                if (defaultSize) {
+                    maxPrice = defaultSize['fields'].cost;
+                    weight = defaultSize['fields'].weight;
+                    size = defaultSize['fields'].size;
+                    inStok = defaultSize['fields'].stock;   
+                }
+
                 if (actual_price) { 
                     currentPrice = actual_price['fields'].price;
                     currentDiscount = actual_price['fields'].discount;
                 }
 
-                if (defaultSize) {
-                    currentPrice = calculatePrice(
-                        currentPrice,
-                        defaultSize['fields'].cost,
-                        currentDiscount,
-                        (product['fields'].unit == '163') ? defaultSize['fields'].weight : 0
-                    );
-                    const priceBlock = elements[i].querySelector('.price-block');
-                    if (currentPrice > 0) priceBlock.querySelector('.price').textContent = `Цена: ${currentPrice} руб.`;
-                    if (product['fields'].unit == '163' && defaultSize['fields'].weight > 0) {
-                        priceBlock.querySelector('.weight').textContent = 
-                            `Вес: ${defaultSize['fields'].weight} грамм`;
-                    }
-                    if (defaultSize['fields'].stock > 0) priceBlock.querySelector('.in_stock').textContent = 
-                        `В наличии: ${defaultSize['fields'].stock} шт.`;
+                const price = getPrice(currentPrice, maxPrice, currentDiscount, weight);
 
-                    var inputFields = priceBlock.getElementsByTagName('input');
-                    for (let item of inputFields) {
-                        if (item.name === 'price' && currentPrice) {
-                            item.value = currentPrice;    
-                        }
-                        if (item.name === 'size' && defaultSize['fields'].size) {
-                            item.value = defaultSize['fields'].size;
-                        }
-                        if (item.name === 'weight' && defaultSize['fields'].weight) {
-                            item.value = defaultSize['fields'].weight;
-                        }
-                    }
+                const priceBlock = elements[i].querySelector('.price-block');
+                const priceField = priceBlock.querySelector('.price');
+                const weightField = priceBlock.querySelector('.weight');
+                const stockField = priceBlock.querySelector('.in_stock');
+                if (price.clientPrice) priceField.textContent = `Цена: ${price.clientPrice} руб.`;
+                if (product['fields'].unit == '163' && weight) weightField.textContent = `Вес: ${weight} грамм`;
+                if (inStok) stockField.textContent = `В наличии: ${inStok} шт.`;
+
+                var inputFields = priceBlock.getElementsByTagName('input');
+                for (let item of inputFields) {
+                    if (item.name === 'price' && price.clientPrice) item.value = price.clientPrice;    
+                    if (item.name === 'size' && size) item.value = size;
+                    if (item.name === 'weight' && weight) item.value = defaultSize['fields'].weight;
                 }
-
             }
         })
         .catch((error) => {
@@ -720,37 +733,40 @@ const setProductPrice = () => {
             });
         });
     }
-
-    if(document.location.pathname.indexOf("/catalog/product/") === -1){
-        return;    
-    }
     
-    const updateSize = (product, size, price, discount) => {
+    const updateSize = (product, context) => {
 
         const element = document.getElementById(`good-block-${product['pk']}`);
-        if (size.weight) element.querySelector('#weigth-block').outerHTML =
-            `<b id="weigth-block"> ${size.weight} </b>`;
-        currentPrice = calculatePrice(
-            price, size.cost, discount,
-            (product['fields'].unit == '163') ? size.weight : 0
-        );
-        if (currentPrice) element.querySelector('#price-block').outerHTML =
-            `<b id="price-block"> ${currentPrice} </b>`;
-        if (size.stock) element.querySelector('#in_stock').outerHTML = 
-            `<b id="in_stock"> ${size.stock} </b>`;
+        if (context.weight) element.querySelector('#weigth-block').outerHTML =
+            `<b id="weigth-block"> ${context.weight} </b>`;
+        const price = getPrice(context.price, context.maxPrice, context.discount, context.weight);
+
+        if (price.clientPrice) element.querySelector('#price-block').outerHTML =
+            `<b id="price-block"> ${price.clientPrice} </b>`;
+        if (context.inStok) element.querySelector('#in_stock').outerHTML = 
+            `<b id="in_stock"> ${context.inStok} </b>`;
 
         var inputFields = element.querySelector('form').querySelectorAll('input');
         for (let item of inputFields) {
-            if (item.name === 'price' && currentPrice) {
-                item.value = currentPrice;    
-            }
-            if (item.name === 'size' && size.size) {
-                item.value = size.size;
-            }
-            if (item.name === 'weight' && size.weight) {
-                item.value = size.weight;
-            }
+            if (item.name === 'price' && price.clientPrice) item.value = price.clientPrice;
+            if (item.name === 'size' && context.size)       item.value = context.size;
+            if (item.name === 'weight' && context.weight)   item.value = context.weight;
         }
+    }
+
+    const addSizeElement = (size) => {
+        const element = document.createElement("div");
+        element.classList.add('col');
+        element.classList.add('text-center');
+        element.classList.add('product__size__block');
+        element.classList.add('product__size__block--design');
+        element.classList.add('product__size__block--position');
+        element.textContent = size;
+        return element;
+    }
+
+    if(document.location.pathname.indexOf("/catalog/product/") === -1){
+        return;    
     }
 
     const productIds = []
@@ -774,7 +790,8 @@ const setProductPrice = () => {
             const actual_prices    = JSON.parse(data['actual_prices']);
 
             for (var i=0; i < elements.length; i++) {
-                let currentPrice = 0; let currentDiscount = 0; let inStok = 0;
+                let inStok = 0; let weight = 0; let size = 0;
+                let currentPrice = 0; let currentDiscount = 0; let maxPrice = 0;
                 const currentId = JSON.parse(elements[i].getAttribute('data-json'));
                 const product = products.find(el => el['pk'] == currentId['id']);
                 const collection = collections.find(el => el['id'] == currentId['id']);
@@ -790,55 +807,63 @@ const setProductPrice = () => {
                     product['fields'].gender
                 )
 
+                if (defaultSize) {
+                    maxPrice = defaultSize['fields'].cost;
+                    weight = defaultSize['fields'].weight;
+                    size = defaultSize['fields'].size;
+                    inStok = defaultSize['fields'].stock;   
+                }                
+
                 if (actual_price) { 
                     currentPrice = actual_price['fields'].price;
                     currentDiscount = actual_price['fields'].discount;
                 }
 
-                if (defaultSize) { 
-                    updateSize(product, defaultSize['fields'], currentPrice, currentDiscount);
+                updateSize(
+                    product,
+                    {
+                        'size': size, 'weight': weight, 'inStok': inStok,
+                        'price': currentPrice, 'discount': currentDiscount, 'maxPrice': maxPrice
+                });
 
-                    if (defaultSize['fields'].size) {
-                        const sizeTitle = elements[i].querySelector('#size-title');
-                        const sizeElements = elements[i].querySelector('#size-block');
-                        if (stock_and_cost) sizeTitle.style.display = 'block';
-                        stock_and_cost.forEach((item) => {
-                            if (!item['fields'].size) return;
-                            item['currentPrice'] = currentPrice;
-                            item['currentDiscount'] = currentDiscount;
-                            const sizeElement = document.createElement("div");
-                            sizeElement.classList.add('col');
-                            sizeElement.classList.add('text-center');
-                            sizeElement.classList.add('product__size__block');
-                            sizeElement.classList.add('product__size__block--design');
-                            sizeElement.classList.add('product__size__block--position');
-                            if (item['fields'].size == defaultSize['fields'].size) 
-                                sizeElement.classList.add('product__size__block--select');
-                            sizeElement.setAttribute('data-json', JSON.stringify(item));
-                            sizeElement.textContent = item['fields'].size;
+                if (!size) return;
+                const sizeTitle    = elements[i].querySelector('#size-title');
+                const sizeElements = elements[i].querySelector('#size-block');
+                if (stock_and_cost) sizeTitle.style.display = 'block';
+                stock_and_cost.forEach((item) => {
+                    if (!item['fields'].size) return;
+                    const itemFields = item['fields'];
+                    item['clientPrice']    = currentPrice;
+                    item['clientDiscount'] = currentDiscount;
+                    const sizeElement = addSizeElement(itemFields.size);
+                    if (itemFields.size == size) 
+                        sizeElement.classList.add('product__size__block--select');
+                    sizeElement.setAttribute('data-json', JSON.stringify(item));
 
-                            sizeElement.addEventListener('click', (event) => {
-                                const boundInfo = JSON.parse(event.target.getAttribute('data-json'));
-                                updateSize(
-                                    product,
-                                    boundInfo['fields'],
-                                    boundInfo['currentPrice'],
-                                    boundInfo['currentDiscount']
-                                );
-                                const toggler = document.getElementsByClassName('product__size__block');
-                                for (var k=0; k<toggler.length; k++) {
-                                    if (toggler[k].classList.contains('product__size__block--select')) {
-                                        toggler[k].classList.remove('product__size__block--select');    
-                                    }
-                                }
-                                event.target.classList.add('product__size__block--select');
-                            });
-                            
-                            sizeElements.appendChild(sizeElement);
-                            
+                    sizeElement.addEventListener('click', (event) => {
+                        const boundInfo = JSON.parse(event.target.getAttribute('data-json'));
+                        const boundFields = boundInfo['fields'];
+                        updateSize(
+                            product,
+                            {
+                                'size': boundFields.size, 'weight': boundFields.weight,
+                                'inStok': boundFields.stock, 'price': boundInfo['clientPrice'],
+                                'discount': boundInfo['clientDiscount'], 'maxPrice': boundFields.cost
                         });
-                    }
-                }
+                        const toggler = document.getElementsByClassName('product__size__block');
+                        for (var k=0; k<toggler.length; k++) {
+                            if (toggler[k].classList.contains('product__size__block--select')) {
+                                toggler[k].classList.remove('product__size__block--select');    
+                            }
+                        }
+                        event.target.classList.add('product__size__block--select');
+                    });
+                    
+                    sizeElements.appendChild(sizeElement);
+                    
+                });
+
+
             }
         })
         .catch((error) => {
