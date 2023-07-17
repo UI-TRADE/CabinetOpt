@@ -111,10 +111,10 @@ class Product(models.Model):
         blank=True,
         db_index=True,
         choices=(
-            ('novelty', 'Новинка'),
-            ('order'  , 'Заказ'),
-            ('hit'    , 'Хит'),
-            ('sale'   , 'Распродажа'),
+            ('novelty', 'NEW!'),
+            ('order'  , 'ЗАКАЗ'),
+            ('hit'    , 'ХИТ'),
+            ('sale'   , 'ВЫГОДНО'),
     ))
     identifier_1C = models.CharField(
         'Идентификатор 1С', max_length=50, blank=True, db_index=True

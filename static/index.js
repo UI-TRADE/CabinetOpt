@@ -124,6 +124,9 @@ const updateElement = (selector) => {
 
 
 const updateProducts = (elementId, data) => {
+    const mainElement = document.getElementById(elementId);
+    if (!document.getElementById(elementId)) return;
+    mainElement.style = "display: none;";
     $.ajax({
         type: 'POST',
         data: data,
@@ -132,9 +135,7 @@ const updateProducts = (elementId, data) => {
             $(`#${elementId}`).html(
                 extractContent(data, elementId)
             );
-            if (!document.getElementById(elementId)) return;
-            document.getElementById(elementId).style.display = 'block';
-            setProductsPrice();
+            updateProductCards(mainElement);
         },
         error: (xhr, status, error) => {
             alert('Ошибка: ' + error);
@@ -236,8 +237,66 @@ const createBrandAndCollectionLists = () => {
             'brand': excludedВrands.split(','),
             'collection': excludedCollection.split(',')
         })
-    }); 
+    });
 }
+
+
+const updateCart = (element, params) => {
+
+    const updateElements = (cartData) => {
+        const cartButton     = element.querySelector('input[type="button"]');
+        const cartElements   = element.querySelector('div[name="cart-row"]');
+        if (!cartElements) return;
+        const cartElement    = cartElements.querySelector('input');
+        const cartKeyElement = cartElements.querySelector('[name="cart-key"]');
+        cartButton.parentElement.style = "display: block";
+        cartElements.style             = "display: none";
+        if (cartData) {
+            cartButton.parentElement.style = "display: none";
+            cartElements.style             = "display: flex";
+            cartElement.value              = cartData['quantity'];
+            cartKeyElement.textContent     = JSON.stringify(params);
+        }
+    }
+
+    $.ajax({
+        url: `/cart/info/${params['productId']}/${params['size']}`,
+        success: (cartData) => {
+            updateElements(cartData);
+        },
+        error: (error) => {
+            alert('Ошибка обновления корзины: ' + error);
+        }
+    });
+
+}
+
+const waitUpdateCart = (element, params) => {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: `/cart/info/${params['productId']}/${params['size']}`,
+            success: (cartData) => {
+                const cartButton     = element.querySelector('input[type="button"]');
+                const cartElements   = element.querySelector('div[name="cart-row"]');
+                if (!cartElements) return;
+                const cartElement    = cartElements.querySelector('input');
+                const cartKeyElement = cartElements.querySelector('[name="cart-key"]');
+                cartButton.parentElement.style = "display: block";
+                cartElements.style             = "display: none";
+                if (cartData) {
+                    cartButton.parentElement.style = "display: none";
+                    cartElements.style             = "display: flex";
+                    cartElement.value              = cartData['quantity'];
+                    cartKeyElement.textContent     = JSON.stringify(params);
+                }
+                resolve(true);
+            },
+            error: (error) => {
+                reject(false);
+            }
+        });
+    });
+};
 
 
 const addToCart = (formId) => {
@@ -251,10 +310,18 @@ const addToCart = (formId) => {
         processData: false,
         contentType: false,
         success: function(response) {
+            try {
+                if (response['replay'] == 'error') throw new Error(response['message']);
+                const element = productForm.parentElement.parentElement;
+                updateCart(element, {'productId': response['pk'], 'size': response['size']});
+                
+            } catch(error) {
+                alert('Ошибка добавления в корзину: ' + error);    
+            }
             updateElement('li[name="cart_detail"]');
         },
         error: function(xhr, status, error) {
-            alert('Ошибка: ' + error);
+            alert('Ошибка добавления в корзину: ' + error);
         }
     });
 }
@@ -458,7 +525,7 @@ const updateOrderItem = (element) => {
 }
 
 
-const updateCartItem = (element) => {
+const updateCartItem = (element, preventReload=false) => {
 
     const getCartInfo = (params) => {
         return new Promise((resolve, reject) => {
@@ -497,12 +564,15 @@ const updateCartItem = (element) => {
                         processData: false,
                         contentType: false,
                         success: (response) => {
-                            const reloadHtml = new DOMParser().parseFromString(response, 'text/html');
-                            const allCartKeys = reloadHtml.querySelectorAll('[name="cart-key"]');
-                            for(var i=0; i<allCartKeys.length; i++) {
-                                if (allCartKeys[i].textContent == cartKey.textContent) break;
+                            if (!preventReload) {
+                                const reloadHtml = new DOMParser().parseFromString(response, 'text/html');
+                                const allCartKeys = reloadHtml.querySelectorAll('[name="cart-key"]');
+                                for(var i=0; i<allCartKeys.length; i++) {
+                                    if (allCartKeys[i].textContent == cartKey.textContent) break;
+                                }
+                                cartRow.outerHTML = allCartKeys[i].parentElement.outerHTML;
                             }
-                            cartRow.outerHTML = allCartKeys[i].parentElement.outerHTML;
+                            updateElement('li[name="cart_detail"]');
                         },
                         error: (xhr, status, error) => {
                             alert('Ошибка: ' + error);
@@ -516,7 +586,7 @@ const updateCartItem = (element) => {
 }
 
 
-const OnQuantityChange = (element) => {
+const OnQuantityChange = (element, preventReload=false) => {
 
     const getCartKey = (element, i) => {
         if (i >= 5) return ""; i++;
@@ -527,25 +597,44 @@ const OnQuantityChange = (element) => {
         return getCartKey(element.parentElement, i);
     }
 
-    if (element.value == 0) {
+    const quantity = parseInt(element.value);
+    if (quantity == 0) {
         const cartKey = getCartKey(element, 0);
         $.ajax({
             url: `/cart/remove/${cartKey.productId}/${cartKey.size}/`,
             success: (response) => {
-                const cartRows = document.querySelectorAll('[name="cart-row"]');
-                cartRows.forEach((cartRow) => {
-                    if (cartRow.contains(element)) {
-                        cartRow.outerHTML = '';
-                    }
-                });
+                if (!preventReload) {
+                    const cartRows = document.querySelectorAll('[name="cart-row"]');
+                    cartRows.forEach((cartRow) => {
+                        if (cartRow.contains(element)) {
+                            cartRow.outerHTML = '';
+                        }
+                    });
+                }
+                updateCart(element.parentElement.parentElement, cartKey);
+                updateElement('li[name="cart_detail"]');
             },
             error: (xhr, status, error) => {
                 alert('Ошибка: ' + error);
             }
         });
     } else {
-        updateCartItem(element);    
+        updateCartItem(element, preventReload);    
     }   
+}
+
+
+const addOneToCart = (element) => {
+    const cartElement = element.parentElement.querySelector('input');
+    cartElement.value = parseInt(cartElement.value) + 1;
+    OnQuantityChange(cartElement, true);
+}
+
+
+const delOneFromCart = (element) => {
+    const cartElement = element.parentElement.querySelector('input');
+    cartElement.value = parseInt(cartElement.value) - 1;
+    OnQuantityChange(cartElement, true);
 }
 
 
@@ -626,7 +715,7 @@ const getDefaultSize = (productId, collection, sizes, gender) => {
 }
 
 
-const setProductsPrice = () => {
+const updateProductCards = (element) => {
 
     const productStocksAndCosts = (productIds, size=0) => {
         return new Promise((resolve, reject) => {
@@ -643,6 +732,117 @@ const setProductsPrice = () => {
         });
     }
 
+    const updateElements = (data) => {
+        return new Promise((resolve, reject) => {
+
+            try {
+                if (data['replay'] == 'error') throw new Error(data['message']);
+
+                const elemsForUpdate   = []
+                const products         = JSON.parse(data['products']);
+                const collections      = JSON.parse(data['collection']);
+                const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
+                const actual_prices    = JSON.parse(data['actual_prices']);
+
+                for (var i=0; i < elements.length; i++) {
+                    let inStok = 0; let weight = 0; let size = 0;
+                    let currentPrice = 0; let currentDiscount = 0; let maxPrice = 0;
+                    const currentId = JSON.parse(elements[i].getAttribute('data-json'));
+                    const product = products.find(el => el['pk'] == currentId['id']);
+                    const collection = collections.find(el => el['id'] == currentId['id']);
+                    const stock_and_cost = stocks_and_costs.filter(el => el['fields'].product == currentId['id']);
+                    const actual_price = actual_prices.filter(
+                        el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
+                    ).find(el => true);
+
+                    const defaultSize = getDefaultSize(
+                        currentId['id'],
+                        collection['collection_group'],
+                        stock_and_cost,
+                        product['fields'].gender
+                    )
+
+                    if (defaultSize) {
+                        maxPrice = defaultSize['fields'].cost;
+                        weight = defaultSize['fields'].weight;
+                        size = defaultSize['fields'].size;
+                        inStok = defaultSize['fields'].stock;   
+                    }
+
+                    if (actual_price) { 
+                        currentPrice = actual_price['fields'].price;
+                        currentDiscount = actual_price['fields'].discount;
+                    }
+
+                    const price = getPrice(currentPrice, maxPrice, currentDiscount, weight);
+
+                    const priceBlock          = elements[i].querySelector('.price-block');
+                    const inStockBlock        = elements[i].querySelector('.inStock-block');
+                    const priceField          = priceBlock.querySelector('.price');
+                    const weightField         = priceBlock.querySelector('.weight');
+                    const pricePerweightField = priceBlock.querySelector('.price-per-weight');
+                    const maxPriceField       = priceBlock.querySelector('.max-price');
+                    const discountField       = priceBlock.querySelector('.discount');
+                    const stockField          = inStockBlock.querySelector('.in_stock');
+                    if (currentPrice) pricePerweightField.textContent = `${currentPrice} руб/гр`;
+                    if (price.clientPrice) priceField.textContent = `${price.clientPrice} руб`;
+                    if (currentDiscount>0) {
+                        if (price.maxPrice) maxPriceField.textContent = `${price.maxPrice} руб`;
+                        discountField.textContent = `- ${currentDiscount} %`
+                    };
+                    if (product['fields'].unit == '163' && weight) weightField.textContent = `Вес: ${weight} гр`;
+                    if (inStok) stockField.textContent = `${inStok} шт`;
+
+                    var inputFields = inStockBlock.getElementsByTagName('input');
+                    for (let item of inputFields) {
+                        if (item.name === 'price' && price.clientPrice) item.value = price.clientPrice;    
+                        if (item.name === 'size' && size) item.value = size;
+                        if (item.name === 'weight' && weight) item.value = defaultSize['fields'].weight;
+                    }
+
+                    elemsForUpdate.push(
+                        {
+                            'key': {'productId': currentId['id'], 'size': size},
+                            'element': inStockBlock
+                    });
+                }
+                resolve(elemsForUpdate);
+
+            } catch (error) {
+
+                reject(error);
+    
+            }
+        });
+    }
+
+    const updateCarts = (cartElements) => {
+        return new Promise((resolve, reject) => {
+            try {
+                const result = Promise.all(
+                    cartElements.map((item) => waitUpdateCart(item.element, item.key))
+                );
+                resolve(result);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+    
+    const updateProductsStatusStyle = () => {
+        const statusFields = document.querySelectorAll('p[name="product-status"]');
+        statusFields.forEach((statusField) => {
+            const data = JSON.parse(statusField.getAttribute('data-json'));
+            if (!data) return;
+            if (data.status === "novelty") statusField.className = 'text-primary fs-3';
+            if (data.status === "order")   statusField.className = 'text-info-emphasis fs-3';
+            if (data.status === "hit")     statusField.className = 'text-warning fs-3';
+            if (data.status === "sale")    statusField.className = 'text-danger fs-3';
+        });
+    }
+    
+    updateProductsStatusStyle();
+
     const productIds = []
     const elements = document.getElementsByClassName('good-block');
     for (var j=0; j<elements.length; j++) {
@@ -656,63 +856,16 @@ const setProductsPrice = () => {
 
     productStocksAndCosts(productIds.toString())
         .then((data) => {
-            if (data['replay'] == 'error') throw new Error(data['message']);
-
-            const products         = JSON.parse(data['products']);
-            const collections      = JSON.parse(data['collection']);
-            const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
-            const actual_prices    = JSON.parse(data['actual_prices']);
-
-            for (var i=0; i < elements.length; i++) {
-                let inStok = 0; let weight = 0; let size = 0;
-                let currentPrice = 0; let currentDiscount = 0; let maxPrice = 0;
-                const currentId = JSON.parse(elements[i].getAttribute('data-json'));
-                const product = products.find(el => el['pk'] == currentId['id']);
-                const collection = collections.find(el => el['id'] == currentId['id']);
-                const stock_and_cost = stocks_and_costs.filter(el => el['fields'].product == currentId['id']);
-                const actual_price = actual_prices.filter(
-                    el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
-                ).find(el => true);
-
-                const defaultSize = getDefaultSize(
-                    currentId['id'],
-                    collection['collection_group'],
-                    stock_and_cost,
-                    product['fields'].gender
-                )
-
-                if (defaultSize) {
-                    maxPrice = defaultSize['fields'].cost;
-                    weight = defaultSize['fields'].weight;
-                    size = defaultSize['fields'].size;
-                    inStok = defaultSize['fields'].stock;   
-                }
-
-                if (actual_price) { 
-                    currentPrice = actual_price['fields'].price;
-                    currentDiscount = actual_price['fields'].discount;
-                }
-
-                const price = getPrice(currentPrice, maxPrice, currentDiscount, weight);
-
-                const priceBlock = elements[i].querySelector('.price-block');
-                const priceField = priceBlock.querySelector('.price');
-                const weightField = priceBlock.querySelector('.weight');
-                const stockField = priceBlock.querySelector('.in_stock');
-                if (price.clientPrice) priceField.textContent = `Цена: ${price.clientPrice} руб.`;
-                if (product['fields'].unit == '163' && weight) weightField.textContent = `Вес: ${weight} грамм`;
-                if (inStok) stockField.textContent = `В наличии: ${inStok} шт.`;
-
-                var inputFields = priceBlock.getElementsByTagName('input');
-                for (let item of inputFields) {
-                    if (item.name === 'price' && price.clientPrice) item.value = price.clientPrice;    
-                    if (item.name === 'size' && size) item.value = size;
-                    if (item.name === 'weight' && weight) item.value = defaultSize['fields'].weight;
-                }
-            }
+            return updateElements(data);
+        })
+        .then((data) => {
+            return updateCarts(data);
+        })
+        .then((result) => {
+            if (result.every(Boolean)) element.style.display = 'block';
         })
         .catch((error) => {
-            alert('Ошибка: ' + error);
+            alert('Ошибка обновления каталога: ' + error);
         });
 }
 
@@ -1371,6 +1524,7 @@ $(window).on("load", () => {
 
     // Очищаем список выбора скрытого поля product, за исключением выбранного значения
     clearSelectionList('order__field__product');
+
 });
 
 

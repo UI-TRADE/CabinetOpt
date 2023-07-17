@@ -106,7 +106,14 @@
                             <input type="hidden" name="size" value=0 />
                             <input type="hidden" name="weight" value=0 />
                         </form>
-                        <a href="#" onclick="addToCart('cartForm-{{product.id}}');">в Корзину</a>
+                        <!-- <a href="#" onclick="addToCart('cartForm-{{product.id}}');">в Корзину</a> -->
+                        <div>
+                            <input
+                              type="button"
+                              onclick="addToCart('cartForm-{{product.id}}');"
+                              value="В корзину"
+                              class="btn btn-outline-primary"/>
+                          </div>
                     </div>
 
                 </div>
