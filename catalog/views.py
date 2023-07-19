@@ -204,27 +204,21 @@ def stocks_and_costs(request):
     size = request.query_params.get('size')
 
     if productIds:
-        collections, products, stocks_and_costs, prices = \
+        collections, products, stocks_and_costs, prices, discount_prices = \
             StockAndCost.objects.available_stocks_and_costs(
                 productIds.split(','),
                 size=size,
                 clients=Login(request).get_clients()
             )
 
-        stocks_and_costs_serialized = json.dumps(
-            [{
-                "model": "catalog.stockandcost", "pk": fields["product"], "fields": fields
-            } for fields in stocks_and_costs],
-            cls=DjangoJSONEncoder
-        )
-
         return JsonResponse(
             {
                 'replay'           : 'ok',
                 'collection'       : json.dumps(list(collections), ensure_ascii=False),
                 'products'         : serialize("json", products),
-                'stocks_and_costs' : stocks_and_costs_serialized,
-                'actual_prices'    : serialize("json", prices)
+                'stocks_and_costs' : serialize("json", stocks_and_costs),
+                'actual_prices'    : serialize("json", prices),
+                'discount_prices'  : serialize("json", discount_prices)
             },
             status=200,
             safe=False

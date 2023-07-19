@@ -350,6 +350,7 @@ const updateOrderItem = (element) => {
         const collections      = JSON.parse(data['collection']);
         const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
         const actual_prices    = JSON.parse(data['actual_prices']);
+        const discount_prices  = JSON.parse(data['discount_prices']);
 
         let inStok = 0; let weight = 0; let size = 0;
         let currentPrice = 0; let currentDiscount = 0; let maxPrice = 0;
@@ -358,6 +359,9 @@ const updateOrderItem = (element) => {
         const stock_and_cost = stocks_and_costs.filter(el => el['fields'].product == productId);
         const actual_price = actual_prices.filter(
             el => el['fields'].product == productId && el['fields'].unit == product['fields'].unit
+        ).find(el => true);
+        const discount_price = discount_prices.filter(
+            el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
         ).find(el => true);
 
         const defaultSize = getDefaultSize(
@@ -375,6 +379,11 @@ const updateOrderItem = (element) => {
         if (actual_price) { 
             currentPrice = actual_price['fields'].price;
             currentDiscount = actual_price['fields'].discount;
+        }
+
+        if (discount_price) {
+            maxPrice = discount_price['fields'].price;
+            currentDiscount = discount_price['fields'].discount;   
         }
         
         return {
@@ -743,6 +752,7 @@ const updateProductCards = (element) => {
                 const collections      = JSON.parse(data['collection']);
                 const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
                 const actual_prices    = JSON.parse(data['actual_prices']);
+                const discount_prices  = JSON.parse(data['discount_prices']);
 
                 for (var i=0; i < elements.length; i++) {
                     let inStok = 0; let weight = 0; let size = 0;
@@ -752,6 +762,9 @@ const updateProductCards = (element) => {
                     const collection = collections.find(el => el['id'] == currentId['id']);
                     const stock_and_cost = stocks_and_costs.filter(el => el['fields'].product == currentId['id']);
                     const actual_price = actual_prices.filter(
+                        el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
+                    ).find(el => true);
+                    const discount_price = discount_prices.filter(
                         el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
                     ).find(el => true);
 
@@ -772,6 +785,11 @@ const updateProductCards = (element) => {
                     if (actual_price) { 
                         currentPrice = actual_price['fields'].price;
                         currentDiscount = actual_price['fields'].discount;
+                    }
+
+                    if (discount_price) {
+                        maxPrice = discount_price['fields'].price; 
+                        currentDiscount = discount_price['fields'].discount;   
                     }
 
                     const price = getPrice(currentPrice, maxPrice, currentDiscount, weight);
@@ -941,6 +959,7 @@ const setProductPrice = () => {
             const collections      = JSON.parse(data['collection']);
             const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
             const actual_prices    = JSON.parse(data['actual_prices']);
+            const discount_prices  = JSON.parse(data['discount_prices']);
 
             for (var i=0; i < elements.length; i++) {
                 let inStok = 0; let weight = 0; let size = 0;
@@ -950,6 +969,9 @@ const setProductPrice = () => {
                 const collection = collections.find(el => el['id'] == currentId['id']);
                 const stock_and_cost = stocks_and_costs.filter(el => el['fields'].product == currentId['id']);
                 const actual_price = actual_prices.filter(
+                    el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
+                ).find(el => true);
+                const discount_price = discount_prices.filter(
                     el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
                 ).find(el => true);
 
@@ -965,11 +987,16 @@ const setProductPrice = () => {
                     weight = defaultSize['fields'].weight;
                     size = defaultSize['fields'].size;
                     inStok = defaultSize['fields'].stock;   
-                }                
+                }
 
                 if (actual_price) { 
                     currentPrice = actual_price['fields'].price;
                     currentDiscount = actual_price['fields'].discount;
+                }
+
+                if (discount_price) {
+                    maxPrice = discount_price['fields'].price;
+                    currentDiscount = discount_price['fields'].discount;   
                 }
 
                 updateSize(
@@ -1102,7 +1129,6 @@ const updateOrder = () => {
 
             const products         = JSON.parse(data['products']);
             const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
-            const actual_prices    = JSON.parse(data['actual_prices']);
 
             const orderItems = document.getElementsByClassName('order-product-item');
             for (var i=0; i<orderItems.length; i++) {

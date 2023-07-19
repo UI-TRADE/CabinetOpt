@@ -140,13 +140,11 @@ class StockAndCostQuerySet(models.QuerySet):
         products = Product.objects.filter(pk__in = products_ids)
         stocks_and_costs = self.filter(product_id__in = products_ids)
         prices = Price.objects.available_prices(products_ids)
+        discount_prices = Price.objects.none()
         with suppress(PriceType.DoesNotExist):
             discount_prices = Price.objects.available_prices(
                 products_ids, PriceType.objects.get(name='Выгода')
             )
-            prices = prices.exclude(
-                product_id__in = discount_prices.values_list('product_id', flat=True)
-            ) | discount_prices
         with suppress(PriceType.DoesNotExist):
             client_prices = Price.objects.available_prices(
                 products_ids, PriceType.objects.get(client = clients.get())
@@ -163,11 +161,11 @@ class StockAndCostQuerySet(models.QuerySet):
         if float(kwargs.get('size', 0)):
             stocks_and_costs = stocks_and_costs.filter(size=kwargs['size'])
 
-        stocks_and_costs = stocks_and_costs.values(
-            'product', 'size', 'cost'
-        ).annotate(stock=Sum('stock'), weight=Sum('weight'))
+        # stocks_and_costs = stocks_and_costs.values(
+        #     'product', 'size', 'cost'
+        # ).annotate(stock=Sum('stock'), weight=Sum('weight'))
 
-        return collections, products, stocks_and_costs, prices
+        return collections, products, stocks_and_costs, prices, discount_prices
 
 
 
@@ -331,7 +329,7 @@ class CutType(models.Model):
     name = models.CharField('Наименование', max_length=100, db_index=True)
 
     class Meta:
-        verbose_name = 'Органка'
+        verbose_name = 'Огранка'
         verbose_name_plural = 'Виды огранки'
 
     def __str__(self):
