@@ -14,7 +14,9 @@ from rest_framework.permissions import IsAuthenticated
 
 from clients.login import Login
 from clients.models import PriorityDirection
-from catalog.models import Product, Collection, StockAndCost
+from catalog.models import (
+    Product, Collection, StockAndCost, GemSet
+)
 from catalog.models import PriceType, Price
 
 from .tasks import run_uploading_products, run_uploading_images, run_uploading_price
@@ -138,6 +140,7 @@ class ProductCardView(DetailView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['gem_sets'] = GemSet.objects.filter(product=self.get_object())
         context['MEDIA_URL'] = settings.MEDIA_URL
         return dict(list(context.items()))
 

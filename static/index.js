@@ -1025,6 +1025,32 @@ const setProductPrice = () => {
 }
 
 
+const selectProductDetails = (element) => {
+    const productDetailElements = document.querySelectorAll('.product-details');
+    for (var i=0; i < productDetailElements.length; i++) {
+        const formElement = document.getElementById(`${productDetailElements[i].name}Form`);
+        if (formElement) formElement.style = 'display: none;'
+        productDetailElements[i].classList.remove('active');
+        if (productDetailElements[i] == element) {
+            productDetailElements[i].classList.add('active');
+            if (formElement) formElement.style = 'display: block;'
+            continue;
+        }
+    }
+}
+
+
+const showGemDetails = (element) => {
+    const gemBody = element.parentElement.querySelector('.card-body');
+    if (gemBody.style.display == "none") {
+        gemBody.style.display = "block";
+    } else {
+        gemBody.style.display = "none";
+    }
+    element.classList.toggle('gem-open-box');
+}
+
+
 const clearSelectionList = (className) => {
     const orderFields = document.getElementsByClassName(className);
     for(var i=0; i<orderFields.length; i++) {

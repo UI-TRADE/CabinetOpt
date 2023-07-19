@@ -8,7 +8,10 @@ from .models import (
     Product,
     PriceType,
     Price,
-    StockAndCost
+    StockAndCost,
+    PreciousStone,
+    CutType,
+    GemSet
 )
 
 class ProductImageInLine(admin.TabularInline):
@@ -16,6 +19,7 @@ class ProductImageInLine(admin.TabularInline):
     extra = 0
     fields = ('image', 'filename', 'render_preview')
     readonly_fields = ('render_preview',)
+    classes = ('collapse', )
 
     verbose_name = "Фотография"
     verbose_name_plural = "Фотографии"
@@ -36,9 +40,27 @@ class StockAndCostInLine(admin.TabularInline):
     extra = 0
     fields = ('weight', 'size', 'stock', 'cost')
     readonly_fields = ()
+    classes = ('collapse', )
 
     verbose_name = "Наличие и стоимость изделия"
     verbose_name_plural = "Наличие и стоимость изделий"
+
+
+class GemSetInLine(admin.StackedInline):
+    model = GemSet
+    extra = 0
+    fields = (
+        'product',
+        'order',
+        ('precious_stone', 'cut_type', 'color'),
+        ('weight', 'quantity'),
+        'comment',
+        'description',
+    )
+    readonly_fields = ()
+
+    verbose_name = "Вставка"
+    verbose_name_plural = "Вставки"
 
 
 @admin.register(CollectionGroup)
@@ -115,7 +137,7 @@ class ProductAdmin(admin.ModelAdmin):
     readonly_fields = [
         'created_at'
     ]
-    inlines = [StockAndCostInLine, ProductImageInLine]
+    inlines = [GemSetInLine, StockAndCostInLine, ProductImageInLine]
 
 
 @admin.register(PriceType)
@@ -163,3 +185,58 @@ class PriceAdmin(admin.ModelAdmin):
         if obj:
             form.base_fields['price'].label = 'Цена за грамм' if obj.unit == '163' else 'Цена'
         return form
+
+
+@admin.register(PreciousStone)
+class PreciousStoneAdmin(admin.ModelAdmin):
+    search_fields = [
+        'name',
+    ]
+    fields = [
+        'name',
+        'short_title',
+    ]
+
+
+@admin.register(CutType)
+class CutTypeAdmin(admin.ModelAdmin):
+    search_fields = [
+        'name',
+    ]
+    fields = [
+        'name',
+    ]
+
+
+@admin.register(GemSet)
+class GemSetAdmin(admin.ModelAdmin):
+    search_fields = [
+        'product',
+        'precious_stone',
+        'cut_type',
+    ]
+    list_display = [
+        'product',
+        'precious_stone',
+        'color',
+        'weight',
+        'order',
+        'cut_type',
+        'quantity',
+        'comment',
+    ]
+    fields = [
+        'product',
+        'order',
+        ('precious_stone', 'cut_type', 'color'),
+        ('weight', 'quantity'),
+        'comment',
+        'description',
+    ]
+    list_filter = [
+        'precious_stone',
+        'cut_type',
+    ]
+
+    def get_model_perms(self, *args, **kwargs):
+        return {}

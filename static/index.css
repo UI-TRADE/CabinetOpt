@@ -299,7 +299,6 @@ figure {
 }
 
 .product__nav--indents {
-    height: 300px;
     margin-left: 20px;
     margin-right: 20px;
 }
@@ -463,4 +462,24 @@ figure {
 .autocomplete-active {
     background-color: DodgerBlue !important;
     color: #ffffff;
+}
+
+
+.gems__block--indents {
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.gem-box::before {
+    content: "\203A";
+    color: black;
+    display: inline-block;
+    margin-right: 6px;
+}
+  
+
+.gem-open-box::before {
+    content: "\203A"; 
+    color: black;
+    transform: rotate(90deg);
 }

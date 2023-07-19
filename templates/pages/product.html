@@ -120,15 +120,54 @@
 
                 <ul class="nav nav-tabs product__nav--indents">
                     <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="#">Характеристики</a>
+                        <a 
+                            name="gems"
+                            class="product-details nav-link active"
+                            href="#"
+                            onclick="selectProductDetails(this)"
+                        >Вставки</a>
                     </li>
                     <li class="nav-item">
-                    <a class="nav-link" href="#">Аксессуары</a>
+                        <a 
+                            name="features"
+                            class="product-details nav-link"
+                            href="#"
+                            onclick="selectProductDetails(this)"
+                        >Характеристики</a>
                     </li>
                     <li class="nav-item">
-                    <a class="nav-link" href="#">Аналоги</a>
+                        <a 
+                            name="accessories"
+                            class="product-details nav-link"
+                            href="#"
+                            onclick="selectProductDetails(this)"
+                        >Аксессуары</a>
+                    </li>
+                    <li class="nav-item">
+                        <a 
+                            name="analogues"
+                            class="product-details nav-link"
+                            href="#"
+                            onclick="selectProductDetails(this)"
+                        >Аналоги</a>
                     </li>
                 </ul>
+
+                <div id="gemsForm" style="display: block;">
+                    {% include 'pages/gems.html' %}
+                </div>
+
+                <div id="featuresForm" style="display: none;">
+                    
+                </div>
+
+                <div id="accessoriesForm" style="display: none;">
+                    
+                </div>
+
+                <div id="analoguesForm" style="display: none;">
+                    
+                </div>
 
             </div>
         </main>

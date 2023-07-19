@@ -3,9 +3,13 @@
 from django.db import migrations
 
 
-def add_base_price_type(apps, schema_editor):
+def add_bases_price_type(apps, schema_editor):
     PriceType = apps.get_model("catalog", "PriceType")
+
     new_obj = PriceType(name="Базовая")
+    new_obj.save()
+
+    new_obj = PriceType(name="Выгода")
     new_obj.save()
 
 
@@ -16,6 +20,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(add_base_price_type),
+        migrations.RunPython(add_bases_price_type),
     ]
 

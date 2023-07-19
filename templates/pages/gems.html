@@ -1,0 +1,41 @@
+<div name="gems" class="gems__block--indents">
+    {% for gem in gem_sets %}
+        <div class="card border-secondary mb-3" style="max-width: 40rem;">
+            <div id="card-header-{{gem.pk}}" class="card-header gem-box" onclick="showGemDetails(this)">{{ gem }}</div>
+            <div id="card-body-{{gem.pk}}" class="card-body text-secondary" style="display: none;">
+                <table class="table">
+                    <tbody>
+                    <tr>
+                        <th scope="row">Камень</th>
+                        <td>{{ gem.precious_stone }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Вес, кр</th>
+                        <td>{{ gem.weight }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Цвет</th>
+                        <td>{{ gem.color }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Описание</th>
+                        <td>{{ gem.description }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Огранка</th>
+                        <td>{{ gem.cut_type }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Комментарий</th>
+                        <td>{{ gem.comment }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Количество</th>
+                        <td>{{ gem.quantity }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endfor %}
+</div>

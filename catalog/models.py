@@ -122,7 +122,7 @@ class Product(models.Model):
 
     class Meta:
         verbose_name = 'Номенклатура'
-        verbose_name_plural = 'Номенкулатура'
+        verbose_name_plural = 'Номенклатура'
 
     def __str__(self):
         return f'{self.articul} {self.name}'.strip()
@@ -271,3 +271,73 @@ class Price(models.Model):
     def __str__(self):
         return f'{self.product} {self.price} руб. ({self.type})'
 
+
+class PreciousStone(models.Model):
+    name = models.CharField('Наименование', max_length=100, db_index=True)
+    short_title = models.CharField('Краткое наименование', max_length=10, blank=True)
+
+    class Meta:
+        verbose_name = 'Камень'
+        verbose_name_plural = 'Камни'
+
+    def __str__(self):
+        return self.name
+    
+    def __repr__(self):
+        return self.short_title if self.short_title else self.name
+
+
+class CutType(models.Model):
+    name = models.CharField('Наименование', max_length=100, db_index=True)
+
+    class Meta:
+        verbose_name = 'Органка'
+        verbose_name_plural = 'Виды огранки'
+
+    def __str__(self):
+        return self.name
+
+
+class GemSet(models.Model):
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        verbose_name='Номенклатура',
+        related_name='gem_sets',
+        db_index=True
+    )
+    precious_stone = models.ForeignKey(
+        PreciousStone,
+        on_delete=models.CASCADE,
+        verbose_name='Камни',
+        related_name='precious_stones',
+        db_index=True
+    )
+    color = models.CharField('Цвет', max_length=50, blank=True, db_index=True)
+    weight = models.FloatField(
+        'Вес, кр', default=0, validators=[MinValueValidator(0)]
+    )
+    order = models.PositiveIntegerField(
+        'Порядок', default=1, validators=[MinValueValidator(0)]
+    )
+    description = models.TextField('Описание', blank=True)
+    cut_type = models.ForeignKey(
+        CutType,
+        on_delete=models.SET_NULL,
+        verbose_name='Огранка',
+        related_name='cut_types',
+        null=True,
+        blank=True,
+        db_index=True
+    )
+    comment = models.CharField('Комментарий', max_length=250, blank=True)
+    quantity = models.PositiveIntegerField(
+        'Количество', default=1, validators=[MinValueValidator(0)]
+    )
+
+    class Meta:
+        verbose_name = 'Вставка'
+        verbose_name_plural = 'Вставки'
+
+    def __str__(self):
+        return f'{self.quantity} {repr(self.precious_stone)} {self.cut_type} - {self.weight} ct'
