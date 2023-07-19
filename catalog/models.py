@@ -1,7 +1,7 @@
 from django.db import models
 from contextlib import suppress
 from django.core.validators import MinValueValidator
-from django.db.models import Q, Max
+from django.db.models import F, Q, Max, Sum
 from django.utils import timezone
 
 from clients.models import PriorityDirection, Client
@@ -133,6 +133,44 @@ class Product(models.Model):
         return [product_image.image.url for product_image in product_images]
 
 
+class StockAndCostQuerySet(models.QuerySet):
+    
+    def available_stocks_and_costs(self, products_ids, **kwargs):
+        clients = kwargs.get('clients', Client.objects.none())
+        products = Product.objects.filter(pk__in = products_ids)
+        stocks_and_costs = self.filter(product_id__in = products_ids)
+        prices = Price.objects.available_prices(products_ids)
+        with suppress(PriceType.DoesNotExist):
+            discount_prices = Price.objects.available_prices(
+                products_ids, PriceType.objects.get(name='Выгода')
+            )
+            prices = prices.exclude(
+                product_id__in = discount_prices.values_list('product_id', flat=True)
+            ) | discount_prices
+        with suppress(PriceType.DoesNotExist):
+            client_prices = Price.objects.available_prices(
+                products_ids, PriceType.objects.get(client = clients.get())
+            )
+            prices = prices.exclude(
+                product_id__in = client_prices.values_list('product_id', flat=True)
+            ) | client_prices
+    
+        collections = products.annotate(
+            collection_name=F('collection__name'),
+            collection_group=F('collection__group__name')
+        ).values('id', 'collection_name', 'collection_group')
+        
+        if float(kwargs.get('size', 0)):
+            stocks_and_costs = stocks_and_costs.filter(size=kwargs['size'])
+
+        stocks_and_costs = stocks_and_costs.values(
+            'product', 'size', 'cost'
+        ).annotate(stock=Sum('stock'), weight=Sum('weight'))
+
+        return collections, products, stocks_and_costs, prices
+
+
+
 class StockAndCost(models.Model):
     product = models.ForeignKey(
         Product,
@@ -159,6 +197,8 @@ class StockAndCost(models.Model):
         default=0,
         validators=[MinValueValidator(0)]
     )
+
+    objects = StockAndCostQuerySet.as_manager()
 
     class Meta:
         verbose_name = 'Наличие и стоимость изделия'
@@ -340,4 +380,7 @@ class GemSet(models.Model):
         verbose_name_plural = 'Вставки'
 
     def __str__(self):
-        return f'{self.quantity} {repr(self.precious_stone)} {self.cut_type} - {self.weight} ct'
+        return f'{self.quantity} \
+            {repr(self.precious_stone)} \
+            {self.cut_type if self.cut_type else ""} - \
+            {self.weight} ct'

@@ -1,13 +1,14 @@
-import simplejson as json
+import json
 from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
 from django.views.generic import ListView, DetailView
 from django.conf import settings
 from django.http import JsonResponse
-from django.db.models import Value, FloatField, F
+from django.db.models import Value, FloatField, F, Sum
 from django.db.models.functions import Cast
 from django.core.serializers import serialize
+from django.core.serializers.json import DjangoJSONEncoder
 from contextlib import suppress
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -203,34 +204,27 @@ def stocks_and_costs(request):
     size = request.query_params.get('size')
 
     if productIds:
-        productIds = productIds.split(',')
-        current_products = Product.objects.filter(pk__in = productIds)
-        current_clients = Login(request).get_clients()
-        stocks_and_costs = StockAndCost.objects.filter(product_id__in = productIds)
-        actual_prices = Price.objects.available_prices(productIds)
-        with suppress(PriceType.DoesNotExist):
-            client_prices = Price.objects.available_prices(
-                productIds, PriceType.objects.get(client = current_clients.get())
+        collections, products, stocks_and_costs, prices = \
+            StockAndCost.objects.available_stocks_and_costs(
+                productIds.split(','),
+                size=size,
+                clients=Login(request).get_clients()
             )
-            actual_prices = actual_prices.exclude(
-                product_id__in = client_prices.values_list('product_id', flat=True)
-            ) | client_prices
-    
-        collections = current_products.annotate(
-            collection_name=F('collection__name'),
-            collection_group=F('collection__group__name')
-        ).values('id', 'collection_name', 'collection_group')
-        
-        if size != '0':
-            stocks_and_costs = stocks_and_costs.filter(size=size)
+
+        stocks_and_costs_serialized = json.dumps(
+            [{
+                "model": "catalog.stockandcost", "pk": fields["product"], "fields": fields
+            } for fields in stocks_and_costs],
+            cls=DjangoJSONEncoder
+        )
 
         return JsonResponse(
             {
                 'replay'           : 'ok',
                 'collection'       : json.dumps(list(collections), ensure_ascii=False),
-                'products'         : serialize("json", current_products),
-                'stocks_and_costs' : serialize("json", stocks_and_costs),
-                'actual_prices'    : serialize("json", actual_prices)
+                'products'         : serialize("json", products),
+                'stocks_and_costs' : stocks_and_costs_serialized,
+                'actual_prices'    : serialize("json", prices)
             },
             status=200,
             safe=False

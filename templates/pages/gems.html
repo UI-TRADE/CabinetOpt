@@ -1,7 +1,7 @@
 <div name="gems" class="gems__block--indents">
     {% for gem in gem_sets %}
         <div class="card border-secondary mb-3" style="max-width: 40rem;">
-            <div id="card-header-{{gem.pk}}" class="card-header gem-box" onclick="showGemDetails(this)">{{ gem }}</div>
+            <div id="card-header-{{gem.pk}}" class="card-header gem-box" onclick="showGemDetails(this)" style="background-color: rgb(206, 227, 255)">{{ gem }}</div>
             <div id="card-body-{{gem.pk}}" class="card-body text-secondary" style="display: none;">
                 <table class="table">
                     <tbody>
@@ -23,7 +23,11 @@
                     </tr>
                     <tr>
                         <th scope="row">Огранка</th>
-                        <td>{{ gem.cut_type }}</td>
+                        {% if gem.cut_type %}
+                            <td>{{ gem.cut_type }}</td>
+                        {% else %}
+                            <td></td>
+                        {% endif %}
                     </tr>
                     <tr>
                         <th scope="row">Комментарий</th>

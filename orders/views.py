@@ -1,11 +1,12 @@
-import simplejson
+import json
 from django.db import transaction
-from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse_lazy
 from django.http import JsonResponse
 from django.core.serializers import serialize
-from django.views.generic import ListView, UpdateView, CreateView
+from django.core.serializers.json import DjangoJSONEncoder
 from django.core.exceptions import ValidationError
+from django.views.generic import ListView, UpdateView, CreateView
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse_lazy
 from collections import defaultdict
 from contextlib import suppress
 from rest_framework.decorators import api_view
@@ -98,7 +99,7 @@ class UpdateOrderView(UpdateView):
         ).values_list('product', 'size', named=True)       
         for item in sizes:
             result[str(item.product)].append(item.size)
-        return simplejson.dumps(result)
+        return json.dumps(result)
 
 
 class CreateOrderView(CreateView):
@@ -190,7 +191,7 @@ class CreateOrderView(CreateView):
         ).values_list('product', 'size', named=True)       
         for item in sizes:
             result[str(item.product)].append(item.size)
-        return simplejson.dumps(result)
+        return json.dumps(result)
 
 
 def remove_order(request, order_id):
@@ -216,24 +217,26 @@ def stocks_and_costs(request):
     order_id = request.query_params.get('orderId')
     if order_id:
         productIds = OrderItem.objects.filter(order_id=order_id).values_list('product_id', flat=True)
-        current_products = Product.objects.filter(pk__in = productIds)
-        current_clients = Login(request).get_clients()
-        stocks_and_costs = StockAndCost.objects.filter(product_id__in = productIds)
-        actual_prices = Price.objects.available_prices(productIds)
-        with suppress(PriceType.DoesNotExist):
-            client_prices = Price.objects.available_prices(
-                productIds, PriceType.objects.get(client = current_clients.get())
+
+        _, products, stocks_and_costs, prices = \
+            StockAndCost.objects.available_stocks_and_costs(
+                productIds,
+                clients=Login(request).get_clients()
             )
-            actual_prices = actual_prices.exclude(
-                product_id__in = client_prices.values_list('product_id', flat=True)
-            ) | client_prices
+
+        stocks_and_costs_serialized = json.dumps(
+            [{
+                "model": "catalog.stockandcost", "pk": fields["product"], "fields": fields
+            } for fields in stocks_and_costs],
+            cls=DjangoJSONEncoder
+        )
         
         return JsonResponse(
             {
                 'replay'           : 'ok',
-                'products'         : serialize("json", current_products),
-                'stocks_and_costs' : serialize("json", stocks_and_costs),
-                'actual_prices'    : serialize("json", actual_prices)
+                'products'         : serialize("json", products),
+                'stocks_and_costs' : stocks_and_costs_serialized,
+                'actual_prices'    : serialize("json", prices)
             },
             status=200,
             safe=False
