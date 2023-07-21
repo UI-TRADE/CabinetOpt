@@ -1,5 +1,7 @@
 import uuid
 from django import template
+from num2words import num2words
+
 
 register = template.Library()
 
@@ -17,3 +19,10 @@ def unique_id():
 def is_hidden_field(field):
     if str(field).find('display: none') != -1:
         return True
+
+
+@register.simple_tag
+def in_words(numder):
+    if numder:
+        return num2words(numder, lang='ru')
+    return ''

@@ -62,6 +62,7 @@
           <th scope="col" >Редактировать</th>
           <th scope="col" >Повторить</th>
           <th scope="col" >Отменить</th>
+          <th scope="col" >Экспорт</th>
         </tr>
       </thead>
       <tbody>
@@ -90,6 +91,11 @@
           <td class="text-center">
             <a href="{% url 'orders:remove' order.id %}">
               <i class="fa fa-ban" aria-hidden="true"></i>
+            </a>
+          </td>
+          <td class="text-center">
+            <a href="{% url 'orders:export' 'pdf' order.id %}" target="_blank">
+              <i class="fa fa-download" aria-hidden="true"></i>
             </a>
           </td>
         </tr>

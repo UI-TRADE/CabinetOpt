@@ -1,18 +1,24 @@
+import os
 import json
+from typing import Any
+from xhtml2pdf import pisa
 from django.db import transaction
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
+from django.conf import settings
+from django.contrib.staticfiles import finders
 from django.core.serializers import serialize
-from django.core.serializers.json import DjangoJSONEncoder
 from django.core.exceptions import ValidationError
-from django.views.generic import ListView, UpdateView, CreateView
+from django.db.models import F, Sum, Count
+from django.views.generic import ListView, UpdateView, CreateView, TemplateView
+from django.template.loader import get_template
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from collections import defaultdict
-from contextlib import suppress
 from rest_framework.decorators import api_view
 
 from clients.login import Login
-from catalog.models import Product, Price, PriceType, StockAndCost
+from clients.models import ContactDetail
+from catalog.models import Product, StockAndCost
 from orders.models import Order, OrderItem
 
 from .forms import OrderItemInline
@@ -194,6 +200,59 @@ class CreateOrderView(CreateView):
         return json.dumps(result)
 
 
+class ExportOrderView(TemplateView):
+    template_name = 'forms/order.html'
+    slug_url_kwarg, slug_field = 'order_id', 'pk'
+    success_url = reverse_lazy('orders')
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        order_id = self.kwargs.get(self.slug_url_kwarg)
+        order = get_object_or_404(Order, pk=order_id)
+        context['order'] = order
+        contact_detail = get_object_or_404(ContactDetail, client=order.client)
+        context['contact_detail'] = contact_detail
+        context['order_items'] = OrderItem.objects.filter(order=context['order'])
+        context['order_totals'] = OrderItem.objects.filter(
+            order=context['order']).aggregate(
+                total_sum=Sum('sum'),
+                total_discount=Sum('discount'),
+                total_sum_without_discount=Sum(F('sum')-F('discount')),
+                total_count=Count('pk')
+            )
+
+        return context
+
+
+class ExportPDFView(ExportOrderView):
+
+    def fetch_pdf_resources(self, uri, rel):
+        path = None
+        font_path = uri.replace(settings.STATIC_URL, '')
+        if font_path:
+            path = finders.find(font_path)
+
+        return path
+
+    def render_to_response(self, context, **response_kwargs):
+
+        context = self.get_context_data()
+        response = HttpResponse(content_type='application/pdf')
+
+        # filename = f'Order-{context["order"].id}.pdf'
+        # response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+        template = get_template(self.template_name)
+        html_string = template.render(context)
+
+        pisa_status = pisa.CreatePDF(html_string, dest=response, link_callback=self.fetch_pdf_resources)
+
+        if pisa_status.err:
+            return HttpResponse('Произошла ошибка при создании PDF', status=500)
+    
+        return response
+
+
 def remove_order(request, order_id):
 
     instance = get_object_or_404(Order,id=order_id)
@@ -211,6 +270,7 @@ def add_order_item(request):
 
     newOrderItem = OrderItem.objects.create(order=Order.objects.get(pk=order_id),)
     return JsonResponse({'item_id': newOrderItem.id}, status=200)
+
 
 @api_view(['GET'])
 def stocks_and_costs(request):

@@ -156,4 +156,7 @@ class ContactDetail(models.Model):
         verbose_name_plural = 'Контактная информация'
     
     def __str__(self):
-        return f'{str(self.client)} {self.legal_address}' 
+        return f'{str(self.client)} {self.legal_address}'
+
+    def get_address(self):
+        return f'{self.city} {self.shoping_address}'

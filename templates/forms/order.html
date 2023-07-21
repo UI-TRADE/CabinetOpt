@@ -1,0 +1,566 @@
+{% load static %}
+{% load order_tags %}
+<!DOCTYPE HTML>
+<HTML lang="ru">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; CHARSET=utf-8">
+<TITLE></TITLE>
+<STYLE TYPE="text/css">
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 400;
+
+  src: local("Roboto-Regular"),
+       url("{% static '/fonts/Roboto-Regular.ttf' %}") format("truetype");
+
+}
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 700;
+
+  src: local("Roboto-Bold"),
+       url("{% static '/fonts/Roboto-Bold.ttf' %}") format("truetype");
+
+}
+body { background: #ffffff; margin: 0; font-family: 'Roboto', sans-serif; font-size: 8pt; font-style: normal; }
+body { background: #ffffff; margin: 0; font-family: 'Roboto', sans-serif; font-size: 8pt; font-style: normal; }
+tr.R_{ height: 15px; }
+tr.R_ td.R_C1{ font-family: 'Roboto', sans-serif; font-size: 14pt; font-style: normal; font-weight: bold; text-align: left; vertical-align: middle; }
+tr.R0{ height: 40px; }
+tr.R0 td.R0C1{ font-family: 'Roboto', sans-serif; font-size: 14pt; font-style: normal; font-weight: bold; text-align: left; vertical-align: middle; }
+tr.R0 td.R9C0{ text-align: left; width: 20px;}
+tr.R0 td.R9C1{ text-align: center; vertical-align: middle; overflow: hidden;border-left: #000000 2px solid; border-top: #000000 1px solid; width: 35px;}
+tr.R0 td.R9C2{ text-align: left; vertical-align: middle; border-left: #000000 1px solid; border-top: #000000 1px solid; width: 275px;}
+tr.R0 td.R9C3{ text-align: right; vertical-align: middle; border-left: #000000 1px solid; border-top: #000000 1px solid; width: 50px;}
+tr.R0 td.R9C4{ text-align: right; vertical-align: middle; border-left: #000000 1px solid; border-top: #000000 1px solid; width: 60px;}
+tr.R0 td.R9C5{ text-align: left; vertical-align: middle; border-left: #000000 1px solid; border-top: #000000 1px solid; width: 50px;}
+tr.R0 td.R9C9{ text-align: right; vertical-align: middle; border-left: #000000 1px solid; border-top: #000000 1px solid; border-right: #000000 2px solid; width: 60px;}
+tr.R19{ height: 17px; }
+tr.R19 td.R19C0{ text-align: left; }
+tr.R19 td.R19C6{ font-family: 'Roboto', sans-serif; font-size: 9pt; font-style: normal; font-weight: bold; text-align: right; vertical-align: middle; }
+tr.R19 td.R21C1{ font-family: 'Roboto', sans-serif; font-size: 9pt; font-style: normal; text-align: left; }
+tr.R19 td.R22C1{ font-family: 'Roboto', sans-serif; font-size: 9pt; font-style: normal; font-weight: bold; text-align: left; vertical-align: middle; }
+tr.R19 td.R25C1{ font-family: 'Roboto', sans-serif; font-size: 9pt; font-style: normal; font-weight: bold; text-align: left; }
+tr.R19 td.R25C6{ text-align: left; border-bottom: #000000 1px solid; }
+tr.R19 td.R25C8{ text-align: right; border-bottom: #000000 1px solid; }
+tr.R2{ height: 9px; }
+tr.R2 td.R18C0{ text-align: left; }
+tr.R2 td.R18C1{ text-align: left; border-top: #000000 2px solid; }
+tr.R2 td.R2C1{ text-align: left; border-bottom: #000000 2px solid; }
+tr.R4{ height: 33px; }
+tr.R4 td.R4C1{ font-family: 'Roboto', sans-serif; font-size: 9pt; font-style: normal; text-align: left; vertical-align: middle; }
+tr.R4 td.R4C5{ font-family: 'Roboto', sans-serif; font-size: 9pt; font-style: normal; font-weight: bold; text-align: left; vertical-align: middle; }
+tr.R4 td.R8C0{ text-align: left; width: 20px;}
+tr.R4 td.R8C1{ font-family: 'Roboto', sans-serif; font-size: 9pt; font-style: normal; font-weight: bold; text-align: center; vertical-align: middle; border-left: #000000 2px solid; border-top: #000000 2px solid; width: 35px;}
+tr.R4 td.R8C2{ font-family: 'Roboto', sans-serif; font-size: 9pt; font-style: normal; font-weight: bold; text-align: center; vertical-align: middle; border-left: #000000 1px solid; border-top: #000000 2px solid; width: 275px;}
+tr.R4 td.R8C3{ font-family: 'Roboto', sans-serif; font-size: 9pt; font-style: normal; font-weight: bold; text-align: center; vertical-align: middle; border-left: #000000 1px solid; border-top: #000000 2px solid; width: 50px;}
+tr.R4 td.R8C4{ font-family: 'Roboto', sans-serif; font-size: 9pt; font-style: normal; font-weight: bold; text-align: center; vertical-align: middle; border-left: #000000 1px solid; border-top: #000000 2px solid; width: 60px;}
+tr.R4 td.R8C9{ font-family: 'Roboto', sans-serif; font-size: 9pt; font-style: normal; font-weight: bold; text-align: center; vertical-align: middle; border-left: #000000 1px solid; border-top: #000000 2px solid; border-right: #000000 2px solid; width: 60px;}
+table {padding: 0px; padding-left: 2px; vertical-align:bottom; width: 100%; font-family: Roboto; font-size: 8pt; font-style: normal; }
+td { padding: 0px; padding-left: 2px;}
+</STYLE>
+</HEAD>
+<BODY STYLE="background: #ffffff; margin: 0; font-family: 'Roboto', sans-serif; font-size: 8pt; font-style: normal; ">
+<TABLE style="width:100%; height:0px; " CELLSPACING=0>
+<COL WIDTH=7>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=139>
+<COL>
+<TR CLASS=R_>
+<TD><SPAN></SPAN></TD>
+<TD CLASS="R_C1" COLSPAN=32 ROWSPAN=2><SPAN STYLE="white-space:nowrap;max-width:0px;">Заказ&nbsp;клиента&nbsp;№&nbsp;{{ order.id }}&nbsp;от&nbsp;{{ order.created_at|date:"d.m.o" }}</SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD></TD>
+</TR>
+<TR CLASS=R_>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD>&nbsp;</TD>
+</TR>
+<TR CLASS=R2>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1" COLSPAN=32><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="width:100%;height:9px;overflow:hidden;">&nbsp;</DIV></TD>
+</TR>
+<TR CLASS=R2>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="width:100%;height:9px;overflow:hidden;">&nbsp;</DIV></TD>
+</TR>
+</TABLE>
+<TABLE style="width:100%; height:0px; " CELLSPACING=0>
+<COL WIDTH=7>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL>
+<TR CLASS=R4>
+<TD><SPAN></SPAN></TD>
+<TD CLASS="R4C1" COLSPAN=4><SPAN STYLE="white-space:nowrap;max-width:0px;">Поставщик:</SPAN></TD>
+<TD CLASS="R4C5" COLSPAN=28>ИНН 7802669141, КПП 780201001, ЮИ-ТРЕЙД ООО, 194100, Санкт-Петербург г, Кантемировская ул, дом № 5, корпус 8, комната 104</TD>
+<TD><SPAN></SPAN></TD>
+<TD></TD>
+</TR>
+<TR CLASS=R2>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="width:100%;height:9px;overflow:hidden;">&nbsp;</DIV></TD>
+</TR>
+</TABLE>
+<TABLE style="width:100%; height:0px; " CELLSPACING=0>
+<COL WIDTH=7>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL>
+<TR CLASS=R4>
+<TD><SPAN></SPAN></TD>
+<TD CLASS="R4C1" COLSPAN=4><SPAN STYLE="white-space:nowrap;max-width:0px;">Покупатель:</SPAN></TD>
+<TD CLASS="R4C5" COLSPAN=28>ИНН {{ order.client.inn }}, {{ order.client.name }}, {{ contact_detail.get_address }}, тел.: {{ order.client.registration_order.phone }}</TD>
+<TD><SPAN></SPAN></TD>
+<TD></TD>
+</TR>
+<TR CLASS=R2>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="width:100%;height:9px;overflow:hidden;">&nbsp;</DIV></TD>
+</TR>
+</TABLE>
+<TABLE style="width:100%; height:0px; " CELLSPACING=0>
+<COL WIDTH=7>
+<COL WIDTH=42>
+<COL WIDTH=244>
+<COL WIDTH=56>
+<COL WIDTH=42>
+<COL WIDTH=48>
+<COL WIDTH=77>
+<COL WIDTH=98>
+<COL WIDTH=84>
+<COL WIDTH=98>
+<COL>
+<TR CLASS=R4>
+<TD CLASS="R8C0" ><SPAN></SPAN></TD>
+<TD CLASS="R8C1" ><SPAN STYLE="white-space:nowrap;">№</SPAN></TD>
+<TD CLASS="R8C2" ><SPAN STYLE="white-space:nowrap;">Товар</SPAN></TD>
+<TD CLASS="R8C3" ><SPAN STYLE="white-space:nowrap;">Кол-во</SPAN></TD>
+<TD CLASS="R8C3" ><SPAN STYLE="white-space:nowrap;">Вес</SPAN></TD>
+<TD CLASS="R8C3" ><SPAN STYLE="white-space:nowrap;">Ед.</SPAN></TD>
+<TD CLASS="R8C4" ><SPAN STYLE="white-space:nowrap;">Цена</SPAN></TD>
+<TD CLASS="R8C4" ><SPAN STYLE="white-space:nowrap;">Сумма<BR>без&nbsp;скидки</SPAN></TD>
+<TD CLASS="R8C4" ><SPAN STYLE="white-space:nowrap;">Скидка</SPAN></TD>
+<TD CLASS="R8C9" ><SPAN STYLE="white-space:nowrap;">Сумма</SPAN></TD>
+<TD ><SPAN></SPAN></TD>
+<TD ></TD>
+</TR>
+
+{% for order_item in order_items %}
+
+    <TR CLASS=R0>
+    <TD CLASS="R9C0" ><SPAN></SPAN></TD>
+    <TD CLASS="R9C1" ><SPAN STYLE="white-space:nowrap;">1</SPAN></TD>
+    <TD CLASS="R9C2" ><SPAN STYLE="white-space:wrap;">{{ order_item.product }}</SPAN></TD>
+    <TD CLASS="R9C3" ><SPAN STYLE="white-space:nowrap;">{{ order_item.quantity }}</SPAN></TD>
+    <TD CLASS="R9C3" ><SPAN STYLE="white-space:nowrap;">{{ order_item.weight }}</SPAN></TD>
+    <TD CLASS="R9C5" ><SPAN STYLE="white-space:nowrap;">{{ order_item.get_unit_display }}</SPAN></TD>
+    <TD CLASS="R9C4" ><SPAN STYLE="white-space:nowrap;">{{ order_item.price }}</SPAN></TD>
+    <TD CLASS="R9C4" ><SPAN STYLE="white-space:nowrap;">{{ order_item.get_cost_without_discount }}</SPAN></TD>
+    <TD CLASS="R9C4" ><SPAN STYLE="white-space:nowrap;">{{ order_item.discount }}</SPAN></TD>
+    <TD CLASS="R9C9" ><SPAN STYLE="white-space:nowrap;">{{ order_item.sum }}</SPAN></TD>
+    <TD ><SPAN></SPAN></TD>
+    <TD ></TD>
+    </TR>
+
+{% endfor %}
+
+<TR CLASS=R2>
+<TD CLASS="R18C0"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R18C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R18C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R18C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R18C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R18C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R18C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R18C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R18C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R18C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="width:100%;height:9px;overflow:hidden;">&nbsp;</DIV></TD>
+</TR>
+<TR CLASS=R19>
+<TD CLASS="R19C6" COLSPAN=7><SPAN STYLE="white-space:nowrap;max-width:0px;">Итого:</SPAN></TD>
+<TD CLASS="R19C6"><SPAN STYLE="white-space:nowrap;max-width:0px;">{{ order_totals.total_sum_without_discount|stringformat:".2f"|floatformat:2 }}</SPAN></TD>
+<TD CLASS="R19C6"><SPAN STYLE="white-space:nowrap;max-width:0px;">{{ order_totals.total_discount|stringformat:".2f"|floatformat:2 }}</SPAN></TD>
+<TD CLASS="R19C6"><SPAN STYLE="white-space:nowrap;max-width:0px;">{{ order_totals.total_sum|stringformat:".2f"|floatformat:2 }}</SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD></TD>
+</TR>
+<TR CLASS=R19>
+<TD CLASS="R19C6" COLSPAN=7><SPAN STYLE="white-space:nowrap;max-width:0px;">В&nbsp;том&nbsp;числе&nbsp;НДС:</SPAN></TD>
+<TD CLASS="R19C6" COLSPAN=3><SPAN STYLE="white-space:nowrap;max-width:0px;">Без НДС</SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD></TD>
+</TR>
+</TABLE>
+<TABLE style="width:100%; height:0px; " CELLSPACING=0>
+<COL WIDTH=7>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL>
+<TR CLASS=R19>
+<TD><SPAN></SPAN></TD>
+<TD CLASS="R21C1" COLSPAN=32><SPAN STYLE="white-space:nowrap;max-width:0px;">Всего&nbsp;наименований&nbsp;{{ order_totals.total_count }},&nbsp;на&nbsp;сумму&nbsp;{{ order_totals.total_sum|stringformat:".2f"|floatformat:2 }}&nbsp;руб.</SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD></TD>
+</TR>
+<TR CLASS=R19>
+<TD><SPAN></SPAN></TD>
+{% in_words order_totals.total_sum as total_sum_in_words %}
+<TD CLASS="R22C1" COLSPAN=31>{{ total_sum_in_words|capfirst }} руб. {{ order_totals.total_sum|stringformat:".2f"|slice:"-2:" }} коп.</TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD></TD>
+</TR>
+</TABLE>
+<TABLE style="width:100%; height:0px; " CELLSPACING=0>
+<COL WIDTH=7>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=21>
+<COL WIDTH=138>
+<COL>
+<TR CLASS=R2>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD CLASS="R2C1"><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="position:relative; height:9px;width: 100%; overflow:hidden;"><SPAN></SPAN></DIV></TD>
+<TD><DIV STYLE="width:100%;height:9px;overflow:hidden;">&nbsp;</DIV></TD>
+</TR>
+<TR>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD>&nbsp;</TD>
+</TR>
+<TR CLASS=R19>
+<TD><SPAN></SPAN></TD>
+<TD CLASS="R25C1" COLSPAN=5><SPAN STYLE="white-space:nowrap;max-width:0px;">Исполнитель</SPAN></TD>
+<TD CLASS="R25C6"><SPAN></SPAN></TD>
+<TD CLASS="R25C6"><SPAN></SPAN></TD>
+<TD CLASS="R25C8" COLSPAN=9><SPAN></SPAN></TD>
+<TD CLASS="R19C0"><SPAN></SPAN></TD>
+<TD CLASS="R25C1" COLSPAN=4><SPAN STYLE="white-space:nowrap;max-width:0px;">Заказчик</SPAN></TD>
+<TD CLASS="R25C6"><SPAN></SPAN></TD>
+<TD CLASS="R25C6"><SPAN></SPAN></TD>
+<TD CLASS="R25C8" COLSPAN=9><SPAN></SPAN></TD>
+<TD><SPAN></SPAN></TD>
+<TD></TD>
+</TR>
+</TABLE>
+</BODY>
+</HTML>

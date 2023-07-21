@@ -137,6 +137,9 @@ class OrderItem(models.Model):
     def get_cost(self):
         return self.price * self.quantity
     
+    def get_cost_without_discount(self):
+        return (self.price * self.quantity) - self.discount
+    
     @property
     def max_price(self):
         max_prices = StockAndCost.objects.filter(product=self.product)
