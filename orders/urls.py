@@ -11,5 +11,6 @@ urlpatterns = [
     path('order/create/<slug:order_id>/', views.CreateOrderView.as_view(), name='create'),
     path('order/item/create', views.add_order_item),
     path('stocks_and_costs/', views.stocks_and_costs),
-    path('order/export/<str:type>/<slug:order_id>/', views.ExportPDFView.as_view(), name='export'),
+    path('order/export/pdf/<slug:order_id>/', views.ExportPDFView.as_view(), name='export-pdf'),
+    path('order/export/xlsx/<slug:order_id>/', views.ExportXLSXView.as_view(), name='export-xlsx'),
 ]

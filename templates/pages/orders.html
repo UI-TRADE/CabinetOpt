@@ -62,7 +62,8 @@
           <th scope="col" >Редактировать</th>
           <th scope="col" >Повторить</th>
           <th scope="col" >Отменить</th>
-          <th scope="col" >Экспорт</th>
+          <th scope="col" >PDF</th>
+          <th scope="col" >XLSX</th>
         </tr>
       </thead>
       <tbody>
@@ -94,7 +95,12 @@
             </a>
           </td>
           <td class="text-center">
-            <a href="{% url 'orders:export' 'pdf' order.id %}" target="_blank">
+            <a href="{% url 'orders:export-pdf' order.id %}" target="_blank">
+              <i class="fa fa-download" aria-hidden="true"></i>
+            </a>
+          </td>
+          <td class="text-center">
+            <a href="{% url 'orders:export-xlsx' order.id %}">
               <i class="fa fa-download" aria-hidden="true"></i>
             </a>
           </td>

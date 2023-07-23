@@ -1,6 +1,4 @@
-import os
 import json
-from typing import Any
 from xhtml2pdf import pisa
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
@@ -22,6 +20,7 @@ from catalog.models import Product, StockAndCost
 from orders.models import Order, OrderItem
 
 from .forms import OrderItemInline
+from .utils import save_xlsx
 
 
 class OrderView(ListView):
@@ -250,6 +249,20 @@ class ExportPDFView(ExportOrderView):
         if pisa_status.err:
             return HttpResponse('Произошла ошибка при создании PDF', status=500)
     
+        return response
+
+
+class ExportXLSXView(ExportOrderView):
+
+    def render_to_response(self, context, **response_kwargs):
+
+        context = self.get_context_data()
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+        filename = f'Order-{context["order"].id}.xlsx'
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        save_xlsx(context, response)
+
         return response
 
 
