@@ -11,7 +11,8 @@ from .models import (
     StockAndCost,
     PreciousStone,
     CutType,
-    GemSet
+    GemSet,
+    ProductsSet
 )
 
 class ProductImageInLine(admin.TabularInline):
@@ -33,6 +34,17 @@ class ProductImageInLine(admin.TabularInline):
             return '(No image)'
 
     render_preview.short_description = 'Preview'
+
+
+class ProductsSetInLine(admin.TabularInline):
+    model = ProductsSet
+    fk_name = 'product'
+    extra = 0
+    fields = ('accessory',)
+    classes = ('collapse', )
+
+    verbose_name = 'элемент состава'
+    verbose_name_plural = 'элементы состава'
 
 
 class StockAndCostInLine(admin.TabularInline):
@@ -137,7 +149,7 @@ class ProductAdmin(admin.ModelAdmin):
     readonly_fields = [
         'created_at'
     ]
-    inlines = [GemSetInLine, StockAndCostInLine, ProductImageInLine]
+    inlines = [GemSetInLine, StockAndCostInLine, ProductImageInLine, ProductsSetInLine]
 
 
 @admin.register(PriceType)
@@ -240,3 +252,5 @@ class GemSetAdmin(admin.ModelAdmin):
 
     def get_model_perms(self, *args, **kwargs):
         return {}
+
+    

@@ -382,3 +382,26 @@ class GemSet(models.Model):
             {repr(self.precious_stone)} \
             {self.cut_type if self.cut_type else ""} - \
             {self.weight} ct'
+
+
+class ProductsSet(models.Model):
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        verbose_name='Номенклатура',
+        db_index=True
+    )
+    accessory = models.ForeignKey(
+        Product,
+        on_delete=models.PROTECT,
+        verbose_name='Комплектующее',
+        related_name='product_set',
+        db_index=True
+    )
+
+    class Meta:
+        verbose_name = 'Состав'
+        verbose_name_plural = 'Состав'
+
+    def __str__(self):
+        return f'{self.accessory}'

@@ -853,6 +853,90 @@ const backSize = (element) => {
 }
 
 
+/**
+ * Управляет отображением элементов прокрутки комплектов.
+ */
+const showSetsControls = () => {
+    const setBlock      = document.querySelector('#set-block');
+    const setElements   = JSON.parse(setBlock.getAttribute('data-json'));
+    const setItemsShown = setBlock.querySelectorAll('.product__set-block__imgs');
+
+    const minElement   = setElements[0];
+    const maxElement   = setElements[setElements.length-1];
+    const firstElement = setItemsShown[0];
+    const endElement   = setItemsShown[setItemsShown.length-1];
+
+    const minId   = (minElement)   ? minElement['id']                    : 0;
+    const maxId   = (maxElement)   ? maxElement['id']                    : 0;
+    const firstId = (firstElement) ? firstElement.getAttribute('data-id'): 0;
+    const lastId  = (endElement)   ? endElement.getAttribute('data-id')  : 0;
+
+    const backElement = '<div id="set-back" onclick="backSets(this)"><i class="fa fa-caret-left fa-2x" aria-hidden="true" style="padding-top: 8px; padding-right: 5px;"></i></div>';
+    const nextElement = '<div id="set-next" onclick="nextSets(this)"><i class="fa fa-caret-right fa-2x" aria-hidden="true" style="padding-top: 8px; padding-left: 5px;"></i></div>';
+
+    if (firstId > minId) setBlock.innerHTML = backElement + setBlock.innerHTML;
+    if (lastId < maxId)  setBlock.innerHTML = setBlock.innerHTML + nextElement;
+}
+
+
+/**
+ * Отображает картинки коллекций товаров.
+ * 
+ * firstIdx   - начальный индекс отображаемых картинок.
+ * lastIdx    - начальный индекс отображаемых картинок.
+ */
+const showSets = (firstIdx=0, lastIdx=0) => {
+    const widthSetElement = 50;
+    const setBlock = document.querySelector('#set-block');
+    let maxLength = setBlock.offsetWidth;
+    const setElements = JSON.parse(setBlock.getAttribute('data-json'));
+    const maxIdx = Math.max(lastIdx, setElements.length);
+    setBlock.innerHTML = '';
+    for (var i=firstIdx; i < maxIdx; i++) {
+        maxLength = maxLength - widthSetElement;
+        if (maxLength > widthSetElement) {
+            setBlock.innerHTML += setElements[i]['element'];   
+        }
+    }
+    showSetsControls();
+}
+
+/**
+ * Добавляет обработчк события перемещения по линейке изображений.
+ * 
+ * element   - выбранный элемент DOM.
+ */
+const nextSets = (element) => {
+    const setBlock      = document.querySelector('#set-block');
+    const setItemsShown = setBlock.querySelectorAll('.product__set-block__imgs');
+
+    const shownIds = [];
+    setItemsShown.forEach((item) => {
+        let idx = parseInt(item.getAttribute('data-id'));
+        shownIds.push(++idx);    
+    });
+    showSets(shownIds[0], shownIds[shownIds.length-1]);
+}
+
+
+/**
+ * Добавляет обработчк события перемещения по линейке изображений.
+ * 
+ * element   - выбранный элемент DOM.
+ */
+const backSets = (element) => {
+    const setBlock      = document.querySelector('#set-block');
+    const setItemsShown = setBlock.querySelectorAll('.product__set-block__imgs');
+
+    const shownIds = [];
+    setItemsShown.forEach((item) => {
+        let idx = parseInt(item.getAttribute('data-id'));
+        shownIds.push(--idx);    
+    });
+    showSets(shownIds[0], shownIds[shownIds.length-1]);
+}
+
+
 const updateProductCards = (element) => {
 
     const productStocksAndCosts = (productIds, size=0) => {
@@ -1082,6 +1166,21 @@ const setProductPrice = () => {
             });
         });
     }
+
+    const productSets = (productId) => {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: '/catalog/product/accessories',
+                data: {'productId': productId},
+                success: (response) => {
+                    resolve(response);
+                },
+                error: (error) => {
+                    reject(error);
+                }
+            });
+        });
+    }
     
     const updateProductsStatusStyle = () => {
         const statusFields = document.querySelectorAll('p[name="product-status"]');
@@ -1126,6 +1225,7 @@ const setProductPrice = () => {
     /**
      * Формирует элемент размера изделий на основании размера и веса.
      *
+     * idx - индекс элемента.
      * size - значение размера изделия.
      * weight - значение веса изделия.
      */
@@ -1145,13 +1245,54 @@ const setProductPrice = () => {
         return element;
     }
 
+    /**
+     * Подготавливает элементы коллекций и сохраняет их в json формате.
+     *
+     * element - элемент set-block в котором будут сохранены подготовленные элементы размеров.
+     * sets - массив данных о коллекциях полученные с бэка.
+     */    
+    const addSetElements = (element, sets) => {
+        const prepared_sets = [];
+        sets.forEach((item, idx) => {
+            const sizeElement = addSetElement(idx, item['fields']);
+            prepared_sets.push({ 'id': idx, 'element': sizeElement.outerHTML });
+        });
+        console.log(prepared_sets);
+        element.setAttribute('data-json', JSON.stringify(prepared_sets));
+    }
+
+    /**
+     * Подготавливает комплектующие и сохраняет их в json формате.
+     *
+     * idx - индекс элемента.
+     * item - данные изображений полученные с бэка.
+     */
+    const addSetElement = (idx, item) => {
+        const element = document.createElement("a");
+        element.href = `/catalog/product/${item.product}/`;
+        element.classList.add('product__set-block__imgs');
+        element.target="_blank";
+        element.innerHTML = 
+            `<img
+                src="/media/${item.image}"
+                class="
+                    img-fluid
+                    img-thumbnail
+                    thumbnail-50
+                    product__thumbnail__block--design
+                    product__thumbnail__block--position"
+                alt="${item.product}"
+            >`;
+        element.setAttribute('data-id', idx);
+        return element;
+    }
 
     if(document.location.pathname.indexOf("/catalog/product/") === -1){
         return;    
     }
 
     const productIds = []
-    const elements = document.getElementsByClassName('good-block');
+    const elements = document.querySelectorAll('.good-block');
     for (var j=0; j<elements.length; j++) {
         const productId = JSON.parse(elements[j].getAttribute('data-json'));
         if (productId) productIds.push(productId['id']);
@@ -1223,13 +1364,27 @@ const setProductPrice = () => {
                     sizeElements.style.display = 'flex';
                     addSizeElements(sizeElements, stock_and_cost, currentPrice, currentDiscount, maxPrice, size);
                 }
-                
                 showSizes();
 
             }
         })
         .catch((error) => {
             alert('Ошибка установки цен: ' + error);
+        });
+
+    productSets(productIds.toString())
+        .then((data) => {
+            if (data['replay'] == 'error') throw new Error(data['message']);
+            
+            addSetElements(
+                document.querySelector('#set-block'),
+                JSON.parse(data['product_sets'])
+            );
+            showSets();
+
+        })
+        .catch((error) => {
+            alert('Ошибка получения комплектующих: ' + error);    
         });
 }
 
@@ -1247,17 +1402,6 @@ const selectProductDetails = (element) => {
         }
     }
 }
-
-
-// const showGemDetails = (element) => {
-//     const gemBody = element.parentElement.querySelector('.card-body');
-//     if (gemBody.style.display == "none") {
-//         gemBody.style.display = "block";
-//     } else {
-//         gemBody.style.display = "none";
-//     }
-//     element.classList.toggle('gem-open-box');
-// }
 
 
 const clearSelectionList = (className) => {

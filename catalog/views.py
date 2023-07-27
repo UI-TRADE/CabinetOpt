@@ -9,16 +9,16 @@ from django.db.models import Value, FloatField, F, Sum
 from django.db.models.functions import Cast
 from django.core.serializers import serialize
 from django.core.serializers.json import DjangoJSONEncoder
-from contextlib import suppress
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+
 
 from clients.login import Login
 from clients.models import PriorityDirection
 from catalog.models import (
-    Product, Collection, StockAndCost, GemSet
+    Product, ProductImage, Collection, StockAndCost, ProductsSet, GemSet, ProductsSet
 )
-from catalog.models import PriceType, Price
 
 from .tasks import run_uploading_products, run_uploading_images, run_uploading_price
 
@@ -141,7 +141,8 @@ class ProductCardView(DetailView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['gem_sets'] = GemSet.objects.filter(product=self.get_object())
+        context['prod_sets'] = ProductsSet.objects.filter(product=self.get_object())
+        context['gem_sets']  = GemSet.objects.filter(product=self.get_object())
         context['MEDIA_URL'] = settings.MEDIA_URL
         return dict(list(context.items()))
 
@@ -219,6 +220,31 @@ def stocks_and_costs(request):
                 'stocks_and_costs' : serialize("json", stocks_and_costs),
                 'actual_prices'    : serialize("json", prices),
                 'discount_prices'  : serialize("json", discount_prices)
+            },
+            status=200,
+            safe=False
+        )
+
+    return JsonResponse(
+        {'replay': 'error', 'message': 'Отсутствуют Продукты для получения данных'},
+        status=200
+    )
+
+
+@api_view(['GET'])
+def product_accessories(request):
+    product_id = request.query_params.get('productId')
+    if product_id:
+        product_set_imgs = ProductImage.objects.filter(
+            product_id__in=ProductsSet.objects.filter(
+                product_id=product_id
+            ).values_list('accessory', flat=True)
+        )
+
+        return JsonResponse(
+            {
+                'replay'           : 'ok',
+                'product_sets' : serialize("json", product_set_imgs)
             },
             status=200,
             safe=False
