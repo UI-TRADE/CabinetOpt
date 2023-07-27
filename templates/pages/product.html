@@ -12,164 +12,199 @@
 
             {% with product_id="id"|addparam:product.id%}
             <div id="good-block-{{product.id}}" class="good-block product__block--position" data-json="{{ product_id|tojson }}" style="all: unset">
-            {% endwith %}
 
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb" style="background-color: white;">
-                    <li class="breadcrumb-item"><a href="{% url 'catalog:products' %}">Каталог</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{product.name}}</li>
-                    </ol>
-                </nav>
+                <div class="row product__block__row--nowrap">
 
-                <div class="row justify-content-center" style="margin-bottom: 20px;">
-                    <div class="col-4 product__block--indents">
-                        <div class="product__block--position">
+                    <div class="col-2 product__col--position product__col__filters" style="height: 100vh; border-right: 1px solid lightgrey; max-width: 25vw;">Фильтры</div>
+                    <div class="col-10 product__col--position" style="align-content: stretch;">
 
-                            {% for image in product.get_images|slice:":1" %}
-                                <a href="{{ image }}" class="thumbnail product__block__img--position">
+                        <div class="row">
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb" style="background-color: white;">
+                                <li class="breadcrumb-item"><a href="{% url 'catalog:products' %}">Каталог</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">{{product.name}}</li>
+                                </ol>
+                            </nav>
+                        </div>
+                        <div class="row product__block__row--wrap">
+                            <div class="col product__col--position product__col__images">
+            
+                                <!-- {% if product.status %}
+                                    <div class="product__block__status--position z-3">
+                                    {% with product_status="status"|addparam:product.status %}
+                                        <p name="product-status" class="text-dark" style="font-size: 30px;" data-json="{{ product_status|tojson }}">
+                                        <b>{{ product.get_status_display }}</b>
+                                        </p>
+                                    {% endwith %}
+                                    </div>
+                                {% endif %} -->
+
+                                {% for image in product.get_images|slice:":1" %}
+                                    <a href="{{ image }}" class="thumbnail product__block__img--position">
+                                        <img
+                                            src="{{ image }}"
+                                            class="img-fluid rounded main-image"
+                                            alt="{{ prod.name }}"
+                                            style="max-width: 25vw;"
+                                        >
+                                    </a>
+                                {% empty %}
                                     <img
-                                        src="{{ image }}"
+                                        src="{{ MEDIA_URL }}/0.jpg"
                                         class="img-fluid rounded"
-                                        alt="{{ prod.name }}"
+                                        alt="Пустое изображение"
                                     >
-                                </a>
-                            {% empty %}
-                                <img
-                                    src="{{ MEDIA_URL }}/0.jpg"
-                                    class="img-fluid rounded"
-                                    alt="Пустое изображение"
-                                >
-                            {% endfor %}
-
-                            <div class="row"> 
-                                {% for image in product.get_images|slice:":10" %}
-                                    <a href="{{ image }}">
+                                {% endfor %}
+            
+                                <div class="row"> 
+                                    {% for image in product.get_images|slice:":7" %}
                                         <img 
                                             src="{{ image }}"
                                             class="
                                                 img-fluid
                                                 img-thumbnail
-                                                thumbnail-50
+                                                thumbnail-50 
                                                 product__thumbnail__block--design
                                                 product__thumbnail__block--position"
                                             alt="{{ product.name }}"
+                                            onclick="changeMainImg(this);"
                                         >
-                                    </a>
-                                {% endfor %} 
+                                    {% endfor %} 
+                                </div>
+            
+                            </div>
+                            <div class="col product__col--position product__col__info">
+            
+                                {% if product.articul %}
+                                    <div> {{ product.articul }} </div>
+                                {% else %}
+                                    <div> Артикул: -- </div>
+                                {% endif %}
+                                <div class="product__col__info--title">{{ product.name }}</div>
+                                &nbsp;
+                                <p><u>{{ product.color }} {{ product.metal|lower }} {{ product.metal_content|lower }}</u></p>
+                                &nbsp;
+                                {% if product.collection.group %}
+                                    <p><u>Коллекция   - {{ product.collection.group|lower }}</u></p>
+                                {% endif %}
+                                {% if product.brand %}
+                                    <p><u>Бренд:        {{ product.brand|upper }}</u></p>
+                                {% endif %}
+                                {% if product.gender %}
+                                    <p>{{ product.get_gender_display|lower }}</p>
+                                {% endif %}
+                                
+                                &nbsp;
+                                <div class="product__block__size-container" style="display: flex; flex-direction: row; align-items: flex-start;">
+                                    <div id="size-block" class="row product__block__size-row--position">
+                                    </div>
+                                </div>
+                                &nbsp;
+
+                                <ul class="nav nav-tabs">
+                                    <li class="nav-item">
+                                      <a name="gems"
+                                        class="product-details nav-link active"
+                                        href="#"
+                                        onclick="selectProductDetails(this)"
+                                      >Вставки</a>
+                                    </li>
+                                    <li class="nav-item">
+                                      <a name="description"
+                                        class="product-details nav-link"
+                                        href="#"
+                                        onclick="selectProductDetails(this)"
+                                      >Описание</a>
+                                    </li>
+                                    <li class="nav-item">
+                                      <a name="guarantees"
+                                        class="product-details nav-link"
+                                        href="#"
+                                        onclick="selectProductDetails(this)"
+                                      >Гарантии</a>
+                                    </li>
+                                </ul>
+
+                                <div id="gemsForm" style="display: block;">
+                                    {% include 'pages/gems.html' %}
+                                </div>
+
+                                <div id="descriptionForm" style="display: none;">
+                                </div>
+                
+                                <div id="guaranteesForm" style="display: none;">
+                                </div>
+            
+                            </div>
+                            <div class="col product__col--position" style="max-width: 20vw;">
+                            
+                                <div class="product__price-card__element discount" style="padding-top: 25px;">
+                                    <input
+                                    type="button"
+                                    value="АКЦИЯ"
+                                    class="btn btn-outline-warning"
+                                    style="width: 150px;"/>
+                                </div>
+                                
+                                <div class="
+                                    product__price-card__element
+                                    product__price-card__element--discount
+                                    text-warning
+                                    discount"
+                                    style="padding-top: 20px;">
+                                        <p id="discount-block"></p>
+                                </div>
+                                <div class="
+                                    product__price-card__element
+                                    product__price-card__element--price">
+                                        <p id="price-block"></p>
+                                </div>
+                                <div class="
+                                    product__price-card__element
+                                    product__price-card__element--max-price
+                                    px-4 px-sm-0 max-price">
+                                        <p id="max-price"></p>
+                                </div>
+                                <div class="
+                                    product__price-card__element
+                                    product__price-card__element--price-per-weight">
+                                        <p id="price-per-weight"></p>
+                                </div>
+
+                                <form id="cartForm-{{product.id}}" method="post" action="{% url 'cart:cart_add' product.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="quantity" value=1 />
+                                    <input type="hidden" name="update" value="False" />
+                                    <input type="hidden" name="price" value="0" />
+                                    <input type="hidden" name="unit" value="796" />
+                                    <input type="hidden" name="size" value=0 />
+                                    <input type="hidden" name="weight" value=0 />
+                                </form>
+                                <!-- <a href="#" onclick="addToCart('cartForm-{{product.id}}');">в Корзину</a> -->
+                                <div class="product__price-card__element">
+                                    <input
+                                    type="button"
+                                    onclick="addToCart('cartForm-{{product.id}}');"
+                                    value="В корзину"
+                                    class="btn btn-outline-warning"
+                                    style="width: 150px;"/>
+                                </div>
+                                <div class="
+                                    product__price-card__element
+                                    product__price-card__element--instock">
+                                        <p id="in_stock"></p>
+                                </div>
+
                             </div>
                         </div>
 
                     </div>
-                    <div class="col-4 product__block--indents">
-                        {% if product.articul %}
-                            <p>Артикул:      <b> {{ product.articul }}</b></p>
-                        {% else %}
-                            <p>Артикул:      <b> -- </b></p>
-                        {% endif %}
-                        <p>Наименование: <b>{{ product.name }}</b></p>
-                        &nbsp;
-                        {% if product.collection.group %}
-                            <p>Коллекция:    <b>{{ product.collection.group }}</b></p>
-                        {% endif %}
-                        {% if product.collection %}
-                            <p>Тип ЮИ:       <b>{{ product.collection }}</b></p>
-                        {% endif %}
-                        {% if product.brand %}
-                            <p>Бренд:        <b>{{ product.brand }}</b></p>
-                        {% endif %}
-                        {% if product.gender %}
-                            <p>Гендер:       <b>{{ product.get_gender_display }}</b></p>
-                        {% endif %}
-                        {% if product.metal %}
-                            <p>Металл:       <b>{{ product.metal }} {{ product.metal_content }}</b></p>
-                        {% endif %}
-                        {% if product.color %}
-                            <p>Цвет:         <b>{{ product.color }}</b></p>
-                        {% endif %}
-                        &nbsp;
-                        <p>Вес:  <b id="weigth-block"> -- </b> грамм</p>
-                        <p id="size-title" style="display: none;">Размеры:</p>
-                        <div id="size-block" class="row" style="margin: 0px; padding-bottom: 16px;">
-                        </div>
-
-                    </div>
-
-                    <div class="col-3 product__block--indents">
-                        <p>Цена: <b id="price-block">--</b> руб.</p>
-                        <p>В наличии: <b id="in_stock">--</b> шт.</p>
-                        <form id="cartForm-{{product.id}}" method="post" action="{% url 'cart:cart_add' product.id %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="quantity" value=1 />
-                            <input type="hidden" name="update" value="False" />
-                            <input type="hidden" name="price" value="0" />
-                            <input type="hidden" name="unit" value="796" />
-                            <input type="hidden" name="size" value=0 />
-                            <input type="hidden" name="weight" value=0 />
-                        </form>
-                        <!-- <a href="#" onclick="addToCart('cartForm-{{product.id}}');">в Корзину</a> -->
-                        <div>
-                            <input
-                              type="button"
-                              onclick="addToCart('cartForm-{{product.id}}');"
-                              value="В корзину"
-                              class="btn btn-outline-primary"/>
-                          </div>
-                    </div>
-
-                </div>
-
-                <ul class="nav nav-tabs product__nav--indents">
-                    <li class="nav-item">
-                        <a 
-                            name="gems"
-                            class="product-details nav-link active"
-                            href="#"
-                            onclick="selectProductDetails(this)"
-                        >Вставки</a>
-                    </li>
-                    <li class="nav-item">
-                        <a 
-                            name="features"
-                            class="product-details nav-link"
-                            href="#"
-                            onclick="selectProductDetails(this)"
-                        >Характеристики</a>
-                    </li>
-                    <li class="nav-item">
-                        <a 
-                            name="accessories"
-                            class="product-details nav-link"
-                            href="#"
-                            onclick="selectProductDetails(this)"
-                        >Аксессуары</a>
-                    </li>
-                    <li class="nav-item">
-                        <a 
-                            name="analogues"
-                            class="product-details nav-link"
-                            href="#"
-                            onclick="selectProductDetails(this)"
-                        >Аналоги</a>
-                    </li>
-                </ul>
-
-                <div id="gemsForm" style="display: block;">
-                    {% include 'pages/gems.html' %}
-                </div>
-
-                <div id="featuresForm" style="display: none;">
-                    
-                </div>
-
-                <div id="accessoriesForm" style="display: none;">
-                    
-                </div>
-
-                <div id="analoguesForm" style="display: none;">
                     
                 </div>
 
             </div>
+            {% endwith %}
+
         </main>
 	{% endblock %}
 {% endblock %}

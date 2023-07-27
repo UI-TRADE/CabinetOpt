@@ -53,8 +53,8 @@ html {
 }
 
 .main__menu--position {
-    height: 70px;
-    border-bottom: 10px solid rgb(238, 238, 238);
+    height: 61px;
+    border-bottom: 2px solid rgb(238, 238, 238);
     justify-content: space-between;
     align-items: center;
     flex-wrap: nowrap;
@@ -281,56 +281,49 @@ figure {
     display: table-row;
 }
 
+.product__block__row--wrap {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: space-between;
+}
 
-.product__block--position {
+.product__block__row--nowrap {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-content: space-between;
+}
+
+.product__col--position {
     display: flex;
     flex-direction: column;
     flex-wrap:wrap;
     align-content: space-between;
-}
-
-
-.product__block--indents {
     margin-right: 10px;
 }
 
-.product__block--indents:last-child {
+.product__col--position:last-child {
     margin-right: 0px;
+}
+
+.product__col--indents {
+    margin-right: 10px;
+}
+
+.product__col--indents:last-child {
+    margin-right: 0px;
+}
+
+.product__col__info--title {
+    font-weight: 700;
+    font-size: larger;
+    margin-bottom: 20px;
 }
 
 .product__nav--indents {
     margin-left: 20px;
     margin-right: 20px;
-}
-
-.product__size__block--design {
-    --box-shadow-color: rgb(177, 177, 177);
-    border-radius: 10px;
-    margin-bottom: 20px;
-    box-shadow: 0 0 5px 0 var(--box-shadow-color);
-}
-
-.product__size__block--design:hover {
-    --box-shadow-color: #ffc107;
-}
-
-.product__size__block--select {
-    background-color: #ffc107;
-    --box-shadow-color: rgb(177, 177, 177);
-    border-radius: 10px;
-    margin-bottom: 20px;
-    box-shadow: 0 0 5px 0 var(--box-shadow-color);
-}
-
-.product__size__block--position {
-    display:flex;
-    align-items:center;
-    justify-content: center;
-    padding: 0px;
-    height: 3vw;
-    margin-right: 5px;
-    max-width: 60px;
-    max-height: 60px;
 }
 
 .product__size__block--position:last-child {
@@ -380,12 +373,35 @@ figure {
     margin-right: 0px;
 }
 
-.price-block .max-price {
+.max-price {
     text-decoration: line-through;
 }
 
 .product__price-block__row--position .discount {
     font-size: medium;
+}
+
+.product__price-card__element {
+    margin-left: auto;
+    margin-right: 0;
+    margin-bottom: 15px;
+}
+
+.product__price-card__element--discount {
+    font-size: 20px;
+}
+
+.product__price-card__element--price {
+    font-size: 25px;    
+}
+
+.product__price-card__element--price-per-weight {
+    font-size: 13px;    
+}
+
+.product__price-card__element--instock {
+    margin: 0 auto;
+    font-size: 13px;   
 }
 
 .product__price-block__row--position .price {
@@ -467,19 +483,64 @@ figure {
 
 .gems__block--indents {
     margin-left: 20px;
-    margin-right: 20px;
 }
 
-.gem-box::before {
-    content: "\203A";
-    color: black;
-    display: inline-block;
-    margin-right: 6px;
-}
-  
 
-.gem-open-box::before {
-    content: "\203A"; 
-    color: black;
-    transform: rotate(90deg);
+.gems-table td, .gems-table th {
+    padding: 0px;
+    border-top: none;
 }
+
+
+/* Стили размеров в карточках товара */
+
+.product__block__size-group--position  {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.product__block__size-row--position  {
+    width: 350px;
+    height: 55px;
+    margin-bottom: 30px;
+    padding-left: 15px;
+}
+
+.product__block__size-btn--position  {
+    padding-left: 1px;
+    padding-right: 1px;
+    margin-right: 8px;
+    width: 50px;
+    height: 50px;
+    margin-bottom: 5px;
+    text-align: center
+}
+
+.product__block__size-btn--design  {
+    background-color: gainsboro;
+    border-radius: 6px;
+}
+
+.product__block__size-btn--design:hover  {
+    background-color: #ffc107;
+}
+
+.product__block__size-btn--selected  {
+    background-color: #ffc107;
+    border-radius: 6px;
+}
+
+.product__block__size-label--position  {
+    width: 55px;
+    text-align: center;
+    color: gainsboro;
+}
+
+.product__block__size-label--selected  {
+    width: 55px;
+    text-align: center;
+    color: black;
+}
+
+/* Конец стилей размеров */

@@ -724,6 +724,135 @@ const getDefaultSize = (productId, collection, sizes, gender) => {
 }
 
 
+/**
+ * Добавляет обработчк события выбора размера.
+ * 
+ * element   - выбранный элемент DOM.
+ */
+const addSelectSizeEvent = (element) => {
+    const boundInfo = JSON.parse(element.parentElement.getAttribute('data-json'));
+    if (!boundInfo) return;
+    const boundFields = boundInfo['fields'];
+    if (!boundFields) return;
+    updatePriceInProductCard({
+            'size': boundFields.size, 'weight': boundFields.weight,
+            'inStok': boundFields.stock, 'price': boundInfo['clientPrice'],
+            'discount': boundInfo['clientDiscount'], 'maxPrice': boundInfo['clientMaxPrice']
+    });
+    removeClass(document, 'product__block__size-btn'  , 'product__block__size-btn--selected');
+    removeClass(document, 'product__block__size-label', 'product__block__size-label--selected');
+    element.classList.toggle('product__block__size-btn--selected');
+    element.parentElement.querySelector('label').
+        classList.toggle('product__block__size-label--selected');
+}
+
+
+/**
+ * Управляет отображением элементов прокрутки размеров.
+ */
+const showSizeControls = () => {
+    const sizeBlock      = document.querySelector('#size-block');
+    const sizeElements   = JSON.parse(sizeBlock.getAttribute('data-json'));
+    const sizeItemsShown = sizeBlock.querySelectorAll('.product__block__size-group--position');
+
+    const minElement = sizeElements[0];
+    const maxElement = sizeElements[sizeElements.length-1];
+    const firstElement = sizeItemsShown[0];
+    const endElement = sizeItemsShown[sizeItemsShown.length-1];
+
+    const minId   = minElement['id'];
+    const maxId   = maxElement['id'];
+    const firstId = firstElement.getAttribute('data-id');
+    const lastId  = endElement.getAttribute('data-id');
+
+    const sizeBackElement = '<div id="size-back" onclick="backSize(this)"><i class="fa fa-caret-left fa-2x" aria-hidden="true" style="padding-top: 8px; padding-right: 5px;"></i></div>';
+    const sizeNextElement = '<div id="size-next" onclick="nextSize(this)"><i class="fa fa-caret-right fa-2x" aria-hidden="true" style="padding-top: 8px; padding-left: 5px;"></i></div>';
+
+    if (firstId > minId) sizeBlock.innerHTML = sizeBackElement + sizeBlock.innerHTML;
+    if (lastId < maxId)  sizeBlock.innerHTML = sizeBlock.innerHTML + sizeNextElement;
+}
+
+
+/**
+ * Отображает таблицу размеров и весов в карточке товаров.
+ * 
+ * firstIdx   - начальный индекс отображаемых размеров.
+ * lastIdx    - начальный индекс отображаемых размеров.
+ */
+const showSizes = (firstIdx=0, lastIdx=0) => {
+    const widthSizeElement = 58;
+    const sizeBlock = document.querySelector('#size-block');
+    let maxLength = sizeBlock.offsetWidth;
+    const sizeElements = JSON.parse(sizeBlock.getAttribute('data-json'));
+    const maxIdx = Math.max(lastIdx, sizeElements.length);
+    sizeBlock.innerHTML = '';
+    for (var i=firstIdx; i < maxIdx; i++) {
+        maxLength = maxLength - widthSizeElement;
+        if (maxLength > widthSizeElement) {
+            sizeBlock.innerHTML += sizeElements[i]['element'];   
+        }
+    }
+    showSizeControls();
+    Array.from(sizeBlock.childNodes).forEach(element => {
+        element.addEventListener('click', (event) => {
+            addSelectSizeEvent(event.target);
+        });
+    })
+}
+
+/**
+ * Удаляет css класс элемента.
+ *
+ * element   - родительский элемент DOM.
+ * className - имя css класса по которому метод находит элемент для удаления css класса.
+ * toggleClassName - имя удаляемого css класса.
+ */
+const removeClass = (element, className, toggleClassName) => {
+    const toggler = element.getElementsByClassName(className);
+    for (var k=0; k<toggler.length; k++) {
+        if (toggler[k].classList.contains(toggleClassName)) {
+            toggler[k].classList.remove(toggleClassName);    
+        }
+    }
+}
+
+
+/**
+ * Добавляет обработчк события перемещения по линейке размера.
+ * 
+ * element   - выбранный элемент DOM.
+ */
+const nextSize = (element) => {
+    const sizeBlock      = document.querySelector('#size-block');
+    const sizeItemsShown = sizeBlock.querySelectorAll('.product__block__size-group--position');
+
+    const shownIds = [];
+    sizeItemsShown.forEach((item) => {
+        let idx = parseInt(item.getAttribute('data-id'));
+        shownIds.push(++idx);    
+    });
+    showSizes(shownIds[0], shownIds[shownIds.length-1]);
+}
+
+
+/**
+ * Добавляет обработчк события перемещения по линейке размера.
+ * 
+ * element   - выбранный элемент DOM.
+ */
+const backSize = (element) => {
+    const sizeBlock      = document.querySelector('#size-block');
+    const sizeItemsShown = sizeBlock.querySelectorAll('.product__block__size-group--position');
+
+    const shownIds = [];
+    sizeItemsShown.forEach((item) => {
+        let idx = parseInt(item.getAttribute('data-id'));
+        shownIds.push(--idx);    
+    });
+    showSizes(shownIds[0], shownIds[shownIds.length-1]);
+}
+
+
 const updateProductCards = (element) => {
 
     const productStocksAndCosts = (productIds, size=0) => {
@@ -887,6 +1016,55 @@ const updateProductCards = (element) => {
         });
 }
 
+/**
+ * Обновляет элементы цен в карточке номенклатуры.
+ * 
+ * context   - контекст с данными полученными с бэка и расчитанными на фронте.
+ */
+const updatePriceInProductCard = (context) => {
+
+    const element             = document.querySelector('.good-block');
+    const weightElement       = element.querySelector('#weigth-block');
+    const discountElement     = element.querySelector('#discount-block');
+    const priceElement        = element.querySelector('#price-block');
+    const maxPriceElement     = element.querySelector('#max-price');
+    const pricePerweightField = element.querySelector('#price-per-weight');
+    const inStokelement       = element.querySelector('#in_stock');
+    const formElement         = element.querySelector('form');
+    
+    const price = getPrice(context.price, context.maxPrice, context.discount, context.weight);
+    
+    if (context.weight && weightElement) weightElement.outerHTML = 
+        `<p id="weigth-block"> ${context.weight} </p>`;
+    if (parseFloat(price.clientDiscount) && discountElement) {
+        discountElement.outerHTML = `<p id="discount-block"> ${price.clientDiscount} % </p>`;
+        const discountElements = element.querySelectorAll('.discount');
+        discountElements.forEach(item => {item.style.display = 'block'});
+    } else {
+        const discountElements = element.querySelectorAll('.discount');
+        discountElements.forEach(item => {item.style.display = 'none'});
+    }
+    if (price.clientPrice && priceElement) priceElement.outerHTML = 
+        `<p id="price-block"> ${price.clientPrice} руб </p>`;
+    if (parseFloat(price.maxPrice) && maxPriceElement) {
+        maxPriceElement.outerHTML = `<p id="max-price"> ${price.maxPrice} руб </p> `;
+    } else {
+        maxPriceElement.parentElement.style.display = 'none';
+    }
+    if (context.price && pricePerweightField) pricePerweightField.outerHTML = 
+        `<p id="price-per-weight"> Цена за 1 г ${context.price} руб </p>`;
+    if (context.inStok && inStokelement) inStokelement.outerHTML = 
+        `<p id="in_stock"> В наличии ${context.inStok} шт </p>`;
+
+    if (!formElement) return;
+    var inputFields = formElement.querySelectorAll('input');
+    for (let item of inputFields) {
+        if (item.name === 'price' && price.clientPrice) item.value = price.clientPrice;
+        if (item.name === 'size' && context.size)       item.value = context.size;
+        if (item.name === 'weight' && context.weight)   item.value = context.weight;
+    }
+}
+
 
 const setProductPrice = () => {
 
@@ -905,36 +1083,68 @@ const setProductPrice = () => {
         });
     }
     
-    const updateSize = (product, context) => {
-
-        const element = document.getElementById(`good-block-${product['pk']}`);
-        if (context.weight) element.querySelector('#weigth-block').outerHTML =
-            `<b id="weigth-block"> ${context.weight} </b>`;
-        const price = getPrice(context.price, context.maxPrice, context.discount, context.weight);
-
-        if (price.clientPrice) element.querySelector('#price-block').outerHTML =
-            `<b id="price-block"> ${price.clientPrice} </b>`;
-        if (context.inStok) element.querySelector('#in_stock').outerHTML = 
-            `<b id="in_stock"> ${context.inStok} </b>`;
-
-        var inputFields = element.querySelector('form').querySelectorAll('input');
-        for (let item of inputFields) {
-            if (item.name === 'price' && price.clientPrice) item.value = price.clientPrice;
-            if (item.name === 'size' && context.size)       item.value = context.size;
-            if (item.name === 'weight' && context.weight)   item.value = context.weight;
-        }
+    const updateProductsStatusStyle = () => {
+        const statusFields = document.querySelectorAll('p[name="product-status"]');
+        statusFields.forEach((statusField) => {
+            const data = JSON.parse(statusField.getAttribute('data-json'));
+            if (!data) return;
+            if (data.status === "novelty") statusField.className = 'text-primary fs-3';
+            if (data.status === "order")   statusField.className = 'text-info-emphasis fs-3';
+            if (data.status === "hit")     statusField.className = 'text-warning fs-3';
+        });
     }
 
-    const addSizeElement = (size) => {
+    /**
+     * Подготавливает элементы размера изделий и сохраняет их в json формате.
+     *
+     * element - элемент size-block в котором будут сохранены подготовленные элементы размеров.
+     * stock_and_cost - данные о размеров полученные с бэка.
+     * price - базовая цена.
+     * discount - скидка от базовой цены.
+     */
+    const addSizeElements = (element, stock_and_cost, price, discount, maxPrice, default_size='') => {
+        const sizes = [];
+        stock_and_cost.forEach((item, idx) => {
+            if (!item['fields'].size) return;
+            item['clientPrice']    = price;
+            item['clientDiscount'] = discount;
+            item['clientMaxPrice'] = maxPrice;
+            const itemFields = item['fields'];
+            const sizeElement = addSizeElement(idx, itemFields.size, itemFields.weight);
+            sizeElement.setAttribute('data-json', JSON.stringify(item));
+            if (itemFields.size == default_size) {
+                const btnElement = sizeElement.querySelector('input');
+                if (btnElement) btnElement.classList.add('product__block__size-btn--selected');
+                const labelElement = sizeElement.querySelector('label');
+                if (labelElement) labelElement.classList.add('product__block__size-label--selected');
+            }
+            sizes.push({ 'id': idx, 'element': sizeElement.outerHTML });
+        });
+        element.setAttribute('data-json', JSON.stringify(sizes));
+    }
+
+    /**
+     * Формирует элемент размера изделий на основании размера и веса.
+     *
+     * size - значение размера изделия.
+     * weight - значение веса изделия.
+     */
+    const addSizeElement = (idx, size, weight='0') => {
         const element = document.createElement("div");
-        element.classList.add('col');
-        element.classList.add('text-center');
-        element.classList.add('product__size__block');
-        element.classList.add('product__size__block--design');
-        element.classList.add('product__size__block--position');
-        element.textContent = size;
+        element.classList.add('product__block__size-group--position');
+        element.innerHTML = 
+            `<input
+                id="size-${size}"
+                type="button"
+                value="${size}"
+                class="btn product__block__size-btn--design product__block__size-btn product__block__size-btn--position"
+            />
+            <label for="size-${size}" class="product__block__size-label product__block__size-label--position">${(weight) ? weight : "-"}</label>
+            `;
+        element.setAttribute('data-id', idx);
         return element;
     }
+
 
     if(document.location.pathname.indexOf("/catalog/product/") === -1){
         return;    
@@ -950,6 +1160,8 @@ const setProductPrice = () => {
     if (productIds.length == 0) {
         return
     }
+
+    updateProductsStatusStyle();
 
     productStocksAndCosts(productIds.toString())
         .then((data) => {
@@ -999,55 +1211,25 @@ const setProductPrice = () => {
                     currentDiscount = discount_price['fields'].discount;   
                 }
 
-                updateSize(
-                    product,
+                updatePriceInProductCard(
                     {
                         'size': size, 'weight': weight, 'inStok': inStok,
                         'price': currentPrice, 'discount': currentDiscount, 'maxPrice': maxPrice
                 });
 
                 if (!size) return;
-                const sizeTitle    = elements[i].querySelector('#size-title');
                 const sizeElements = elements[i].querySelector('#size-block');
-                if (stock_and_cost) sizeTitle.style.display = 'block';
-                stock_and_cost.forEach((item) => {
-                    if (!item['fields'].size) return;
-                    const itemFields = item['fields'];
-                    item['clientPrice']    = currentPrice;
-                    item['clientDiscount'] = currentDiscount;
-                    const sizeElement = addSizeElement(itemFields.size);
-                    if (itemFields.size == size) 
-                        sizeElement.classList.add('product__size__block--select');
-                    sizeElement.setAttribute('data-json', JSON.stringify(item));
-
-                    sizeElement.addEventListener('click', (event) => {
-                        const boundInfo = JSON.parse(event.target.getAttribute('data-json'));
-                        const boundFields = boundInfo['fields'];
-                        updateSize(
-                            product,
-                            {
-                                'size': boundFields.size, 'weight': boundFields.weight,
-                                'inStok': boundFields.stock, 'price': boundInfo['clientPrice'],
-                                'discount': boundInfo['clientDiscount'], 'maxPrice': boundFields.cost
-                        });
-                        const toggler = document.getElementsByClassName('product__size__block');
-                        for (var k=0; k<toggler.length; k++) {
-                            if (toggler[k].classList.contains('product__size__block--select')) {
-                                toggler[k].classList.remove('product__size__block--select');    
-                            }
-                        }
-                        event.target.classList.add('product__size__block--select');
-                    });
-                    
-                    sizeElements.appendChild(sizeElement);
-                    
-                });
-
+                if (stock_and_cost && sizeElements) {
+                    sizeElements.style.display = 'flex';
+                    addSizeElements(sizeElements, stock_and_cost, currentPrice, currentDiscount, maxPrice, size);
+                }
+                
+                showSizes();
 
             }
         })
         .catch((error) => {
-            alert('Ошибка: ' + error);
+            alert('Ошибка установки цен: ' + error);
         });
 }
 
@@ -1067,15 +1249,15 @@ const selectProductDetails = (element) => {
 }
 
 
-const showGemDetails = (element) => {
-    const gemBody = element.parentElement.querySelector('.card-body');
-    if (gemBody.style.display == "none") {
-        gemBody.style.display = "block";
-    } else {
-        gemBody.style.display = "none";
-    }
-    element.classList.toggle('gem-open-box');
-}
+// const showGemDetails = (element) => {
+//     const gemBody = element.parentElement.querySelector('.card-body');
+//     if (gemBody.style.display == "none") {
+//         gemBody.style.display = "block";
+//     } else {
+//         gemBody.style.display = "none";
+//     }
+//     element.classList.toggle('gem-open-box');
+// }
 
 
 const clearSelectionList = (className) => {
@@ -1421,6 +1603,13 @@ const autocomplete = (element) => {
             }
         }
     });
+}
+
+
+const changeMainImg = (element) => {
+    console.log(element);
+    mainImgElement = document.querySelector('.main-image');
+    mainImgElement.src = element.src;
 }
 
 
