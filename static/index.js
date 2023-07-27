@@ -765,8 +765,8 @@ const showSizeControls = () => {
     const firstId = firstElement.getAttribute('data-id');
     const lastId  = endElement.getAttribute('data-id');
 
-    const sizeBackElement = '<div id="size-back" onclick="backSize(this)"><i class="fa fa-caret-left fa-2x" aria-hidden="true" style="padding-top: 8px; padding-right: 5px;"></i></div>';
-    const sizeNextElement = '<div id="size-next" onclick="nextSize(this)"><i class="fa fa-caret-right fa-2x" aria-hidden="true" style="padding-top: 8px; padding-left: 5px;"></i></div>';
+    const sizeBackElement = '<div id="size-back" onclick="backSize(this)"><i class="fa fa-caret-left fa-2x" aria-hidden="true" style="padding-top: 8px; padding-right: 5px; color: gainsboro;"></i></div>';
+    const sizeNextElement = '<div id="size-next" onclick="nextSize(this)"><i class="fa fa-caret-right fa-2x" aria-hidden="true" style="padding-top: 8px; padding-left: 5px; color: gainsboro;"></i></div>';
 
     if (firstId > minId) sizeBlock.innerHTML = sizeBackElement + sizeBlock.innerHTML;
     if (lastId < maxId)  sizeBlock.innerHTML = sizeBlock.innerHTML + sizeNextElement;
@@ -871,8 +871,8 @@ const showSetsControls = () => {
     const firstId = (firstElement) ? firstElement.getAttribute('data-id'): 0;
     const lastId  = (endElement)   ? endElement.getAttribute('data-id')  : 0;
 
-    const backElement = '<div id="set-back" onclick="backSets(this)"><i class="fa fa-caret-left fa-2x" aria-hidden="true" style="padding-top: 8px; padding-right: 5px;"></i></div>';
-    const nextElement = '<div id="set-next" onclick="nextSets(this)"><i class="fa fa-caret-right fa-2x" aria-hidden="true" style="padding-top: 8px; padding-left: 5px;"></i></div>';
+    const backElement = '<div id="set-back" onclick="backSets(this)"><i class="fa fa-caret-left fa-2x" aria-hidden="true" style="padding-top: 8px; padding-right: 5px; color: gainsboro;"></i></div>';
+    const nextElement = '<div id="set-next" onclick="nextSets(this)"><i class="fa fa-caret-right fa-2x" aria-hidden="true" style="padding-top: 8px; padding-left: 5px; color: gainsboro;"></i></div>';
 
     if (firstId > minId) setBlock.innerHTML = backElement + setBlock.innerHTML;
     if (lastId < maxId)  setBlock.innerHTML = setBlock.innerHTML + nextElement;
@@ -934,6 +934,91 @@ const backSets = (element) => {
         shownIds.push(--idx);    
     });
     showSets(shownIds[0], shownIds[shownIds.length-1]);
+}
+
+
+/**
+ * Управляет отображением элементов прокрутки аналогов.
+ */
+const showAnaloguesControls = () => {
+    const analoguesBlock      = document.querySelector('#analogues-block');
+    const analoguesElements   = JSON.parse(analoguesBlock.getAttribute('data-json'));
+    const analoguesItemsShown = analoguesBlock.querySelectorAll('.product__analogues-block__imgs');
+
+    const minElement   = analoguesElements[0];
+    const maxElement   = analoguesElements[analoguesElements.length-1];
+    const firstElement = analoguesItemsShown[0];
+    const endElement   = analoguesItemsShown[analoguesItemsShown.length-1];
+
+    const minId   = (minElement)   ? minElement['id']                    : 0;
+    const maxId   = (maxElement)   ? maxElement['id']                    : 0;
+    const firstId = (firstElement) ? firstElement.getAttribute('data-id'): 0;
+    const lastId  = (endElement)   ? endElement.getAttribute('data-id')  : 0;
+
+    const backElement = '<div id="set-back" onclick="backAnalogues(this)"><i class="fa fa-caret-left fa-2x" aria-hidden="true" style="padding-top: 8px; padding-right: 5px; color: gainsboro;"></i></div>';
+    const nextElement = '<div id="set-next" onclick="nextAnalogues(this)"><i class="fa fa-caret-right fa-2x" aria-hidden="true" style="padding-top: 8px; padding-left: 5px; color: gainsboro;"></i></div>';
+
+    if (firstId > minId) analoguesBlock.innerHTML = backElement + analoguesBlock.innerHTML;
+    if (lastId < maxId)  analoguesBlock.innerHTML = analoguesBlock.innerHTML + nextElement;
+}
+
+
+/**
+ * Отображает картинки аналогов товаров.
+ * 
+ * firstIdx   - начальный индекс отображаемых картинок.
+ * lastIdx    - начальный индекс отображаемых картинок.
+ */
+const showAnalogues = (firstIdx=0, lastIdx=0) => {
+    const widthAnaloguesElement = 50;
+    const analoguesBlock = document.querySelector('#analogues-block');
+    let maxLength = analoguesBlock.offsetWidth;
+    const analoguesElements = JSON.parse(analoguesBlock.getAttribute('data-json'));
+    const maxIdx = Math.max(lastIdx, analoguesElements.length);
+    analoguesBlock.innerHTML = '';
+    for (var i=firstIdx; i < maxIdx; i++) {
+        maxLength = maxLength - widthAnaloguesElement;
+        if (maxLength > widthAnaloguesElement) {
+            analoguesBlock.innerHTML += analoguesElements[i]['element'];   
+        }
+    }
+    showAnaloguesControls();
+}
+
+
+/**
+ * Добавляет обработчк события перемещения по линейке изображений.
+ * 
+ * element   - выбранный элемент DOM.
+ */
+const nextAnalogues = (element) => {
+    const analoguesBlock      = document.querySelector('#analogues-block');
+    const analoguesItemsShown = analoguesBlock.querySelectorAll('.product__analogues-block__imgs');
+
+    const shownIds = [];
+    analoguesItemsShown.forEach((item) => {
+        let idx = parseInt(item.getAttribute('data-id'));
+        shownIds.push(++idx);    
+    });
+    showAnalogues(shownIds[0], shownIds[shownIds.length-1]);
+}
+
+
+/**
+ * Добавляет обработчк события перемещения по линейке изображений.
+ * 
+ * element   - выбранный элемент DOM.
+ */
+const backAnalogues = (element) => {
+    const analoguesBlock      = document.querySelector('#analogues-block');
+    const analoguesItemsShown = analoguesBlock.querySelectorAll('.product__analogues-block__imgs');
+
+    const shownIds = [];
+    analoguesItemsShown.forEach((item) => {
+        let idx = parseInt(item.getAttribute('data-id'));
+        shownIds.push(--idx);    
+    });
+    showAnalogues(shownIds[0], shownIds[shownIds.length-1]);
 }
 
 
@@ -1181,6 +1266,21 @@ const setProductPrice = () => {
             });
         });
     }
+
+    const productAnalogues = (productId) => {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: '/catalog/product/analogues',
+                data: {'productId': productId},
+                success: (response) => {
+                    resolve(response);
+                },
+                error: (error) => {
+                    reject(error);
+                }
+            });
+        });
+    }
     
     const updateProductsStatusStyle = () => {
         const statusFields = document.querySelectorAll('p[name="product-status"]');
@@ -1257,7 +1357,6 @@ const setProductPrice = () => {
             const sizeElement = addSetElement(idx, item['fields']);
             prepared_sets.push({ 'id': idx, 'element': sizeElement.outerHTML });
         });
-        console.log(prepared_sets);
         element.setAttribute('data-json', JSON.stringify(prepared_sets));
     }
 
@@ -1271,6 +1370,49 @@ const setProductPrice = () => {
         const element = document.createElement("a");
         element.href = `/catalog/product/${item.product}/`;
         element.classList.add('product__set-block__imgs');
+        element.target="_blank";
+        element.innerHTML = 
+            `<img
+                src="/media/${item.image}"
+                class="
+                    img-fluid
+                    img-thumbnail
+                    thumbnail-50
+                    product__thumbnail__block--design
+                    product__thumbnail__block--position"
+                alt="${item.product}"
+            >`;
+        element.setAttribute('data-id', idx);
+        return element;
+    }
+
+
+    /**
+     * Подготавливает элементы аналогов и сохраняет их в json формате.
+     *
+     * element - элемент analogues-block в котором будут сохранены подготовленные элементы размеров.
+     * analogues - массив данных о аналогов полученные с бэка.
+     */ 
+    const addAnaloguesElements = (element, analogues) => {
+        const prepared_sets = [];
+        analogues.forEach((item, idx) => {
+            const sizeElement = addAnaloguesElement(idx, item['fields']);
+            prepared_sets.push({ 'id': idx, 'element': sizeElement.outerHTML });
+        });
+        element.setAttribute('data-json', JSON.stringify(prepared_sets));
+    }
+
+
+    /**
+     * Подготавливает аналоги и сохраняет их в json формате.
+     *
+     * idx - индекс элемента.
+     * item - данные изображений полученные с бэка.
+     */
+    const addAnaloguesElement = (idx, item) => {
+        const element = document.createElement("a");
+        element.href = `/catalog/product/${item.product}/`;
+        element.classList.add('product__analogues-block__imgs');
         element.target="_blank";
         element.innerHTML = 
             `<img
@@ -1381,6 +1523,21 @@ const setProductPrice = () => {
                 JSON.parse(data['product_sets'])
             );
             showSets();
+
+        })
+        .catch((error) => {
+            alert('Ошибка получения комплектующих: ' + error);    
+        });
+
+    productAnalogues(productIds.toString())
+        .then((data) => {
+            if (data['replay'] == 'error') throw new Error(data['message']);
+            
+            addAnaloguesElements(
+                document.querySelector('#analogues-block'),
+                JSON.parse(data['product_analogues'])
+            );
+            showAnalogues();
 
         })
         .catch((error) => {

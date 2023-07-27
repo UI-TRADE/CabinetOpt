@@ -395,7 +395,7 @@ class ProductsSet(models.Model):
         Product,
         on_delete=models.PROTECT,
         verbose_name='Комплектующее',
-        related_name='product_set',
+        related_name='set_of_products',
         db_index=True
     )
 
@@ -405,3 +405,27 @@ class ProductsSet(models.Model):
 
     def __str__(self):
         return f'{self.accessory}'
+
+
+class SimilarProducts(models.Model):
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        verbose_name='Номенклатура',
+        db_index=True
+    )
+    similar_product = models.ForeignKey(
+        Product,
+        on_delete=models.PROTECT,
+        verbose_name='Аналог',
+        related_name='similar_products',
+        db_index=True
+    )
+
+    class Meta:
+        verbose_name = 'Аналог'
+        verbose_name_plural = 'Аналоги'
+
+    def __str__(self):
+        return f'{self.similar_product}'
+   

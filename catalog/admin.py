@@ -12,7 +12,8 @@ from .models import (
     PreciousStone,
     CutType,
     GemSet,
-    ProductsSet
+    ProductsSet,
+    SimilarProducts
 )
 
 class ProductImageInLine(admin.TabularInline):
@@ -45,6 +46,17 @@ class ProductsSetInLine(admin.TabularInline):
 
     verbose_name = 'элемент состава'
     verbose_name_plural = 'элементы состава'
+
+
+class SimilarProductsInLine(admin.TabularInline):
+    model = SimilarProducts
+    fk_name = 'product'
+    extra = 0
+    fields = ('similar_product',)
+    classes = ('collapse', )
+
+    verbose_name = 'аналог'
+    verbose_name_plural = 'аналоги'
 
 
 class StockAndCostInLine(admin.TabularInline):
@@ -149,7 +161,13 @@ class ProductAdmin(admin.ModelAdmin):
     readonly_fields = [
         'created_at'
     ]
-    inlines = [GemSetInLine, StockAndCostInLine, ProductImageInLine, ProductsSetInLine]
+    inlines = [
+        GemSetInLine,
+        StockAndCostInLine,
+        ProductImageInLine,
+        ProductsSetInLine,
+        SimilarProductsInLine
+    ]
 
 
 @admin.register(PriceType)

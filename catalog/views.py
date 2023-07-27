@@ -17,7 +17,9 @@ from rest_framework.permissions import IsAuthenticated
 from clients.login import Login
 from clients.models import PriorityDirection
 from catalog.models import (
-    Product, ProductImage, Collection, StockAndCost, ProductsSet, GemSet, ProductsSet
+    Product, ProductImage,
+    Collection, StockAndCost,
+    ProductsSet, GemSet, SimilarProducts
 )
 
 from .tasks import run_uploading_products, run_uploading_images, run_uploading_price
@@ -245,6 +247,31 @@ def product_accessories(request):
             {
                 'replay'           : 'ok',
                 'product_sets' : serialize("json", product_set_imgs)
+            },
+            status=200,
+            safe=False
+        )
+
+    return JsonResponse(
+        {'replay': 'error', 'message': 'Отсутствуют Продукты для получения данных'},
+        status=200
+    )
+
+
+@api_view(['GET'])
+def product_analogues(request):
+    product_id = request.query_params.get('productId')
+    if product_id:
+        product_analogues_imgs = ProductImage.objects.filter(
+            product_id__in=SimilarProducts.objects.filter(
+                product_id=product_id
+            ).values_list('similar_product', flat=True)
+        )
+
+        return JsonResponse(
+            {
+                'replay'            : 'ok',
+                'product_analogues' : serialize("json", product_analogues_imgs)
             },
             status=200,
             safe=False

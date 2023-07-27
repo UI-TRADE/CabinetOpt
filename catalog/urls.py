@@ -14,5 +14,6 @@ urlpatterns = [
     path('upload/price'            , views.upload_price),
     path('pickup_products/'        , views.pickup_products),
     path('stocks_and_costs/'       , views.stocks_and_costs),
-    path('product/accessories'    , views.product_accessories),
+    path('product/accessories'     , views.product_accessories),
+    path('product/analogues'       , views.product_analogues),
 ]
