@@ -442,7 +442,7 @@ const updateOrderItem = (element) => {
                 const price = getPrice(
                     itemParams.currentPrice, itemParams.maxPrice, itemParams.currentDiscount, itemParams.weight
                 );
-                if (itemParams.weight) weightField.value = itemParams.weight;
+                if (itemParams.weight) weightField.value = itemParams.weight * quantityField.value;
                 if (itemParams.size) {
                     sizeField.value   = itemParams.size;
                     const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
@@ -481,7 +481,7 @@ const updateOrderItem = (element) => {
                 const price = getPrice(
                     itemParams.currentPrice, itemParams.maxPrice, itemParams.currentDiscount, itemParams.weight
                 );
-                if (itemParams.weight) weightField.value = itemParams.weight;
+                if (itemParams.weight) weightField.value = itemParams.weight * quantityField.value;
                 if (itemParams.size)   sizeField.value   = itemParams.size;
                 priceField.value = price.clientPrice;
                 sumField.value = quantityField.value * price.clientPrice;                
@@ -510,7 +510,7 @@ const updateOrderItem = (element) => {
                 const price = getPrice(
                     itemParams.currentPrice, itemParams.maxPrice, itemParams.currentDiscount, itemParams.weight
                 );
-                if (itemParams.weight) weightField.value = itemParams.weight;
+                if (itemParams.weight) weightField.value = itemParams.weight * quantityField.value;
                 if (itemParams.size)   sizeField.value   = itemParams.size;
                 priceField.value = price.clientPrice;
                 sumField.value = quantityField.value * price.clientPrice;                
@@ -521,6 +521,28 @@ const updateOrderItem = (element) => {
     }
     else if (partsOfId[partsOfId.length-1] === 'quantity') {
         sumField.value = priceField.value * element.value;
+
+        const productFieldNodes = productField.childNodes;
+        for (var j=0; j<productFieldNodes.length; j++) {
+            if (productFieldNodes[j].selected) break;
+        }
+        const productId = productFieldNodes[j].value;
+        if (!productId) return;
+
+        const nomenclature_sizeFieldNodes = nomenclature_sizeField.childNodes;
+        for (var i=0; i<nomenclature_sizeFieldNodes.length; i++) {
+            if (nomenclature_sizeFieldNodes[i].selected) break;
+        }
+        const selectedSize = nomenclature_sizeFieldNodes[i].value;
+
+        productStocksAndCosts(productId, selectedSize)
+            .then((data) => {
+                const itemParams = getItemParams(data, productId);
+                if (itemParams.weight) weightField.value = itemParams.weight * quantityField.value;                
+            })
+            .catch((error) => {
+                alert('Ошибка: ' + error);
+            });
     }
     else if (partsOfId[partsOfId.length-1] === 'price') {
         sumField.value = quantityField.value * element.value;
@@ -534,8 +556,19 @@ const updateOrderItem = (element) => {
 }
 
 
-const updateCartItem = (element, preventReload=false) => {
+/**
+ * Действия при изменении индикатора количество изделий в корзине.
+ * 
+ * element         - поле ввода количества в корзине.
+ * preventReload   - удаляет текущую позицию в корзине если количество 0.
+ */
+const OnQuantityChange = (element, preventReload=false) => {
 
+    /**
+     * Получает информацию о позиции корзины с бэка.
+     * 
+     * params         - структура с productId и size для идентификации товара в корзине.
+     */
     const getCartInfo = (params) => {
         return new Promise((resolve, reject) => {
             $.ajax({
@@ -550,53 +583,12 @@ const updateCartItem = (element, preventReload=false) => {
         });
     }
 
-    const cartRows = document.querySelectorAll('[name="cart-row"]');
-    cartRows.forEach((cartRow) => {
-        if (cartRow.contains(element)) {
-            const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]');
-            const cartKey = cartRow.querySelector('[name="cart-key"]');
-            const params = JSON.parse(cartKey.textContent);
-
-            getCartInfo(params)
-                .then((data) => {
-                    const quantity = data['quantity'];
-                    const formData = new FormData();
-                    formData.append('csrfmiddlewaretoken', csrfToken.value);
-                    formData.append('quantity', element.value - quantity);
-                    formData.append('update'  , true);
-                    formData.append('size'    , params['size']);
-
-                    $.ajax({
-                        url: `/cart/add/${params['productId']}/`,
-                        type: 'POST',
-                        data: formData,
-                        processData: false,
-                        contentType: false,
-                        success: (response) => {
-                            if (!preventReload) {
-                                const reloadHtml = new DOMParser().parseFromString(response, 'text/html');
-                                const allCartKeys = reloadHtml.querySelectorAll('[name="cart-key"]');
-                                for(var i=0; i<allCartKeys.length; i++) {
-                                    if (allCartKeys[i].textContent == cartKey.textContent) break;
-                                }
-                                cartRow.outerHTML = allCartKeys[i].parentElement.outerHTML;
-                            }
-                            updateElement('li[name="cart_detail"]');
-                        },
-                        error: (xhr, status, error) => {
-                            alert('Ошибка: ' + error);
-                        }
-                    });   
-                })
-                .catch((error) => {});
-        }
-    });
-
-}
-
-
-const OnQuantityChange = (element, preventReload=false) => {
-
+    /**
+     * Рекурсивно получает ключ позиции в корзине.
+     * 
+     * element - поле ввода количества в корзине.
+     * i       - порядковый номер интерации, не более 5
+     */
     const getCartKey = (element, i) => {
         if (i >= 5) return ""; i++;
         const foundElement = element.querySelector('[name="cart-key"]');
@@ -604,6 +596,58 @@ const OnQuantityChange = (element, preventReload=false) => {
             return JSON.parse(foundElement.textContent);
         }
         return getCartKey(element.parentElement, i);
+    }
+
+    /**
+     * Обновляет позицию товара в корзине.
+     * 
+     * element         - поле ввода количества в корзине.
+     * preventReload   - удаляет текущую позицию в корзине если количество 0.
+     */
+    const updateCartItem = (element, preventReload=false) => {
+
+        const cartRows = document.querySelectorAll('[name="cart-row"]');
+        cartRows.forEach((cartRow) => {
+            if (cartRow.contains(element)) {
+                const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]');
+                const cartKey = cartRow.querySelector('[name="cart-key"]');
+                const params = JSON.parse(cartKey.textContent);
+
+                getCartInfo(params)
+                    .then((data) => {
+                        const quantity = data['quantity'];
+                        const formData = new FormData();
+                        formData.append('csrfmiddlewaretoken', csrfToken.value);
+                        formData.append('quantity', element.value - quantity);
+                        formData.append('update'  , true);
+                        formData.append('size'    , params['size']);
+
+                        $.ajax({
+                            url: `/cart/add/${params['productId']}/`,
+                            type: 'POST',
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                            success: (response) => {
+                                if (!preventReload) {
+                                    const reloadHtml = new DOMParser().parseFromString(response, 'text/html');
+                                    const allCartKeys = reloadHtml.querySelectorAll('[name="cart-key"]');
+                                    for(var i=0; i<allCartKeys.length; i++) {
+                                        if (allCartKeys[i].textContent == cartKey.textContent) break;
+                                    }
+                                    cartRow.outerHTML = allCartKeys[i].parentElement.outerHTML;
+                                }
+                                updateElement('li[name="cart_detail"]');
+                            },
+                            error: (xhr, status, error) => {
+                                alert('Ошибка: ' + error);
+                            }
+                        });   
+                    })
+                    .catch((error) => {});
+            }
+        });
+
     }
 
     const quantity = parseInt(element.value);
@@ -624,7 +668,7 @@ const OnQuantityChange = (element, preventReload=false) => {
                 updateElement('li[name="cart_detail"]');
             },
             error: (xhr, status, error) => {
-                alert('Ошибка: ' + error);
+                alert('Ошибка удаления товара из корзины: ' + error);
             }
         });
     } else {

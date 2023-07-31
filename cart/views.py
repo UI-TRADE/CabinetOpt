@@ -91,6 +91,8 @@ def order_create(request):
 
         with transaction.atomic():
             for item in order_items:
+                if (item['weight']):
+                    item['weight'] = round(item['quantity'] * item['weight'], 3)
                 formset.append(OrderItemForm(
                     item | {
                         'sum': item['total_price']

@@ -40,7 +40,10 @@ class Cart(object):
                     self.cart[key]['product'] = product
 
         for item in self.cart.values():
-            item['total_price'] = (item['price'] if item['price'] else 0) * item['quantity']
+            item['total_price'] = round(
+                (item['price'] if item['price'] else 0) * item['quantity'],
+                2
+            )
             yield item
 
 
@@ -88,17 +91,31 @@ class Cart(object):
             del self.keys[key]
             self.save()
 
+
     def info(self, product_id, **kwargs):
         key = self.get_key(product_id, size= kwargs['size'])
         if key in self.cart:
             return self.cart[key]
 
+
     def get_total_price(self):
-        return sum(item['price'] * item['quantity'] for item in self.cart.values() if item['price'])
+        return round(
+            sum(
+                item['price'] * item['quantity'] \
+                    for item in self.cart.values() if item['price']
+            ),
+            2
+        )
 
 
     def get_total_max_price(self):
-        return sum(item['max_price'] * item['quantity'] for item in self.cart.values() if item.get('max_price'))
+        return round(
+            sum(
+                item['max_price'] * item['quantity'] \
+                    for item in self.cart.values() if item.get('max_price')
+            ),
+            2
+        )
 
 
     def clear(self):
