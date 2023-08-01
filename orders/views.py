@@ -1,5 +1,5 @@
 import json
-from xhtml2pdf import pisa
+
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.conf import settings
@@ -7,20 +7,29 @@ from django.contrib.staticfiles import finders
 from django.core.serializers import serialize
 from django.core.exceptions import ValidationError
 from django.db.models import F, Sum, Count
-from django.views.generic import ListView, UpdateView, CreateView, TemplateView
+from django.views.generic import (
+    ListView, UpdateView, CreateView, TemplateView
+)
 from django.template.loader import get_template
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from collections import defaultdict
+from contextlib import suppress
 from rest_framework.decorators import api_view
+from xhtml2pdf import pisa
 
 from clients.login import Login
 from clients.models import ContactDetail
 from catalog.models import Product, StockAndCost
 from orders.models import Order, OrderItem
 
-from .forms import OrderItemInline
-from .utils import save_xlsx
+from .forms import (
+    OrderForm,
+    OrderItemForm,
+    OrderItemInline,
+    FileSelectionForm
+)
+from .utils import save_xlsx, read_xlsx
 
 
 class OrderView(ListView):
@@ -264,6 +273,117 @@ class ExportXLSXView(ExportOrderView):
         save_xlsx(context, response)
 
         return response
+
+
+def serialize_order_items(raw_order_items, clients):
+    result = []
+    for raw_item in raw_order_items:
+        item = {
+            'quantity': 1,
+            'size': 0,
+            'weight': 0.00,
+            'price': 0.00,
+            'unit': '796',
+            'product': Product.objects.none,
+            'total_price': 0.00
+        }
+
+        with suppress(Product.DoesNotExist, TypeError, ValueError):
+            item['product']  = Product.objects.get(articul=raw_item[1])
+            item['quantity'] = int(raw_item[2])
+            if raw_item[3]:
+                item['weight']   = float(raw_item[3])
+            if raw_item[4]:
+                item['size']     = raw_item[4]
+
+            *_, prices, discount_prices = \
+                StockAndCost.objects.available_stocks_and_costs(
+                    [item['product'].pk,],
+                    size=item['size'],
+                    clients=clients
+                )
+            
+            if prices:
+                price_item = prices.first()
+                item['price'] = price_item.price
+                item['total_price'] = round(item['quantity'] * float(price_item.price), 2)
+                if price_item.unit != '796' and raw_item[3]:
+                    item['total_price'] = round(float(raw_item[3]) * float(price_item.price), 2)   
+
+
+            result.append(item)
+
+    return result
+
+
+def import_xlsx(request):
+
+    if request.method != 'POST':
+        form = FileSelectionForm()
+        return render(request, 'forms/file_selection.html', {'form': form})
+
+    form = FileSelectionForm(request.POST, request.FILES)
+    if not form.is_valid():
+        return JsonResponse({'errors': form.errors.as_json()})
+    
+    login = Login(request)
+    clients = login.get_clients()
+    managers = login.get_managers()
+    
+    file = request.FILES['file_path']
+    raw_order_items = read_xlsx(file)
+    if not raw_order_items:
+        return redirect('orders:orders')
+    
+    save_order(
+        {
+            'client': clients.first(),
+            'manager': managers.first(),
+            'status': 'introductory'
+        },
+        serialize_order_items(raw_order_items, clients)
+    )
+
+    return redirect('orders:orders')
+
+
+def save_order(order_params, order_items):
+    print(order_items)
+    order_form = OrderForm(order_params)
+    order_instance = order_form.save(commit=False)
+
+    formset, errors = [], []
+    try:
+
+        with transaction.atomic():
+            for item in order_items:
+                formset.append(OrderItemForm(
+                    item | {
+                        'sum': item['total_price']
+                }))
+
+                if order_form.is_valid():
+                    order_instance.save()  
+
+                for form in formset:  
+                    if not form.is_valid():
+                        errors.append({
+                            'product_id': item['product'].id,
+                            'size': item['size'],
+                            'error': form.errors.as_text()
+                        })
+                        continue
+                    item_instance = form.save(commit=False)
+                    item_instance.order = order_instance
+                    item_instance.save()
+
+            if errors:
+                transaction.rollback()
+                raise ValidationError(json.dumps(errors))
+    
+    finally:
+        if transaction.get_autocommit():
+            transaction.commit()
 
 
 def remove_order(request, order_id):

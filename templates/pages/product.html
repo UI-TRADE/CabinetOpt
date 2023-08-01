@@ -151,7 +151,7 @@
                                 </div>
             
                             </div>
-                            <div class="col product__col--position" style="max-width: 20vw;">
+                            <div class="col product__col--position product__col__prices" style="max-width: 20vw;">
                             
                                 <div class="product__price-card__element discount" style="padding-top: 25px;">
                                     <input
@@ -195,14 +195,28 @@
                                     <input type="hidden" name="size" value=0 />
                                     <input type="hidden" name="weight" value=0 />
                                 </form>
-                                <!-- <a href="#" onclick="addToCart('cartForm-{{product.id}}');">в Корзину</a> -->
                                 <div class="product__price-card__element">
                                     <input
+                                    name="add-to-cart"
                                     type="button"
                                     onclick="addToCart('cartForm-{{product.id}}');"
                                     value="В корзину"
                                     class="btn btn-outline-warning"
                                     style="width: 150px;"/>
+                                </div>
+                                <div name="cart-row" class="px-4 px-sm-0 cart product__price-card__element--cart">
+                                    <a class="cart-element" href="#" onclick="delOneFromCart(this)">-</a>
+                                    <input 
+                                      type="text"
+                                      class="
+                                        form-control
+                                        cart-element
+                                        product__inStock-block__cart__input--position
+                                      "
+                                      readonly
+                                    >
+                                    <a class="cart-element" href="#" onclick="addOneToCart(this)">+</a>
+                                    <div name="cart-key" style="display: none;"></div>
                                 </div>
                                 <div class="
                                     product__price-card__element

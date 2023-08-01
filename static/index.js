@@ -61,7 +61,7 @@ const showModalForm = (formId) => {
             }
         });
     });
-    updateModalForm(formId);   
+    (formId == 'fileSelectionForm') ? updateFileSelectionForm() : updateModalForm(formId); 
 }
 
 
@@ -72,6 +72,37 @@ const updateModalForm = (formId) => {
             type: 'POST',
             url: event.target.action,
             data: $(`.${formId}`).serialize(),
+            success: (data) => {
+                if(data['errors']) {
+                    showErrors(data['errors']);
+                    data['errors'] = {}
+                } else {
+                    $('.modal').modal('hide');
+                    location.reload();
+                }
+            },
+            error: (response) => {
+                const errors = JSON.parse(response.responseText).errors;
+                showErrors(errors);
+            }
+        });
+    });
+}
+
+
+const updateFileSelectionForm = () => {
+    console.log('updateFileSelectionForm');
+    const formId = 'fileSelectionForm';
+    $(`#${formId}`).on('submit', (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        
+        $.ajax({
+            type: 'POST',
+            url: event.target.action,
+            data: formData,
+            processData: false,
+            contentType: false,
             success: (data) => {
                 if(data['errors']) {
                     showErrors(data['errors']);
@@ -241,34 +272,20 @@ const createBrandAndCollectionLists = () => {
 }
 
 
-const updateCart = (element, params) => {
-
-    const updateElements = (cartData) => {
-        const cartButton     = element.querySelector('input[type="button"]');
-        const cartElements   = element.querySelector('div[name="cart-row"]');
-        if (!cartElements) return;
-        const cartElement    = cartElements.querySelector('input');
-        const cartKeyElement = cartElements.querySelector('[name="cart-key"]');
-        cartButton.parentElement.style = "display: block";
-        cartElements.style             = "display: none";
-        if (cartData) {
-            cartButton.parentElement.style = "display: none";
-            cartElements.style             = "display: flex";
-            cartElement.value              = cartData['quantity'];
-            cartKeyElement.textContent     = JSON.stringify(params);
-        }
+const updateCartElements = (element, cartData, params) => {
+    const cartButton     = element.querySelector('input[name="add-to-cart"]');
+    const cartElements   = element.querySelector('div[name="cart-row"]');
+    if (!cartElements) return;
+    const cartElement    = cartElements.querySelector('input');
+    const cartKeyElement = cartElements.querySelector('[name="cart-key"]');
+    cartButton.parentElement.style = "display: block";
+    cartElements.style             = "display: none";
+    if (cartData) {
+        cartButton.parentElement.style = "display: none";
+        cartElements.style             = "display: flex";
+        cartElement.value              = cartData['quantity'];
+        cartKeyElement.textContent     = JSON.stringify(params);
     }
-
-    $.ajax({
-        url: `/cart/info/${params['productId']}/${params['size']}`,
-        success: (cartData) => {
-            updateElements(cartData);
-        },
-        error: (error) => {
-            alert('Ошибка обновления корзины: ' + error);
-        }
-    });
-
 }
 
 const waitUpdateCart = (element, params) => {
@@ -276,19 +293,7 @@ const waitUpdateCart = (element, params) => {
         $.ajax({
             url: `/cart/info/${params['productId']}/${params['size']}`,
             success: (cartData) => {
-                const cartButton     = element.querySelector('input[type="button"]');
-                const cartElements   = element.querySelector('div[name="cart-row"]');
-                if (!cartElements) return;
-                const cartElement    = cartElements.querySelector('input');
-                const cartKeyElement = cartElements.querySelector('[name="cart-key"]');
-                cartButton.parentElement.style = "display: block";
-                cartElements.style             = "display: none";
-                if (cartData) {
-                    cartButton.parentElement.style = "display: none";
-                    cartElements.style             = "display: flex";
-                    cartElement.value              = cartData['quantity'];
-                    cartKeyElement.textContent     = JSON.stringify(params);
-                }
+                updateCartElements(element, cartData, params);
                 resolve(true);
             },
             error: (error) => {
@@ -312,8 +317,19 @@ const addToCart = (formId) => {
         success: function(response) {
             try {
                 if (response['replay'] == 'error') throw new Error(response['message']);
-                const element = productForm.parentElement.parentElement;
-                updateCart(element, {'productId': response['pk'], 'size': response['size']});
+                $.ajax({
+                    url: `/cart/info/${response['pk']}/${response['size']}`,
+                    success: (cartData) => {
+                        updateCartElements(
+                            productForm.parentElement.parentElement,
+                            cartData,
+                            {'productId': response['pk'], 'size': response['size']}
+                        );
+                    },
+                    error: (error) => {
+                        alert('Ошибка обновления корзины: ' + error);
+                    }
+                });
                 
             } catch(error) {
                 alert('Ошибка добавления в корзину: ' + error);    
@@ -361,7 +377,7 @@ const updateOrderItem = (element) => {
             el => el['fields'].product == productId && el['fields'].unit == product['fields'].unit
         ).find(el => true);
         const discount_price = discount_prices.filter(
-            el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
+            el => el['fields'].product == productId && el['fields'].unit == product['fields'].unit
         ).find(el => true);
 
         const defaultSize = getDefaultSize(
@@ -442,7 +458,7 @@ const updateOrderItem = (element) => {
                 const price = getPrice(
                     itemParams.currentPrice, itemParams.maxPrice, itemParams.currentDiscount, itemParams.weight
                 );
-                if (itemParams.weight) weightField.value = itemParams.weight * quantityField.value;
+                if (itemParams.weight) weightField.value = (itemParams.weight * quantityField.value).toFixed(2);
                 if (itemParams.size) {
                     sizeField.value   = itemParams.size;
                     const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
@@ -455,7 +471,7 @@ const updateOrderItem = (element) => {
                     });
                 }
                 priceField.value = price.clientPrice;
-                sumField.value = quantityField.value * price.clientPrice;
+                sumField.value = (parseFloat(quantityField.value) * price.clientPrice).toFixed(2);
             })
             .catch((error) => {
                 alert('Ошибка: ' + error);
@@ -481,10 +497,10 @@ const updateOrderItem = (element) => {
                 const price = getPrice(
                     itemParams.currentPrice, itemParams.maxPrice, itemParams.currentDiscount, itemParams.weight
                 );
-                if (itemParams.weight) weightField.value = itemParams.weight * quantityField.value;
+                if (itemParams.weight) weightField.value = (itemParams.weight * quantityField.value).toFixed(2);
                 if (itemParams.size)   sizeField.value   = itemParams.size;
                 priceField.value = price.clientPrice;
-                sumField.value = quantityField.value * price.clientPrice;                
+                sumField.value = (parseFloat(quantityField.value) * price.clientPrice).toFixed(2);                
             })
             .catch((error) => {
                 alert('Ошибка: ' + error);
@@ -510,17 +526,17 @@ const updateOrderItem = (element) => {
                 const price = getPrice(
                     itemParams.currentPrice, itemParams.maxPrice, itemParams.currentDiscount, itemParams.weight
                 );
-                if (itemParams.weight) weightField.value = itemParams.weight * quantityField.value;
+                if (itemParams.weight) weightField.value = (itemParams.weight * quantityField.value).toFixed(2);
                 if (itemParams.size)   sizeField.value   = itemParams.size;
                 priceField.value = price.clientPrice;
-                sumField.value = quantityField.value * price.clientPrice;                
+                sumField.value = (parseFloat(quantityField.value) * price.clientPrice).toFixed(2);                
             })
             .catch((error) => {
                 alert('Ошибка: ' + error);
             });
     }
     else if (partsOfId[partsOfId.length-1] === 'quantity') {
-        sumField.value = priceField.value * element.value;
+        sumField.value = (parseFloat(priceField.value) * parseFloat(element.value)).toFixed(2);
 
         const productFieldNodes = productField.childNodes;
         for (var j=0; j<productFieldNodes.length; j++) {
@@ -538,7 +554,7 @@ const updateOrderItem = (element) => {
         productStocksAndCosts(productId, selectedSize)
             .then((data) => {
                 const itemParams = getItemParams(data, productId);
-                if (itemParams.weight) weightField.value = itemParams.weight * quantityField.value;                
+                if (itemParams.weight) weightField.value = (itemParams.weight * quantityField.value).toFixed(2);                
             })
             .catch((error) => {
                 alert('Ошибка: ' + error);
@@ -664,7 +680,19 @@ const OnQuantityChange = (element, preventReload=false) => {
                         }
                     });
                 }
-                updateCart(element.parentElement.parentElement, cartKey);
+                $.ajax({
+                    url: `/cart/info/${cartKey.productId}/${cartKey.size}`,
+                    success: (cartData) => {
+                        updateCartElements(
+                            element.parentElement.parentElement,
+                            cartData,
+                            cartKey
+                        );
+                    },
+                    error: (error) => {
+                        alert('Ошибка обновления корзины: ' + error);
+                    }
+                });
                 updateElement('li[name="cart_detail"]');
             },
             error: (xhr, status, error) => {
@@ -1296,6 +1324,100 @@ const setProductPrice = () => {
         });
     }
 
+    const updateElements = (data) => {
+        return new Promise((resolve, reject) => {
+            try {
+                if (data['replay'] == 'error') throw new Error(data['message']);
+
+                const cartElementsForUpdate = [];
+                const products         = JSON.parse(data['products']);
+                const collections      = JSON.parse(data['collection']);
+                const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
+                const actual_prices    = JSON.parse(data['actual_prices']);
+                const discount_prices  = JSON.parse(data['discount_prices']);
+    
+                for (var i=0; i < elements.length; i++) {
+                    let inStok = 0; let weight = 0; let size = 0;
+                    let currentPrice = 0; let currentDiscount = 0; let maxPrice = 0;
+                    const currentId = JSON.parse(elements[i].getAttribute('data-json'));
+                    const product = products.find(el => el['pk'] == currentId['id']);
+                    const collection = collections.find(el => el['id'] == currentId['id']);
+                    const stock_and_cost = stocks_and_costs.filter(el => el['fields'].product == currentId['id']);
+                    const actual_price = actual_prices.filter(
+                        el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
+                    ).find(el => true);
+                    const discount_price = discount_prices.filter(
+                        el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
+                    ).find(el => true);
+    
+                    const defaultSize = getDefaultSize(
+                        currentId['id'],
+                        collection['collection_group'],
+                        stock_and_cost,
+                        product['fields'].gender
+                    )
+    
+                    if (defaultSize) {
+                        maxPrice = defaultSize['fields'].cost;
+                        weight = defaultSize['fields'].weight;
+                        size = defaultSize['fields'].size;
+                        inStok = defaultSize['fields'].stock;   
+                    }
+    
+                    if (actual_price) { 
+                        currentPrice = actual_price['fields'].price;
+                        currentDiscount = actual_price['fields'].discount;
+                    }
+    
+                    if (discount_price) {
+                        maxPrice = discount_price['fields'].price;
+                        currentDiscount = discount_price['fields'].discount;   
+                    }
+    
+                    updatePriceInProductCard(
+                        {
+                            'size': size, 'weight': weight, 'inStok': inStok,
+                            'price': currentPrice, 'discount': currentDiscount, 'maxPrice': maxPrice
+                    });
+    
+                    if (!size) return;
+                    const sizeElements = elements[i].querySelector('#size-block');
+                    if (stock_and_cost && sizeElements) {
+                        sizeElements.style.display = 'flex';
+                        addSizeElements(sizeElements, stock_and_cost, currentPrice, currentDiscount, maxPrice, size);
+                    }
+                    showSizes();
+    
+                    cartElementsForUpdate.push(
+                        {
+                            'key': {'productId': currentId['id'], 'size': size},
+                            'element': document.querySelector('.product__col__prices')
+                    });
+    
+                }
+                resolve(cartElementsForUpdate);
+
+            } catch (error) {
+
+                reject(error);
+    
+            }
+        });        
+    }
+
+    const updateCarts = (cartElements) => {
+        return new Promise((resolve, reject) => {
+            try {
+                const result = Promise.all(
+                    cartElements.map((item) => waitUpdateCart(item.element, item.key))
+                );
+                resolve(result);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
     const productSets = (productId) => {
         return new Promise((resolve, reject) => {
             $.ajax({
@@ -1491,72 +1613,15 @@ const setProductPrice = () => {
     updateProductsStatusStyle();
 
     productStocksAndCosts(productIds.toString())
-        .then((data) => {
-            if (data['replay'] == 'error') throw new Error(data['message']);
-
-            const products         = JSON.parse(data['products']);
-            const collections      = JSON.parse(data['collection']);
-            const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
-            const actual_prices    = JSON.parse(data['actual_prices']);
-            const discount_prices  = JSON.parse(data['discount_prices']);
-
-            for (var i=0; i < elements.length; i++) {
-                let inStok = 0; let weight = 0; let size = 0;
-                let currentPrice = 0; let currentDiscount = 0; let maxPrice = 0;
-                const currentId = JSON.parse(elements[i].getAttribute('data-json'));
-                const product = products.find(el => el['pk'] == currentId['id']);
-                const collection = collections.find(el => el['id'] == currentId['id']);
-                const stock_and_cost = stocks_and_costs.filter(el => el['fields'].product == currentId['id']);
-                const actual_price = actual_prices.filter(
-                    el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
-                ).find(el => true);
-                const discount_price = discount_prices.filter(
-                    el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
-                ).find(el => true);
-
-                const defaultSize = getDefaultSize(
-                    currentId['id'],
-                    collection['collection_group'],
-                    stock_and_cost,
-                    product['fields'].gender
-                )
-
-                if (defaultSize) {
-                    maxPrice = defaultSize['fields'].cost;
-                    weight = defaultSize['fields'].weight;
-                    size = defaultSize['fields'].size;
-                    inStok = defaultSize['fields'].stock;   
-                }
-
-                if (actual_price) { 
-                    currentPrice = actual_price['fields'].price;
-                    currentDiscount = actual_price['fields'].discount;
-                }
-
-                if (discount_price) {
-                    maxPrice = discount_price['fields'].price;
-                    currentDiscount = discount_price['fields'].discount;   
-                }
-
-                updatePriceInProductCard(
-                    {
-                        'size': size, 'weight': weight, 'inStok': inStok,
-                        'price': currentPrice, 'discount': currentDiscount, 'maxPrice': maxPrice
-                });
-
-                if (!size) return;
-                const sizeElements = elements[i].querySelector('#size-block');
-                if (stock_and_cost && sizeElements) {
-                    sizeElements.style.display = 'flex';
-                    addSizeElements(sizeElements, stock_and_cost, currentPrice, currentDiscount, maxPrice, size);
-                }
-                showSizes();
-
-            }
-        })
-        .catch((error) => {
-            alert('Ошибка установки цен: ' + error);
-        });
+    .then((data) => {
+        return updateElements(data);
+    })
+    .then((data) => {
+        return updateCarts(data);
+    })
+    .catch((error) => {
+        alert('Ошибка обновления карточки товара: ' + error);
+    });
 
     productSets(productIds.toString())
         .then((data) => {
@@ -1585,7 +1650,7 @@ const setProductPrice = () => {
 
         })
         .catch((error) => {
-            alert('Ошибка получения комплектующих: ' + error);    
+            alert('Ошибка получения аналогов: ' + error);    
         });
 }
 
@@ -2118,6 +2183,9 @@ $(document).ready(() => {
     // login
     showModalForm('loginForm'); 
     showModalForm('regRequestForm');
+
+    // file selection
+    showModalForm('fileSelectionForm');
 
     // forms
     updateContactView('contactForm');

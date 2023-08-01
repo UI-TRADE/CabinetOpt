@@ -4,16 +4,53 @@ from catalog.models import StockAndCost
 from orders.models import Order, OrderItem
 
 
+class FileSelectionForm(forms.Form):
+    file_path = forms.FileField(validators = [], widget=forms.FileInput())
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'file-selection-control'
+            self.fields[field].widget.attrs['style'] = 'margin-bottom: 13px;'
+
+
+class OrderForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = [
+            'client',
+            'manager',
+            'status',
+        ]
+
+
 class OrderItemForm(forms.ModelForm):
     nomenclature = forms.CharField(max_length=100)
     nomenclature_size = forms.ChoiceField(validators=[], required=False)
 
     class Meta:
         model = OrderItem
-        fields = '__all__'
+        fields = [
+            'product',
+            'series',
+            'uin',
+            'weight',
+            'size',
+            'quantity',
+            'unit',
+            'price',
+            'sum',
+            'discount',
+            'price_type',
+            'nomenclature',
+            'nomenclature_size',
+        ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['discount'].required = False
+        self.fields['nomenclature'].required = False
+        self.fields['nomenclature_size'].required = False
         self.fields['nomenclature_size'].choices = self.get_sizes()
 
     def get_sizes(self):

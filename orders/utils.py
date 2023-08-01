@@ -175,3 +175,14 @@ def save_xlsx(context, response):
         sheet.row_dimensions[start_row-1].hidden = True
 
     wb.save(response)
+
+
+def read_xlsx(file_path):
+    result = []
+    workbook = load_workbook(file_path)
+    sheet = workbook.active
+
+    for row in sheet.iter_rows(values_only=True):
+        result.append(row)
+
+    return result[1:]
