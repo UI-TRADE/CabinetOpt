@@ -14,11 +14,12 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
 
+from .forms import ProductFilterForm
 from clients.login import Login
 from clients.models import PriorityDirection
 from catalog.models import (
     Product, ProductImage,
-    Collection, StockAndCost,
+    Collection, StockAndCost, Price,
     ProductsSet, GemSet, SimilarProducts
 )
 
@@ -51,6 +52,22 @@ class ProductView(ListView):
                            self.filters.get('collection') if 'collection-' in collection]
             if collections:
                 products = products.exclude(collection_id__in=collections)
+            products = products.apply_filters(self.filters)
+            
+            stock_and_cost = StockAndCost.objects.all()
+            if self.filters.get('weight'):
+                stock_and_cost = stock_and_cost.filter(weight__exact=self.filters['weight'])
+            if self.filters.get('size'):
+                stock_and_cost = stock_and_cost.filter(size__exact=self.filters['size'])
+            if stock_and_cost: 
+                products = products.filter(pk__in=stock_and_cost.values_list('product_id', flat=True))
+        
+            if self.filters.get('price'):
+                prices = Price.objects.available_prices(
+                    list(products.values_list('pk', flat=True))
+                ).filter(price__exact=self.filters['price'])
+                if prices:
+                    products = products.filter(pk__in=prices.values_list('product_id', flat=True))
 
         return products
 
@@ -69,10 +86,11 @@ class ProductView(ListView):
 
         collections = Collection.objects.all().annotate(group_name=F('group__name')).values('id', 'name', 'group_name')
 
-        context['products'] = products_page
-        context['brands'] = serialize("json", PriorityDirection.objects.all())
+        context['products']    = products_page
+        context['brands']      = serialize("json", PriorityDirection.objects.all())
         context['collections'] = json.dumps(list(collections), ensure_ascii=False)
-        context['MEDIA_URL'] = settings.MEDIA_URL
+        context['MEDIA_URL']   = settings.MEDIA_URL
+        context['filters']     = ProductFilterForm()
         return dict(list(context.items()))
 
 

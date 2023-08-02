@@ -348,7 +348,6 @@ def import_xlsx(request):
 
 
 def save_order(order_params, order_items):
-    print(order_items)
     order_form = OrderForm(order_params)
     order_instance = order_form.save(commit=False)
 

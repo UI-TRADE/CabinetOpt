@@ -46,6 +46,22 @@ class Collection(models.Model):
         return self.name
 
 
+class ProductQuerySet(models.QuerySet):
+    
+    def apply_filters(self, filters):
+        result = self.distinct()
+        for key, value in filters.items():
+            if key == 'name':
+                result = result.filter(name__in=value.split(';'))
+            elif key == 'articul':
+                result = result.filter(articul__icontains=value)
+            elif key == 'unit':
+                result = result.filter(unit=value)
+            elif key == 'status':
+                result = result.filter(status=value)
+        return result
+
+
 class Product(models.Model):
     name = models.CharField('Наименование', max_length=200, db_index=True)
     articul = models.CharField('Артикул', max_length=200, blank=True)
@@ -120,6 +136,8 @@ class Product(models.Model):
         'Идентификатор 1С', max_length=50, blank=True, db_index=True
     )
 
+    objects = ProductQuerySet.as_manager()
+
     class Meta:
         verbose_name = 'Номенклатура'
         verbose_name_plural = 'Номенклатура'
@@ -160,10 +178,6 @@ class StockAndCostQuerySet(models.QuerySet):
         
         if float(kwargs.get('size', 0)):
             stocks_and_costs = stocks_and_costs.filter(size=kwargs['size'])
-
-        # stocks_and_costs = stocks_and_costs.values(
-        #     'product', 'size', 'cost'
-        # ).annotate(stock=Sum('stock'), weight=Sum('weight'))
 
         return collections, products, stocks_and_costs, prices, discount_prices
 

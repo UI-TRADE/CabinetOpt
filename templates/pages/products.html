@@ -22,6 +22,13 @@
             <ul class="collection-group list-group">
             </ul>
           </div>
+          <div class="goods-menu-filters">
+            {% for filter_field in filters %}
+              {% csrf_token %}
+              <label for="{{ filter_field.auto_id }}">{{ filter_field.label }}:</label>
+              {{ filter_field }}
+            {% endfor %}
+          </div>
           <div class="goods-menu-blocks"></div>
           <div id="actions-group" class="goods-menu-blocks">
             <ul class="list-group">

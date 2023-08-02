@@ -91,7 +91,6 @@ const updateModalForm = (formId) => {
 
 
 const updateFileSelectionForm = () => {
-    console.log('updateFileSelectionForm');
     const formId = 'fileSelectionForm';
     $(`#${formId}`).on('submit', (event) => {
         event.preventDefault();
@@ -207,7 +206,7 @@ const updateCartView = (elementId) => {
 }
 
 
-const createBrandAndCollectionLists = () => {
+const initProductFilters = () => {
 
     const fillCollectionTree = (collections, collectionElement, excludedCollection) => {
 
@@ -234,7 +233,7 @@ const createBrandAndCollectionLists = () => {
                 const checked = (excludedCollections.find(el => el === `collection-${collection['id']}`)) ? "" : "checked";
                 innerHTML += 
                     `<li class="list-group-item" style="padding-top: 5px; padding-bottom: 5px; margin-left: 25px;">
-                        <input class="form-check-input me-1 switch-change" type="checkbox" value="collection" id="collection-${collection['id']}" ${checked}>
+                        <input class="form-check-input me-1 filter-control" type="checkbox" value="collection" id="collection-${collection['id']}" ${checked}>
                         <label class="form-check-label" for="collection-${collection['id']}" style="font-size: smaller;">${collection['name']}</label>
                     </li>`;
             });
@@ -247,27 +246,42 @@ const createBrandAndCollectionLists = () => {
     if (document.location.pathname !== "/catalog/products/") {
         return;
     }
+
+    data = {'brand': [], 'collection': []};
     const excludedВrands = localStorage.getItem('excludedВrands');
     const excludedCollection = localStorage.getItem('excludedCollection');
+    const filters = JSON.parse(sessionStorage.getItem('filters'));
 
     const brandList = document.querySelector('.brend-group'); 
     loadJson('#brands').forEach((brand) => {
         const checked = (excludedВrands.includes(`brand-${brand.pk}`)) ? "" : "checked"
         brandList.innerHTML += 
         `<li class="list-group-item">
-            <input class="form-check-input me-1 switch-change" type="checkbox" value="brand" id="brand-${brand.pk}" ${checked}>
+            <input class="form-check-input me-1 filter-control" type="checkbox" value="brand" id="brand-${brand.pk}" ${checked}>
             <label class="form-check-label" for="brand-${brand.pk}">${brand.fields.name}</label>
         </li>`
     });
+    data['brand'] = excludedВrands.split(',');
 
     fillCollectionTree(loadJson('#collections'), document.querySelector('.collection-group'), excludedCollection);
+    data['collection'] = excludedCollection.split(',');
+
+    Object.keys(filters).forEach(key => {
+        const filter_field = document.querySelector(`.filter-control[name="${key}"]`);
+        if (filter_field.tagName == 'INPUT') filter_field.value = filters[key];
+        if (filter_field.tagName == 'SELECT') {
+            const selectionItems = filter_field.children;
+            for (var i=0; i<selectionItems.length; i++) {
+                selectionItems[i].selected = false;
+                if (selectionItems[i].value == filters[key]) selectionItems[i].selected = true;
+            }
+        }
+        data[key] = filters[key];
+    });
 
     updateProducts('products', {
         'csrfmiddlewaretoken' : document.querySelector('input[name="csrfmiddlewaretoken"]').value,
-        'data': JSON.stringify({
-            'brand': excludedВrands.split(','),
-            'collection': excludedCollection.split(',')
-        })
+        'data': JSON.stringify(data)
     });
 }
 
@@ -287,6 +301,7 @@ const updateCartElements = (element, cartData, params) => {
         cartKeyElement.textContent     = JSON.stringify(params);
     }
 }
+
 
 const waitUpdateCart = (element, params) => {
     return new Promise((resolve, reject) => {
@@ -2017,7 +2032,6 @@ const autocomplete = (element) => {
 
 
 const changeMainImg = (element) => {
-    console.log(element);
     mainImgElement = document.querySelector('.main-image');
     mainImgElement.src = element.src;
 }
@@ -2064,26 +2078,33 @@ const addEvents = () => {
             showElement('brend-group', true);
         }
     });
-    
-    $('.switch-change').on('change', (event) => {
+
+    $('.filter-control').on('change', (event) => {
         data = {'brand': [], 'collection': []};
-        Array.from(
-            document.getElementsByClassName('switch-change')
-        ).forEach((item) => {
-            if ( item.checked ) {
-                return;
+        const allFilters = document.querySelectorAll('.filter-control');
+        allFilters.forEach((element) => {
+            if (!element.value) return;
+            if (element.value == 'brand' || element.value == 'collection') {
+                if (!element.checked) data[element.value].push(element.id);
+            } else {
+                data[`${element.name}`] = element.value;
             }
-            data[item.value].push(item.id);
         });
+
         localStorage.setItem('excludedВrands', data.brand);
         localStorage.setItem('excludedCollection', data.collection);
+        sessionStorage.setItem(
+            'filters',
+            JSON.stringify(Object.fromEntries(
+                Object.entries(data).filter(
+                    item => !['brand', 'collection'].includes(item[0])
+        ))));
         
         updateProducts('products', {
             'csrfmiddlewaretoken' : document.querySelector('input[name="csrfmiddlewaretoken"]').value,
             'data': JSON.stringify(data)
         });
     });
-
 
     $('.order__toolbar__btn').on('click', (event) => {
         let elementName = event.target.getAttribute('name');
@@ -2192,7 +2213,7 @@ $(document).ready(() => {
     updateCartView('cartView');
 
     // products
-    createBrandAndCollectionLists();
+    initProductFilters();
     setProductPrice();
 
     // orders
