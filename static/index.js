@@ -1395,13 +1395,18 @@ const setProductPrice = () => {
                             'price': currentPrice, 'discount': currentDiscount, 'maxPrice': maxPrice
                     });
     
-                    if (!size) return;
-                    const sizeElements = elements[i].querySelector('#size-block');
-                    if (stock_and_cost && sizeElements) {
-                        sizeElements.style.display = 'flex';
-                        addSizeElements(sizeElements, stock_and_cost, currentPrice, currentDiscount, maxPrice, size);
+                    if (size) {
+                        const sizeElements = elements[i].querySelector('#size-block');
+                        if (stock_and_cost && sizeElements) {
+                            sizeElements.style.display = 'flex';
+                            addSizeElements(
+                                sizeElements, stock_and_cost,
+                                currentPrice, currentDiscount,
+                                maxPrice, size
+                            );
+                        }
+                        showSizes();
                     }
-                    showSizes();
     
                     cartElementsForUpdate.push(
                         {
