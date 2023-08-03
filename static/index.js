@@ -1109,6 +1109,11 @@ const backAnalogues = (element) => {
 }
 
 
+/**
+ * Действия при рендеринге каталога номенклатуры.
+ * 
+ * element   - контейнер с каталогом номенклатуры.
+ */
 const updateProductCards = (element) => {
 
     const productStocksAndCosts = (productIds, size=0) => {
@@ -2183,6 +2188,9 @@ $(window).on("load", () => {
     }
     if (localStorage.getItem('excludedCollection') === null) {
         localStorage.setItem('excludedCollection', new Array());
+    }
+    if (sessionStorage.getItem('filters') === null) {
+        sessionStorage.setItem('filters', JSON.stringify({}));
     }
 
     const selectedURI = sessionStorage.getItem('selectedURI');
