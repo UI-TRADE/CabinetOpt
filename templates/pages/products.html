@@ -24,10 +24,31 @@
           </div>
           <div class="goods-menu-filters">
             {% for filter_field in filters %}
-              {% csrf_token %}
-              <label for="{{ filter_field.auto_id }}">{{ filter_field.label }}:</label>
-              {{ filter_field }}
+                {% if filter_field.name not in "weight,weight_till,price,price_till"%}
+                  <label for="{{ filter_field.auto_id }}">{{ filter_field.label }}:</label>
+                  {{ filter_field }}
+                {% endif %}
             {% endfor %}
+            <div class="row">
+              {% for filter_field in filters %}
+                  {% if filter_field.name in "weight,weight_till"%}
+                    <div class="col-6">
+                    <label for="{{ filter_field.auto_id }}">{{ filter_field.label }}:</label>
+                    {{ filter_field }}
+                    </div>
+                  {% endif %}
+              {% endfor %}
+            </div>
+            <div class="row">
+              {% for filter_field in filters %}
+                  {% if filter_field.name in "price,price_till"%}
+                    <div class="col-6">
+                    <label for="{{ filter_field.auto_id }}">{{ filter_field.label }}:</label>
+                    {{ filter_field }}
+                    </div>
+                  {% endif %}
+              {% endfor %}
+            </div>
           </div>
           <div class="goods-menu-blocks"></div>
           <div id="actions-group" class="goods-menu-blocks">

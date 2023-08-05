@@ -367,6 +367,20 @@ figure {
     right:20px;
 }
 
+.product__card__status--position {
+    position: absolute;
+    top:10px;
+    right:0px;
+    border-radius: 10px;
+    background-color: rgb(165, 194, 227);
+}
+
+.product__card__status--position p {
+    margin: 0px;
+    color: white;
+    padding: 0px 30px;
+}
+
 .product__price-block--position {
     text-align: right;
     margin-right: 10px;

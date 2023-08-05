@@ -378,27 +378,20 @@ const updateOrderItem = (element) => {
     const getItemParams = (data, productId) => {
 
         const products         = JSON.parse(data['products']);
-        const collections      = JSON.parse(data['collection']);
-        const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
         const actual_prices    = JSON.parse(data['actual_prices']);
         const discount_prices  = JSON.parse(data['discount_prices']);
+        const default_sizes    = JSON.parse(data['default_sizes']);
 
         let inStok = 0; let weight = 0; let size = 0;
         let currentPrice = 0; let currentDiscount = 0; let maxPrice = 0;
         const product = products.find(el => el['pk'] == productId);
-        const collection = collections.find(el => el['id'] == productId);
-        const stock_and_cost = stocks_and_costs.filter(el => el['fields'].product == productId);
         const actual_price = actual_prices.filter(
             el => el['fields'].product == productId && el['fields'].unit == product['fields'].unit
-        ).find(el => true);
+        ).find(_ => true);
         const discount_price = discount_prices.filter(
             el => el['fields'].product == productId && el['fields'].unit == product['fields'].unit
-        ).find(el => true);
-
-        const defaultSize = getDefaultSize(
-            productId, collection['collection_group'],
-            stock_and_cost, product['fields'].gender
-        )
+        ).find(_ => true);
+        const defaultSize = default_sizes.filter(el => el['fields'].product == productId).find(_ => true);
 
         if (defaultSize) {
             maxPrice = defaultSize['fields'].cost;
@@ -489,7 +482,7 @@ const updateOrderItem = (element) => {
                 sumField.value = (parseFloat(quantityField.value) * price.clientPrice).toFixed(2);
             })
             .catch((error) => {
-                alert('Ошибка: ' + error);
+                alert('Ошибка заполнения номенклатуры в строке заказа: ' + error);
             });
     }
     else if (partsOfId[partsOfId.length-1] === 'size') {
@@ -518,7 +511,7 @@ const updateOrderItem = (element) => {
                 sumField.value = (parseFloat(quantityField.value) * price.clientPrice).toFixed(2);                
             })
             .catch((error) => {
-                alert('Ошибка: ' + error);
+                alert('Ошибка заполнения размеров в строке заказа: ' + error);
             });
     }
     else if (partsOfId[partsOfId.length-1] === 'nomenclature_size') {
@@ -547,7 +540,7 @@ const updateOrderItem = (element) => {
                 sumField.value = (parseFloat(quantityField.value) * price.clientPrice).toFixed(2);                
             })
             .catch((error) => {
-                alert('Ошибка: ' + error);
+                alert('Ошибка заполнения размеров в строке заказа: ' + error);
             });
     }
     else if (partsOfId[partsOfId.length-1] === 'quantity') {
@@ -572,7 +565,7 @@ const updateOrderItem = (element) => {
                 if (itemParams.weight) weightField.value = (itemParams.weight * quantityField.value).toFixed(2);                
             })
             .catch((error) => {
-                alert('Ошибка: ' + error);
+                alert('Ошибка расчета веса в строке заказа: ' + error);
             });
     }
     else if (partsOfId[partsOfId.length-1] === 'price') {
@@ -779,7 +772,7 @@ const getDefaultSize = (productId, collection, sizes, gender) => {
             if (firstItem['fields'].size < nextItem['fields'].size) return -1;
             if (firstItem['fields'].size > nextItem['fields'].size) return 1;
             return 0;
-        }).find(item => true)['fields'].size;
+        }).find(_ => true)['fields'].size;
     } catch {}
 
     if (collection) {
@@ -806,7 +799,7 @@ const getDefaultSize = (productId, collection, sizes, gender) => {
         if (firstItem['fields'].weight < nextItem['fields'].weight) return 1;
         if (firstItem['fields'].weight > nextItem['fields'].weight) return -1;
         return 0;
-    }).find(item => true);
+    }).find(_ => true);
 
 }
 
@@ -1139,31 +1132,24 @@ const updateProductCards = (element) => {
 
                 const elemsForUpdate   = []
                 const products         = JSON.parse(data['products']);
-                const collections      = JSON.parse(data['collection']);
-                const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
                 const actual_prices    = JSON.parse(data['actual_prices']);
                 const discount_prices  = JSON.parse(data['discount_prices']);
+                const default_sizes = JSON.parse(data['default_sizes']);
 
                 for (var i=0; i < elements.length; i++) {
                     let inStok = 0; let weight = 0; let size = 0;
                     let currentPrice = 0; let currentDiscount = 0; let maxPrice = 0;
                     const currentId = JSON.parse(elements[i].getAttribute('data-json'));
                     const product = products.find(el => el['pk'] == currentId['id']);
-                    const collection = collections.find(el => el['id'] == currentId['id']);
-                    const stock_and_cost = stocks_and_costs.filter(el => el['fields'].product == currentId['id']);
                     const actual_price = actual_prices.filter(
                         el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
-                    ).find(el => true);
+                    ).find(_ => true);
                     const discount_price = discount_prices.filter(
                         el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
-                    ).find(el => true);
-
-                    const defaultSize = getDefaultSize(
-                        currentId['id'],
-                        collection['collection_group'],
-                        stock_and_cost,
-                        product['fields'].gender
-                    )
+                    ).find(_ => true);
+                    const defaultSize = default_sizes.filter(
+                        el => el['fields'].product == currentId['id']
+                    ).find(_ => true);
 
                     if (defaultSize) {
                         maxPrice = defaultSize['fields'].cost;
@@ -1351,31 +1337,26 @@ const setProductPrice = () => {
 
                 const cartElementsForUpdate = [];
                 const products         = JSON.parse(data['products']);
-                const collections      = JSON.parse(data['collection']);
                 const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
                 const actual_prices    = JSON.parse(data['actual_prices']);
                 const discount_prices  = JSON.parse(data['discount_prices']);
+                const default_sizes    = JSON.parse(data['default_sizes']);
     
                 for (var i=0; i < elements.length; i++) {
                     let inStok = 0; let weight = 0; let size = 0;
                     let currentPrice = 0; let currentDiscount = 0; let maxPrice = 0;
                     const currentId = JSON.parse(elements[i].getAttribute('data-json'));
                     const product = products.find(el => el['pk'] == currentId['id']);
-                    const collection = collections.find(el => el['id'] == currentId['id']);
                     const stock_and_cost = stocks_and_costs.filter(el => el['fields'].product == currentId['id']);
                     const actual_price = actual_prices.filter(
                         el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
-                    ).find(el => true);
+                    ).find(_ => true);
                     const discount_price = discount_prices.filter(
                         el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
-                    ).find(el => true);
-    
-                    const defaultSize = getDefaultSize(
-                        currentId['id'],
-                        collection['collection_group'],
-                        stock_and_cost,
-                        product['fields'].gender
-                    )
+                    ).find(_ => true);
+                    const defaultSize = default_sizes.filter(
+                        el => el['fields'].product == currentId['id']
+                    ).find(_ => true);
     
                     if (defaultSize) {
                         maxPrice = defaultSize['fields'].cost;
@@ -2011,7 +1992,7 @@ const autocomplete = (element) => {
                 event.target.parentElement.appendChild(autocompleteElement);        
             })
             .catch((error) => {
-                alert('Ошибка: ' + error);
+                alert('Ошибка заполнения строки заказа: ' + error);
             });
     });
 

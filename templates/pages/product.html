@@ -15,7 +15,14 @@
 
                 <div class="row product__block__row--nowrap">
 
-                    <div class="col-2 product__col--position product__col__filters" style="height: 100vh; border-right: 1px solid lightgrey; max-width: 25vw;">Фильтры</div>
+                    <div class="col-2 product__col--position product__col__filters" style="height: 100vh; border-right: 1px solid lightgrey; max-width: 25vw;">
+                        <div class="goods-menu-filters">
+                            {% for filter_field in filters %}
+                                <label for="{{ filter_field.auto_id }}">{{ filter_field.label }}:</label>
+                                {{ filter_field }}
+                            {% endfor %}
+                        </div>
+                    </div>
                     <div class="col-10 product__col--position" style="align-content: stretch;">
 
                         <div class="row">
@@ -29,15 +36,15 @@
                         <div class="row product__block__row--wrap">
                             <div class="col product__col--position product__col__images">
             
-                                <!-- {% if product.status %}
-                                    <div class="product__block__status--position z-3">
+                                {% if product.status %}
+                                    <div class="product__card__status--position z-3">
                                     {% with product_status="status"|addparam:product.status %}
-                                        <p name="product-status" class="text-dark" style="font-size: 30px;" data-json="{{ product_status|tojson }}">
-                                        <b>{{ product.get_status_display }}</b>
+                                        <p class="product-status" style="font-size: 30px;" data-json="{{ product_status|tojson }}">
+                                        {{ product.get_status_display }}
                                         </p>
                                     {% endwith %}
                                     </div>
-                                {% endif %} -->
+                                {% endif %}
 
                                 {% for image in product.get_images|slice:":1" %}
                                     <a href="{{ image }}" class="thumbnail product__block__img--position">

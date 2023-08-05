@@ -43,6 +43,7 @@ class ProductView(ListView):
 
     def get_queryset(self):
         products = Product.objects.filter(product_type='product')
+        product_ids = list(products.values_list('pk', flat=True))
         if self.filters:
             brands = [brand.replace('brand-', '') for brand in \
                       self.filters.get('brand') if 'brand-' in brand]
@@ -55,17 +56,34 @@ class ProductView(ListView):
             products = products.apply_filters(self.filters)
             
             stock_and_cost = StockAndCost.objects.all()
-            if self.filters.get('weight'):
-                stock_and_cost = stock_and_cost.filter(weight__exact=self.filters['weight'])
             if self.filters.get('size'):
                 stock_and_cost = stock_and_cost.filter(size__exact=self.filters['size'])
+                if self.filters.get('weight'):
+                    stock_and_cost = stock_and_cost.filter(weight__gte=self.filters['weight'])
+                if self.filters.get('weight_till'):
+                    stock_and_cost = stock_and_cost.filter(weight__lte=self.filters['weight_till'])
+            else:
+                stock_and_cost = stock_and_cost.default_stocks_and_costs(product_ids)
+                stock_and_cost = stock_and_cost | StockAndCost.objects.filter(
+                    product_id__in=
+                        set(product_ids)-set(
+                            stock_and_cost.values_list('product_id', flat=True)
+                ))
+                if self.filters.get('weight'):
+                    stock_and_cost = stock_and_cost.filter(weight__gte=self.filters['weight'])
+                if self.filters.get('weight_till'):
+                    stock_and_cost = stock_and_cost.filter(weight__lte=self.filters['weight_till'])
+            
             if stock_and_cost: 
                 products = products.filter(pk__in=stock_and_cost.values_list('product_id', flat=True))
         
-            if self.filters.get('price'):
-                prices = Price.objects.available_prices(
-                    list(products.values_list('pk', flat=True))
-                ).filter(price__exact=self.filters['price'])
+            if self.filters.get('price') or self.filters.get('price_till'):
+                prices = Price.objects.available_prices(product_ids)
+                if self.filters.get('price'):
+                    prices = prices.filter(price__gte=self.filters['price'])
+                if self.filters.get('price_till'):
+                    prices = prices.filter(price__lte=self.filters['price_till'])
+
                 if prices:
                     products = products.filter(pk__in=prices.values_list('product_id', flat=True))
 
@@ -161,9 +179,17 @@ class ProductCardView(DetailView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['prod_sets'] = ProductsSet.objects.filter(product=self.get_object())
-        context['gem_sets']  = GemSet.objects.filter(product=self.get_object())
+        current_product = self.get_object()
+        context['prod_sets'] = ProductsSet.objects.filter(product=current_product)
+        context['gem_sets']  = GemSet.objects.filter(product=current_product)
         context['MEDIA_URL'] = settings.MEDIA_URL
+        context['filters']     = ProductFilterForm(
+            ['articul', 'status'],
+            initial={
+                'articul': current_product.articul,
+                'status' : current_product.status
+            }
+        )
         return dict(list(context.items()))
 
 
@@ -225,21 +251,25 @@ def stocks_and_costs(request):
     size = request.query_params.get('size')
 
     if productIds:
-        collections, products, stocks_and_costs, prices, discount_prices = \
+        _, products, stocks_and_costs, prices, discount_prices = \
             StockAndCost.objects.available_stocks_and_costs(
                 productIds.split(','),
                 size=size,
                 clients=Login(request).get_clients()
             )
 
+        stocks_and_costs_with_default_size = StockAndCost.objects.default_stocks_and_costs(
+            products.values_list('pk', flat=True), size=size
+        )
+
         return JsonResponse(
             {
                 'replay'           : 'ok',
-                'collection'       : json.dumps(list(collections), ensure_ascii=False),
                 'products'         : serialize("json", products),
                 'stocks_and_costs' : serialize("json", stocks_and_costs),
                 'actual_prices'    : serialize("json", prices),
-                'discount_prices'  : serialize("json", discount_prices)
+                'discount_prices'  : serialize("json", discount_prices),
+                'default_sizes'    : serialize("json", stocks_and_costs_with_default_size),
             },
             status=200,
             safe=False

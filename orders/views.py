@@ -416,13 +416,18 @@ def stocks_and_costs(request):
                 clients=Login(request).get_clients()
             )
         
+        stocks_and_costs_with_default_size = StockAndCost.objects.default_stocks_and_costs(
+            products.values_list('pk', flat=True)
+        )
+        
         return JsonResponse(
             {
                 'replay'           : 'ok',
                 'products'         : serialize("json", products),
                 'stocks_and_costs' : serialize("json", stocks_and_costs),
                 'actual_prices'    : serialize("json", prices),
-                'discount_prices'  : serialize("json", discount_prices)
+                'discount_prices'  : serialize("json", discount_prices),
+                'default_sizes'    : serialize("json", stocks_and_costs_with_default_size),
             },
             status=200,
             safe=False

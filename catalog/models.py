@@ -1,7 +1,7 @@
 from django.db import models
 from contextlib import suppress
 from django.core.validators import MinValueValidator
-from django.db.models import F, Q, Max, Sum
+from django.db.models import F, Q, Max
 from django.utils import timezone
 
 from clients.models import PriorityDirection, Client
@@ -149,6 +149,26 @@ class Product(models.Model):
     def get_images(self):
         product_images = ProductImage.objects.filter(product_id=self.id)
         return [product_image.image.url for product_image in product_images]
+    
+    @property
+    def get_default_size(self):
+        '''Функция возвращает строку, как этап перехода на учет размеров в БД в строковом варианте'''
+        result = '0'
+        stocks_and_costs = StockAndCost.objects.filter(product_id=self.id).order_by('size')
+        if self.collection.group.name.lower() in ['кольцо', 'кольца', 'колечки', 'колец']:
+            result = '20'
+            if self.gender == 'Ж':
+                result = '17'
+        if self.collection.group.name.lower() in ['цепь', 'цепи', 'цепочка', 'цепочек']:
+            result = '50'
+        if stocks_and_costs.filter(size=result):
+            return result
+
+        product_size = stocks_and_costs.first()
+        if product_size:
+            result = str(product_size.size)
+
+        return result
 
 
 class StockAndCostQuerySet(models.QuerySet):
@@ -181,6 +201,18 @@ class StockAndCostQuerySet(models.QuerySet):
 
         return collections, products, stocks_and_costs, prices, discount_prices
 
+    def default_stocks_and_costs(self, products_ids, **kwargs):
+        result = StockAndCost.objects.none()
+
+        products = Product.objects.filter(pk__in = products_ids)
+        for product in products:
+            default_size = product.get_default_size
+            if float(kwargs.get('size', 0)):
+                default_size = kwargs['size']  
+            if default_size:
+                result = result | self.filter(product = product, size = default_size)
+
+        return result
 
 
 class StockAndCost(models.Model):
