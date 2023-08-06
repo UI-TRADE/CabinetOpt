@@ -304,6 +304,7 @@ const updateCartElements = (element, cartData, params) => {
 
 
 const waitUpdateCart = (element, params) => {
+    console.log(element);
     return new Promise((resolve, reject) => {
         $.ajax({
             url: `/cart/info/${params['productId']}/${params['size']}`,
@@ -320,41 +321,42 @@ const waitUpdateCart = (element, params) => {
 
 
 const addToCart = (formId) => {
+
+    const sendElementToCart = (formId, formData) => {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: `/cart/send/${formId.replace('cartForm-', '')}/`,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: (response) => {
+                    resolve(response);
+                },
+                error: (error) => {
+                    reject(error);
+                }
+            });
+        });
+    }
+
     const productForm = document.getElementById(formId);
     const formData = new FormData(productForm);
 
-    $.ajax({
-        url: `/cart/send/${formId.replace('cartForm-', '')}/`,
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function(response) {
-            try {
-                if (response['replay'] == 'error') throw new Error(response['message']);
-                $.ajax({
-                    url: `/cart/info/${response['pk']}/${response['size']}`,
-                    success: (cartData) => {
-                        updateCartElements(
-                            productForm.parentElement.parentElement,
-                            cartData,
-                            {'productId': response['pk'], 'size': response['size']}
-                        );
-                    },
-                    error: (error) => {
-                        alert('Ошибка обновления корзины: ' + error);
-                    }
-                });
-                
-            } catch(error) {
-                alert('Ошибка добавления в корзину: ' + error);    
-            }
+    sendElementToCart(formId, formData)
+        .then((response) => {
+            if (response['replay'] == 'error') throw new Error(response['message']);
+            return waitUpdateCart(
+                productForm.parentElement.parentElement,
+                {'productId': response['pk'], 'size': response['size']}
+            );
+        })
+        .then(_ => {
             updateElement('li[name="cart_detail"]');
-        },
-        error: function(xhr, status, error) {
-            alert('Ошибка добавления в корзину: ' + error);
-        }
-    });
+        })
+        .catch((error) => {
+            alert('Ошибка обновления корзины покупок: ' + error);
+        });
 }
 
 
@@ -674,12 +676,31 @@ const OnQuantityChange = (element, preventReload=false) => {
 
     }
 
+    /**
+     * Удаляет позицию товара из корзины.
+     * 
+     * cartKey         - ключ позиции товара в корзине.
+     */
+    const removeElementFromCart = (cartKey) => {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: `/cart/remove/${cartKey.productId}/${cartKey.size}/`,
+                success: (response) => {
+                    resolve(response);
+                },
+                error: (error) => {
+                    reject(error);
+                }
+            });
+        });
+    }
+
     const quantity = parseInt(element.value);
     if (quantity == 0) {
         const cartKey = getCartKey(element, 0);
-        $.ajax({
-            url: `/cart/remove/${cartKey.productId}/${cartKey.size}/`,
-            success: (response) => {
+        removeElementFromCart(cartKey)
+            .then((response) => {
+                if (response['replay'] == 'error') throw new Error(response['message']);
                 if (!preventReload) {
                     const cartRows = document.querySelectorAll('[name="cart-row"]');
                     cartRows.forEach((cartRow) => {
@@ -688,25 +709,14 @@ const OnQuantityChange = (element, preventReload=false) => {
                         }
                     });
                 }
-                $.ajax({
-                    url: `/cart/info/${cartKey.productId}/${cartKey.size}`,
-                    success: (cartData) => {
-                        updateCartElements(
-                            element.parentElement.parentElement,
-                            cartData,
-                            cartKey
-                        );
-                    },
-                    error: (error) => {
-                        alert('Ошибка обновления корзины: ' + error);
-                    }
-                });
+                return waitUpdateCart(element.parentElement.parentElement, cartKey);
+            })
+            .then(_ => {
                 updateElement('li[name="cart_detail"]');
-            },
-            error: (xhr, status, error) => {
-                alert('Ошибка удаления товара из корзины: ' + error);
-            }
-        });
+            })
+            .catch((error) => {
+                alert('Ошибка удаления позиции из корзины покупок: ' + error);
+            });
     } else {
         updateCartItem(element, preventReload);    
     }   
@@ -819,11 +829,19 @@ const addSelectSizeEvent = (element) => {
             'inStok': boundFields.stock, 'price': boundInfo['clientPrice'],
             'discount': boundInfo['clientDiscount'], 'maxPrice': boundInfo['clientMaxPrice']
     });
+    console.log(boundFields);
     removeClass(document, 'product__block__size-btn'  , 'product__block__size-btn--selected');
     removeClass(document, 'product__block__size-label', 'product__block__size-label--selected');
     element.classList.toggle('product__block__size-btn--selected');
     element.parentElement.querySelector('label').
         classList.toggle('product__block__size-label--selected');
+    
+    const elementOfPrices = document.querySelector('.product__col__prices');
+    if (!elementOfPrices) return;
+    waitUpdateCart(elementOfPrices, {'productId': boundFields['product'], 'size': boundFields['size']})
+        .catch(error => {
+            alert('Ошибка обновления корзины покупок: ' + error);
+        })
 }
 
 
