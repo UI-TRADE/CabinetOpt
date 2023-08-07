@@ -84,8 +84,7 @@ class ProductView(ListView):
                 if self.filters.get('price_till'):
                     prices = prices.filter(price__lte=self.filters['price_till'])
 
-                if prices:
-                    products = products.filter(pk__in=prices.values_list('product_id', flat=True))
+                products = products.filter(pk__in=prices.values_list('product_id', flat=True))
 
         return products
 

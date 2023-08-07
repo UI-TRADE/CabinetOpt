@@ -304,7 +304,6 @@ const updateCartElements = (element, cartData, params) => {
 
 
 const waitUpdateCart = (element, params) => {
-    console.log(element);
     return new Promise((resolve, reject) => {
         $.ajax({
             url: `/cart/info/${params['productId']}/${params['size']}`,
@@ -829,7 +828,6 @@ const addSelectSizeEvent = (element) => {
             'inStok': boundFields.stock, 'price': boundInfo['clientPrice'],
             'discount': boundInfo['clientDiscount'], 'maxPrice': boundInfo['clientMaxPrice']
     });
-    console.log(boundFields);
     removeClass(document, 'product__block__size-btn'  , 'product__block__size-btn--selected');
     removeClass(document, 'product__block__size-label', 'product__block__size-label--selected');
     element.classList.toggle('product__block__size-btn--selected');
@@ -1331,7 +1329,12 @@ const updatePriceInProductCard = (context) => {
 }
 
 
-const setProductPrice = () => {
+/**
+ * Действия при рендеринге карточки номенклатуры.
+ * 
+ *  - без параметров.
+ */
+const updateProductCard = () => {
 
     const productStocksAndCosts = (productIds, size=0) => {
         return new Promise((resolve, reject) => {
@@ -1410,6 +1413,7 @@ const setProductPrice = () => {
                             );
                         }
                         showSizes();
+                        console.log('showSizes');
                     }
     
                     cartElementsForUpdate.push(
@@ -1442,33 +1446,52 @@ const setProductPrice = () => {
         });
     }
 
-    const productSets = (productId) => {
-        return new Promise((resolve, reject) => {
+    const updateProductAttributes = (productId) => {
+        const accessories = new Promise((resolve, reject) => {
             $.ajax({
                 url: '/catalog/product/accessories',
                 data: {'productId': productId},
                 success: (response) => {
-                    resolve(response);
+                    if (response['replay'] == 'error') throw new Error(response['message']);
+                    addSetElements(
+                        document.querySelector('#set-block'),
+                        JSON.parse(response['product_sets'])
+                    );
+                    showSets();
+                    resolve(true);
                 },
-                error: (error) => {
-                    reject(error);
+                error: () => {
+                    reject(false);
                 }
             });
         });
-    }
 
-    const productAnalogues = (productId) => {
-        return new Promise((resolve, reject) => {
+        const analogues = new Promise((resolve, reject) => {
             $.ajax({
                 url: '/catalog/product/analogues',
                 data: {'productId': productId},
                 success: (response) => {
-                    resolve(response);
+                    if (response['replay'] == 'error') throw new Error(response['message']);
+                    addAnaloguesElements(
+                        document.querySelector('#analogues-block'),
+                        JSON.parse(response['product_analogues'])
+                    );
+                    showAnalogues();
+                    resolve(true);
                 },
-                error: (error) => {
-                    reject(error);
+                error: () => {
+                    reject(false);
                 }
             });
+        });
+
+        return new Promise((resolve, reject) => {
+            try {
+                const result = Promise.all([accessories, analogues]);
+                resolve(result);
+            } catch (error) {
+                reject(error);
+            }
         });
     }
     
@@ -1630,6 +1653,9 @@ const setProductPrice = () => {
         if (productId) productIds.push(productId['id']);
     }
 
+    const priceBlockFake = document.querySelector('#fake-col');
+    const priceBlock     = document.querySelector('.product__col__prices');
+
     if (productIds.length == 0) {
         return
     }
@@ -1643,39 +1669,19 @@ const setProductPrice = () => {
     .then((data) => {
         return updateCarts(data);
     })
+    .then((result) => {
+        if (result.every(Boolean)) {
+            priceBlockFake.style.display = 'none';
+            priceBlock.style.display     = 'flex';
+        };
+    })
+    .then(() => {
+        return updateProductAttributes(productIds.toString());
+    })
     .catch((error) => {
         alert('Ошибка обновления карточки товара: ' + error);
     });
 
-    productSets(productIds.toString())
-        .then((data) => {
-            if (data['replay'] == 'error') throw new Error(data['message']);
-            
-            addSetElements(
-                document.querySelector('#set-block'),
-                JSON.parse(data['product_sets'])
-            );
-            showSets();
-
-        })
-        .catch((error) => {
-            alert('Ошибка получения комплектующих: ' + error);    
-        });
-
-    productAnalogues(productIds.toString())
-        .then((data) => {
-            if (data['replay'] == 'error') throw new Error(data['message']);
-            
-            addAnaloguesElements(
-                document.querySelector('#analogues-block'),
-                JSON.parse(data['product_analogues'])
-            );
-            showAnalogues();
-
-        })
-        .catch((error) => {
-            alert('Ошибка получения аналогов: ' + error);    
-        });
 }
 
 
@@ -2226,7 +2232,7 @@ $(document).ready(() => {
 
     // products
     initProductFilters();
-    setProductPrice();
+    updateProductCard();
 
     // orders
     updateOrder()
