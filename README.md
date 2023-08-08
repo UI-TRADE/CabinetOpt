@@ -227,7 +227,12 @@ curl -X POST -H "Content-Type: application/json" -d @media/test.json http://127.
     "unit": "163",
     "stock": 0,
     "price_per_gr": 0,
-    "product_type": "product"
+    "product_type": "product",
+    "metal": "metal",
+    "metal_content": "metal_content",
+    "color": "color",
+    "gender": "gender",
+    "status", "status"
     },...
 ]
 ```

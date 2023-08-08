@@ -6,7 +6,9 @@ from django.core.files.images import ImageFile
 from django.core.exceptions import ValidationError
 
 from clients.models import Client, PriorityDirection
-from catalog.models import Product, ProductImage, Collection
+from catalog.models import (
+    Product, ProductImage, Collection, StockAndCost
+)
 from catalog.models import PriceType, Price
 
 
@@ -16,22 +18,33 @@ def run_uploading_products(uploading_products):
         try:
             with transaction.atomic():
                 identifier_1C = item['nomenclature']['Идентификатор']
-                Product.objects.update_or_create(
+                product, _ = Product.objects.update_or_create(
                     identifier_1C=identifier_1C,
                     defaults = {
-                        'name': item['nomenclature']['Наименование'],
-                        'articul': item['articul'],
-                        'collection': update_or_create_collection(item['collection']),
-                        'brand': update_or_create_brand(item['brand']),
-                        'unit': item['unit'],
-                        'price_per_gr': item['price_per_gr'],
-                        'weight': item['weight'],
-                        'size': item['size'],
-                        'stock': item['stock'],
+                        'name'              : item['nomenclature']['Наименование'],
+                        'articul'           : item['articul'],
+                        'collection'        : update_or_create_collection(item['collection']),
+                        'brand'             : update_or_create_brand(item['brand']),
+                        'unit'              : item['unit'],
                         'available_for_order': True,
-                        'product_type': item['product_type'],
-                        'identifier_1C':identifier_1C
+                        'product_type'       : item['product_type'],
+                        "metal"              : item["metal"],
+                        "metal_content"      : item["metal_content"],
+                        "color"              : item["color"],
+                        "gender"             : item["gender"],
+                        "status"             : item["status"],
+                        'identifier_1C'      : identifier_1C
                 })
+                if product:
+                    StockAndCost.objects.update_or_create(
+                        product=product,
+                        size=item['size'],
+                        defaults = {
+                            'weight': item['weight'],
+                            'stock' : item['stock'],
+                            'cost'  : item['price_per_gr']
+                        }
+                    )
 
         except ValueError as error:
             transaction.rollback()
@@ -116,7 +129,12 @@ def run_uploading_price(uploading_price):
     for item in uploading_price:
         try:
             with transaction.atomic():
-                price_type = update_or_create_price_type(item['client'])
+                price_type = PriceType.objects.get(name='Базовая')
+                if item['client']:
+                    if item['client'] == 'Выгода':
+                        price_type = PriceType.objects.get(name='Выгода')
+                    else:
+                        price_type = update_or_create_price_type(item['client'])
                 if not price_type:
                     raise ValidationError('error create price type')
                 Price.objects.create(
@@ -150,8 +168,6 @@ def run_uploading_price(uploading_price):
 
 
 def update_or_create_price_type(client):
-    if not client:
-        return
 
     identifier_1C = client['Идентификатор']
     if identifier_1C == '00000000-0000-0000-0000-000000000000':

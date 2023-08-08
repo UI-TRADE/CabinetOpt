@@ -155,12 +155,13 @@ class Product(models.Model):
         '''Функция возвращает строку, как этап перехода на учет размеров в БД в строковом варианте'''
         result = '0'
         stocks_and_costs = StockAndCost.objects.filter(product_id=self.id).order_by('size')
-        if self.collection.group.name.lower() in ['кольцо', 'кольца', 'колечки', 'колец']:
-            result = '20'
-            if self.gender == 'Ж':
-                result = '17'
-        if self.collection.group.name.lower() in ['цепь', 'цепи', 'цепочка', 'цепочек']:
-            result = '50'
+        with suppress(AttributeError):
+            if self.collection.group.name.lower() in ['кольцо', 'кольца', 'колечки', 'колец']:
+                result = '20'
+                if self.gender == 'Ж':
+                    result = '17'
+            if self.collection.group.name.lower() in ['цепь', 'цепи', 'цепочка', 'цепочек']:
+                result = '50'
         if stocks_and_costs.filter(size=result):
             return result
 
