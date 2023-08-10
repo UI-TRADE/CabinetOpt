@@ -18,7 +18,7 @@ def run_uploading_products(uploading_products):
         try:
             with transaction.atomic():
                 identifier_1C = item['nomenclature']['Идентификатор']
-                product, _ = Product.objects.update_or_create(
+                Product.objects.update_or_create(
                     identifier_1C=identifier_1C,
                     defaults = {
                         'name'              : item['nomenclature']['Наименование'],
@@ -35,16 +35,6 @@ def run_uploading_products(uploading_products):
                         "status"             : item["status"],
                         'identifier_1C'      : identifier_1C
                 })
-                if product:
-                    StockAndCost.objects.update_or_create(
-                        product=product,
-                        size=item['size'],
-                        defaults = {
-                            'weight': item['weight'],
-                            'stock' : item['stock'],
-                            'cost'  : item['price_per_gr']
-                        }
-                    )
 
         except ValueError as error:
             transaction.rollback()
@@ -189,3 +179,35 @@ def update_or_create_price_type(client):
         })
         return price_type
 
+
+def run_uploading_stock_and_costs(stock_and_costs):
+    errors = []
+    for item in stock_and_costs:
+        try:
+            with transaction.atomic():
+                identifier_1C = item['nomenclature']['Идентификатор']
+                product = Product.objects.get(identifier_1C=identifier_1C)
+                StockAndCost.objects.update_or_create(
+                    product=product,
+                    size=item['size'],
+                    defaults = {
+                        'weight': item['weight'],
+                        'stock' : item['stock'],
+                        'cost'  : item['price_per_gr']
+                    }
+                )
+
+        except ValueError as error:
+            transaction.rollback()
+            errors.append(item | {"error": str(error)})
+            continue
+
+        except Product.DoesNotExist:
+            errors.append(item | {"error": f'Продукт с идентификатором {identifier_1C} не найден.'})
+            continue
+        
+        finally:
+            if transaction.get_autocommit():
+                transaction.commit()
+    
+    return errors

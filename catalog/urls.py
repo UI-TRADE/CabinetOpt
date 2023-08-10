@@ -12,6 +12,7 @@ urlpatterns = [
     path('upload/products'         , views.upload_products),
     path('upload/images'           , views.upload_images),
     path('upload/price'            , views.upload_price),
+    path('upload/stock_and_costs'  , views.upload_stock_and_costs),
     path('pickup_products/'        , views.pickup_products),
     path('stocks_and_costs/'       , views.stocks_and_costs),
     path('product/accessories'     , views.product_accessories),

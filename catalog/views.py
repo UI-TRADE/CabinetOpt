@@ -23,7 +23,12 @@ from catalog.models import (
     ProductsSet, GemSet, SimilarProducts
 )
 
-from .tasks import run_uploading_products, run_uploading_images, run_uploading_price
+from .tasks import (
+    run_uploading_products,
+    run_uploading_images,
+    run_uploading_price,
+    run_uploading_stock_and_costs
+)
 
 
 class ProductView(ListView):
@@ -217,6 +222,20 @@ def upload_images(request):
 @permission_classes([IsAuthenticated])
 def upload_price(request):
     errors = run_uploading_price(request.data)
+    if errors:
+        return JsonResponse(
+            errors,
+            status=200,
+            safe=False,
+            json_dumps_params={'ensure_ascii': False}
+        )
+    return JsonResponse({'replay': 'ok'}, status=200)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def upload_stock_and_costs(request):
+    errors = run_uploading_stock_and_costs(request.data)
     if errors:
         return JsonResponse(
             errors,

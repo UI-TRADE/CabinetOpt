@@ -222,17 +222,33 @@ curl -X POST -H "Content-Type: application/json" -d @media/test.json http://127.
         "Наименование": "Кольцо",
         "Удален": false
     },
-    "size": 0,
-    "weight": 1.26,
     "unit": "163",
-    "stock": 0,
-    "price_per_gr": 0,
     "product_type": "product",
     "metal": "metal",
     "metal_content": "metal_content",
     "color": "color",
     "gender": "gender",
-    "status", "status"
+    "status": "status",
+    "gem_sets": [{
+        "precious_stone": {
+          "Идентификатор": "0d032422-5bc4-11eb-ab63-005056bb1ac7",
+          "ИмяТипа": "Справочник.ТипыКамней",
+          "Наименование": "Бриллиант",
+          "Удален": false  
+        },
+        "cut_type": {
+          "Идентификатор": "0d032422-5bc4-11eb-ab63-005056bb1ac7",
+          "ИмяТипа": "Справочник.Огранки",
+          "Наименование": "кр57",
+          "Удален": false   
+        },
+        "color": "color",
+        "weight": 1.26,
+        "quantity": 11,
+        "order": 0,
+        "comment": "",
+        "description": ""
+    }, ...]
     },...
 ]
 ```
@@ -286,6 +302,30 @@ curl -X POST -H "Content-Type: application/json" -d @media/price.json http://127
     }, ...
 ]
 ```
+
+Выполните загрузку весов, размеров и остатков номенклатуры из json файла:
+
+```sh
+curl -X POST -H "Content-Type: application/json" -d @media/stock_and_costs.json http://127.0.0.1:8000/catalog/upload/stock_and_costs -H "Authorization: Token 0000000000000000000000000000000000000000"
+```
+формат json файла следующий:
+```
+[
+    {
+    "nomenclature": {
+        "Идентификатор": "79291f1d-6661-11e0-9aef-0c6076a3656e",
+        "ИмяТипа": "Справочник.Номенклатура",
+        "Наименование": "20-00-0000-11143 Кольцо 585",
+        "Удален": false
+    },
+    "size": 0,
+    "weight": 1.26,
+    "stock": 0,
+    "price_per_gr": 0
+    },
+]
+```
+
 
 ## Как запустить сайта
 Откройте сайт в браузере по адресу [http://127.0.0.1:8000/](http://127.0.0.1:8000/). Если вы увидели пустую белую страницу, то не пугайтесь, выдохните. Просто фронтенд пока ещё не собран.
