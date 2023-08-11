@@ -1,0 +1,30 @@
+{
+  "name": "cabinetoptwebpack",
+  "version": "1.0.0",
+  "description": "Кабинет оптовика (тестовая сборка)",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon -w webpack.config.js -x webpack-dev-server --hot",
+    "build": "webpack",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "css-loader": "^6.8.1",
+    "font-awesome": "^4.7.0",
+    "style-loader": "^3.3.3",
+    "webpack-cli": "^5.1.4"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.22.10",
+    "@babel/preset-env": "^7.22.10",
+    "babel-loader": "^9.1.3",
+    "copy-webpack-plugin": "^11.0.0",
+    "file-loader": "^6.2.0",
+    "nodemon": "^3.0.1",
+    "webpack": "^5.88.2",
+    "webpack-dev-server": "^4.15.1"
+  }
+}

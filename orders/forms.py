@@ -77,13 +77,11 @@ class OrderItemInlineForm(BaseInlineFormSet):
                 continue
             if field == 'nomenclature_size':
                 form.fields[field].widget.attrs['class'] = 'order__field__nomenclature_size form-control'
-                form.fields[field].widget.attrs['onchange'] = 'updateOrderItem(this)'
                 continue
             if field == 'product':
                 form.fields[field].widget.attrs['class'] = 'order__field__product form-control'
                 continue
-            form.fields[field].widget.attrs['class'] = 'form-control'
-            form.fields[field].widget.attrs['onchange'] = 'updateOrderItem(this)'
+            form.fields[field].widget.attrs['class'] = 'order__field form-control'
 
     def clean(self):
         super().clean()

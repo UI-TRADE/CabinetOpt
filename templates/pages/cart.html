@@ -67,12 +67,11 @@
                                         step="1"
                                         type="number"
                                         class="form-control"
-                                        onchange="OnQuantityChange(this)"
                                     />
                                     <label for="{{ id }}" style="margin-bottom: 0px; margin-left: 5px;">{{ item.unit|get_unit_repr }}</label>
                                 </div>
                             </div>
-                            <div class="col-xs-1 col-sm-2 col-center">{{ item.total_price }} руб.</div>
+                            <div name="cart-sum" class="col-xs-1 col-sm-2 col-center">{{ item.total_price }} руб.</div>
                             <div class="col-xs-1 col-sm-2 col-center text-center">
                                 <a href="{% url 'cart:cart_remove' product.id item.size %}">
                                     <i class="fa fa-trash-o" aria-hidden="true"></i>
@@ -152,13 +151,12 @@
                                             step="1"
                                             type="number" 
                                             class="form-control"
-                                            onchange="OnQuantityChange(this)"
                                         />
                                         <label for="{{ id }}" style="margin-bottom: 0px; margin-left: 5px;">{{ item.unit|get_unit_repr }}</label>
                                     </div>
                                 </td>
-                                <td>{{ item.price }}</td>
-                                <td>{{ item.total_price }}</td>
+                                <td name="cart-price">{{ item.price }}</td>
+                                <td name="cart-sum">{{ item.total_price }}</td>
                                 <td class="text-center">
                                     <a href="{% url 'cart:cart_remove' product.id item.size %}">
                                         <i class="fa fa-trash-o" aria-hidden="true"></i>

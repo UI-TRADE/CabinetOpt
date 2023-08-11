@@ -39,7 +39,8 @@ class Cart(object):
                 for key in keys:
                     self.cart[key]['product'] = product
 
-        for item in self.cart.values():
+        for key, item in self.cart.items():
+            item['id'] = key
             item['total_price'] = round(
                 (item['price'] if item['price'] else 0) * item['quantity'],
                 2
@@ -95,10 +96,19 @@ class Cart(object):
     def info(self, product_id, **kwargs):
         key = self.get_key(product_id, size= kwargs['size'])
         if key in self.cart:
-            return self.cart[key]
+            return self.cart[key] | {'sum': self.get_total_price(key)}
 
 
-    def get_total_price(self):
+    def get_total_price(self, *keys):
+        if keys:
+            return round(
+            sum(
+                item['price'] * item['quantity'] \
+                    for key, item in self.cart.items() if item['price'] and key in keys
+            ),
+            2
+        )
+
         return round(
             sum(
                 item['price'] * item['quantity'] \

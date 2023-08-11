@@ -139,15 +139,16 @@ const extractContent = (html, elementId) => {
 }
 
 
-const updateElement = (selector) => {
+const updateCartTitle = () => {
+    const selector = 'i[name="cart_title"]'
     $.ajax({
         url: location.href,
         success: (response) => {
             const reloadHtml = new DOMParser().parseFromString(response, 'text/html');
-            document.querySelector(selector).outerHTML = reloadHtml.querySelector(selector).outerHTML;
+            document.querySelector(selector).textContent = reloadHtml.querySelector(selector).textContent;
         },
-        error: (xhr, status, error) => {
-            alert('Ошибка: ' + error);
+        error: (error) => {
+            alert('Ошибка обновления заголовка корзины: ' + error);
         }
     });
 }
@@ -223,7 +224,7 @@ const initProductFilters = () => {
 
         groups.forEach((group) => {
 
-            innerHTML = 
+            let innerHTML = 
             `<li class="list-group-item">
                 <span class="collection-box">${group}</span>
                 <ul class="collection-nested list-group list-group-flush">`;
@@ -247,7 +248,7 @@ const initProductFilters = () => {
         return;
     }
 
-    data = {'brand': [], 'collection': []};
+    const data = {'brand': [], 'collection': []};
     const excludedВrands = localStorage.getItem('excludedВrands');
     const excludedCollection = localStorage.getItem('excludedCollection');
     const filters = JSON.parse(sessionStorage.getItem('filters'));
@@ -312,37 +313,37 @@ const waitUpdateCart = (element, params) => {
                 resolve(true);
             },
             error: (error) => {
-                reject(false);
+                reject();
             }
         });
     });
 };
 
+const sendElementToCart = (productId, formData) => {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: `/cart/send/${productId}/`,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: (response) => {
+                resolve(response);
+            },
+            error: (error) => {
+                reject(error);
+            }
+        });
+    });
+}
 
 const addToCart = (formId) => {
 
-    const sendElementToCart = (formId, formData) => {
-        return new Promise((resolve, reject) => {
-            $.ajax({
-                url: `/cart/send/${formId.replace('cartForm-', '')}/`,
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: (response) => {
-                    resolve(response);
-                },
-                error: (error) => {
-                    reject(error);
-                }
-            });
-        });
-    }
-
     const productForm = document.getElementById(formId);
-    const formData = new FormData(productForm);
+    const formData    = new FormData(productForm);
+    const productId   = formId.replace('cartForm-', '');
 
-    sendElementToCart(formId, formData)
+    sendElementToCart(productId, formData)
         .then((response) => {
             if (response['replay'] == 'error') throw new Error(response['message']);
             return waitUpdateCart(
@@ -351,7 +352,7 @@ const addToCart = (formId) => {
             );
         })
         .then(_ => {
-            updateElement('li[name="cart_detail"]');
+            updateCartTitle();
         })
         .catch((error) => {
             alert('Ошибка обновления корзины покупок: ' + error);
@@ -595,16 +596,26 @@ const OnQuantityChange = (element, preventReload=false) => {
      * params         - структура с productId и size для идентификации товара в корзине.
      */
     const getCartInfo = (params) => {
+
         return new Promise((resolve, reject) => {
-            $.ajax({
-                url: `/cart/info/${params['productId']}/${params['size']}`,
-                success: (response) => {
-                    resolve(response);
-                },
-                error: (error) => {
-                    reject(error);
-                }
-            });
+            try {
+                const result = Promise.all(
+                    params.map((item) => {
+                        return new Promise((resolve, reject) => {
+                            $.ajax({
+                                url: `/cart/info/${item.param['productId']}/${item.param['size']}`,
+                                success: (response) => {
+                                    item.cartInfo = response;
+                                    resolve(item);
+                                }
+                            });
+                        });
+                    })
+                );
+                resolve(result);
+            } catch (error) {
+                reject(error);
+            }
         });
     }
 
@@ -621,58 +632,6 @@ const OnQuantityChange = (element, preventReload=false) => {
             return JSON.parse(foundElement.textContent);
         }
         return getCartKey(element.parentElement, i);
-    }
-
-    /**
-     * Обновляет позицию товара в корзине.
-     * 
-     * element         - поле ввода количества в корзине.
-     * preventReload   - удаляет текущую позицию в корзине если количество 0.
-     */
-    const updateCartItem = (element, preventReload=false) => {
-
-        const cartRows = document.querySelectorAll('[name="cart-row"]');
-        cartRows.forEach((cartRow) => {
-            if (cartRow.contains(element)) {
-                const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]');
-                const cartKey = cartRow.querySelector('[name="cart-key"]');
-                const params = JSON.parse(cartKey.textContent);
-
-                getCartInfo(params)
-                    .then((data) => {
-                        const quantity = data['quantity'];
-                        const formData = new FormData();
-                        formData.append('csrfmiddlewaretoken', csrfToken.value);
-                        formData.append('quantity', element.value - quantity);
-                        formData.append('update'  , true);
-                        formData.append('size'    , params['size']);
-
-                        $.ajax({
-                            url: `/cart/add/${params['productId']}/`,
-                            type: 'POST',
-                            data: formData,
-                            processData: false,
-                            contentType: false,
-                            success: (response) => {
-                                if (!preventReload) {
-                                    const reloadHtml = new DOMParser().parseFromString(response, 'text/html');
-                                    const allCartKeys = reloadHtml.querySelectorAll('[name="cart-key"]');
-                                    for(var i=0; i<allCartKeys.length; i++) {
-                                        if (allCartKeys[i].textContent == cartKey.textContent) break;
-                                    }
-                                    cartRow.outerHTML = allCartKeys[i].parentElement.outerHTML;
-                                }
-                                updateElement('li[name="cart_detail"]');
-                            },
-                            error: (xhr, status, error) => {
-                                alert('Ошибка: ' + error);
-                            }
-                        });   
-                    })
-                    .catch((error) => {});
-            }
-        });
-
     }
 
     /**
@@ -711,13 +670,63 @@ const OnQuantityChange = (element, preventReload=false) => {
                 return waitUpdateCart(element.parentElement.parentElement, cartKey);
             })
             .then(_ => {
-                updateElement('li[name="cart_detail"]');
+                updateCartTitle();
             })
             .catch((error) => {
                 alert('Ошибка удаления позиции из корзины покупок: ' + error);
             });
     } else {
-        updateCartItem(element, preventReload);    
+        const params = [];
+        const cartRows = document.querySelectorAll('[name="cart-row"]');
+        cartRows.forEach((cartRow) => {
+            if (cartRow.contains(element)) {
+                const cartKey = cartRow.querySelector('[name="cart-key"]');
+                params.push({
+                    'csrfToken': document.querySelector('[name="csrfmiddlewaretoken"]'),
+                    'row'      : cartRow,
+                    'param'    : JSON.parse(cartKey.textContent)
+                });
+            }
+        });
+        getCartInfo(params)
+            .then((params) => {
+                return new Promise((resolve, reject) => {
+                    try {
+                        const result = Promise.all(
+                            params.map((item) => {
+                                const quantity = item.cartInfo.quantity;
+                                const formData = new FormData();
+                                formData.append('csrfmiddlewaretoken', item.csrfToken.value);
+                                formData.append('quantity', element.value - quantity);
+                                formData.append('update'  , true);
+                                formData.append('size'    , item.param.size);
+                                
+                                return sendElementToCart(item.param.productId, formData);
+                            })
+                        );
+                        resolve(result);
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+
+            })
+            .then((response) => {
+                response.forEach(item => {
+                    const currentParam = params.filter(el => el.param.productId == item.pk).find(_ => true);
+                    const quantityField = currentParam.row.querySelector('input[name="cart-quantity"]');
+                    const priceField    = currentParam.row.querySelector('[name="cart-price"]');
+                    const sumField      = currentParam.row.querySelector('[name="cart-sum"]');
+                    if (quantityField) quantityField.value = item.quantity;
+                    if (priceField)    sumField.textContent = item.price;
+                    if (sumField)      sumField.textContent = item.sum;
+
+                    updateCartTitle();
+                });    
+            })
+            .catch((error) => {
+                alert('Ошибка обновления количества товара в корзине: ' + error);
+            });  
     }   
 }
 
@@ -861,8 +870,8 @@ const showSizeControls = () => {
     const firstId = firstElement.getAttribute('data-id');
     const lastId  = endElement.getAttribute('data-id');
 
-    const sizeBackElement = '<div id="size-back" onclick="backSize(this)"><i class="fa fa-caret-left fa-2x" aria-hidden="true" style="padding-top: 8px; padding-right: 5px; color: gainsboro;"></i></div>';
-    const sizeNextElement = '<div id="size-next" onclick="nextSize(this)"><i class="fa fa-caret-right fa-2x" aria-hidden="true" style="padding-top: 8px; padding-left: 5px; color: gainsboro;"></i></div>';
+    const sizeBackElement = '<div id="size-back"><i class="fa fa-caret-left fa-2x" aria-hidden="true" style="padding-top: 8px; padding-right: 5px; color: gainsboro;"></i></div>';
+    const sizeNextElement = '<div id="size-next"><i class="fa fa-caret-right fa-2x" aria-hidden="true" style="padding-top: 8px; padding-left: 5px; color: gainsboro;"></i></div>';
 
     if (firstId > minId) sizeBlock.innerHTML = sizeBackElement + sizeBlock.innerHTML;
     if (lastId < maxId)  sizeBlock.innerHTML = sizeBlock.innerHTML + sizeNextElement;
@@ -893,7 +902,13 @@ const showSizes = (firstIdx=0, lastIdx=0) => {
         element.addEventListener('click', (event) => {
             addSelectSizeEvent(event.target);
         });
-    })
+    });
+    $('#size-back').on('click', (event) => {
+        backSize(event.currentTarget.id);
+    });
+    $('#size-next').on('click', (event) => {
+        nextSize(event.currentTarget.id);
+    });
 }
 
 /**
@@ -967,8 +982,8 @@ const showSetsControls = () => {
     const firstId = (firstElement) ? firstElement.getAttribute('data-id'): 0;
     const lastId  = (endElement)   ? endElement.getAttribute('data-id')  : 0;
 
-    const backElement = '<div id="set-back" onclick="backSets(this)"><i class="fa fa-caret-left fa-2x" aria-hidden="true" style="padding-top: 8px; padding-right: 5px; color: gainsboro;"></i></div>';
-    const nextElement = '<div id="set-next" onclick="nextSets(this)"><i class="fa fa-caret-right fa-2x" aria-hidden="true" style="padding-top: 8px; padding-left: 5px; color: gainsboro;"></i></div>';
+    const backElement = '<div id="set-back"><i class="fa fa-caret-left fa-2x" aria-hidden="true" style="padding-top: 8px; padding-right: 5px; color: gainsboro;"></i></div>';
+    const nextElement = '<div id="set-next"><i class="fa fa-caret-right fa-2x" aria-hidden="true" style="padding-top: 8px; padding-left: 5px; color: gainsboro;"></i></div>';
 
     if (firstId > minId) setBlock.innerHTML = backElement + setBlock.innerHTML;
     if (lastId < maxId)  setBlock.innerHTML = setBlock.innerHTML + nextElement;
@@ -995,6 +1010,12 @@ const showSets = (firstIdx=0, lastIdx=0) => {
         }
     }
     showSetsControls();
+    $('#set-back').on('click', (event) => {
+        backSets(event.currentTarget);
+    });
+    $('#set-next').on('click', (event) => {
+        nextSets(event.currentTarget);
+    });
 }
 
 /**
@@ -1051,8 +1072,8 @@ const showAnaloguesControls = () => {
     const firstId = (firstElement) ? firstElement.getAttribute('data-id'): 0;
     const lastId  = (endElement)   ? endElement.getAttribute('data-id')  : 0;
 
-    const backElement = '<div id="set-back" onclick="backAnalogues(this)"><i class="fa fa-caret-left fa-2x" aria-hidden="true" style="padding-top: 8px; padding-right: 5px; color: gainsboro;"></i></div>';
-    const nextElement = '<div id="set-next" onclick="nextAnalogues(this)"><i class="fa fa-caret-right fa-2x" aria-hidden="true" style="padding-top: 8px; padding-left: 5px; color: gainsboro;"></i></div>';
+    const backElement = '<div id="analogues-back"><i class="fa fa-caret-left fa-2x" aria-hidden="true" style="padding-top: 8px; padding-right: 5px; color: gainsboro;"></i></div>';
+    const nextElement = '<div id="analogues-next"><i class="fa fa-caret-right fa-2x" aria-hidden="true" style="padding-top: 8px; padding-left: 5px; color: gainsboro;"></i></div>';
 
     if (firstId > minId) analoguesBlock.innerHTML = backElement + analoguesBlock.innerHTML;
     if (lastId < maxId)  analoguesBlock.innerHTML = analoguesBlock.innerHTML + nextElement;
@@ -1079,6 +1100,12 @@ const showAnalogues = (firstIdx=0, lastIdx=0) => {
         }
     }
     showAnaloguesControls();
+    $('#analogues-back').on('click', (event) => {
+        backAnalogues(event.currentTarget);
+    });
+    $('#analogues-next').on('click', (event) => {
+        nextAnalogues(event.currentTarget);
+    });
 }
 
 
@@ -1272,7 +1299,10 @@ const updateProductCards = (element) => {
             return updateCarts(data);
         })
         .then((result) => {
-            if (result.every(Boolean)) element.style.display = 'block';
+            if (result.every(Boolean)) {
+                addCartEvents();
+                element.style.display = 'block';
+            }
         })
         .catch((error) => {
             alert('Ошибка обновления каталога: ' + error);
@@ -1413,7 +1443,6 @@ const updateProductCard = () => {
                             );
                         }
                         showSizes();
-                        console.log('showSizes');
                     }
     
                     cartElementsForUpdate.push(
@@ -1642,6 +1671,21 @@ const updateProductCard = () => {
         return element;
     }
 
+    /**
+     * Доюавляет обработчки события выбора пунктов и нформкации о продукте.
+     */
+    const addInfoTabsEvents = () => {
+        const infoTabsElement = document.querySelector('#product-info-tabs');
+        if (!infoTabsElement) return;
+
+        const infoLinksElements = infoTabsElement.querySelectorAll('a');
+        for (var i=0; i<infoLinksElements.length; i++) {
+            infoLinksElements[i].addEventListener('click', (event) => {
+                selectProductDetails(event.currentTarget);
+            });  
+        }
+    }
+
     if(document.location.pathname.indexOf("/catalog/product/") === -1){
         return;    
     }
@@ -1671,6 +1715,11 @@ const updateProductCard = () => {
     })
     .then((result) => {
         if (result.every(Boolean)) {
+            $('.product__thumbnail__block').on('click', (event) => {
+                changeMainImg(event.currentTarget);
+            });
+            addCartEvents();
+            addInfoTabsEvents();
             priceBlockFake.style.display = 'none';
             priceBlock.style.display     = 'flex';
         };
@@ -1743,7 +1792,7 @@ const updateOrder = () => {
         return;
     }
 
-    orderId = window.location.pathname.split('/').reverse().find(x=>x!=='');
+    const orderId = window.location.pathname.split('/').reverse().find(x=>x!=='');
 
     orderStocksAndCosts(orderId)
         .then((data) => {
@@ -1879,9 +1928,15 @@ const addOrderItem = () => {
                 }                
                 if(node.type !== 'hidden' && (node.nodeName === 'SELECT' | node.nodeName === 'INPUT')) {
                     if (node.name == "items-__prefix__-nomenclature_size") node.innerHTML = '<option value="0">--</option>';
+                    const nodeId = node.id.replaceAll('__prefix__',  __prefix__);
                     const htmlElement = node.outerHTML.replaceAll('__prefix__',  __prefix__);
                     addColToTableRow(newRow, `${htmlElement}<div class="formset-field"></div>`);
-                }
+                    if (nodeId && newRow.querySelector(`#${nodeId}`)) newRow.querySelector(`#${nodeId}`).addEventListener(
+                            'change',
+                            (event) => {
+                                updateOrderItem(event.currentTarget);
+                        });
+                    }
             });
 
             orderTableBody.appendChild(newRow);
@@ -1988,9 +2043,9 @@ const autocomplete = (element) => {
 
         pickUpProducts(currentTarget.value)
             .then((data) => {
-                foundData = JSON.parse(data);
+                const foundData = JSON.parse(data);
                 foundData.forEach((el) => {
-                    listItem = document.createElement("div");
+                    const listItem = document.createElement("div");
 
                     listItem.innerHTML =  `<p>${el['fields']['name']}</p>`;
                     listItem.innerHTML += `<input type='hidden' value='${JSON.stringify(el)}'>`;
@@ -2005,7 +2060,7 @@ const autocomplete = (element) => {
                             )['fields']['name'];    
                         }
                         currentTarget.setAttribute('data-json', JSON.stringify(el));
-                        productField = document.querySelector(`#${currentTarget.id.replace('nomenclature', 'product')}`);
+                        const productField = document.querySelector(`#${currentTarget.id.replace('nomenclature', 'product')}`);
                         productField.innerHTML = `<option value="${el['pk']}" selected>${el['fields']['name']}</option>`;
                         updateOrderItem(productField);
                         closeAllLists();
@@ -2028,6 +2083,7 @@ const autocomplete = (element) => {
         }
 
         let autocompleteElement = document.getElementById(currentTarget.id + '__autocomplete-list');
+        let autocompleteItems = [];
 
         if (autocompleteElement) autocompleteItems = autocompleteElement.getElementsByTagName("div");
         if (event.keyCode == 40) {
@@ -2047,8 +2103,24 @@ const autocomplete = (element) => {
 
 
 const changeMainImg = (element) => {
-    mainImgElement = document.querySelector('.main-image');
-    mainImgElement.src = element.src;
+    const mainImgElement = document.querySelector('.main-image');
+    if (mainImgElement) mainImgElement.src = element.src;
+}
+
+
+const addCartEvents = () => {
+
+    $('input[name="add-to-cart"]').on('click', (event) => {
+        addToCart(event.currentTarget.id);
+    });
+
+    $('.addOneToCart').on('click', (event) => {
+        addOneToCart(event.currentTarget);
+    });
+
+    $('.delOneFromCart').on('click', (event) => {
+        delOneFromCart(event.currentTarget);
+    });
 }
 
 
@@ -2061,10 +2133,6 @@ const addEvents = () => {
     const showElement = (elementId, show) => {
         document.getElementById(elementId).style.display = show ? 'block' : 'none';
     }
-
-    $('#cartView').click((event) => {
-        switchCartView(event.currentTarget.checked);
-    });
 
     $('#Brend').on('click', (event) => {
         toggleClassButton(event.currentTarget, 'btn-success', 'btn-outline-success');
@@ -2095,7 +2163,7 @@ const addEvents = () => {
     });
 
     $('.filter-control').on('change', (event) => {
-        data = {'brand': [], 'collection': []};
+        const data = {'brand': [], 'collection': []};
         const allFilters = document.querySelectorAll('.filter-control');
         allFilters.forEach((element) => {
             if (!element.value) return;
@@ -2119,6 +2187,10 @@ const addEvents = () => {
             'csrfmiddlewaretoken' : document.querySelector('input[name="csrfmiddlewaretoken"]').value,
             'data': JSON.stringify(data)
         });
+    });
+
+    $('#cartView').click((event) => {
+        switchCartView(event.currentTarget.checked);
     });
 
     $('.order__toolbar__btn').on('click', (event) => {
@@ -2152,12 +2224,12 @@ const addEvents = () => {
     const orderBoxToggler = document.getElementsByClassName('order-box');
     for (var i = 0; i < orderBoxToggler.length; i++) {
         orderBoxToggler[i].addEventListener('click', (event) => {
-        const order_id = event.target.id.replace(/[^\d.]/g, '');;
-        if (order_id) {
-            document.querySelector(`#order-nested-${order_id}`)?.classList.toggle('order-active');
-            event.target.classList.toggle('order-open-box');
-        }
-      });
+            const order_id = event.target.id.replace(/[^\d.]/g, '');;
+            if (order_id) {
+                document.querySelector(`#order-nested-${order_id}`)?.classList.toggle('order-active');
+                event.target.classList.toggle('order-open-box');
+            }
+        });
     }
 
     const orderFieldNomenclature = document.getElementsByClassName('order__field__nomenclature');
@@ -2180,6 +2252,22 @@ const addEvents = () => {
             }           
         });
     }
+
+    $('.main__menu__item').on('click', (event) => {
+        selectMenuItem(event.currentTarget);
+    });
+
+    $('input[name="cart-quantity"]').on('change', (event) => {
+        OnQuantityChange(event.currentTarget);
+    });
+
+    $('.order__field__nomenclature_size').on('change', (event) => {
+        updateOrderItem(event.currentTarget);
+    });
+
+    $('.order__field').on('change', (event) => {
+        updateOrderItem(event.currentTarget);
+    });
 
 }
 
@@ -2241,3 +2329,4 @@ $(document).ready(() => {
     addEvents();
 })
 
+import '../css/index.css';

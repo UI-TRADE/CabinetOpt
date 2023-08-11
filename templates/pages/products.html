@@ -143,15 +143,15 @@
                       </form>
                       <div>
                         <input
+                          id="cartForm-{{product.id}}"
                           name="add-to-cart"
                           type="button"
-                          onclick="addToCart('cartForm-{{product.id}}');"
                           value="В корзину"
                           class="btn btn-outline-primary"/>
                       </div>
                     </div>
                     <div name="cart-row" class="px-4 px-sm-0 cart">
-                      <a class="cart-element" href="#" onclick="delOneFromCart(this)">-</a>
+                      <a class="cart-element delOneFromCart" href="#">-</a>
                       <input 
                         type="text"
                         class="
@@ -161,7 +161,7 @@
                         "
                         readonly
                       >
-                      <a class="cart-element" href="#" onclick="addOneToCart(this)">+</a>
+                      <a class="cart-element addOneToCart" href="#">+</a>
                       <div name="cart-key" style="display: none;"></div>
                     </div>
                 </div>

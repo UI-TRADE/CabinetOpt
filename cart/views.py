@@ -36,7 +36,9 @@ def send_to_cart(request, product_id=-1):
         selected_prod_params = form.cleaned_data
         cart.add(product, **selected_prod_params)
         return JsonResponse(
-            {'reply': 'ok', 'pk': product_id} | selected_prod_params,
+            {'reply': 'ok', 'pk': product_id} | cart.info(
+                product_id, size=selected_prod_params['size']
+            ),
             safe=False
         )
     

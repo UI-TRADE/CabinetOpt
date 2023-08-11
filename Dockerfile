@@ -1,3 +1,22 @@
+#################
+# FRONT BUILDER #
+#################
+
+FROM node:latest as frontbuilder
+
+WORKDIR /usr/src/app/
+
+COPY ./package*.json .
+COPY ./webpack.config.js .
+
+COPY . .
+
+RUN npm run build
+
+###########
+# FINAL #
+###########
+
 FROM python:3.9.12-alpine
 
 WORKDIR /usr/src/app
@@ -16,6 +35,6 @@ COPY ./entrypoint.sh .
 RUN sed -i 's/\r$//g' /usr/src/app/entrypoint.sh
 RUN chmod +x /usr/src/app/entrypoint.sh
 
-COPY . .
+COPY --from=frontbuilder /usr/src/app/ .
 
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]

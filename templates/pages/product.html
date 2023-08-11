@@ -70,11 +70,11 @@
                                             class="
                                                 img-fluid
                                                 img-thumbnail
-                                                thumbnail-50 
+                                                thumbnail-50
+                                                product__thumbnail__block
                                                 product__thumbnail__block--design
                                                 product__thumbnail__block--position"
                                             alt="{{ product.name }}"
-                                            onclick="changeMainImg(this);"
                                         >
                                     {% endfor %} 
                                 </div>
@@ -123,26 +123,23 @@
                                 </div>
                                 &nbsp;
 
-                                <ul class="nav nav-tabs">
+                                <ul id="product-info-tabs" class="nav nav-tabs">
                                     <li class="nav-item">
                                       <a name="gems"
                                         class="product-details nav-link active"
                                         href="#"
-                                        onclick="selectProductDetails(this)"
                                       >Вставки</a>
                                     </li>
                                     <li class="nav-item">
                                       <a name="description"
                                         class="product-details nav-link"
                                         href="#"
-                                        onclick="selectProductDetails(this)"
                                       >Описание</a>
                                     </li>
                                     <li class="nav-item">
                                       <a name="guarantees"
                                         class="product-details nav-link"
                                         href="#"
-                                        onclick="selectProductDetails(this)"
                                       >Гарантии</a>
                                     </li>
                                 </ul>
@@ -205,15 +202,15 @@
                                 </form>
                                 <div class="product__price-card__element">
                                     <input
+                                    id="cartForm-{{product.id}}"
                                     name="add-to-cart"
                                     type="button"
-                                    onclick="addToCart('cartForm-{{product.id}}');"
                                     value="В корзину"
                                     class="btn btn-outline-warning"
                                     style="width: 150px;"/>
                                 </div>
                                 <div name="cart-row" class="px-4 px-sm-0 cart product__price-card__element--cart">
-                                    <a class="cart-element" href="#" onclick="delOneFromCart(this)">-</a>
+                                    <a class="cart-element delOneFromCart" href="#">-</a>
                                     <input 
                                       type="text"
                                       class="
@@ -223,7 +220,7 @@
                                       "
                                       readonly
                                     >
-                                    <a class="cart-element" href="#" onclick="addOneToCart(this)">+</a>
+                                    <a class="cart-element addOneToCart" href="#">+</a>
                                     <div name="cart-key" style="display: none;"></div>
                                 </div>
                                 <div class="
