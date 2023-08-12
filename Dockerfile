@@ -2,16 +2,15 @@
 # FRONT BUILDER #
 #################
 
-FROM node:latest as frontbuilder
+FROM node:latest as builder
 
 WORKDIR /usr/src/app/
 
 COPY ./package*.json .
-COPY ./webpack.config.js .
+COPY ./webpack*.js .
+COPY ./src ./src
 
-COPY . .
-
-RUN npm run build
+RUN npm install && npm run build
 
 ###########
 # FINAL #
@@ -35,6 +34,7 @@ COPY ./entrypoint.sh .
 RUN sed -i 's/\r$//g' /usr/src/app/entrypoint.sh
 RUN chmod +x /usr/src/app/entrypoint.sh
 
-COPY --from=frontbuilder /usr/src/app/ .
+COPY . .
+COPY --from=builder /usr/src/app/static ./static
 
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
