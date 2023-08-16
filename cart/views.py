@@ -1,11 +1,12 @@
+import simplejson as json
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.core.exceptions import ValidationError
-import simplejson as json
+from contextlib import suppress
 
 from clients.login import Login
-from catalog.models import Product
+from catalog.models import Product, Size
 from .cart import Cart
 from .forms import CartAddProductForm
 from orders.views import save_order
@@ -45,7 +46,7 @@ def send_to_cart(request, product_id=-1):
     return JsonResponse({'reply': 'error', 'message': form.errors})
 
 
-def cart_info(request, product_id, size):
+def cart_info(request, product_id, size=''):
     cart = Cart(request)
     return JsonResponse(cart.info(product_id, size=size), safe=False)
 
@@ -74,14 +75,16 @@ def add_order(request):
     clients = login.get_clients()
     managers = login.get_managers()
 
-    order_items = [{
-        key: Product.objects.get(pk=val['id']) if key=='product' else val \
-            for key, val in item.items()
-    } for item in cart]
-
-    for item in order_items:
-        if (item['weight']):
+    order_items = []
+    for item in cart:
+        item['product'] = Product.objects.get(pk=item['product']['id'])
+        with suppress(Size.DoesNotExist):
+            size_name = item['size']
+            item['size']    = None
+            item['size']    = Size.objects.get(name=size_name)
+        if item['weight']:
             item['weight'] = round(item['quantity'] * item['weight'], 3)
+        order_items.append(item)
 
     try:
         save_order(

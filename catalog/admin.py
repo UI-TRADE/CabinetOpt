@@ -13,7 +13,8 @@ from .models import (
     CutType,
     GemSet,
     ProductsSet,
-    SimilarProducts
+    SimilarProducts,
+    Size
 )
 
 class ProductImageInLine(admin.TabularInline):
@@ -271,4 +272,24 @@ class GemSetAdmin(admin.ModelAdmin):
     def get_model_perms(self, *args, **kwargs):
         return {}
 
-    
+
+@admin.register(Size)
+class SizeAdmin(admin.ModelAdmin):
+    search_fields = [
+        'size_from',
+        'size_to',
+    ]
+    fields = [
+        ('size_from', 'size_to'),
+    ]
+
+    def save_model(self, request, obj, form, change):
+        if obj.size_from and not obj.size_to:
+            obj.size_to = obj.size_from
+        
+        obj.name = f'{obj.size_from:g}'
+        if obj.size_to and obj.size_from != obj.size_to:
+            obj.name = f'{obj.size_from:g}-{obj.size_to:g}'
+   
+        obj.save()
+   

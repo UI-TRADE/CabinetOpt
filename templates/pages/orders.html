@@ -128,20 +128,26 @@
                     </tr>
                   </thead>
                   <tbody>
-                      {% for item in items%}
-                      <tr>
-                          <td>{{ forloop.counter }}</td>
-                          <td>{{ item.product }}</td>
-                          <td>{{ item.series }}</td>
-                          <td>{{ item.uin }}</td>
-                          <td>{{ item.weight }}</td>
-                          <td>{{ item.size }}</td>
-                          <td>{{ item.quantity }}</td>
-                          <td>{{ item.get_unit_display }}</td>
-                          <td>{{ item.price }}</td>
-                          <td>{{ item.discount }}</td>
-                          <td>{{ item.sum }}</td>
-                      </tr>
+                      {% for item in items %}
+                        {% if item.product %}
+                          <tr>
+                              <td>{{ forloop.counter }}</td>
+                              <td>{{ item.product }}</td>
+                              <td>{{ item.series }}</td>
+                              <td>{{ item.uin }}</td>
+                              <td>{{ item.weight }}</td>
+                              {% if item.size %}
+                                <td>{{ item.size }}</td>
+                              {% else %}
+                                <td></td>
+                              {% endif %}
+                              <td>{{ item.quantity }}</td>
+                              <td>{{ item.get_unit_display }}</td>
+                              <td>{{ item.price }}</td>
+                              <td>{{ item.discount }}</td>
+                              <td>{{ item.sum }}</td>
+                          </tr>
+                        {% endif %}
                       {% endfor %}
                   </tbody>
               </table>

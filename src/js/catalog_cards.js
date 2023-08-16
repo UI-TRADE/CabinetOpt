@@ -14,7 +14,7 @@ const extractContent = (html, elementId) => {
  */
 const updateProductCards = (element) => {
 
-    const productStocksAndCosts = (productIds, size=0) => {
+    const productStocksAndCosts = (productIds, size='') => {
         return new Promise((resolve, reject) => {
             $.ajax({
                 url: '/catalog/stocks_and_costs',
@@ -37,15 +37,19 @@ const updateProductCards = (element) => {
 
                 const elemsForUpdate   = []
                 const products         = JSON.parse(data['products']);
+                const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
                 const actual_prices    = JSON.parse(data['actual_prices']);
                 const discount_prices  = JSON.parse(data['discount_prices']);
-                const default_sizes = JSON.parse(data['default_sizes']);
+                const default_sizes    = JSON.parse(data['default_sizes']);
 
                 for (var i=0; i < elements.length; i++) {
-                    let inStok = 0; let weight = 0; let size = 0;
+                    let inStok = 0; let weight = 0; let size = '';
                     let currentPrice = 0; let currentDiscount = 0; let maxPrice = 0;
                     const currentId = JSON.parse(elements[i].getAttribute('data-json'));
                     const product = products.find(el => el['pk'] == currentId['id']);
+                    const stock_and_cost = stocks_and_costs.filter(
+                        el => el['fields'].product == currentId['id']
+                    ).find(_ => true);
                     const actual_price = actual_prices.filter(
                         el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
                     ).find(_ => true);
@@ -56,10 +60,16 @@ const updateProductCards = (element) => {
                         el => el['fields'].product == currentId['id']
                     ).find(_ => true);
 
+                    if (stock_and_cost) {
+                        maxPrice = stock_and_cost['fields'].cost;
+                        weight = stock_and_cost['fields'].weight;
+                        inStok = stock_and_cost['fields'].stock;    
+                    }
+
                     if (defaultSize) {
                         maxPrice = defaultSize['fields'].cost;
                         weight = defaultSize['fields'].weight;
-                        size = defaultSize['fields'].size;
+                        size = defaultSize['fields'].size.find(_ => true);
                         inStok = defaultSize['fields'].stock;   
                     }
 
@@ -96,7 +106,7 @@ const updateProductCards = (element) => {
                     for (let item of inputFields) {
                         if (item.name === 'price' && price.clientPrice) item.value = price.clientPrice;    
                         if (item.name === 'size' && size) item.value = size;
-                        if (item.name === 'weight' && weight) item.value = defaultSize['fields'].weight;
+                        if (item.name === 'weight' && weight) item.value = weight;
                     }
 
                     elemsForUpdate.push(

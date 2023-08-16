@@ -50,7 +50,7 @@
                                     <div><b>{{ product.name }}</b></div>
                                     <div>
                                         Вес: {{ item.weight }};<br>
-                                        Размер: {{ item.size|stringformat:".1f" }};<br>
+                                        Размер: {{ item.size }};<br>
                                         Металл: {{ product.metal }} {{ product.metal_content }}
                                     </div>
                                 </div>
@@ -78,7 +78,7 @@
                                 </a>
                             </div>
                             <div name="cart-key" style="display: none;">
-                                {{'{'}}"productId":"{{product.id}}","size":"{{item.size|stringformat:".1f"}}"{{'}'}}
+                                {{'{'}}"productId":"{{product.id}}","size":"{{item.size}}"{{'}'}}
                             </div>
                         </div>
                     </div>
@@ -136,7 +136,7 @@
                                 <td>{{ product.name }}</td>
                                 <td>
                                     Вес: {{ item.weight }};<br>
-                                    Размер: {{ item.size|stringformat:".1f" }};<br>
+                                    Размер: {{ item.size }};<br>
                                     Металл: {{ product.metal }} {{ product.metal_content }}
                                 </td>
                                 <td>
@@ -170,7 +170,7 @@
                                     </td>
                                 {% endif %}
                                 <td name="cart-key" style="display: none;">
-                                    {{'{'}}"productId":"{{product.id}}","size":"{{item.size|stringformat:".1f"}}"{{'}'}}
+                                    {{'{'}}"productId":"{{product.id}}","size":"{{item.size}}"{{'}'}}
                                 </td>
                             </tr>
                         {% endwith %}

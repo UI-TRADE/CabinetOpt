@@ -18,7 +18,7 @@ from .forms import ProductFilterForm
 from clients.login import Login
 from clients.models import PriorityDirection
 from catalog.models import (
-    Product, ProductImage,
+    Product, ProductImage, Size,
     Collection, StockAndCost, Price,
     ProductsSet, GemSet, SimilarProducts
 )
@@ -62,7 +62,8 @@ class ProductView(ListView):
             
             stock_and_cost = StockAndCost.objects.all()
             if self.filters.get('size'):
-                stock_and_cost = stock_and_cost.filter(size__exact=self.filters['size'])
+                sizes = Size.objects.filter(name__icontains=self.filters['size'])
+                stock_and_cost = stock_and_cost.filter(size__in=sizes)
                 if self.filters.get('weight'):
                     stock_and_cost = stock_and_cost.filter(weight__gte=self.filters['weight'])
                 if self.filters.get('weight_till'):
@@ -284,10 +285,14 @@ def stocks_and_costs(request):
             {
                 'replay'           : 'ok',
                 'products'         : serialize("json", products),
-                'stocks_and_costs' : serialize("json", stocks_and_costs),
+                'stocks_and_costs' : serialize(
+                    "json", stocks_and_costs, use_natural_foreign_keys=True
+                ),
                 'actual_prices'    : serialize("json", prices),
                 'discount_prices'  : serialize("json", discount_prices),
-                'default_sizes'    : serialize("json", stocks_and_costs_with_default_size),
+                'default_sizes'    : serialize(
+                    "json", stocks_and_costs_with_default_size, use_natural_foreign_keys=True
+                ),
             },
             status=200,
             safe=False

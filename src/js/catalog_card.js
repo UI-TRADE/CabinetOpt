@@ -29,8 +29,9 @@ const addSelectSizeEvent = (element) => {
     if (!boundInfo) return;
     const boundFields = boundInfo['fields'];
     if (!boundFields) return;
+    const currentSize = boundFields.size.find(_ => true);
     updatePriceInProductCard({
-            'size': boundFields.size, 'weight': boundFields.weight,
+            'size': currentSize, 'weight': boundFields.weight,
             'inStok': boundFields.stock, 'price': boundInfo['clientPrice'],
             'discount': boundInfo['clientDiscount'], 'maxPrice': boundInfo['clientMaxPrice']
     });
@@ -42,7 +43,7 @@ const addSelectSizeEvent = (element) => {
     
     const elementOfPrices = document.querySelector('.product__col__prices');
     if (!elementOfPrices) return;
-    waitUpdateCart(elementOfPrices, {'productId': boundFields['product'], 'size': boundFields['size']})
+    waitUpdateCart(elementOfPrices, {'productId': boundFields['product'], 'size': currentSize})
         .catch(error => {
             alert('Ошибка обновления корзины покупок: ' + error);
         })
@@ -404,7 +405,7 @@ const changeMainImg = (element) => {
  */
 function updateProductCard() {
 
-    const productStocksAndCosts = (productIds, size=0) => {
+    const productStocksAndCosts = (productIds, size='') => {
         return new Promise((resolve, reject) => {
             $.ajax({
                 url: '/catalog/stocks_and_costs',
@@ -432,7 +433,7 @@ function updateProductCard() {
                 const default_sizes    = JSON.parse(data['default_sizes']);
     
                 for (var i=0; i < elements.length; i++) {
-                    let inStok = 0; let weight = 0; let size = 0;
+                    let inStok = 0; let weight = 0; let size = '';
                     let currentPrice = 0; let currentDiscount = 0; let maxPrice = 0;
                     const currentId = JSON.parse(elements[i].getAttribute('data-json'));
                     const product = products.find(el => el['pk'] == currentId['id']);
@@ -446,11 +447,18 @@ function updateProductCard() {
                     const defaultSize = default_sizes.filter(
                         el => el['fields'].product == currentId['id']
                     ).find(_ => true);
+
+                    const firstStockAndCost = stock_and_cost.find(_ => true);
+                    if (firstStockAndCost) {
+                        maxPrice = firstStockAndCost['fields'].cost;
+                        weight = firstStockAndCost['fields'].weight;
+                        inStok = firstStockAndCost['fields'].stock;    
+                    }
     
                     if (defaultSize) {
                         maxPrice = defaultSize['fields'].cost;
                         weight = defaultSize['fields'].weight;
-                        size = defaultSize['fields'].size;
+                        size = defaultSize['fields'].size.find(_ => true);
                         inStok = defaultSize['fields'].stock;   
                     }
     
@@ -589,7 +597,7 @@ function updateProductCard() {
             item['clientDiscount'] = discount;
             item['clientMaxPrice'] = maxPrice;
             const itemFields = item['fields'];
-            const sizeElement = addSizeElement(idx, itemFields.size, itemFields.weight);
+            const sizeElement = addSizeElement(idx, itemFields.size.find(_ => true), itemFields.weight);
             sizeElement.setAttribute('data-json', JSON.stringify(item));
             if (itemFields.size == default_size) {
                 const btnElement = sizeElement.querySelector('input');

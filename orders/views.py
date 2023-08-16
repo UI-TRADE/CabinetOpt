@@ -13,14 +13,13 @@ from django.views.generic import (
 from django.template.loader import get_template
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
-from collections import defaultdict
 from contextlib import suppress
 from rest_framework.decorators import api_view
 from xhtml2pdf import pisa
 
 from clients.login import Login
 from clients.models import ContactDetail
-from catalog.models import Product, StockAndCost
+from catalog.models import Product, StockAndCost, Size
 from orders.models import Order, OrderItem
 
 from .forms import (
@@ -48,6 +47,7 @@ class OrderView(ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['order_items'] = OrderItem.objects.filter(order__in=context['orders'])
+        print(context['order_items'].values())
         return dict(list(context.items()))
 
 
@@ -70,9 +70,7 @@ class UpdateOrderView(UpdateView):
             context['order_items'] = OrderItemInline(self.request.POST, instance=self.object)
         else:
             context['order_items'] = OrderItemInline(instance=self.object)
-
         context['empty_items'] = context['order_items'].empty_form
-        context['sizes'] = self.get_products_size()
         context['fields'] = [
             {"id": "_id_status", "label": "Статус:", "value": context['order'].get_status_display()},
             {"id": "_id_client", "label": "Клиент:", "value": context['order'].client},
@@ -104,17 +102,6 @@ class UpdateOrderView(UpdateView):
 
         return render(self.request, self.template_name, context)
     
-    def get_products_size(self):
-        result = defaultdict(list)
-        sizes = StockAndCost.objects.filter(
-            product__in=OrderItem.objects.filter(
-                order=self.object
-            ).values_list('product', flat=True)
-        ).values_list('product', 'size', named=True)       
-        for item in sizes:
-            result[str(item.product)].append(item.size)
-        return json.dumps(result)
-
 
 class CreateOrderView(CreateView):
     model = Order
@@ -145,7 +132,6 @@ class CreateOrderView(CreateView):
             context['order_items'] = OrderItemInline(initial=order_items)
         context['order_items'].extra = len(order_items)
         context['empty_items'] = context['order_items'].empty_form
-        context['sizes'] = self.get_products_size(order)
         context['fields'] = [
             {"id": "_id_status", "label": "Статус:", "value": order.get_status_display()},
             {"id": "_id_client", "label": "Клиент:", "value": order.client},
@@ -188,24 +174,15 @@ class CreateOrderView(CreateView):
         order_items = list(OrderItem.objects.filter(order_id=self.kwargs['order_id']).values())
         for order_item in order_items:
             order_item['product'] = get_object_or_404(Product, id=order_item['product_id'])
+            order_item['size']    = None
+            if order_item['size_id']:
+                order_item['size']    = get_object_or_404(Size, id=order_item['size_id'])
             order_item = {
                 key: value for key, value in order_item.items() if key not in [
                     'id','order_id'
             ]}
 
         return order_items
-    
-        
-    def get_products_size(self, order):
-        result = defaultdict(list)
-        sizes = StockAndCost.objects.filter(
-            product__in=OrderItem.objects.filter(
-                order=order
-            ).values_list('product', flat=True)
-        ).values_list('product', 'size', named=True)       
-        for item in sizes:
-            result[str(item.product)].append(item.size)
-        return json.dumps(result)
 
 
 class ExportOrderView(TemplateView):
@@ -218,8 +195,10 @@ class ExportOrderView(TemplateView):
         order_id = self.kwargs.get(self.slug_url_kwarg)
         order = get_object_or_404(Order, pk=order_id)
         context['order'] = order
-        contact_detail = get_object_or_404(ContactDetail, client=order.client)
-        context['contact_detail'] = contact_detail
+        context['contact_detail'] = None
+        with suppress(ContactDetail.DoesNotExist):
+            contact_detail = ContactDetail.objects.get(client=order.client)
+            context['contact_detail'] = contact_detail
         context['order_items'] = OrderItem.objects.filter(order=context['order'])
         context['order_totals'] = OrderItem.objects.filter(
             order=context['order']).aggregate(
@@ -364,7 +343,7 @@ def save_order(order_params, order_items):
                 if order_form.is_valid():
                     order_instance.save()  
 
-                for form in formset:  
+                for form in formset:
                     if not form.is_valid():
                         errors.append({
                             'product_id': item['product'].id,
@@ -375,6 +354,13 @@ def save_order(order_params, order_items):
                     item_instance = form.save(commit=False)
                     item_instance.order = order_instance
                     item_instance.save()
+
+            if not order_items:
+                transaction.rollback()
+                raise ValidationError(
+                    json.dumps([{
+                        'product_id':-1, 'size':-1, 'error': 'there are no order items'
+                }]))    
 
             if errors:
                 transaction.rollback()
@@ -424,10 +410,14 @@ def stocks_and_costs(request):
             {
                 'replay'           : 'ok',
                 'products'         : serialize("json", products),
-                'stocks_and_costs' : serialize("json", stocks_and_costs),
+                'stocks_and_costs' : serialize(
+                    "json", stocks_and_costs, use_natural_foreign_keys=True
+                ),
                 'actual_prices'    : serialize("json", prices),
                 'discount_prices'  : serialize("json", discount_prices),
-                'default_sizes'    : serialize("json", stocks_and_costs_with_default_size),
+                'default_sizes'    : serialize(
+                    "json", stocks_and_costs_with_default_size, use_natural_foreign_keys=True
+                ),
             },
             status=200,
             safe=False

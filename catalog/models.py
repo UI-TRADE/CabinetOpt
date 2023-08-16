@@ -153,27 +153,68 @@ class Product(models.Model):
     @property
     def get_default_size(self):
         '''Функция возвращает строку, как этап перехода на учет размеров в БД в строковом варианте'''
-        result = '0'
-        stocks_and_costs = StockAndCost.objects.filter(product_id=self.id).order_by('size')
+        size_value = 0
+        stocks_and_costs = StockAndCost.objects.\
+            filter(product_id=self.id).annotate(size_name=F('size__name')).\
+            exclude(size__isnull=True).order_by('size')
         with suppress(AttributeError):
             if self.collection.group.name.lower() in ['кольцо', 'кольца', 'колечки', 'колец']:
-                result = '20'
+                size_value = 20
                 if self.gender == 'Ж':
-                    result = '17'
+                    size_value = 17
             if self.collection.group.name.lower() in ['цепь', 'цепи', 'цепочка', 'цепочек']:
-                result = '50'
-        if stocks_and_costs.filter(size=result):
-            return result
+                size_value = 50
+        
+        found_size = Size.objects.get_current_size(size_value)
+        if found_size and stocks_and_costs.filter(size=found_size):
+            return found_size.name
 
         product_size = stocks_and_costs.first()
         if product_size:
-            result = str(product_size.size)
+            return product_size.size_name
 
-        return result
+
+class SizeQuerySet(models.QuerySet):
+
+    def get_by_natural_key(self, size_name):
+        return self.get(name=size_name)
+
+    def get_current_size(self, size):
+        return self.filter(size_from__lte=size, size_to__gte=size).first()
+
+
+class Size(models.Model):
+    name = models.CharField('Размер', max_length=20, db_index=True, blank=True)
+    size_from = models.FloatField(
+        'Размер от',
+        default=0.0,
+        validators=[MinValueValidator(0)]
+    )
+    size_to = models.FloatField(
+        'Размер до',
+        default=0.0,
+        validators=[MinValueValidator(0)]
+    )
+
+    objects = SizeQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = 'Размер'
+        verbose_name_plural = 'Размеры'
+        unique_together = ('size_from', 'size_to')
+
+    def __str__(self):
+        return f'{self.name}'
+    
+    def natural_key(self):
+        return (self.name, self.id,)
 
 
 class StockAndCostQuerySet(models.QuerySet):
     
+    def get_by_natural_key(self, first_name, last_name):
+        return self.get(first_name=first_name, last_name=last_name)
+
     def available_stocks_and_costs(self, products_ids, **kwargs):
         clients = kwargs.get('clients', Client.objects.none())
         products = Product.objects.filter(pk__in = products_ids)
@@ -197,8 +238,12 @@ class StockAndCostQuerySet(models.QuerySet):
             collection_group=F('collection__group__name')
         ).values('id', 'collection_name', 'collection_group')
         
-        if float(kwargs.get('size', 0)):
-            stocks_and_costs = stocks_and_costs.filter(size=kwargs['size'])
+        if kwargs.get('size', ''):
+            stocks_and_costs = stocks_and_costs.filter(
+                size_id__in=Size.objects.filter(
+                    name=kwargs['size']
+                ).values_list('pk', flat=True)
+            )
 
         return collections, products, stocks_and_costs, prices, discount_prices
 
@@ -208,10 +253,13 @@ class StockAndCostQuerySet(models.QuerySet):
         products = Product.objects.filter(pk__in = products_ids)
         for product in products:
             default_size = product.get_default_size
-            if float(kwargs.get('size', 0)):
-                default_size = kwargs['size']  
+            if kwargs.get('size', ''):
+                default_size = kwargs['size']
             if default_size:
-                result = result | self.filter(product = product, size = default_size)
+                result = result | self.filter(
+                    product = product, size_id__in = Size.objects.filter(name=default_size).\
+                        values_list('pk', flat=True)
+                )
 
         return result
 
@@ -227,10 +275,13 @@ class StockAndCost(models.Model):
     weight = models.FloatField(
         'Вес', default=0, validators=[MinValueValidator(0)]
     )
-    size = models.FloatField(
-        'Размер',
-        default=0.0,
-        validators=[MinValueValidator(0)]
+    size = models.ForeignKey(
+        Size,
+        null=True,
+        blank = True,
+        on_delete=models.SET_NULL,
+        verbose_name='Размер',
+        related_name='sizes'
     )
     stock = models.PositiveIntegerField(
         'Остаток', default=0, validators=[MinValueValidator(0)]
@@ -475,4 +526,3 @@ class SimilarProducts(models.Model):
 
     def __str__(self):
         return f'{self.similar_product}'
-   

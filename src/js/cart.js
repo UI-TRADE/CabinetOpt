@@ -126,9 +126,11 @@ const OnQuantityChange = (element, preventReload=false) => {
             try {
                 const result = Promise.all(
                     params.map((item) => {
+                        let url = `/cart/info/${item.param['productId']}`;
+                        if (item.param['size']) url += `/${item.param['size']}`;
                         return new Promise((resolve, reject) => {
                             $.ajax({
-                                url: `/cart/info/${item.param['productId']}/${item.param['size']}`,
+                                url: url,
                                 success: (response) => {
                                     item.cartInfo = response;
                                     resolve(item);
@@ -257,9 +259,11 @@ const OnQuantityChange = (element, preventReload=false) => {
 
 
 export function waitUpdateCart(element, params) {
+    let url = `/cart/info/${params['productId']}`;
+    if (params['size']) url += `/${params['size']}`;
     return new Promise((resolve, reject) => {
         $.ajax({
-            url: `/cart/info/${params['productId']}/${params['size']}`,
+            url: url,
             success: (cartData) => {
                 updateCartElements(element, cartData, params);
                 resolve(true);

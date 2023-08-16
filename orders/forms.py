@@ -1,6 +1,6 @@
 from django import forms
 from django.forms.models import BaseInlineFormSet, inlineformset_factory
-from catalog.models import StockAndCost
+from catalog.models import Size
 from orders.models import Order, OrderItem
 
 
@@ -25,8 +25,8 @@ class OrderForm(forms.ModelForm):
 
 
 class OrderItemForm(forms.ModelForm):
-    nomenclature = forms.CharField(max_length=100)
-    nomenclature_size = forms.ChoiceField(validators=[], required=False)
+    nomenclature = forms.CharField(max_length=100, required = False)
+    nomenclature_size = forms.ChoiceField(required = False)
 
     class Meta:
         model = OrderItem
@@ -49,13 +49,13 @@ class OrderItemForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['discount'].required = False
-        self.fields['nomenclature'].required = False
-        self.fields['nomenclature_size'].required = False
+        self.fields['size'].required = False
+        self.fields['unit'].required = False
         self.fields['nomenclature_size'].choices = self.get_sizes()
 
     def get_sizes(self):
-        sizes = StockAndCost.objects.all().values_list('size', flat=True).distinct()
-        return (('0', '--'),) + tuple((('%g' % item, '%g' % item) for item in sizes))
+        sizes = Size.objects.all().values_list('name', flat=True).distinct()
+        return (('0', '--'),) + tuple((('%s' % item, '%s' % item) for item in sizes))
 
 
 class OrderItemInlineForm(BaseInlineFormSet):

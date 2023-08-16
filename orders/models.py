@@ -1,9 +1,8 @@
-import uuid
 from django.db import models
 from django.core.validators import MinValueValidator
 
 from clients.models import Client, Manager
-from catalog.models import Product, PriceType, StockAndCost
+from catalog.models import Product, PriceType, Price, Size
 
 class Order(models.Model):
     client = models.ForeignKey(
@@ -96,8 +95,12 @@ class OrderItem(models.Model):
     weight = models.FloatField(
         'Вес', default=0, validators=[MinValueValidator(0)]
     )
-    size = models.FloatField(
-        'Размер', default=0.0, validators=[MinValueValidator(0)]
+    size = models.ForeignKey(
+        Size,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name='Размер',
+        related_name='size_orders'
     )
     quantity = models.PositiveIntegerField('Количество', default=1)
     price = models.DecimalField(
@@ -142,12 +145,16 @@ class OrderItem(models.Model):
     
     @property
     def max_price(self):
-        max_prices = StockAndCost.objects.filter(product=self.product)
-        if self.weight > 0:
-            max_prices = max_prices.filter(weight=self.weight)
-        if self.size > 0:
-            max_prices = max_prices.filter(size=self.size)
+        if not self.product:
+            return 0
+        max_prices = Price.objects.available_prices(
+            [self.product.id,], PriceType.objects.get(name='Базовая')
+        )
         if max_prices.exists():
             max_price = max_prices.first()
-            return max_price.cost * self.quantity
+            if self.product.unit == '163':
+                return round(float(max_price.price) * self.weight, 2)    
+            return max_price.price * self.quantity
+        if self.product.unit == '163':
+            return round(float(self.price) * self.weight, 2)
         return self.price * self.quantity

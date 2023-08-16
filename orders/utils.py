@@ -1,5 +1,4 @@
 import os
-from django.conf import settings
 from django.contrib.staticfiles import finders
 
 from num2words import num2words
@@ -13,7 +12,7 @@ def get_order_settings(context):
     return {
         'Заголовок'           : f'Заказ клиента № {context["order"].pk} от {context["order"].created_at.strftime("%d.%m.%Y")}',
         'Поставщик'           : 'ИНН 7802669141, КПП 780201001, ЮИ-ТРЕЙД ООО, 194100, Санкт-Петербург г, Кантемировская ул, дом № 5, корпус 8, комната 104',
-        'Покупатель'          : f'ИНН { context["order"].client.inn }, { context["order"].client.name }, { context["contact_detail"].get_address() }, тел.: { context["order"].client.registration_order.phone }',
+        'Покупатель'          : f'ИНН { context["order"].client.inn }, { context["order"].client.name }, { context["contact_detail"].get_address() if context["contact_detail"] else "" }, тел.: { context["order"].client.registration_order.phone }',
         'ПодвалСуммаБезСкидки': context["order_totals"]["total_sum_without_discount"],
         'ПодвалСкидка'        : context["order_totals"]["total_discount"],
         'ПодвалСумма'         : context["order_totals"]["total_sum"],

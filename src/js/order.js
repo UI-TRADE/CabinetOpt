@@ -12,7 +12,7 @@ const generateUUID = () => {
 
 const updateOrderItem = (element) => {
 
-    const productStocksAndCosts = (productIds, size=0) => {
+    const productStocksAndCosts = (productIds, size='') => {
         return new Promise((resolve, reject) => {
             $.ajax({
                 url: '/catalog/stocks_and_costs',
@@ -30,13 +30,16 @@ const updateOrderItem = (element) => {
     const getItemParams = (data, productId) => {
 
         const products         = JSON.parse(data['products']);
+        const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
         const actual_prices    = JSON.parse(data['actual_prices']);
         const discount_prices  = JSON.parse(data['discount_prices']);
         const default_sizes    = JSON.parse(data['default_sizes']);
 
-        let inStok = 0; let weight = 0; let size = 0;
+        let inStok = 0; let weight = 0; let size = ''; const sizes = [];
         let currentPrice = 0; let currentDiscount = 0; let maxPrice = 0;
         const product = products.find(el => el['pk'] == productId);
+        const product_stocks_and_costs = stocks_and_costs.filter(el => el['fields'].product == productId);
+        const stock_and_cost = product_stocks_and_costs.find(_ => true);
         const actual_price = actual_prices.filter(
             el => el['fields'].product == productId && el['fields'].unit == product['fields'].unit
         ).find(_ => true);
@@ -44,6 +47,12 @@ const updateOrderItem = (element) => {
             el => el['fields'].product == productId && el['fields'].unit == product['fields'].unit
         ).find(_ => true);
         const defaultSize = default_sizes.filter(el => el['fields'].product == productId).find(_ => true);
+
+        if (stock_and_cost) {
+            maxPrice = stock_and_cost['fields'].cost;
+            weight = stock_and_cost['fields'].weight;
+            inStok = stock_and_cost['fields'].stock;    
+        }
 
         if (defaultSize) {
             maxPrice = defaultSize['fields'].cost;
@@ -61,6 +70,15 @@ const updateOrderItem = (element) => {
             maxPrice = discount_price['fields'].price;
             currentDiscount = discount_price['fields'].discount;   
         }
+
+        product_stocks_and_costs.forEach((item) => {
+            const itemSize = item['fields'].size;
+            if (itemSize) sizes.push({
+                'value': itemSize[itemSize.length-1],
+                'size': itemSize.find(_=>true),
+                'stock_and_cost': item
+            });
+        });
         
         return {
             'weight': weight,
@@ -69,7 +87,9 @@ const updateOrderItem = (element) => {
             'currentPrice': currentPrice,
             'currentDiscount': currentDiscount,
             'maxPrice': maxPrice,
-            'unit': product['fields'].unit
+            // 'unit': product['fields'].unit,
+            'unit': '796',
+            'sizes': sizes
         } 
     }
 
@@ -80,56 +100,47 @@ const updateOrderItem = (element) => {
         newOption.textContent = text;
         if (item) newOption.setAttribute('data-json', JSON.stringify(item))
         element.appendChild(newOption);
-    }    
+    }
 
     const partsOfId = element.id.split('-');
-    const idOfProductField          = `${partsOfId.slice(0, partsOfId.length-1).join('-')}-product`;
-    const idOfQuantityField         = `${partsOfId.slice(0, partsOfId.length-1).join('-')}-quantity`;
-    const idOfWeightField           = `${partsOfId.slice(0, partsOfId.length-1).join('-')}-weight`;
-    const idOfSizeField             = `${partsOfId.slice(0, partsOfId.length-1).join('-')}-size`;
-    const idOfPriceField            = `${partsOfId.slice(0, partsOfId.length-1).join('-')}-price`;
-    const idOfSumField              = `${partsOfId.slice(0, partsOfId.length-1).join('-')}-sum`;
-    const idOfNomenclatureSizeField = `${partsOfId.slice(0, partsOfId.length-1).join('-')}-nomenclature_size`;
+    const prefId = partsOfId.slice(0, partsOfId.length-1).join('-');
+    const productField           = document.getElementById(`${prefId}-product`);
+    const nomenclature_sizeField = document.getElementById(`${prefId}-nomenclature_size`);
+    const weightField            = document.getElementById(`${prefId}-weight`);
+    const sizeField              = document.getElementById(`${prefId}-size`);
+    const quantityField          = document.getElementById(`${prefId}-quantity`);
+    const unitField              = document.getElementById(`${prefId}-unit`);
+    const priceField             = document.getElementById(`${prefId}-price`);
+    const sumField               = document.getElementById(`${prefId}-sum`);
 
+    const selectedProdOption = productField.options[productField.selectedIndex];
+    const productId = selectedProdOption.value;
+    if (!productId) return;
 
-    const productField           = document.getElementById(idOfProductField);    
-    const nomenclature_sizeField = document.getElementById(idOfNomenclatureSizeField);
-    const weightField            = document.getElementById(idOfWeightField);
-    const sizeField              = document.getElementById(idOfSizeField);
-    const quantityField          = document.getElementById(idOfQuantityField);
-    const priceField             = document.getElementById(idOfPriceField);
-    const sumField               = document.getElementById(idOfSumField);
+    const selectedSizeOption = nomenclature_sizeField.options[nomenclature_sizeField.selectedIndex];
+    const selectedSize = selectedSizeOption.textContent;
 
     if (partsOfId[partsOfId.length-1] === 'product') {
-
-        const productFieldNodes = productField.childNodes;
-        for (var j=0; j<productFieldNodes.length; j++) {
-            if (productFieldNodes[j].selected) break;
-        }
-        const productId = productFieldNodes[j].value;
-        if (!productId) return;
-
         productStocksAndCosts(productId)
             .then((data) => {
                 nomenclature_sizeField.innerHTML = '';
-                addSize(nomenclature_sizeField, 0, '--');
+                addSize(nomenclature_sizeField, '', '--');
 
                 const itemParams = getItemParams(data, productId);
+                console.log(itemParams);
                 const price = getPrice(
                     itemParams.currentPrice, itemParams.maxPrice, itemParams.currentDiscount, itemParams.weight
                 );
                 if (itemParams.weight) weightField.value = (itemParams.weight * quantityField.value).toFixed(2);
-                if (itemParams.size) {
-                    sizeField.value   = itemParams.size;
-                    const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
-                    const stock_and_cost = stocks_and_costs.filter(el => el['fields'].product == productId);
-                    stock_and_cost.filter(el => el['fields'].size).forEach((item) => {
-                        addSize(
-                            nomenclature_sizeField, item['fields'].size, item['fields'].size,
-                            (item['fields'].size == itemParams.size), item
-                        );
-                    });
-                }
+                itemParams.sizes.forEach((item) => {
+                    addSize(
+                        nomenclature_sizeField, item.size, item.size,
+                        (item.size === (itemParams.size) ? itemParams.size : ''), item.stock_and_cost
+                    );    
+                });
+                Array.from(unitField.options).forEach((unitOption) => {
+                    if (unitOption.value == itemParams.unit) unitOption.setAttribute('selected', true);
+                });
                 priceField.value = price.clientPrice;
                 sumField.value = (parseFloat(quantityField.value) * price.clientPrice).toFixed(2);
             })
@@ -137,59 +148,24 @@ const updateOrderItem = (element) => {
                 alert('Ошибка заполнения номенклатуры в строке заказа: ' + error);
             });
     }
-    else if (partsOfId[partsOfId.length-1] === 'size') {
-        const productFieldNodes = productField.childNodes;
-        for (var j=0; j<productFieldNodes.length; j++) {
-            if (productFieldNodes[j].selected) break;
-        }
-        const productId = productFieldNodes[j].value;
-        if (!productId) return;
-
-        const nomenclature_sizeFieldNodes = nomenclature_sizeField.childNodes;
-        for (var i=0; i<nomenclature_sizeFieldNodes.length; i++) {
-            if (nomenclature_sizeFieldNodes[i].selected) break;
-        }
-        const selectedSize = nomenclature_sizeFieldNodes[i].value;
-
+    else if (['nomenclature_size', 'size'].indexOf(partsOfId[partsOfId.length - 1]) >= 0) {
+        console.log('selectedSize ', selectedSize);
         productStocksAndCosts(productId, selectedSize)
             .then((data) => {
                 const itemParams = getItemParams(data, productId);
+                console.log(itemParams);
                 const price = getPrice(
                     itemParams.currentPrice, itemParams.maxPrice, itemParams.currentDiscount, itemParams.weight
                 );
                 if (itemParams.weight) weightField.value = (itemParams.weight * quantityField.value).toFixed(2);
-                if (itemParams.size)   sizeField.value   = itemParams.size;
                 priceField.value = price.clientPrice;
-                sumField.value = (parseFloat(quantityField.value) * price.clientPrice).toFixed(2);                
-            })
-            .catch((error) => {
-                alert('Ошибка заполнения размеров в строке заказа: ' + error);
-            });
-    }
-    else if (partsOfId[partsOfId.length-1] === 'nomenclature_size') {
-        const productFieldNodes = productField.childNodes;
-        for (var j=0; j<productFieldNodes.length; j++) {
-            if (productFieldNodes[j].selected) break;
-        }
-        const productId = productFieldNodes[j].value;
-        if (!productId) return;
-
-        const nomenclature_sizeFieldNodes = nomenclature_sizeField.childNodes;
-        for (var i=0; i<nomenclature_sizeFieldNodes.length; i++) {
-            if (nomenclature_sizeFieldNodes[i].selected) break;
-        }
-        const selectedSize = nomenclature_sizeFieldNodes[i].value;
-
-        productStocksAndCosts(productId, selectedSize)
-            .then((data) => {
-                const itemParams = getItemParams(data, productId);
-                const price = getPrice(
-                    itemParams.currentPrice, itemParams.maxPrice, itemParams.currentDiscount, itemParams.weight
-                );
-                if (itemParams.weight) weightField.value = (itemParams.weight * quantityField.value).toFixed(2);
-                if (itemParams.size)   sizeField.value   = itemParams.size;
-                priceField.value = price.clientPrice;
-                sumField.value = (parseFloat(quantityField.value) * price.clientPrice).toFixed(2);                
+                sumField.value = (parseFloat(quantityField.value) * price.clientPrice).toFixed(2);
+                if (itemParams.size) {
+                    const selectedSizeId = sizeField.options[sizeField.selectedIndex].value;
+                    if (selectedSizeId !== itemParams.size[itemParams.size.length-1]) {
+                        sizeField.innerHTML = `<option value="${itemParams.size[itemParams.size.length-1]}" selected="">${itemParams.size[0]}</option>`;
+                    }    
+                }  
             })
             .catch((error) => {
                 alert('Ошибка заполнения размеров в строке заказа: ' + error);
@@ -197,20 +173,6 @@ const updateOrderItem = (element) => {
     }
     else if (partsOfId[partsOfId.length-1] === 'quantity') {
         sumField.value = (parseFloat(priceField.value) * parseFloat(element.value)).toFixed(2);
-
-        const productFieldNodes = productField.childNodes;
-        for (var j=0; j<productFieldNodes.length; j++) {
-            if (productFieldNodes[j].selected) break;
-        }
-        const productId = productFieldNodes[j].value;
-        if (!productId) return;
-
-        const nomenclature_sizeFieldNodes = nomenclature_sizeField.childNodes;
-        for (var i=0; i<nomenclature_sizeFieldNodes.length; i++) {
-            if (nomenclature_sizeFieldNodes[i].selected) break;
-        }
-        const selectedSize = nomenclature_sizeFieldNodes[i].value;
-
         productStocksAndCosts(productId, selectedSize)
             .then((data) => {
                 const itemParams = getItemParams(data, productId);
@@ -505,6 +467,19 @@ export function updateOrder() {
         element.appendChild(newOption);
     }
 
+    const removeUnselectedOptions = (parentElement, selector) => {
+        const field = parentElement.querySelector(selector);
+        const fieldOptions = field.childNodes;
+        for (var i=0; i<fieldOptions.length; i++) {
+            if (fieldOptions[i].selected) break;
+        }
+        const dataOfSelectedOption = {
+            'value': fieldOptions[i].value, 'text': fieldOptions[i].textContent
+        };
+        field.innerHTML = fieldOptions[i].outerHTML;
+        return dataOfSelectedOption;
+    }
+
     if (document.location.pathname.indexOf("/orders/order/") === -1) {
         return;
     }
@@ -520,44 +495,42 @@ export function updateOrder() {
 
             const orderItems = document.getElementsByClassName('order-product-item');
             for (var i=0; i<orderItems.length; i++) {
-                const currentSize = orderItems[i].querySelector(`#id_items-${i}-size`).value;
+                
+                //очищаем элементы со списком выбора
+                const nomenclatureElement         = orderItems[i].querySelector(`#id_items-${i}-nomenclature`);
+                const nomenclatureSizeElement     = orderItems[i].querySelector(`#id_items-${i}-nomenclature_size`);
+                nomenclatureElement.innerHTML     = '';
+                nomenclatureSizeElement.innerHTML = '';
 
-                const nomenclature_Field = orderItems[i].querySelector(`#id_items-${i}-nomenclature`);
-                const nomenclature_sizeField = orderItems[i].querySelector(`#id_items-${i}-nomenclature_size`);
-                nomenclature_Field.innerHTML = '' ; nomenclature_sizeField.innerHTML = '';
-
-                addSize(nomenclature_sizeField, 0, '--', (!currentSize));
-
-                const productField = orderItems[i].querySelector(`#id_items-${i}-product`);
-                const productFieldNodes = productField.childNodes;
-                for (var j=0; j<productFieldNodes.length; j++) {
-                    if (productFieldNodes[j].selected) break;
+                //находим выбранную номенклатуру и заполяем ее на экране, остальное удаляем
+                const selectedProduct = removeUnselectedOptions(orderItems[i], `#id_items-${i}-product`);
+                if (selectedProduct) {
+                    nomenclatureElement.value = selectedProduct.text;
+                    nomenclatureElement.setAttribute('data-json', JSON.stringify(
+                        products.find(el => el['pk'] == selectedProduct.value)
+                    ));
                 }
-                const productId = productFieldNodes[j].value;
-                const productName = productFieldNodes[j].textContent;
-                productField.innerHTML = productFieldNodes[j].outerHTML;
 
-                if (!productId) continue;
-                nomenclature_Field.value = productName;
-                nomenclature_Field.setAttribute('data-json', JSON.stringify(
-                    products.find(el => el['pk'] == productId)
-                ));
-
+                //находим выбранный размер, и выводим все размеры на экран
+                // const itemSizeValue = orderItems[i].querySelector(`#id_items-${i}-size`).value;
+                const selectedSize    = removeUnselectedOptions(orderItems[i], `#id_items-${i}-size`);
+                //добавляем пустой размер по умолчанию
+                addSize(nomenclatureSizeElement,  '', '--', (!selectedSize.value));
+                //добавляем доступные размеры
                 const foundStocksAndCosts = stocks_and_costs.filter(
-                    el => el['fields'].product == productId && el['fields'].size
+                    el => el['fields'].product == selectedProduct.value && el['fields'].size
                 );
                 foundStocksAndCosts.forEach((item) => {
+                    const size = item['fields'].size.find(_ => true);
                     addSize(
-                        nomenclature_sizeField,
-                        item['fields'].size,
-                        item['fields'].size,
-                        (currentSize == item['fields'].size),
+                        nomenclatureSizeElement,
+                        size,
+                        size,
+                        (selectedSize.text == size),
                         item
                     );
                 })
-
             }
-
         })
         .catch((error) => {
             alert('Ошибка: ' + error);
@@ -586,22 +559,23 @@ function orderEvents() {
 
     });
 
-    const orderFieldNomenclature = document.getElementsByClassName('order__field__nomenclature');
-    for (var i = 0; i < orderFieldNomenclature.length; i++) {
-        autocomplete(orderFieldNomenclature[i]);
+    const nomenclatureElements = document.querySelectorAll('.order__field__nomenclature');
+    for (var i = 0; i < nomenclatureElements.length; i++) {
+        autocomplete(nomenclatureElements[i]);
     }
 
-    const orderFieldNomenclatureSize = document.getElementsByClassName('order__field__nomenclature_size');
-    for (var i = 0; i < orderFieldNomenclatureSize.length; i++) {
-        orderFieldNomenclatureSize[i].addEventListener('change', (event) => {
-
-            const orderItems = document.getElementsByClassName('order-product-item');
-            for (var i=0; i<orderItems.length; i++) {
-                if (orderItems[i].contains(event.target)) {
-                    const sizeField = orderItems[i].querySelector(`input[name="items-${i}-size"]`);
-                    sizeField.value = event.target.value;
+    const nomenclatureSizeElements = document.querySelectorAll('.order__field__nomenclature_size');
+    for (var i = 0; i < nomenclatureSizeElements.length; i++) {
+        nomenclatureSizeElements[i].addEventListener('change', (event) => {
+            const orderItems = document.querySelectorAll('.order-product-item');
+            for (var j=0; j<orderItems.length; j++) {
+                if (orderItems[j].contains(event.target)) {
+                    const sizeField = orderItems[j].querySelector(`select[name="items-${j}-size"]`);
+                    // const selectedOption = event.target.options[event.target.selectedIndex];
+                    // if (!selectedOption) continue;
+                    // selectedOption.selected = true;
                     updateOrderItem(sizeField);
-                    break;  
+                    break;
                 }
             }
         });
