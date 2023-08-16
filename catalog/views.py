@@ -96,7 +96,6 @@ class ProductView(ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-
         paginator = Paginator(context['products'], self.paginate_by)
         page = self.request.GET.get('page')
 
@@ -108,7 +107,6 @@ class ProductView(ListView):
             products_page = paginator.page(paginator.num_pages)
 
         collections = Collection.objects.all().annotate(group_name=F('group__name')).values('id', 'name', 'group_name')
-
         context['products']    = products_page
         context['brands']      = serialize("json", PriorityDirection.objects.all())
         context['collections'] = json.dumps(list(collections), ensure_ascii=False)

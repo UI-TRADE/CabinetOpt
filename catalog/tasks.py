@@ -2,12 +2,21 @@ import io
 import base64
 from contextlib import suppress
 from django.db import transaction
+from django.db.models import Q
 from django.core.files.images import ImageFile
 from django.core.exceptions import ValidationError
 
 from clients.models import Client, PriorityDirection
 from catalog.models import (
-    Product, ProductImage, Collection, StockAndCost
+    Product,
+    ProductImage,
+    CollectionGroup,
+    Collection,
+    StockAndCost,
+    Size,
+    GemSet,
+    PreciousStone,
+    CutType
 )
 from catalog.models import PriceType, Price
 
@@ -18,7 +27,7 @@ def run_uploading_products(uploading_products):
         try:
             with transaction.atomic():
                 identifier_1C = item['nomenclature']['Идентификатор']
-                Product.objects.update_or_create(
+                product, _ = Product.objects.update_or_create(
                     identifier_1C=identifier_1C,
                     defaults = {
                         'name'              : item['nomenclature']['Наименование'],
@@ -36,7 +45,31 @@ def run_uploading_products(uploading_products):
                         'identifier_1C'      : identifier_1C
                 })
 
-        except ValueError as error:
+                if item.get('gem_sets'):
+                    for gem_set in item['gem_sets']:
+                        filter_kwargs = {'product': product}
+                        precious_stone = update_or_create_precious_stone(gem_set['precious_stone'])
+                        if precious_stone:
+                            filter_kwargs['precious_stone'] = precious_stone    
+                        cut_type = update_or_create_cut_type(gem_set['cut_type'])
+                        if cut_type:
+                            filter_kwargs['cut_type'] = cut_type
+                        if gem_set['color']:
+                            filter_kwargs['color'] = gem_set['color']
+                        if gem_set['weight']:
+                            filter_kwargs['weight'] = gem_set['weight']
+                        if gem_set['quantity']:
+                            filter_kwargs['quantity'] = gem_set['quantity']
+                        GemSet.objects.update_or_create(
+                            **filter_kwargs,
+                            defaults = {
+                                'order'           : gem_set['order'],
+                                'description'     : gem_set['description'],
+                                'comment'         : gem_set['comment']
+                            }
+                        )  
+
+        except (KeyError, ValueError, Collection.DoesNotExist, PreciousStone.DoesNotExist) as error:
             transaction.rollback()
             errors.append(item | {"error": str(error)})
             continue
@@ -48,26 +81,18 @@ def run_uploading_products(uploading_products):
     return errors
 
 
+def update_or_create_collection_group(group):
+    if not group:
+        return
+    
+    group_obj, _ = CollectionGroup.objects.update_or_create(name=group)
+    return group_obj
+
+
 def update_or_create_brand(brand):
     if not brand:
         return
-
-    identifier_1C = brand['Идентификатор']
-    if identifier_1C == '00000000-0000-0000-0000-000000000000':
-        return
-    
-    if brand['Удален']:
-        with suppress(PriorityDirection.DoesNotExist):
-            found_brand = PriorityDirection.objects.get(identifier_1C=identifier_1C)
-            found_brand.delete()
-        return
-
-    brand_obj, _ = PriorityDirection.objects.update_or_create(
-        identifier_1C=identifier_1C,
-        defaults={
-            'name': brand['Наименование'],
-            'identifier_1C': identifier_1C
-    })
+    brand_obj, _ = PriorityDirection.objects.update_or_create(name=brand)
     return brand_obj
 
 
@@ -80,19 +105,50 @@ def update_or_create_collection(collection):
         return
     
     if collection['Удален']:
-        with suppress(Collection.DoesNotExist):
-            found_collecion = Collection.objects.get(identifier_1C=identifier_1C)
-            found_collecion.delete()
+        found_collecion = Collection.objects.get(identifier_1C=identifier_1C)
+        found_collecion.delete()
         return
     
     collection_obj, _ = Collection.objects.update_or_create(
         identifier_1C=identifier_1C,
         defaults={
             'name': collection['Наименование'],
+            'group': update_or_create_collection_group(collection['group']),
             'identifier_1C': identifier_1C
     })
 
     return collection_obj
+
+
+def update_or_create_precious_stone(precious_stone):
+    if not precious_stone:
+        return
+
+    identifier_1C = precious_stone['Идентификатор']
+    if identifier_1C == '00000000-0000-0000-0000-000000000000':
+        return
+    
+    if precious_stone['Удален']:
+        found_precious_stone = PreciousStone.objects.get(identifier_1C=identifier_1C)
+        found_precious_stone.delete()
+        return
+    
+    precious_stone_obj, _ = PreciousStone.objects.update_or_create(
+        identifier_1C=identifier_1C,
+        defaults={
+            'name': precious_stone['Наименование'],
+            'identifier_1C': identifier_1C
+    })
+
+    return precious_stone_obj
+
+
+def update_or_create_cut_type(cut_type):
+    if not cut_type:
+        return
+    
+    cut_type_obj, _ = CutType.objects.update_or_create(name=cut_type)
+    return cut_type_obj
 
 
 def run_uploading_images(uploading_images):
@@ -120,23 +176,28 @@ def run_uploading_price(uploading_price):
         try:
             with transaction.atomic():
                 price_type = PriceType.objects.get(name='Базовая')
-                if item['client']:
-                    if item['client'] == 'Выгода':
+                with suppress(KeyError):
+                    if item['price_type']['Наименование'] == 'Выгода':
                         price_type = PriceType.objects.get(name='Выгода')
                     else:
-                        price_type = update_or_create_price_type(item['client'])
+                        price_type = update_or_create_price_type(item['price_type'])
                 if not price_type:
                     raise ValidationError('error create price type')
-                Price.objects.create(
-                    type = price_type,
-                    product = Product.objects.get(
+                filter_kwargs = {
+                    'type': price_type,
+                    'product': Product.objects.get(
                         identifier_1C=item['nomenclature']['Идентификатор']
                     ),
-                    unit = item['unit'],
-                    price = item['price'],
-                )
+                    'unit': item['unit']
+                }
+                Price.objects.update_or_create(**filter_kwargs, defaults={'price': item['price']})
 
-        except ValueError as error:
+ 
+        except (
+            ValueError,
+            Client.DoesNotExist,
+            PriceType.DoesNotExist
+        ) as error:
             transaction.rollback()
             errors.append(item | {"error": str(error)})
             continue
@@ -162,22 +223,17 @@ def update_or_create_price_type(client):
     identifier_1C = client['Идентификатор']
     if identifier_1C == '00000000-0000-0000-0000-000000000000':
         return
+    
+    found_client = Client.objects.filter(
+        Q(inn__exact=client['ИНН'])|Q(name__icontains=client['Наименование'])
+    ).first()
 
-    with suppress(Client.DoesNotExist):
-        inn = client.get('ИНН', '')
-        if inn:
-            found_client = Client.objects.get(inn=inn)
-        else:
-            found_client = Client.objects.get(name=client['Наименование'])
+    if not found_client:
+        raise Client.DoesNotExist
 
-        price_type, _ = PriceType.objects.get_or_create(
-            client = found_client,
-            name = client['Наименование'],
-            defaults = {
-                'name': client['Наименование'],
-                'client': found_client
-        })
-        return price_type
+    filter_kwargs = {'client': found_client, 'name': client['Наименование']}
+    price_type, _ = PriceType.objects.get_or_create(**filter_kwargs)
+    return price_type
 
 
 def run_uploading_stock_and_costs(stock_and_costs):
@@ -187,17 +243,29 @@ def run_uploading_stock_and_costs(stock_and_costs):
             with transaction.atomic():
                 identifier_1C = item['nomenclature']['Идентификатор']
                 product = Product.objects.get(identifier_1C=identifier_1C)
-                StockAndCost.objects.update_or_create(
-                    product=product,
-                    size=item['size'],
+                filter_kwargs = {'product': product}
+                if item['size']:
+                    defaults = {}
+                    if item['size']['диапазон_от']:
+                        defaults['size_from'] = item['size']['диапазон_от']
+                        defaults['size_to']   = item['size']['диапазон_от']
+                        if item['size']['диапазон_до']:
+                            defaults['size_to'] = item['size']['диапазон_до']
+                    size, _ = Size.objects.get_or_create(
+                        name=item['size']['Наименование'],
+                        defaults=defaults
+                    )
+                    filter_kwargs['size'] = size
+                result, _ = StockAndCost.objects.update_or_create(
+                    **filter_kwargs,
                     defaults = {
                         'weight': item['weight'],
-                        'stock' : item['stock'],
-                        'cost'  : item['price_per_gr']
+                        'stock' : item['stock']
                     }
                 )
+                print(result)
 
-        except ValueError as error:
+        except (KeyError, ValueError) as error:
             transaction.rollback()
             errors.append(item | {"error": str(error)})
             continue

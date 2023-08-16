@@ -411,6 +411,9 @@ class Price(models.Model):
 class PreciousStone(models.Model):
     name = models.CharField('Наименование', max_length=100, db_index=True)
     short_title = models.CharField('Краткое наименование', max_length=10, blank=True)
+    identifier_1C = models.CharField(
+        'Идентификатор 1С', max_length=50, blank=True, db_index=True
+    )
 
     class Meta:
         verbose_name = 'Камень'
