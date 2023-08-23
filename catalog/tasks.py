@@ -263,7 +263,6 @@ def run_uploading_stock_and_costs(stock_and_costs):
                         'stock' : item['stock']
                     }
                 )
-                print(result)
 
         except (KeyError, ValueError) as error:
             transaction.rollback()

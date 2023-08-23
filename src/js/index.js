@@ -1,11 +1,15 @@
+import 'bootstrap/dist/css/bootstrap.min.css';
+import generateUUID from './lib';
 import mainMenuEvents from './main_menu';
-import showModalForm from './form';
+import showModalForm, {switchModalForm} from './form';
 import updateContactView from './contact';
 import updateCartView, {cartViewEvents} from './cart';
 import initProductFilters, {catalogEvents} from './catalog_filters';
 import updateProductCard from './catalog_card';
 import ordersEvents from './orders';
 import orderEvents, {updateOrder} from './order';
+
+import 'bootstrap';
 
 
 const addEvents = () => {
@@ -58,9 +62,12 @@ $(window).on("load", () => {
 
 
 $(document).ready(() => {
+
     // login
-    showModalForm('loginForm'); 
-    showModalForm('regRequestForm');
+    const mainAuthForm = 'registration-form';
+    showModalForm(mainAuthForm, generateUUID());
+    switchModalForm('entry', mainAuthForm, generateUUID());
+    switchModalForm('register', mainAuthForm, generateUUID());
 
     // file selection
     showModalForm('fileSelectionForm');
@@ -80,4 +87,6 @@ $(document).ready(() => {
     addEvents();
 })
 
+import '../css/main.css';
+import '../css/autocomplete.css';
 import '../css/index.css';

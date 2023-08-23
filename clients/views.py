@@ -1,4 +1,5 @@
-from django.views import View
+import json
+
 from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import (
@@ -6,8 +7,9 @@ from django.shortcuts import (
 )
 from django.urls import reverse_lazy
 from django.views.generic import ListView, UpdateView, CreateView
+from contextlib import suppress
 
-from .login import Login
+from .login import Login, AuthenticationError
 
 from .forms import (
     RegForm,
@@ -23,34 +25,39 @@ from .models import (
 )
 
 
-class LoginFormView(View):
-
-    def get(self, request):
+def login(request):
+    if request.method != 'POST':
         form = LoginForm()
-        return render(request, 'forms/client_login.html', {'form': form})
- 
-    def post(self, request):
-        login = Login(request)
-        form = LoginForm(request.POST)
-        if not form.is_valid():
-            return JsonResponse({'errors': form.errors.as_json()})
-
+        return render(request, 'forms/auth.html', {'form': form})
+    
+    login = Login(request)
+    form = LoginForm(request.POST)
+    if not form.is_valid():
+        return JsonResponse({'errors': form.errors.as_json()})
+    
+    with suppress(AuthenticationError):
         login.auth(**form.cleaned_data)
         return redirect("start_page")
 
+    return JsonResponse(
+        {'errors': json.dumps(
+            {'login': [{'message': 'Неверный логин или пароль'},]}
+        )}
+    )
+
 
 def register(request):
-
     if request.method != 'POST':
         form = RegForm()
-        return render(request, 'forms/reg_order.html', {'form': form})
+        return render(request, 'forms/sign-in.html', {'form': form})
 
     form = RegForm(request.POST)
     if not form.is_valid():
         return JsonResponse({'errors': form.errors.as_json()})
         
     RegistrationOrder.objects.get_or_create(
-        inn=form.cleaned_data['inn'], defaults=form.cleaned_data,
+        identification_number=form.cleaned_data['identification_number'],
+        defaults=form.cleaned_data,
     )
 
     return redirect("start_page")

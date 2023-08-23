@@ -1,0 +1,100 @@
+{% load static %}
+{% load client_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет ЮЛ</title>
+
+    <link rel="icon" href="{% static 'icon.png' %}" type="image/x-icon">
+    <link rel="stylesheet" href="{% static '/font-awesome/css/font-awesome.min.css' %}">
+
+    <style>
+        .main-background {
+            background: url('{% static "img/login-background.png" %}'), lightgray 50% / cover no-repeat;
+        }
+    </style>
+</head>
+<body>
+    <script src="{% static 'main.js' %}"></script>
+
+    {% if not request.session.login %}
+        <nav class="d-xl-flex justify-content-xl-center navbar navbar-light navbar-expand-md" id="login-menu">
+            <a class="text-nowrap text-white">Розничные продажи</a>
+            <div class="login-area">
+                <span class="login-icons">
+                    <a data-toggle="modal" data-target="#registration-form" data-url="{% url 'clients:reg_request' %}">
+                        <img class="sign-in-icon" src="{% static 'img/sign-in.svg' %}">
+                    </a>
+                </span>
+            </div>
+        </nav>
+
+        <div id="main" class="main-background"></div>
+    {% else %}
+        <nav class="d-lg-flex justify-content-lg-start navbar navbar-dark navbar-expand-lg" id="main-menu">
+            <div id="brand-container"></div>
+            <button class="navbar-toggler navbar-custom-pos" data-toggle="collapse" data-target="#menu-collapse">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div id="menu-collapse" class="collapse navbar-collapse menu-collapsed">
+                <ul class="navbar-nav">
+                    <li class="d-lg-flex align-items-lg-center nav-item">
+                        <a class="text-nowrap text-white d-md-flex align-items-md-center main-menu-item" id="link-retail-sales" href="{% url 'orders:orders' %}">
+                            Розничные продажи
+                        </a>    
+                    </li>
+                    <li class="d-lg-flex align-items-lg-center nav-item">
+                        <a class="text-nowrap text-center text-white d-lg-flex justify-content-lg-center align-items-lg-center main-menu-item" id="link-products" href="{% url 'catalog:products' %}" style="width: 88px;">
+                            Каталог
+                        </a>
+                    </li>
+                    <li class="d-lg-flex align-items-lg-center nav-item">
+                        <a class="text-nowrap text-center text-white d-lg-flex justify-content-lg-center align-items-lg-center main-menu-item" id="link-managers" href="{% url 'clients:manager' %}" style="width: 114px;">
+                            Менеджеры
+                        </a>
+                    </li>
+                    <li class="d-lg-flex align-items-lg-center nav-item">
+                        <a class="text-nowrap text-center text-white d-lg-flex justify-content-lg-center align-items-lg-center main-menu-item" id="link-orders" href="{% url 'orders:orders' %}">
+                            Заказы
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="d-flex align-items-center row" id="main-menu-info">
+                <a class="text-nowrap text-center text-white d-flex justify-content-center align-items-center main-menu-item" id="link-client" href="{% url 'clients:logout' %}">
+                    <p id="login-info">{{ request.session|login_info }}</p>
+                </a>
+                <img class="d-flex align-items-center main-menu-item" id="main-menu-hart" src="{% static 'img/hart.svg' %}">
+                <a class="d-flex align-items-center main-menu-item" id="link-cart" href="{% url 'cart:cart_detail' %}">
+                    <img class="d-flex" id="main-menu-cart" src="{% static 'img/cart.svg' %}">
+                </a>
+                <div id="cart-container">
+                    {% with total_items=cart|length %}
+                    {% if cart|length > 0 %}
+                    <div class="d-flex flex-nowrap justify-content-center align-items-end row" id="cart-info">
+                        <span class="d-sm-flex cart-total-sum">{{ cart.get_total_price }}</span>
+                        <span class="d-sm-flex cart-currency">₽</span>
+                        <span class="flex-nowrap cart-total-weight">/ {{ cart.get_total_weight }} гр</span>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+        </nav>
+
+        <div class="container-fluid">
+            {% block page %}
+                {% block content %}
+                {% endblock %}
+            {% endblock %}
+        </div>
+    {% endif %}
+
+    <div class="modal fade sign-in-form-layout" id="registration-form" tabindex="-1" data-backdrop="false" role="dialog" style="width: 440px;">
+    </div>
+
+</body>
+</html>

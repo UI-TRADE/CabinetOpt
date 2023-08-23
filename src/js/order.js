@@ -1,13 +1,5 @@
-import getPrice from './price'
-
-
-const generateUUID = () => {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = (Math.random() * 16) | 0;
-      const v = c === 'x' ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
-    });
-}
+import generateUUID from './lib';
+import getPrice from './price';
 
 
 const updateOrderItem = (element) => {
@@ -127,7 +119,6 @@ const updateOrderItem = (element) => {
                 addSize(nomenclature_sizeField, '', '--');
 
                 const itemParams = getItemParams(data, productId);
-                console.log(itemParams);
                 const price = getPrice(
                     itemParams.currentPrice, itemParams.maxPrice, itemParams.currentDiscount, itemParams.weight
                 );
@@ -149,11 +140,9 @@ const updateOrderItem = (element) => {
             });
     }
     else if (['nomenclature_size', 'size'].indexOf(partsOfId[partsOfId.length - 1]) >= 0) {
-        console.log('selectedSize ', selectedSize);
         productStocksAndCosts(productId, selectedSize)
             .then((data) => {
                 const itemParams = getItemParams(data, productId);
-                console.log(itemParams);
                 const price = getPrice(
                     itemParams.currentPrice, itemParams.maxPrice, itemParams.currentDiscount, itemParams.weight
                 );

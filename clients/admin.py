@@ -64,14 +64,16 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
     form = CustomRegOrderForm
     search_fields = [
         'name',
-        'inn',
+        'organization',
+        'identification_number',
         'email',
         'phone',
         'status',
     ]
     list_display = [
         'name',
-        'inn',
+        'organization',
+        'identification_number',
         'email',
         'phone',
         'status',
@@ -81,7 +83,8 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
     ]
     fields = [
         'status',
-        ('name', 'inn'),
+        'name',
+        ('organization', 'identification_number'),
         (
             'name_of_manager',
             'email',
@@ -93,8 +96,9 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
     list_filter = (RegistrationOrderFilter,)
 
     def check_registration(self, obj):
-        return obj.status == 'registered' and \
-            Client.objects.filter(registration_order=obj).exists()
+        if obj:
+            return obj.status == 'registered' and \
+                Client.objects.filter(registration_order=obj).exists()
 
     def get_readonly_fields(self, request, obj=None):
         if self.check_registration(obj):
@@ -144,7 +148,7 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
             )
             client = Client.objects.create(**{
                 'name'              : registration_order['name'],
-                'inn'               : registration_order['inn'],
+                'inn'               : registration_order['identification_number'],
                 'registration_order': obj,
                 'approved_by'       : request.user,
             })

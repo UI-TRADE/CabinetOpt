@@ -1,26 +1,20 @@
 
-const removeErrors = () => {
-    Array.from(
-        document.getElementsByClassName('errors')
-    ).forEach((item) => {
-        while (item.firstChild) {
-            item.removeChild(item.firstChild);
-        }
+const showErrors = (formId, errors) => {
+    const form = document.querySelector(`[id="${formId}"]`);
+    if (!form) return;
+    const invalidFields = form.querySelectorAll('.is-invalid');
+    invalidFields.forEach(item => {
+        item.classList.remove('is-invalid');
+        item.placeholder = '';    
     });
-}
-
-
-const showErrors = (errors) => {
-    removeErrors();
     $.each(JSON.parse(errors), (name, error) => {
-        error.forEach((item) => {
-            const newError = document.createElement('p');
-            newError.textContent = item['message'];
-            Array.from(
-                document.getElementsByClassName(`${name}-error`)
-            ).forEach((element) => {
-                element.appendChild(newError);
-            });
+        error.forEach(item => {
+            const invalidField = form.querySelector(`input[name=${name}]`);
+            if (invalidField) {
+                invalidField.classList.add('is-invalid');
+                invalidField.value = '';
+                invalidField.placeholder = item['message'];
+            }
         });
     });
 }
@@ -29,34 +23,7 @@ const showErrors = (errors) => {
 const updateModalForm = (formId) => {
     $(`#${formId}`).on('submit', (event) => {
         event.preventDefault();
-        $.ajax({
-            type: 'POST',
-            url: event.target.action,
-            data: $(`.${formId}`).serialize(),
-            success: (data) => {
-                if(data['errors']) {
-                    showErrors(data['errors']);
-                    data['errors'] = {}
-                } else {
-                    $('.modal').modal('hide');
-                    location.reload();
-                }
-            },
-            error: (response) => {
-                const errors = JSON.parse(response.responseText).errors;
-                showErrors(errors);
-            }
-        });
-    });
-}
-
-
-const updateFileSelectionForm = () => {
-    const formId = 'fileSelectionForm';
-    $(`#${formId}`).on('submit', (event) => {
-        event.preventDefault();
         const formData = new FormData(event.target);
-        
         $.ajax({
             type: 'POST',
             url: event.target.action,
@@ -65,35 +32,58 @@ const updateFileSelectionForm = () => {
             contentType: false,
             success: (data) => {
                 if(data['errors']) {
-                    showErrors(data['errors']);
+                    showErrors(formId, data['errors']);
                     data['errors'] = {}
                 } else {
                     $('.modal').modal('hide');
                     location.reload();
                 }
             },
-            error: (response) => {
-                const errors = JSON.parse(response.responseText).errors;
-                showErrors(errors);
+            error: (error) => {
+                alert('Ошибка обновления формы: ' + error);
             }
         });
     });
 }
 
 
-function showModalForm(formId) {
-    $(`#${formId}`).on('shown.bs.modal', (event) => {
+const renderModalForm = (data, targetId, submitFormId) => {
+    const reloadHtml = new DOMParser().parseFromString(data, 'text/html');
+    const currentForm = reloadHtml.querySelector('form');
+    currentForm.id = submitFormId;
+    $(`#${targetId}`).html(currentForm.outerHTML);
+}
+
+
+export function switchModalForm(idFrom, idTo, submitFormId) {
+    $(document).on('click', `#${idFrom}` , event =>{
         $.ajax({
-            url: event.relatedTarget.getAttribute('data-url'),
+            url: event.currentTarget.getAttribute('data-url'),
             success: (data) => {
-                $(`#${formId}`).html(data);
+                renderModalForm(data, idTo, submitFormId);
+                updateModalForm((submitFormId) ? submitFormId : idTo);
             },
             error: (xhr, status, error) => {
-                alert('Ошибка: ' + error);
+                alert('Ошибка переключения формы: ' + error);
             }
         });
     });
-    (formId == 'fileSelectionForm') ? updateFileSelectionForm() : updateModalForm(formId); 
+}
+
+
+function showModalForm(formId, submitFormId) {
+    $(document).on('show.bs.modal',`#${formId}`, (event) => {
+        $.ajax({
+            url: event.relatedTarget.getAttribute('data-url'),
+            success: (data) => {
+                renderModalForm(data, formId, submitFormId);
+                updateModalForm((submitFormId) ? submitFormId : formId);
+            },
+            error: (xhr, status, error) => {
+                alert('Ошибка открытия формы: ' + error);
+            }
+        });
+    });
 }
 
 

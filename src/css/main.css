@@ -1,0 +1,463 @@
+@font-face {
+    font-family: "Open Sans";
+    font-weight: light;
+    font-style: normal;
+  
+    src: local("OpenSans-Light"),
+         url("../fonts/OpenSans-Light.ttf") format("truetype");
+  
+}
+@font-face {
+    font-family: "Open Sans";
+    font-weight: light;
+    font-style: italic;
+  
+    src: local("OpenSans-LightItalic"),
+         url("../fonts/OpenSans-LightItalic.ttf") format("truetype");
+  
+}
+@font-face {
+    font-family: "Open Sans";
+    font-weight: normal;
+    font-style: italic;
+  
+    src: local("OpenSans-Italic"),
+         url("../fonts/OpenSans-Italic.ttf") format("truetype");
+  
+}
+@font-face {
+    font-family: "Open Sans";
+    font-weight: normal;
+    font-style: normal;
+  
+    src: local("OpenSans-Regular"),
+         url("../fonts/OpenSans-Regular.ttf") format("truetype");
+  
+}
+@font-face {
+    font-family: "Open Sans";
+    font-weight: normal;
+    font-style: italic;
+  
+    src: local("OpenSans-Italic"),
+         url("../fonts/OpenSans-Italic.ttf") format("truetype");
+  
+}
+@font-face {
+    font-family: "Open Sans";
+    font-weight: SemiBold;
+    font-style: normal;
+
+    src: local("OpenSans-Bold"),
+            url("../fonts/OpenSans-Bold.ttf") format("truetype");
+
+}
+@font-face {
+    font-family: "Open Sans";
+    font-weight: SemiBold;
+    font-style: italic;
+
+    src: local("OpenSans-BoldItalic"),
+            url("../fonts/OpenSans-SemiBoldItalic.ttf") format("truetype");
+
+}
+@font-face {
+    font-family: "Open Sans";
+    font-weight: bold;
+    font-style: normal;
+
+    src: local("OpenSans-Bold"),
+            url("../fonts/OpenSans-Bold.ttf") format("truetype");
+
+}
+@font-face {
+    font-family: "Open Sans";
+    font-weight: bold;
+    font-style: italic;
+
+    src: local("OpenSans-BoldItalic"),
+            url("../fonts/OpenSans-BoldItalic.ttf") format("truetype");
+
+}
+
+body {
+    background-color: #fafbf6!important;
+}
+
+#main {
+    width: 1440px;
+    height: 977px;
+    flex-shrink: 0;
+    background-size: cover;
+}
+
+.main {
+    width: 1440px;
+    height: 977px;
+    flex-shrink: 0;
+    background-color: #d8d9d5;
+}
+
+#main-menu{
+    margin-bottom: 20px;
+}
+
+#main-menu, #login-menu {
+    height: 64px;
+    background: #242A35;
+}
+
+.registration-form {
+    width: 440px;
+    height: 722px;
+    flex-shrink: 0;
+    border-radius: 15px;
+    background: #FFF;
+    padding-top: 43px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.login-form {
+    width: 440px;
+    height: 281px;
+    flex-shrink: 0;
+    border-radius: 15px;
+    background: #FFF;
+    padding-top: 15px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.registration-form-item {
+    margin-bottom: 13px;
+}
+
+.sign-in-form-item {
+    margin-bottom: 7px;
+    position: relative;
+}
+
+.registration-form-item:last-child {
+    margin-bottom: 0px;
+}
+
+.sign-in-form-item:last-child {
+    margin-bottom: 0px;
+}
+
+.title-registration-form {
+    display: flex;
+    width: 367px;
+    height: 30px;
+    flex-direction: column;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.title-registration-form #title-part-1 {
+    color: #010202;
+    text-align: center;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    padding-right: 10px;
+}
+
+.title-registration-form #title-part-2 {
+    color: #ADADAA;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.title-registration-form #title-part-2 a {
+    color: #ADADAA;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.default-input {
+    border-radius: 15px!important;
+    border: 1px solid #D9D9D9!important;
+    background: #FFF;
+    box-shadow: 1px 2px 2px 0px rgba(0, 0, 0, 0.25) inset;
+}
+
+.title-registration-form .field-layout {
+    width: 342px;
+    height: 40px;
+    flex-shrink: 0;
+}
+
+.default-label {
+    color: #010202;
+    font-family: "Open Sans";
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    padding-left: 15px;
+}
+
+.title-registration-form label {
+    display: flex;
+    width: 102px;
+    height: 19px;
+    flex-direction: column;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+#registration-advertising-text {
+    display: flex;
+    width: 367px;
+    height: 131px;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+registration-confidential-text {
+    display: flex;
+    width: 367px;
+    height: 30px;
+    flex-direction: column;
+    flex-shrink: 0;
+    margin-bottom: 25px;
+}
+
+.registration-text {
+    color: #ADADAA;
+    font-family: "Open Sans";
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.registration-text-sm {
+    color: #ADADAA;
+    font-family: "Open Sans";
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.btn-send-order, .btn-sign-in {
+    width: 213px;
+    height: 38px;
+    flex-shrink: 0;
+    border-radius: 5px;
+    background: #E3A358;
+    border-color: #E3A358;
+}
+
+.registration-form-btn {
+    margin-bottom: 8px;
+}
+
+#show-password {
+    position: absolute;
+    right: 13px;
+    bottom: 8px;
+    z-index: 3;
+}
+
+.sign-in-form-layout {
+    position: absolute!important;
+    top: 127px!important;
+    left: 500px!important;
+}
+
+
+.navbar-custom-pos {
+    position: absolute;
+    left: 10px;
+}
+
+
+#link-catalog {
+    color: #FFF;
+    font-family: "Open Sans";
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    text-align: center;
+}
+
+#brand-container {
+    padding-right: 400px;
+}
+
+@media (max-width: 1370px) {
+    #brand-container {
+        padding-right: 300px;
+    }
+}
+
+@media (max-width: 1275px) {
+    #brand-container {
+        padding-right: 200px;
+    }
+}
+
+
+@media (max-width: 1200px) {
+    #brand-container {
+        padding-right: 100px;
+    }
+}
+
+@media (max-width: 1070px) {
+    #brand-container {
+        padding-right: 50px;
+    }
+}
+
+@media (max-width: 1023px) {
+    #brand-container {
+        padding-right: 5px;
+    }
+}
+
+
+#link-retail-sales {
+    width: 202px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-right: 30px;
+}
+
+#link-managers {
+    width: 93px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-right: 4px;
+}
+
+#link-orders {
+    width: 76px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-right: 63px;
+}
+
+#link-products {
+    width: 76px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-right: 6px;
+}
+
+#login-info {
+    margin: 0px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: inherit;
+}
+
+#main-menu-info {
+    position: absolute;
+    right: 88px;
+}
+
+
+#link-client {
+    width: 138px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-right: 25px;
+}
+
+#main-menu-hart {
+    width: 23px;
+    height: 19px;
+    flex-shrink: 0;
+    stroke-width: 2px;
+    stroke: #FFF;
+    margin-right: 10px;
+}
+
+#link-cart {
+    width: 26px;
+    height: 24px;
+    flex-shrink: 0;
+    margin-bottom: 2px;
+    margin-right: 25px;
+}
+
+.login-area {
+    position: absolute;
+    right: 0;
+}
+
+.login-icons {
+    padding-right: 102px;
+}
+
+.sign-in-icon {
+    height: 32px;
+    width: 32px;
+    flex-shrink: 0;
+}
+
+.cart-total-sum {
+    color: #FFF;
+    text-align: center;
+    font-family: "Open Sans";
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    margin-right: 5px;
+}
+
+.cart-currency {
+    color: #FFF;
+    font-family: "Open Sans";
+    font-size: 15px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    margin-right: 5px;
+}
+
+.cart-total-weight {
+    color: #FFF;
+    font-family: "Open Sans";
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+#cart-info {
+    margin-bottom: 2px;
+}
+
+
+@media (max-width: 991px) {
+    .navbar .collapsing,
+    .navbar .show {
+        position: absolute;
+        top: 70px;
+        left: 6px;
+        z-index: 1;
+        background:#242A35 !important;
+        border-radius: 10px;
+    }
+}
+
+@media (max-width: 991px) {
+    .navbar .collapsing,
+    .navbar .show li{
+        padding: 2px 0px 2px 10px;
+    }
+}
+    

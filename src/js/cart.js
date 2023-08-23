@@ -20,12 +20,11 @@ function updateCartView(elementId) {
 
 
 const updateCartTitle = () => {
-    const selector = 'i[name="cart_title"]'
     $.ajax({
         url: location.href,
         success: (response) => {
             const reloadHtml = new DOMParser().parseFromString(response, 'text/html');
-            document.querySelector(selector).textContent = reloadHtml.querySelector(selector).textContent;
+            document.querySelector('#cart-container').innerHTML = reloadHtml.querySelector('#cart-info').outerHTML;
         },
         error: (error) => {
             alert('Ошибка обновления заголовка корзины: ' + error);

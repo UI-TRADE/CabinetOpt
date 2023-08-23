@@ -1,5 +1,6 @@
 const path = require('path');
 const copyWebpackPlugin = require('copy-webpack-plugin');
+const webpack = require("webpack");
 
 module.exports = {
     mode: 'development',
@@ -16,6 +17,17 @@ module.exports = {
                 use: ['style-loader', 'css-loader'],
             },
             {
+                test: /\.(png|jpe?g|gif|svg)$/i,
+                use: [
+                  {
+                    loader: 'file-loader',
+                    options: {
+                      name: '[name].[ext]'
+                    }
+                  },
+                ],
+            },
+            {
                 test: /\.js$/,
                 exclude: /node_modules/,
                 use: {
@@ -27,18 +39,6 @@ module.exports = {
                     }
                 }
             },
-            // {
-            //     test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-            //     use: [
-            //       {
-            //         loader: 'file-loader',
-            //         options: {
-            //             name: '[name].[ext]',
-            //             outputPath: 'fonts/'
-            //         }
-            //       }
-            //     ]
-            // }
         ],
     },
     devServer: {
@@ -52,8 +52,13 @@ module.exports = {
           patterns: [
             { from: './node_modules/font-awesome', to: './font-awesome' },
             { from: './src/fonts', to: './fonts' },
+            { from: './src/img', to: './img' },
             { from: './src/xlsx', to: '' }
           ],
+        }),
+        new webpack.ProvidePlugin({
+            $: require.resolve('jquery'),
+            jQuery: require.resolve('jquery')
         }),
     ],
 }

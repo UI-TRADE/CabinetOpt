@@ -18,8 +18,9 @@ class PriorityDirection(models.Model):
 
 
 class RegistrationOrder(models.Model):
-    name = models.CharField('Организация', max_length=150)
-    inn = models.CharField('ИНН', max_length=12, db_index=True)
+    name = models.CharField('Имя', max_length=150)
+    organization = models.CharField('Организация', max_length=150, db_index=True, default='')
+    identification_number = models.CharField('ИНН', max_length=12, db_index=True)
     name_of_manager = models.CharField('ФИО менеджера', max_length=150, blank=True)
     email = models.EmailField('email менеджера', db_index=True)
     phone = PhoneNumberField('Контактный телефон менеджера', db_index=True)
@@ -46,7 +47,7 @@ class RegistrationOrder(models.Model):
         verbose_name_plural = 'Заявки на регистрацию'
     
     def __str__(self):
-        return self.name
+        return self.organization
 
 
 class Manager(models.Model):

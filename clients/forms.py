@@ -50,33 +50,41 @@ class CustomRegOrderForm(forms.ModelForm):
 
 
 class RegForm(forms.ModelForm):
-    inn = forms.CharField(validators = [])
 
     class Meta:
         model = RegistrationOrder
-        fields = ('name', 'inn', 'name_of_manager', 'email', 'phone', 'priority_direction')
+        fields = ('name', 'organization', 'identification_number', 'phone', 'email')
+        labels = {
+            'name'                  : 'Ваше имя',
+            'organization'          : 'Организация',
+            'identification_number' : 'ИНН',
+            'phone'                 : 'Номер телефона',
+            'email'                 : 'e-mail',
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields:
-            self.fields[field].widget.attrs['class'] = 'form-control'
+            self.fields[field].widget.attrs['class'] = 'form-control default-input reg-field-layout'
 
-    def clean_inn(self):
-        value = self.cleaned_data['inn']
-        if RegistrationOrder.objects.filter(inn=value).exists():
+    def clean_identification_number(self):
+        value = self.cleaned_data['identification_number']
+        if RegistrationOrder.objects.filter(identification_number=value).exists():
             raise ValidationError('Заявка на регистрацию с таким ИНН уже существует')
         return value
 
 
 class LoginForm(forms.Form):
     login = forms.CharField(
+        label='ИНН',
         widget=forms.TextInput(
-            attrs={'class': 'form-control', 'placeholder': 'ИНН / email'}
+            attrs={'class': 'form-control default-input reg-field-layout', 'placeholder': 'ИНН / email'}
         )
     )
     password = forms.CharField(
+        label='Пароль',
         widget=forms.PasswordInput(
-            attrs={'class': 'form-control', 'placeholder': 'Пароль'}
+            attrs={'class': 'form-control default-input reg-field-layout', 'placeholder': 'Пароль'}
         )
     )
     fields = ['login', 'password']
