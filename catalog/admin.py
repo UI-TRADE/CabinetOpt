@@ -14,7 +14,8 @@ from .models import (
     GemSet,
     ProductsSet,
     SimilarProducts,
-    Size
+    Size,
+    Gender
 )
 
 class ProductImageInLine(admin.TabularInline):
@@ -292,4 +293,9 @@ class SizeAdmin(admin.ModelAdmin):
             obj.name = f'{obj.size_from:g}-{obj.size_to:g}'
    
         obj.save()
-   
+
+
+@admin.register(Gender)
+class GenderAdmin(admin.ModelAdmin):
+    search_fields = ['name',]
+    fields = ['name',]

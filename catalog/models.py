@@ -46,6 +46,17 @@ class Collection(models.Model):
         return self.name
 
 
+class Gender(models.Model):
+    name = models.CharField('Гендер', max_length=100, db_index=True)
+
+    class Meta:
+        verbose_name = 'Гендер'
+        verbose_name_plural = 'Гендер'
+
+    def __str__(self):
+        return self.name
+
+
 class ProductQuerySet(models.QuerySet):
     
     def apply_filters(self, filters):
@@ -110,17 +121,15 @@ class Product(models.Model):
     metal = models.CharField('Металл', max_length=50, blank=True, db_index=True)
     metal_content = models.CharField('Проба', max_length=30, blank=True, db_index=True)
     color = models.CharField('Цвет', max_length=50, blank=True, db_index=True)
-    gender = models.CharField(
-        'Гендер',
-        max_length=10,
-        default='-',
+    gender = models.ForeignKey(
+        Gender,
+        null=True,
+        blank=True,
         db_index=True,
-        choices=(
-            ('М', 'мужской'),
-            ('Ж', 'женский'),
-            ('Д', 'детский'),
-            ('-', 'юнисекс'),
-    ))
+        on_delete=models.SET_NULL,
+        verbose_name='Гендер',
+        related_name='products_by_gender'        
+    )
     status = models.CharField(
         'Статус',
         max_length=20,
@@ -160,7 +169,7 @@ class Product(models.Model):
         with suppress(AttributeError):
             if self.collection.group.name.lower() in ['кольцо', 'кольца', 'колечки', 'колец']:
                 size_value = 20
-                if self.gender == 'Ж':
+                if self.gender.name == 'Женский':
                     size_value = 17
             if self.collection.group.name.lower() in ['цепь', 'цепи', 'цепочка', 'цепочек']:
                 size_value = 50

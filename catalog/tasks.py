@@ -16,7 +16,8 @@ from catalog.models import (
     Size,
     GemSet,
     PreciousStone,
-    CutType
+    CutType,
+    Gender
 )
 from catalog.models import PriceType, Price
 
@@ -40,7 +41,7 @@ def run_uploading_products(uploading_products):
                         "metal"              : item["metal"],
                         "metal_content"      : item["metal_content"],
                         "color"              : item["color"],
-                        "gender"             : item["gender"],
+                        "gender"             : update_or_create_gender(item["gender"]),
                         "status"             : item["status"],
                         'identifier_1C'      : identifier_1C
                 })
@@ -118,6 +119,14 @@ def update_or_create_collection(collection):
     })
 
     return collection_obj
+
+
+def update_or_create_gender(gender):
+    if not gender:
+        return
+    
+    gender_obj, _ = Gender.objects.update_or_create(name=gender)
+    return gender_obj
 
 
 def update_or_create_precious_stone(precious_stone):
