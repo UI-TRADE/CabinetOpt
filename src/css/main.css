@@ -148,7 +148,6 @@ body {
 
 .title-registration-form {
     display: flex;
-    width: 367px;
     height: 30px;
     flex-direction: column;
     justify-content: center;
@@ -257,6 +256,26 @@ registration-confidential-text {
     border-color: #E3A358;
 }
 
+.btn-send-order:hover, .btn-sign-in:hover {
+    background: #242A35;
+    border-color: #242A35;
+}
+
+.btn-send-order:active, .btn-sign-in:active {
+    background: #242A35!important;
+    border-color: #242A35!important;
+    outline: none!important;
+}
+
+.btn-send-order:focus, .btn-sign-in:focus {
+    outline: none!important;
+}
+
+.btn-send-order::-moz-focus-inner,
+.btn-sign-in::-moz-focus-inner {
+    border: 0!important;
+}
+
 .registration-form-btn {
     margin-bottom: 8px;
 }
@@ -271,7 +290,10 @@ registration-confidential-text {
 .sign-in-form-layout {
     position: absolute!important;
     top: 127px!important;
-    left: 500px!important;
+    left: 0!important;
+    right: 0!important;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 
