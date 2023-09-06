@@ -1,25 +1,25 @@
 import json
+import collections
+
 from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, TemplateView
 from django.conf import settings
 from django.http import JsonResponse
-from django.db.models import Value, FloatField, F, Sum
+from django.db.models import Value, FloatField
 from django.db.models.functions import Cast
 from django.core.serializers import serialize
-from django.core.serializers.json import DjangoJSONEncoder
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
 
 from .forms import ProductFilterForm
+from .filters import FilterTree, ProductFilter
 from clients.login import Login
-from clients.models import PriorityDirection
 from catalog.models import (
-    Product, ProductImage, Size,
-    Collection, StockAndCost, Price,
+    Product, ProductImage, StockAndCost,
     ProductsSet, GemSet, SimilarProducts
 )
 
@@ -30,68 +30,75 @@ from .tasks import (
     run_uploading_stock_and_costs
 )
 
+class FiltersView(TemplateView):
+    template_name = 'forms/catalog-filters.html'
+
+    def get_filter(self, qs, func, field, *groups):
+        filter_tree = FilterTree(qs)
+        method = getattr(filter_tree, func)
+        method(field, *groups)
+        return filter_tree
+
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        products = Product.objects.all()
+        context['filters'] = {
+            'metals'      : self.get_filter(products, 'count', 'metal', 'metal_finish', 'color', 'metal_content'),
+            'metal_finish': self.get_filter(products, 'count', 'metal_finish'),
+            'brands'      : self.get_filter(products, 'count', 'brand__name'),
+            'prod_status' : self.get_filter(products, 'count', 'status'),
+            'collections' : self.get_filter(products, 'count', 'collection__group__name', 'collection__name'),
+            'genders'     : self.get_filter(products, 'count', 'gender__name'),
+            'sizes'       : self.get_filter(StockAndCost.objects.filter(product__in=products), 'sum', 'size__name'),
+            'gems'        : self.get_filter(GemSet.objects.filter(product__in=products), 'count', 'precious_stone__name'),
+            'colors'      : self.get_filter(GemSet.objects.filter(product__in=products), 'count', 'gem_color'),
+            'cuts'        : self.get_filter(GemSet.objects.filter(product__in=products), 'count', 'cut_type__name'),
+        }
+
+        return context
+
 
 class ProductView(ListView):
     model = Product
-    template_name = 'pages/products.html'
+    template_name = 'pages/catalog.html'
     context_object_name = 'products'
     allow_empty = True
-    filters = {}
+    filters = []
     paginate_by = 20
 
     def get(self, request, *args, **kwargs):
+        # self.filter_params = json.loads(request.GET)
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        self.filters = json.loads(request.POST['data'])
+        raw_filters = request.POST.dict()
+        self.filters = json.loads(raw_filters.get('filters', '[]'))
         return self.get(request)
+    
+    def parse_filters(self):
+        result = collections.defaultdict(list)
+        range_filters = {}
+        for item in self.filters:
+            for key, value in item.items():
+                if not value:
+                    continue
+                if not isinstance(value, str):
+                    range_filters = range_filters | {key: value}
+                    continue    
+                result[key].append(value)
+        result = {key: ','.join(value) for key, value in result.items()}
+        if range_filters:
+            result = result | range_filters    
+        return result
 
     def get_queryset(self):
         products = Product.objects.filter(product_type='product')
-        product_ids = list(products.values_list('pk', flat=True))
-        if self.filters:
-            brands = [brand.replace('brand-', '') for brand in \
-                      self.filters.get('brand') if 'brand-' in brand]
-            if brands:
-                products = products.exclude(brand_id__in=brands)
-            collections = [collection.replace('collection-', '') for collection in \
-                           self.filters.get('collection') if 'collection-' in collection]
-            if collections:
-                products = products.exclude(collection_id__in=collections)
-            products = products.apply_filters(self.filters)
-            
-            stock_and_cost = StockAndCost.objects.all()
-            if self.filters.get('size'):
-                sizes = Size.objects.filter(name__icontains=self.filters['size'])
-                stock_and_cost = stock_and_cost.filter(size__in=sizes)
-                if self.filters.get('weight'):
-                    stock_and_cost = stock_and_cost.filter(weight__gte=self.filters['weight'])
-                if self.filters.get('weight_till'):
-                    stock_and_cost = stock_and_cost.filter(weight__lte=self.filters['weight_till'])
-            else:
-                stock_and_cost = stock_and_cost.default_stocks_and_costs(product_ids)
-                stock_and_cost = stock_and_cost | StockAndCost.objects.filter(
-                    product_id__in=
-                        set(product_ids)-set(
-                            stock_and_cost.values_list('product_id', flat=True)
-                ))
-                if self.filters.get('weight'):
-                    stock_and_cost = stock_and_cost.filter(weight__gte=self.filters['weight'])
-                if self.filters.get('weight_till'):
-                    stock_and_cost = stock_and_cost.filter(weight__lte=self.filters['weight_till'])
-            
-            if stock_and_cost: 
-                products = products.filter(pk__in=stock_and_cost.values_list('product_id', flat=True))
-        
-            if self.filters.get('price') or self.filters.get('price_till'):
-                prices = Price.objects.available_prices(product_ids)
-                if self.filters.get('price'):
-                    prices = prices.filter(price__gte=self.filters['price'])
-                if self.filters.get('price_till'):
-                    prices = prices.filter(price__lte=self.filters['price_till'])
-
-                products = products.filter(pk__in=prices.values_list('product_id', flat=True))
-
+        if not self.filters:
+            return products
+        parsed_filter = self.parse_filters()
+        filtered_products = ProductFilter(parsed_filter, queryset=products)
+        products = filtered_products.qs
         return products
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -104,15 +111,11 @@ class ProductView(ListView):
         except PageNotAnInteger:
             products_page = paginator.page(1)
         except EmptyPage:
-            products_page = paginator.page(paginator.num_pages)
+            products_page = paginator.page(paginator.num_pages)            
 
-        collections = Collection.objects.all().annotate(group_name=F('group__name')).values('id', 'name', 'group_name')
         context['products']    = products_page
-        context['brands']      = serialize("json", PriorityDirection.objects.all())
-        context['collections'] = json.dumps(list(collections), ensure_ascii=False)
         context['MEDIA_URL']   = settings.MEDIA_URL
-        context['filters']     = ProductFilterForm()
-        return dict(list(context.items()))
+        return context
 
 
 class CertificateView(ListView):
@@ -120,7 +123,6 @@ class CertificateView(ListView):
     template_name = 'pages/сertificate.html'
     context_object_name = 'сertificates'
     allow_empty = True
-    filters = {}
     paginate_by = 20
 
     def get_queryset(self):
@@ -149,7 +151,6 @@ class ServiceView(ListView):
     template_name = 'pages/service.html'
     context_object_name = 'services'
     allow_empty = True
-    filters = {}
     paginate_by = 20
 
     def get_queryset(self):

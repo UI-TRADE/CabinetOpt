@@ -50,3 +50,9 @@ def root(_, collection_id):
         } for obj in Collection.objects.filter(pk=collection_id)]
     )
     return {'collection': val for val in find_in_tree(json.loads(tree), 'root')}
+
+
+@register.filter
+def filtertojson(seq):
+    print({key: value for key, value in dict(seq).items() if not key in ['count', 'sum', 'nodes']})
+    return json.dumps({key: value for key, value in dict(seq).items() if not key in ['count', 'sum', 'nodes']})

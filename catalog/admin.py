@@ -78,8 +78,8 @@ class GemSetInLine(admin.StackedInline):
     fields = (
         'product',
         'order',
-        ('precious_stone', 'cut_type', 'color'),
-        ('weight', 'quantity'),
+        ('precious_stone', 'cut_type', 'gem_color'),
+        ('gem_weight', 'gem_quantity'),
         'comment',
         'description',
     )
@@ -134,6 +134,7 @@ class ProductAdmin(admin.ModelAdmin):
         'collection',
         'metal',
         'metal_content',
+        'metal_finish',
         'color',
         'unit',
         'available_for_order',
@@ -145,7 +146,7 @@ class ProductAdmin(admin.ModelAdmin):
         'status',
         ('name', 'articul', 'unit'),
         ('brand', 'collection'),
-        ('metal', 'metal_content', 'color'),
+        ('metal', 'metal_content', 'metal_finish', 'color'),
         'gender',
         'available_for_order',
     ]
@@ -156,6 +157,7 @@ class ProductAdmin(admin.ModelAdmin):
         'status',
         'metal',
         'metal_content',
+        'metal_finish',
         'color',
         'gender',
         'available_for_order'
@@ -250,18 +252,18 @@ class GemSetAdmin(admin.ModelAdmin):
     list_display = [
         'product',
         'precious_stone',
-        'color',
-        'weight',
+        'gem_color',
+        'gem_weight',
         'order',
         'cut_type',
-        'quantity',
+        'gem_quantity',
         'comment',
     ]
     fields = [
         'product',
         'order',
-        ('precious_stone', 'cut_type', 'color'),
-        ('weight', 'quantity'),
+        ('precious_stone', 'cut_type', 'gem_color'),
+        ('gem_weight', 'gem_quantity'),
         'comment',
         'description',
     ]

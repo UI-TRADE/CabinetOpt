@@ -49,6 +49,12 @@ html {
 }
 
 .products {
+    position: absolute;
+    left: 307px;
+    padding-top: 0px;
+}
+
+.products-in-cart {
     padding-top: 0px;
 }
 

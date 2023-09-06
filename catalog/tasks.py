@@ -56,11 +56,11 @@ def run_uploading_products(uploading_products):
                         if cut_type:
                             filter_kwargs['cut_type'] = cut_type
                         if gem_set['color']:
-                            filter_kwargs['color'] = gem_set['color']
+                            filter_kwargs['gem_color'] = gem_set['color']
                         if gem_set['weight']:
-                            filter_kwargs['weight'] = gem_set['weight']
+                            filter_kwargs['gem_weight'] = gem_set['weight']
                         if gem_set['quantity']:
-                            filter_kwargs['quantity'] = gem_set['quantity']
+                            filter_kwargs['gem_quantity'] = gem_set['quantity']
                         GemSet.objects.update_or_create(
                             **filter_kwargs,
                             defaults = {

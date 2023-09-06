@@ -120,6 +120,7 @@ class Product(models.Model):
     ))
     metal = models.CharField('Металл', max_length=50, blank=True, db_index=True)
     metal_content = models.CharField('Проба', max_length=30, blank=True, db_index=True)
+    metal_finish = models.CharField('Обработка металла', max_length=50, blank=True, db_index=True)
     color = models.CharField('Цвет', max_length=50, blank=True, db_index=True)
     gender = models.ForeignKey(
         Gender,
@@ -461,8 +462,8 @@ class GemSet(models.Model):
         related_name='precious_stones',
         db_index=True
     )
-    color = models.CharField('Цвет', max_length=50, blank=True, db_index=True)
-    weight = models.FloatField(
+    gem_color = models.CharField('Цвет', max_length=50, blank=True, db_index=True)
+    gem_weight = models.FloatField(
         'Вес, кр', default=0, validators=[MinValueValidator(0)]
     )
     order = models.PositiveIntegerField(
@@ -479,7 +480,7 @@ class GemSet(models.Model):
         db_index=True
     )
     comment = models.CharField('Комментарий', max_length=250, blank=True)
-    quantity = models.PositiveIntegerField(
+    gem_quantity = models.PositiveIntegerField(
         'Количество', default=1, validators=[MinValueValidator(0)]
     )
 
@@ -488,10 +489,10 @@ class GemSet(models.Model):
         verbose_name_plural = 'Вставки'
 
     def __str__(self):
-        return f'{self.quantity} \
+        return f'{self.gem_quantity} \
             {repr(self.precious_stone)} \
             {self.cut_type if self.cut_type else ""} - \
-            {self.weight} ct'
+            {self.gem_weight} ct'
 
 
 class ProductsSet(models.Model):

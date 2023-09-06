@@ -7,64 +7,8 @@
     <div style="display: none" id="brands" data-json="{{ brands }}"></div>
     <div style="display: none" id="collections" data-json="{{ collections }}"></div>
 
-    <div class="container-fluid">
       <div class="row">
-        <header class="col-md-3">
-          <div class="btn-group goods-btn-group" role="group">
-            <button id="Brend" type="button" class="btn btn-success goods-btn">Бренд</button>
-            <button id="Assortment" type="button" class="btn btn-outline-warning goods-btn">Ассортимент</button>
-          </div>
-          <div id="brend-group" class="goods-menu-blocks" style="display: block;">
-            <ul class="brend-group list-group">
-            </ul>
-          </div>
-          <div id="collection-group" class="goods-menu-blocks" style="display: none;">
-            <ul class="collection-group list-group">
-            </ul>
-          </div>
-          <div class="goods-menu-filters">
-            {% for filter_field in filters %}
-                {% if filter_field.name not in "weight,weight_till,price,price_till"%}
-                  <label for="{{ filter_field.auto_id }}">{{ filter_field.label }}:</label>
-                  {{ filter_field }}
-                {% endif %}
-            {% endfor %}
-            <div class="row">
-              {% for filter_field in filters %}
-                  {% if filter_field.name in "weight,weight_till"%}
-                    <div class="col-6">
-                    <label for="{{ filter_field.auto_id }}">{{ filter_field.label }}:</label>
-                    {{ filter_field }}
-                    </div>
-                  {% endif %}
-              {% endfor %}
-            </div>
-            <div class="row">
-              {% for filter_field in filters %}
-                  {% if filter_field.name in "price,price_till"%}
-                    <div class="col-6">
-                    <label for="{{ filter_field.auto_id }}">{{ filter_field.label }}:</label>
-                    {{ filter_field }}
-                    </div>
-                  {% endif %}
-              {% endfor %}
-            </div>
-          </div>
-          <div class="goods-menu-blocks"></div>
-          <div id="actions-group" class="goods-menu-blocks">
-            <ul class="list-group">
-              <li class="list-group-item">
-                <a href="{% url 'catalog:products' %}">Уцененные товары</a>
-              </li>
-              <li class="list-group-item">
-                <a href="{% url 'catalog:сertificates' %}">Подарочные сертификаты</a>
-              </li>
-              <li class="list-group-item">
-                <a href="{% url 'catalog:services' %}">Услуги</a>
-              </li>
-            </ul>
-          </div>
-        </header>
+        <div class="container d-flex flex-column" id="filter-container"></div>
 
         <div style="display:none">
           <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
@@ -219,7 +163,6 @@
         </main>
 
       </div>
-    </div>
 
 	{% endblock %}
 {% endblock %}

@@ -47,6 +47,11 @@ module.exports = {
             writeToDisk: true,
         }
     },
+    resolve: {
+        alias: {
+            'jquery-ui': 'jquery-ui-dist/jquery-ui.js'
+        }
+    },
     plugins: [
         new copyWebpackPlugin({
           patterns: [

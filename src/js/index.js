@@ -1,22 +1,25 @@
+import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'jquery-ui-dist/jquery-ui.css';
 import generateUUID from './lib';
 import mainMenuEvents from './main_menu';
 import showModalForm, {switchModalForm} from './form';
 import updateContactView from './contact';
 import updateCartView, {cartViewEvents} from './cart';
-import initProductFilters, {catalogEvents} from './catalog_filters';
+import initProductFilters, {filtersEvents} from './catalog/filters';
 import updateProductCard from './catalog_card';
 import ordersEvents from './orders';
 import orderEvents, {updateOrder} from './order';
 
-import 'bootstrap';
+
+require('jquery-ui');
 
 
 const addEvents = () => {
 
     mainMenuEvents();
+    filtersEvents();
     cartViewEvents();
-    catalogEvents();
     ordersEvents();
     orderEvents();
 
@@ -26,12 +29,8 @@ const addEvents = () => {
 $(window).on("load", () => {
     if (localStorage.getItem('cartView') === null) 
         localStorage.setItem('cartView', false);
-    if (localStorage.getItem('excludedВrands') === null) 
-        localStorage.setItem('excludedВrands', new Array());
-    if (localStorage.getItem('excludedCollection') === null) 
-        localStorage.setItem('excludedCollection', new Array());
     if (sessionStorage.getItem('filters') === null) 
-        sessionStorage.setItem('filters', JSON.stringify({}));
+        sessionStorage.setItem('filters', JSON.stringify([]));
 
     const selectedURI = sessionStorage.getItem('selectedURI');
     if (selectedURI) {
@@ -88,5 +87,6 @@ $(document).ready(() => {
 })
 
 import '../css/main.css';
+import '../css/filters.css';
 import '../css/autocomplete.css';
 import '../css/index.css';

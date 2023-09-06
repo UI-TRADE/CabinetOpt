@@ -1,0 +1,249 @@
+#filter-container {
+    width: 270px;
+    position: absolute;
+    padding-top: 19px;
+    padding-left: 19px;
+  }
+  
+  .filter-item {
+    margin-bottom: 9px;
+  }
+  
+  .filter-node-item {
+    margin-bottom: 9px;
+    margin-left: 25px;
+  }
+  
+  .filter-item li {
+    list-style: none;
+  }
+
+  /* .filter-item img:hover {
+    transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -webkit-transform: rotate(-90deg);
+  } */
+  
+  .filter-item .item-close {
+    transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -webkit-transform: rotate(-90deg);
+    padding-right: 0px;
+  }
+  
+  .filter-item-title {
+    color: #000;
+    text-align: center;
+    font-family: Open Sans;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    margin-right: 5px;
+  }
+
+  .filter-item-disable {
+    visibility: hidden;
+    height: 0px!important;
+  }
+
+  .filter-item-title-active {
+    color: #E3A358!important;
+  }
+  
+  .filter-item a,
+  .filter-item .reset {
+    color: #ADADAA;
+    text-align: center;
+    font-family: Open Sans;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    text-decoration-line: underline;
+  }
+
+  .filter-item.top-node {
+    margin-left: 14px;
+  }
+  
+  .filter-item.slave-node {
+    margin-left: 29px;
+  }
+  
+  #collections div {
+    margin-left: 8px;
+  }
+  
+  #sizes {
+    margin-left: 39px;
+    margin-bottom: 10px;
+  }
+  
+  #sizes span {
+    margin-right: 5px;
+    color: #ADADAA;
+    font-family: Open Sans;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    text-decoration-line: underline;
+  }
+  
+  #sizes .size-active {
+    margin-right: 5px;
+    color: #010202;
+    font-family: Open Sans;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    text-decoration-line: underline;
+  }
+  
+  #sizes .size-default {
+    margin-right: 5px;
+    color: #E3A358;
+    font-family: Open Sans;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    text-decoration-line: underline;
+  }
+  
+  .gems {
+    margin-left: 40px;
+    margin-bottom: 10px;
+    width: 215px;
+  }
+  
+  .gem {
+    color: #000;
+    font-family: Open Sans;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px; /* 150% */
+    text-decoration-line: underline;
+  }
+  
+  #weight-range {
+    margin-left: 35px;
+    margin-bottom: 10px;
+    height: 2px;
+  }
+
+  #stone-quantity {
+    margin-left: 35px;
+    margin-bottom: 10px;
+    height: 2px;
+  }
+  
+  #price-range {
+    margin-left: 35px;
+    margin-bottom: 10px;
+    height: 2px;
+  }
+  
+  .range {
+    color: #ADADAA;
+    font-family: Open Sans;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    position: absolute;
+  }
+  
+  .slider-value {
+    color: #010202;
+    font-family: Open Sans;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    position: absolute;
+  }
+  
+  #weight-range span[name="start-range"] {
+    top: -20px;
+    left: -10px;
+  }
+  
+  #weight-range span[name="end-range"] {
+    top: -20px;
+    right: -10px;
+  }
+  
+  #weight-range span[name="start-value"] {
+    top: -25px;
+    left: 26.2656px;
+  }
+  
+  #weight-range span[name="end-value"] {
+    top: -25px;
+    left: 105.727px;
+  }
+
+  #stone-quantity span[name="start-range"] {
+    top: -20px;
+    left: -10px;
+  }
+  
+  #stone-quantity span[name="end-range"] {
+    top: -20px;
+    right: -10px;
+  }
+  
+  #stone-quantity span[name="start-value"] {
+    top: -25px;
+    left: 53.4062px;
+  }
+  
+  #stone-quantity span[name="end-value"] {
+    top: -25px;
+    left: 162.406px;
+  }
+  
+  #price-range span[name="start-range"] {
+    top: -20px;
+    left: -10px;
+  }
+  
+  #price-range span[name="end-range"] {
+    top: -20px;
+    right: -10px;
+  }
+  
+  #price-range span[name="start-value"] {
+    top: -25px;
+    left: 0.398438px;
+  }
+  
+  #price-range span[name="end-value"] {
+    top: -25px;
+    left: 105.727px;
+  }
+  
+  .ui-slider-horizontal .ui-slider-handle {
+    top: -0.4em!important;
+  }
+  
+  .ui-state-default {
+    width: 12px!important;
+    height: 12px!important;
+    border-radius: 50px;
+    border: none!important;
+    background: #E3A358!important;
+    color: #E3A358!important;
+  }
+  
+  .ui-slider-horizontal .ui-slider-range {
+    top: -3px!important;
+    height: 4px!important;
+    background: #E3A358!important;
+  }
