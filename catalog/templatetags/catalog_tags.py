@@ -54,5 +54,4 @@ def root(_, collection_id):
 
 @register.filter
 def filtertojson(seq):
-    print({key: value for key, value in dict(seq).items() if not key in ['count', 'sum', 'nodes']})
     return json.dumps({key: value for key, value in dict(seq).items() if not key in ['count', 'sum', 'nodes']})

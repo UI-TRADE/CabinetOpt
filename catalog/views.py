@@ -68,7 +68,6 @@ class ProductView(ListView):
     paginate_by = 20
 
     def get(self, request, *args, **kwargs):
-        # self.filter_params = json.loads(request.GET)
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
