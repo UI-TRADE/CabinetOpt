@@ -27,14 +27,16 @@ const getSliderAttr = (sliderId) => {
 const getDefaultValues = (sliderId, min, max) => {
     const attributeName = getSliderAttr(sliderId);
     const filters = JSON.parse(sessionStorage.getItem('filters'));
-    filters.forEach(item => {
-        if (Object.keys(item).find(k => k == `${attributeName}_min`)) {
-            min = item[`${attributeName}_min`];
-        }
-        if (Object.keys(item).find(k => k == `${attributeName}_max`)) {
-            max = item[`${attributeName}_max`];
-        }
-    });
+    if (filters) {
+        filters.forEach(item => {
+            if (Object.keys(item).find(k => k == `${attributeName}_min`)) {
+                min = item[`${attributeName}_min`];
+            }
+            if (Object.keys(item).find(k => k == `${attributeName}_max`)) {
+                max = item[`${attributeName}_max`];
+            }
+        });
+    }
     return [ min, max ];
 }
 
