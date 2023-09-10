@@ -112,9 +112,7 @@
                                 {% if product.brand %}
                                     <p><u>Бренд:        {{ product.brand|upper }}</u></p>
                                 {% endif %}
-                                {% if product.gender %}
-                                    <p>{{ product.gender|lower }}</p>
-                                {% endif %}
+                                <p>{{ product|get_gender_repr }}</p>
                                 
                                 &nbsp;
                                 <div class="product__block__size-container" style="display: flex; flex-direction: row; align-items: flex-start;">

@@ -7,7 +7,7 @@ from django.core.paginator import PageNotAnInteger
 from django.views.generic import ListView, DetailView, TemplateView
 from django.conf import settings
 from django.http import JsonResponse
-from django.db.models import Value, FloatField
+from django.db.models import Value, FloatField, Count
 from django.db.models.functions import Cast
 from django.core.serializers import serialize
 
@@ -44,12 +44,12 @@ class FiltersView(TemplateView):
         context = super().get_context_data(**kwargs)
         products = Product.objects.all()
         context['filters'] = {
-            'metals'      : self.get_filter(products, 'count', 'metal', 'metal_finish', 'color', 'metal_content'),
-            'metal_finish': self.get_filter(products, 'count', 'metal_finish'),
+            'metals'      : self.get_filter(products, 'count', 'metal', 'metal_finish__name', 'color', 'metal_content'),
+            'metal_finish': self.get_filter(products.annotate(metal_finish_count=Count('metal_finish')), 'count', 'metal_finish__name'),
             'brands'      : self.get_filter(products, 'count', 'brand__name'),
             'prod_status' : self.get_filter(products, 'count', 'status'),
             'collections' : self.get_filter(products, 'count', 'collection__group__name', 'collection__name'),
-            'genders'     : self.get_filter(products, 'count', 'gender__name'),
+            'genders'     : self.get_filter(products.annotate(gender_count=Count('gender')), 'count', 'gender__name'),
             'sizes'       : self.get_filter(StockAndCost.objects.filter(product__in=products), 'sum', 'size__name'),
             'gems'        : self.get_filter(GemSet.objects.filter(product__in=products), 'count', 'precious_stone__name'),
             'colors'      : self.get_filter(GemSet.objects.filter(product__in=products), 'count', 'gem_color'),
@@ -97,7 +97,7 @@ class ProductView(ListView):
             return products
         parsed_filter = self.parse_filters()
         filtered_products = ProductFilter(parsed_filter, queryset=products)
-        products = filtered_products.qs
+        products = filtered_products.qs.distinct()
         return products
 
     def get_context_data(self, *, object_list=None, **kwargs):
