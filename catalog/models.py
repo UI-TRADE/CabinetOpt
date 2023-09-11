@@ -206,6 +206,7 @@ class Product(models.Model):
     )
     chain_weave = models.CharField('Плетение (для цепей)', max_length=50, blank=True, db_index=True)
     bracelet_weave = models.CharField('Плетение (для браслетов)', max_length=50, blank=True, db_index=True)
+    mark_description = models.TextField('Маркетинговое описание', blank=True)
     identifier_1C = models.CharField(
         'Идентификатор 1С', max_length=50, blank=True, db_index=True
     )

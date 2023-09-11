@@ -185,7 +185,8 @@ class ProductAdmin(admin.ModelAdmin):
         ('lock_type_earings', 'lock_type_chain', 'lock_type_bracelet'),
         ('chain_width', 'bracelet_width'),
         ('chain_weave', 'bracelet_weave'),
-        'q_borders_c_b'
+        'q_borders_c_b',
+        'mark_description'
     ]
     list_filter = [
         'brand',

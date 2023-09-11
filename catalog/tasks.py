@@ -35,7 +35,7 @@ def run_uploading_products(uploading_products):
                     defaults = {
                         'name'               : item['nomenclature']['Наименование'],
                         'articul'            : item['articul'],
-                        'collection'         : update_or_create_collection(item['collection']),
+                        'collection'         : update_or_create_collection(item['collection'], item['group']),
                         'brand'              : update_or_create_brand(item['brand']),
                         'unit'               : item['unit'],
                         'available_for_order': True,
@@ -53,6 +53,7 @@ def run_uploading_products(uploading_products):
                         'q_borders_c_b'      : item["q_borders_c_b"],
                         'chain_weave'        : item["chain_weave"],
                         'bracelet_weave'     : item["bracelet_weave"],
+                        'mark_description'   : item["mark_description"],
                         'identifier_1C'      : identifier_1C
                 })
 
@@ -131,11 +132,11 @@ def update_or_create_brand(brand):
         defaults={
             'name': brand['Наименование']
     })
-    
+
     return brand_obj
 
 
-def update_or_create_collection(collection):
+def update_or_create_collection(collection, group):
     if not collection:
         return
 
@@ -152,7 +153,7 @@ def update_or_create_collection(collection):
         identifier_1C=identifier_1C,
         defaults={
             'name': collection['Наименование'],
-            'group': update_or_create_collection_group(collection['group'])
+            'group': update_or_create_collection_group(group)
     })
 
     return collection_obj
