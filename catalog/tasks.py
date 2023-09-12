@@ -198,22 +198,8 @@ def update_or_create_design(designs):
 def update_or_create_precious_stone(precious_stone):
     if not precious_stone:
         return
-
-    identifier_1C = precious_stone['Идентификатор']
-    if identifier_1C == '00000000-0000-0000-0000-000000000000':
-        return
     
-    if precious_stone['Удален']:
-        found_precious_stone = PreciousStone.objects.get(identifier_1C=identifier_1C)
-        found_precious_stone.delete()
-        return
-    
-    precious_stone_obj, _ = PreciousStone.objects.update_or_create(
-        identifier_1C=identifier_1C,
-        defaults={
-            'name': precious_stone['Наименование'],
-            'identifier_1C': identifier_1C
-    })
+    precious_stone_obj, _ = PreciousStone.objects.update_or_create(name=precious_stone)
 
     return precious_stone_obj
 
@@ -222,7 +208,7 @@ def update_or_create_cut_type(cut_type):
     if not cut_type:
         return
     
-    cut_type_obj, _ = CutType.objects.update_or_create(name=cut_type['Наименование'])
+    cut_type_obj, _ = CutType.objects.update_or_create(name=cut_type)
     return cut_type_obj
 
 
