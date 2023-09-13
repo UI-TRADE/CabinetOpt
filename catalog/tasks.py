@@ -1,5 +1,6 @@
 import io
 import base64
+import datetime
 from contextlib import suppress
 from django.db import transaction
 from django.db.models import Q
@@ -85,6 +86,7 @@ def run_uploading_products(uploading_products):
                             filter_kwargs['gem_weight'] = gem_set['weight']
                         if gem_set['quantity']:
                             filter_kwargs['gem_quantity'] = gem_set['quantity']
+                        print(filter_kwargs)
                         GemSet.objects.update_or_create(
                             **filter_kwargs,
                             defaults = {
@@ -251,7 +253,25 @@ def run_uploading_price(uploading_price):
                     ),
                     'unit': item['unit']
                 }
-                Price.objects.update_or_create(**filter_kwargs, defaults={'price': item['price']})
+                defaults={'price': item['price']}
+
+                begin_date = ''
+                if item.get('begin_date'):
+                    begin_date = f'{begin_date}{item.get("begin_date")}'
+                if item.get('begin_time'):
+                    begin_date = f'{begin_date} {item.get("begin_time")}'
+                end_date = ''
+                if item.get('end_date'):
+                    end_date = f'{end_date}{item.get("end_date")}'
+                if item.get('end_time'):
+                    end_date = f'{end_date} {item.get("end_time")}'
+
+                if begin_date:
+                    defaults['start_at'] = datetime.datetime.strptime(begin_date, '%Y%m%d %H:%M:%S')
+                if end_date:
+                    defaults['end_at'] = datetime.datetime.strptime(end_date, '%Y%m%d %H:%M:%S')
+                     
+                Price.objects.update_or_create(**filter_kwargs, defaults=defaults)
 
  
         except (
