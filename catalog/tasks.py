@@ -86,7 +86,6 @@ def run_uploading_products(uploading_products):
                             filter_kwargs['gem_weight'] = gem_set['weight']
                         if gem_set['quantity']:
                             filter_kwargs['gem_quantity'] = gem_set['quantity']
-                        print(filter_kwargs)
                         GemSet.objects.update_or_create(
                             **filter_kwargs,
                             defaults = {
