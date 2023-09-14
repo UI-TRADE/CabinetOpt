@@ -1,0 +1,43 @@
+.product-item{
+  .product-item__brand{
+    font-size: 0.75em;
+  }
+  .product-item__tags{
+    font-size: 1em;
+  }
+  .card-body{
+    padding-top:1rem;
+    padding-bottom:1rem;
+
+    .carousel{
+      min-height:210px;
+      max-height: 210px;
+      line-height: 210px;
+      vertical-align: middle;
+      figure{
+        margin:0;
+      }
+    }
+
+    .product-item__name{
+      padding-top:8px;
+    }
+    .product-item__name{
+      margin-top:-2px;
+    }
+
+    .price{
+      font-weight: 600;
+    }
+    .inStock-block{
+      padding:2px 0 0;
+      .inStock-block__value {
+        font-size: .75em;
+      }
+      .add-to-cart__button{
+        width:140px;
+        font-weight: 600;
+      }
+    }
+  }
+}

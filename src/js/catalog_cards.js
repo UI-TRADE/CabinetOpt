@@ -1,7 +1,6 @@
 import getPrice from './price'
 import {сartEvents, waitUpdateCart} from './cart';
 
-
 const extractContent = (html, elementId) => {
     const DOMModel = new DOMParser().parseFromString(html, 'text/html');
     return DOMModel.getElementById(elementId)?.innerHTML;
@@ -139,25 +138,25 @@ const updateProductCards = (element) => {
     }
     
     const updateProductsStatusStyle = () => {
-        const statusFields = document.querySelectorAll('p[name="product-status"]');
+        const statusFields = document.querySelectorAll('div[name="product-status"]');
         statusFields.forEach((statusField) => {
             const data = JSON.parse(statusField.getAttribute('data-json'));
-            if (!data) return;
-            if (data.status === "novelty") statusField.className = 'text-primary fs-3';
-            if (data.status === "order")   statusField.className = 'text-info-emphasis fs-3';
-            if (data.status === "hit")     statusField.className = 'text-warning fs-3';
-            if (data.status === "sale")    statusField.className = 'text-danger fs-3';
+            if (!data) statusField.className += ' text-info';
+            if (data.status === "novelty") statusField.className += ' text-info';
+            if (data.status === "order")   statusField.className += ' text-info-emphasis';
+            if (data.status === "hit")     statusField.className += ' text-warning';
+            if (data.status === "sale")    statusField.className += ' text-danger';
         });
     }
     
     updateProductsStatusStyle();
 
-    const productIds = []
-    const elements = document.getElementsByClassName('good-block');
-    for (var j=0; j<elements.length; j++) {
-        const productId = JSON.parse(elements[j].getAttribute('data-json'));
-        if (productId) productIds.push(productId['id']);
-    }
+
+    const elements = $('.good-block, .product-item').toArray() || []
+    const productIds = elements.map((element) => {
+        const productId = JSON.parse(element.getAttribute('data-json')).id;
+        return productId
+    })
 
     if (productIds.length == 0) {
         return

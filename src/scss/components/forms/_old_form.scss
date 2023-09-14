@@ -1,0 +1,28 @@
+.btn-send-order, .btn-sign-in {
+    width: 213px;
+    height: 38px;
+    flex-shrink: 0;
+    border-radius: 5px;
+    background: #E3A358;
+    border-color: #E3A358;
+}
+
+.btn-send-order:hover, .btn-sign-in:hover {
+    background: #242A35;
+    border-color: #242A35;
+}
+
+.btn-send-order:active, .btn-sign-in:active {
+    background: #242A35!important;
+    border-color: #242A35!important;
+    outline: none!important;
+}
+
+.btn-send-order:focus, .btn-sign-in:focus {
+    outline: none!important;
+}
+
+.btn-send-order::-moz-focus-inner,
+.btn-sign-in::-moz-focus-inner {
+    border: 0!important;
+}
