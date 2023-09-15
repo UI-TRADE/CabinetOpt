@@ -87,8 +87,8 @@ const updateProductCards = (element) => {
                     const priceBlock          = elements[i].querySelector('.price-block');
                     const inStockBlock        = elements[i].querySelector('.inStock-block');
                     const priceField          = priceBlock.querySelector('.price');
-                    const weightField         = priceBlock.querySelector('.weight');
-                    const pricePerweightField = priceBlock.querySelector('.price-per-weight');
+                    const weightField         = elements[i].querySelector('.weight');
+                    const pricePerweightField =  elements[i].querySelector('.price-per-weight');
                     const maxPriceField       = priceBlock.querySelector('.max-price');
                     const discountField       = priceBlock.querySelector('.discount');
                     const stockField          = inStockBlock.querySelector('.in_stock');

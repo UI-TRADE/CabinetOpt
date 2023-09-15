@@ -46,13 +46,6 @@
                     <div class="product-item__material">{{ product.metal }} {{ product.metal_content }}`</div>
                 </div>
                 <div class="col col-6 price-block">
-
-                    <div class="product__price-block--position">
-                        <div class="product__price-block__row--position">
-                            <div class="product__price-block__element--position weight"></div>
-                            <div class="product__price-block__element--position price-per-weight"></div>
-                        </div>
-                    </div>
                     <div class="product__price-block--position">
                         <div class="product__price-block__row--position">
                             <div class="product__price-block__element--position text-warning discount"></div>
@@ -101,7 +94,11 @@
                 </div>
                 <div class="col col-12 product-item__additional-data hidden">
                     <div class="product-item__articul">{{ product.articul }}</div>
-                    <div class="product-item__price-per-gramm max-price"></div>
+                    <div>
+                        <span class="product-item__weight weight"></span>
+                        &nbsp;
+                        <span class="product-item__price-per-gramm price-per-weight"></span>
+                    </div>
                 </div>
             </div>
         </div>
