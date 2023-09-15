@@ -14,11 +14,11 @@
           <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
         </div>
 
-        <main id="products" class="col-md-9 products" style="visibility: hidden;">
+        <main id="products" class="col-md-9 products products-list" style="visibility: hidden;">
             <div class="row">
               {% for product in products %}
                 {% with product_id="id"|addparam:product.id%}
-                <div class="col-3 col-lg-3 col-md-4 col-sm-12" data-json="{{ product_id|tojson }}">
+                <div class="product-item__col col-xxl-3 col-xl-4 col-lg-4 col-md-6 col-sm-12 col-xs-12" data-json="{{ product_id|tojson }}">
                 {% endwith %}
                 {% include "components/product/card.html" with product=product %}
                 </div>

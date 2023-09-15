@@ -1,7 +1,17 @@
 .products-list{
-  padding-left:42px;
-  padding-right:156px; // temp value
-  .product-item{
-    margin:48px 6px;
+  @media (min-width: 1024px) {
+    .product-item__col.col-lg-4 {
+      flex: 0 0 50%;
+      max-width: 50%;
+        //padding-right: 300px;
+    }
+  }
+
+  @media (min-width: 1700px) {
+    .product-item__col.col-xl-4 {
+      flex: 0 0 25%;
+      max-width: 25%;
+        //padding-right: 300px;
+    }
   }
 }
