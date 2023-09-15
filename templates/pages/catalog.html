@@ -15,15 +15,15 @@
         </div>
 
         <main id="products" class="col-md-9 products" style="display: none;">
-          {% for product in products %}
-            {% with product_id="id"|addparam:product.id%}
-            <div class="good-block position-relative" data-json="{{ product_id|tojson }}">
-            {% endwith %}
-              <div class="col-3 col-lg-3 col-md-4 col-sm-12">
+            <div class="row">
+              {% for product in products %}
+                {% with product_id="id"|addparam:product.id%}
+                <div class="col-3 col-lg-3 col-md-4 col-sm-12" data-json="{{ product_id|tojson }}">
+                {% endwith %}
                 {% include "components/product/card.html" with product=product %}
-              </div>
+                </div>
+              {% endfor %}
             </div>
-          {% endfor %}
 
           <nav aria-label="Pagination">
             <ul class="pagination justify-content-end">
