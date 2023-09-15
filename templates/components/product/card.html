@@ -53,7 +53,6 @@
                             <div class="product__price-block__element--position price-per-weight"></div>
                         </div>
                     </div>
-                    <div class="product__price-block--position max-price"></div>
                     <div class="product__price-block--position">
                         <div class="product__price-block__row--position">
                             <div class="product__price-block__element--position text-warning discount"></div>
@@ -96,8 +95,13 @@
                         <div name="cart-key" style="display: none;"></div>
                     </div>
                 </div>
+
                 <div class="row px-4 px-sm-0">
-                    <a href="{% url 'catalog:product' product.id %}" class="stretched-link">{{ product.articul }}</a>
+                    <a href="{% url 'catalog:product' product.id %}" class="stretched-link"></a>
+                </div>
+                <div class="col col-12 product-item__additional-data hidden">
+                    <div class="product-item__articul">{{ product.articul }}</div>
+                    <div class="product-item__price-per-gramm max-price"></div>
                 </div>
             </div>
         </div>
