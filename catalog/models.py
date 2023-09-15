@@ -57,6 +57,39 @@ class Gender(models.Model):
         return self.name
 
 
+class MetalFinish(models.Model):
+    name = models.CharField('Обработка металла', max_length=100, db_index=True)
+
+    class Meta:
+        verbose_name = 'Вид обработки металла'
+        verbose_name_plural = 'Виды обработки металла'
+
+    def __str__(self):
+        return self.name
+
+
+class Gift(models.Model):
+    name = models.CharField('Подарок', max_length=100, db_index=True)
+
+    class Meta:
+        verbose_name = 'Подарок'
+        verbose_name_plural = 'Подарки'
+
+    def __str__(self):
+        return self.name
+
+
+class Design(models.Model):
+    name = models.CharField('Дизайн', max_length=100, db_index=True)
+
+    class Meta:
+        verbose_name = 'Дизайн изделия'
+        verbose_name_plural = 'Дизайны изделий'
+
+    def __str__(self):
+        return self.name
+
+
 class ProductQuerySet(models.QuerySet):
     
     def apply_filters(self, filters):
@@ -120,16 +153,16 @@ class Product(models.Model):
     ))
     metal = models.CharField('Металл', max_length=50, blank=True, db_index=True)
     metal_content = models.CharField('Проба', max_length=30, blank=True, db_index=True)
-    metal_finish = models.CharField('Обработка металла', max_length=50, blank=True, db_index=True)
+    metal_finish = models.ManyToManyField(
+        MetalFinish,
+        verbose_name='Обработка металла',
+        related_name='products_by_gender'
+    )
     color = models.CharField('Цвет', max_length=50, blank=True, db_index=True)
-    gender = models.ForeignKey(
+    gender = models.ManyToManyField(
         Gender,
-        null=True,
-        blank=True,
-        db_index=True,
-        on_delete=models.SET_NULL,
         verbose_name='Гендер',
-        related_name='products_by_gender'        
+        related_name='products_by_gender'
     )
     status = models.CharField(
         'Статус',
@@ -142,6 +175,38 @@ class Product(models.Model):
             ('hit'    , 'ХИТ'),
             ('sale'   , 'ВЫГОДНО'),
     ))
+    gift = models.ManyToManyField(
+        Gift,
+        verbose_name='Подарок',
+        related_name='products_by_gift'
+    )
+    design = models.ManyToManyField(
+        Design,
+        verbose_name='Дизайн',
+        related_name='products_by_design'
+    )
+    str_color = models.CharField('Цвет строкой', max_length=50, blank=True, db_index=True)
+    lock_type_earings = models.CharField('Тип и размер замка серег', max_length=50, blank=True, db_index=True)
+    lock_type_chain = models.CharField('Тип и размер замка цепей', max_length=50, blank=True, db_index=True)
+    lock_type_bracelet = models.CharField('Тип и размер замка браслетов', max_length=50, blank=True, db_index=True)
+    chain_width = models.IntegerField(
+        'Ширина цепи',
+        default=0,
+        validators=[MinValueValidator(0)]
+    )
+    bracelet_width = models.IntegerField(
+        'Ширина браслета',
+        default=0,
+        validators=[MinValueValidator(0)]
+    )
+    q_borders_c_b = models.IntegerField(
+        'Количество граней',
+        default=0,
+        validators=[MinValueValidator(0)]
+    )
+    chain_weave = models.CharField('Плетение (для цепей)', max_length=50, blank=True, db_index=True)
+    bracelet_weave = models.CharField('Плетение (для браслетов)', max_length=50, blank=True, db_index=True)
+    mark_description = models.TextField('Маркетинговое описание', blank=True)
     identifier_1C = models.CharField(
         'Идентификатор 1С', max_length=50, blank=True, db_index=True
     )
@@ -155,6 +220,9 @@ class Product(models.Model):
     def __str__(self):
         return f'{self.articul} {self.name}'.strip()
     
+    def natural_key(self):
+        return (self.name, self.id, self.identifier_1C, )
+    
     @property
     def get_images(self):
         product_images = ProductImage.objects.filter(product_id=self.id)
@@ -167,10 +235,13 @@ class Product(models.Model):
         stocks_and_costs = StockAndCost.objects.\
             filter(product_id=self.id).annotate(size_name=F('size__name')).\
             exclude(size__isnull=True).order_by('size')
+        gender = Gender.objects.none()
+        with suppress(Gender.DoesNotExist):
+            gender = Gender.objects.get(name = "для женщин")
         with suppress(AttributeError):
             if self.collection.group.name.lower() in ['кольцо', 'кольца', 'колечки', 'колец']:
                 size_value = 20
-                if self.gender.name == 'Женский':
+                if gender.products_by_gender.filter(pk=self.id):
                     size_value = 17
             if self.collection.group.name.lower() in ['цепь', 'цепи', 'цепочка', 'цепочек']:
                 size_value = 50
@@ -361,6 +432,7 @@ class PriceQuerySet(models.QuerySet):
             ).filter(
                 Q(end_at__isnull=True) | Q(end_at__gte=timezone.now())
             ).annotate(actual_price=Max('price'))
+        return self.all()
 
 
 class Price(models.Model):
@@ -421,9 +493,6 @@ class Price(models.Model):
 class PreciousStone(models.Model):
     name = models.CharField('Наименование', max_length=100, db_index=True)
     short_title = models.CharField('Краткое наименование', max_length=10, blank=True)
-    identifier_1C = models.CharField(
-        'Идентификатор 1С', max_length=50, blank=True, db_index=True
-    )
 
     class Meta:
         verbose_name = 'Камень'
@@ -454,6 +523,14 @@ class GemSet(models.Model):
         verbose_name='Номенклатура',
         related_name='gem_sets',
         db_index=True
+    )
+    size = models.ForeignKey(
+        Size,
+        null=True,
+        blank = True,
+        on_delete=models.SET_NULL,
+        verbose_name='Размер',
+        related_name='product_sizes'
     )
     precious_stone = models.ForeignKey(
         PreciousStone,

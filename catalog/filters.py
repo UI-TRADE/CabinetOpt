@@ -38,7 +38,7 @@ class CharInFilter(BaseInFilter, CharFilter):
 class ProductFilter(django_filters.FilterSet):
     available_for_order     = BooleanFilter(field_name = 'available_for_order')
     metal                   = CharInFilter(field_name = 'metal', lookup_expr='in')
-    metal_finish            = CharInFilter(field_name = 'metal_finish', lookup_expr='in')
+    metal_finish__name      = CharInFilter(field_name = 'metal_finish__name', lookup_expr='in')
     color                   = CharInFilter(field_name = 'color', lookup_expr='in')
     metal_content           = CharInFilter(field_name = 'metal_content', lookup_expr='in')
     brand__name             = CharInFilter(field_name = 'brand__name', lookup_expr='in')
@@ -72,7 +72,6 @@ class ProductFilter(django_filters.FilterSet):
         model = Product
         fields = [
             'metal',
-            'metal_finish',
             'color',
             'metal_content',
             'status',

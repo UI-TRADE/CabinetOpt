@@ -1,8 +1,14 @@
 
+import os
+import base64
+
 from django.contrib import admin
 from django.db import transaction
+from django.core.mail import send_mail
 from django.core.exceptions import ValidationError
 from django.contrib.admin import SimpleListFilter
+from django.template.loader import render_to_string
+from django.conf import settings
 
 from .models import (
     PriorityDirection,
@@ -90,8 +96,8 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
             'email',
             'phone',
         ),
-        ('login', 'password'),
         'priority_direction',
+        ('login', 'password'),
     ]
     list_filter = (RegistrationOrderFilter,)
 
@@ -106,22 +112,18 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
         return self.readonly_fields
 
     def get_fieldsets(self, request, obj=None):
-
-        def remove_login_group(fields):
-            if ('login', 'password') in fields:
-                fields.remove(('login', 'password'))
-            return fields
-        
         fieldsets = super().get_fieldsets(request, obj)
-        if self.check_registration(obj): 
-            return [
-                tuple((
-                    lambda f: {
-                        'fields': remove_login_group(f['fields'])
-                    } if f else f
-                )(fields) for fields in fieldset) for fieldset in fieldsets
-            ]
-        
+        if self.check_registration(obj):
+            for fieldset in fieldsets:
+                _, field_struct = fieldset
+                if ('login', 'password') in field_struct['fields']:
+                    field_struct['fields'].remove(('login', 'password'))
+        else:
+            for fieldset in fieldsets:
+                _, field_struct = fieldset
+                if not ('login', 'password') in field_struct['fields']:
+                    field_struct['fields'].append(('login', 'password'))
+   
         return fieldsets
 
     def get_form(self, request, obj=None, **kwargs):
@@ -129,6 +131,7 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
         return form
 
     def save_model(self, request, obj, form, change):
+
         registration_order = form.cleaned_data
         if not registration_order.get('status') or registration_order.get('status') != 'registered':
             return super().save_model(request, obj, form, change)
@@ -136,7 +139,7 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
         parsed_manager_name = parse_of_name(registration_order.get('name_of_manager'))
         if not parsed_manager_name:
             raise ValidationError('Не указано ФИО персонального менеджера', code='')
-        
+
         with transaction.atomic():
             personal_manager, _ = Manager.objects.get_or_create(
                 last_name = parsed_manager_name['last_name'],
@@ -153,7 +156,33 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
                 'approved_by'       : request.user,
             })
             client.manager.add(personal_manager)
+
+            context = {
+                'login'   : personal_manager.login,
+                'password': personal_manager.password
+            } | self.get_images(['logo.png', 'confirm.jpg'])
+            self.send_email(context, [obj.email])
+
             return super().save_model(request, obj, form, change)
+    
+    def get_images(self, images):
+        result = {}
+        static_dir = os.path.join(settings.BASE_DIR, 'static')
+        for img_name in images:
+            image_path = os.path.join(static_dir, 'img', img_name)
+            with open(image_path, 'rb') as image_file:
+                image_data = image_file.read()
+            base64_image = base64.b64encode(image_data).decode()
+            result[img_name.split('.')[0]] = base64_image
+        return result
+
+    def send_email(self, context, recipient_list):
+        html_content = render_to_string('forms/confirm.html', context)
+        subject = 'доступ к личному кабинету на сайте opt.talantgold.ru'
+        from_email = settings.EMAIL_HOST_USER
+        message = 'доступ к личному кабинету на сайте opt.talantgold.ru'
+        send_mail(subject, message, from_email, recipient_list, html_message=html_content)
+
 
 
 @admin.register(Manager)

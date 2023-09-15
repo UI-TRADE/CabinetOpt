@@ -20,7 +20,7 @@
                             <ul>
                             {% for node in item.nodes %}
                                 <li>
-                                    {% with ""|add:node.metal_finish|add:" "|add:node.color|add:" "|add:node.metal_content|add:"`" as node_repr %}
+                                    {% with ""|add:node.metal_finish__name|add:" "|add:node.color|add:" "|add:node.metal_content|add:"`" as node_repr %}
                                         <div class="d-flex row filter-node-item"><span class="filter-item-title" data-json="{{node|filtertojson}}">{{node_repr}}</span><a href="#">({{ node.count }})</a></div>
                                     {% endwith %}
                                 </li>
@@ -37,10 +37,8 @@
                 <ul id="metal_finish">
                     {% for item in filters.metal_finish.tree %}
                         <li>
-                        {% if item.metal_finish %}
-                            <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-item-title" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.metal_finish }}</span><a href="#">({{ item.count }})</a></div>
-                        {% else %}
-                            <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-item-title" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">Без обработки</span><a href="#">({{ item.count }})</a></div>
+                        {% if item.metal_finish__name %}
+                            <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-item-title" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.metal_finish__name }}</span><a href="#">({{ item.count }})</a></div>
                         {% endif %}
                         </li>
                     {% endfor %}

@@ -1,5 +1,6 @@
 import io
 import base64
+import datetime
 from contextlib import suppress
 from django.db import transaction
 from django.db.models import Q
@@ -17,7 +18,9 @@ from catalog.models import (
     GemSet,
     PreciousStone,
     CutType,
-    Gender
+    Gender,
+    Gift,
+    Design
 )
 from catalog.models import PriceType, Price
 
@@ -31,24 +34,46 @@ def run_uploading_products(uploading_products):
                 product, _ = Product.objects.update_or_create(
                     identifier_1C=identifier_1C,
                     defaults = {
-                        'name'              : item['nomenclature']['Наименование'],
-                        'articul'           : item['articul'],
-                        'collection'        : update_or_create_collection(item['collection']),
-                        'brand'             : update_or_create_brand(item['brand']),
-                        'unit'              : item['unit'],
+                        'name'               : item['nomenclature']['Наименование'],
+                        'articul'            : item['articul'],
+                        'collection'         : update_or_create_collection(item['collection'], item['group']),
+                        'brand'              : update_or_create_brand(item['brand']),
+                        'unit'               : item['unit'],
                         'available_for_order': True,
                         'product_type'       : item['product_type'],
                         "metal"              : item["metal"],
                         "metal_content"      : item["metal_content"],
                         "color"              : item["color"],
-                        "gender"             : update_or_create_gender(item["gender"]),
                         "status"             : item["status"],
+                        'str_color'          : item["str_color"],
+                        'lock_type_earings'  : item["lock_type_earings"],
+                        'lock_type_chain'    : item["lock_type_chain"],
+                        'lock_type_bracelet' : item["lock_type_bracelet"],
+                        'chain_width'        : item["chain_width"],
+                        'bracelet_width'     : item["bracelet_width"],
+                        'q_borders_c_b'      : item["q_borders_c_b"],
+                        'chain_weave'        : item["chain_weave"],
+                        'bracelet_weave'     : item["bracelet_weave"],
+                        'mark_description'   : item["mark_description"],
                         'identifier_1C'      : identifier_1C
                 })
+
+                genders = update_or_create_gender(item["gender"])
+                for gender in genders:
+                    product.gender.add(gender)
+
+                gifts = update_or_create_gift(item["gift"])
+                for gift in gifts:
+                    product.gift.add(gift)
+
+                designs = update_or_create_design(item["design"])
+                for design in designs:
+                    product.design.add(design)
 
                 if item.get('gem_sets'):
                     for gem_set in item['gem_sets']:
                         filter_kwargs = {'product': product}
+                        filter_kwargs['size'] = update_or_create_size(gem_set['size_dop'])
                         precious_stone = update_or_create_precious_stone(gem_set['precious_stone'])
                         if precious_stone:
                             filter_kwargs['precious_stone'] = precious_stone    
@@ -93,11 +118,26 @@ def update_or_create_collection_group(group):
 def update_or_create_brand(brand):
     if not brand:
         return
-    brand_obj, _ = PriorityDirection.objects.update_or_create(name=brand)
+    
+    identifier_1C = brand['Идентификатор']
+    if identifier_1C == '00000000-0000-0000-0000-000000000000':
+        return
+    
+    if brand['Удален']:
+        found_brand = PriorityDirection.objects.get(identifier_1C=identifier_1C)
+        found_brand.delete()
+        return
+    
+    brand_obj, _ = PriorityDirection.objects.update_or_create(
+        identifier_1C=identifier_1C,
+        defaults={
+            'name': brand['Наименование']
+    })
+
     return brand_obj
 
 
-def update_or_create_collection(collection):
+def update_or_create_collection(collection, group):
     if not collection:
         return
 
@@ -114,40 +154,53 @@ def update_or_create_collection(collection):
         identifier_1C=identifier_1C,
         defaults={
             'name': collection['Наименование'],
-            'group': update_or_create_collection_group(collection['group']),
-            'identifier_1C': identifier_1C
+            'group': update_or_create_collection_group(group)
     })
 
     return collection_obj
 
 
-def update_or_create_gender(gender):
-    if not gender:
+def update_or_create_gender(genders):
+    if not genders:
         return
     
-    gender_obj, _ = Gender.objects.update_or_create(name=gender)
-    return gender_obj
+    result = []
+    for gender in genders:
+        gender_obj, _ = Gender.objects.update_or_create(name=gender)
+        result.append(gender_obj)
+
+    return result
+
+
+def update_or_create_gift(gifts):
+    if not gifts:
+        return
+    
+    result = []
+    for gift in gifts:
+        gift_obj, _ = Gift.objects.update_or_create(name=gift)
+        result.append(gift_obj)
+
+    return result
+
+
+def update_or_create_design(designs):
+    if not designs:
+        return
+    
+    result = []
+    for design in designs:
+        design_obj, _ = Design.objects.update_or_create(name=design)
+        result.append(design_obj)
+
+    return result
 
 
 def update_or_create_precious_stone(precious_stone):
     if not precious_stone:
         return
-
-    identifier_1C = precious_stone['Идентификатор']
-    if identifier_1C == '00000000-0000-0000-0000-000000000000':
-        return
     
-    if precious_stone['Удален']:
-        found_precious_stone = PreciousStone.objects.get(identifier_1C=identifier_1C)
-        found_precious_stone.delete()
-        return
-    
-    precious_stone_obj, _ = PreciousStone.objects.update_or_create(
-        identifier_1C=identifier_1C,
-        defaults={
-            'name': precious_stone['Наименование'],
-            'identifier_1C': identifier_1C
-    })
+    precious_stone_obj, _ = PreciousStone.objects.update_or_create(name=precious_stone)
 
     return precious_stone_obj
 
@@ -199,7 +252,25 @@ def run_uploading_price(uploading_price):
                     ),
                     'unit': item['unit']
                 }
-                Price.objects.update_or_create(**filter_kwargs, defaults={'price': item['price']})
+                defaults={'price': item['price']}
+
+                begin_date = ''
+                if item.get('begin_date'):
+                    begin_date = f'{begin_date}{item.get("begin_date")}'
+                if item.get('begin_time'):
+                    begin_date = f'{begin_date} {item.get("begin_time")}'
+                end_date = ''
+                if item.get('end_date'):
+                    end_date = f'{end_date}{item.get("end_date")}'
+                if item.get('end_time'):
+                    end_date = f'{end_date} {item.get("end_time")}'
+
+                if begin_date:
+                    defaults['start_at'] = datetime.datetime.strptime(begin_date, '%Y%m%d %H:%M:%S')
+                if end_date:
+                    defaults['end_at'] = datetime.datetime.strptime(end_date, '%Y%m%d %H:%M:%S')
+                     
+                Price.objects.update_or_create(**filter_kwargs, defaults=defaults)
 
  
         except (
@@ -245,6 +316,22 @@ def update_or_create_price_type(client):
     return price_type
 
 
+def update_or_create_size(size):
+    if not size:
+        return Size.objects.none()
+    defaults = {}
+    if size['диапазон_от']:
+        defaults['size_from'] = size['диапазон_от']
+        defaults['size_to']   = size['диапазон_от']
+        if size['диапазон_до']:
+            defaults['size_to'] = size['диапазон_до']
+    size, _ = Size.objects.get_or_create(
+        name=size['Наименование'],
+        defaults=defaults
+    )
+    return size
+
+
 def run_uploading_stock_and_costs(stock_and_costs):
     errors = []
     for item in stock_and_costs:
@@ -253,18 +340,7 @@ def run_uploading_stock_and_costs(stock_and_costs):
                 identifier_1C = item['nomenclature']['Идентификатор']
                 product = Product.objects.get(identifier_1C=identifier_1C)
                 filter_kwargs = {'product': product}
-                if item['size']:
-                    defaults = {}
-                    if item['size']['диапазон_от']:
-                        defaults['size_from'] = item['size']['диапазон_от']
-                        defaults['size_to']   = item['size']['диапазон_от']
-                        if item['size']['диапазон_до']:
-                            defaults['size_to'] = item['size']['диапазон_до']
-                    size, _ = Size.objects.get_or_create(
-                        name=item['size']['Наименование'],
-                        defaults=defaults
-                    )
-                    filter_kwargs['size'] = size
+                filter_kwargs['size'] = update_or_create_size(item['size'])
                 result, _ = StockAndCost.objects.update_or_create(
                     **filter_kwargs,
                     defaults = {

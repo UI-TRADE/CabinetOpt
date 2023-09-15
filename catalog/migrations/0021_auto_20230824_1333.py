@@ -5,10 +5,10 @@ from django.db import migrations
 def add_default_genders(apps, schema_editor):
     Gender = apps.get_model("catalog", "Gender")
 
-    new_obj = Gender(name="Мужской")
+    new_obj = Gender(name="для мужчин")
     new_obj.save()
 
-    new_obj = Gender(name="Женский")
+    new_obj = Gender(name="для женщин")
     new_obj.save()
 
 

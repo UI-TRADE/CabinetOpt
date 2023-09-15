@@ -179,6 +179,14 @@ Webpack будет следить за файлами в каталоге `src`.
 
 `LOGTAIL_SOURCE_TOKEN` - токен сервиса [LogTail](https://logs.betterstack.com/), который используется в качестве внешнего инструмента сбора логов.
 
+`EMAIL_HOST` - адрес smtp сервера.
+`EMAIL_PORT` - порт smtp сервера.
+`EMAIL_HOST_USER` - имя пользователя от которого отправляется почта.
+`EMAIL_HOST_PASSWORD` - пароль почты.
+`EMAIL_USE_TLS` - TLS (по умолчанию не используется)
+`EMAIL_USE_SSL` - SSL (по умолчанию включено) 
+
+
 Запустите развертывание сайта в Docker:
 
 ```sh
@@ -381,6 +389,12 @@ curl -X POST -H "Content-Type: application/json" -d @media/stock_and_costs.json 
     "price_per_gr": 0
     },
 ]
+```
+
+Загрузка заказов с личного кабинета:
+
+```sh
+curl http://127.0.0.1:8000/orders/order/export/2004-01-01/2012-10-19 -H "Authorization: Token 0000000000000000000000000000000000000000"
 ```
 
 

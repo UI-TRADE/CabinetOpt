@@ -15,8 +15,43 @@ from .models import (
     ProductsSet,
     SimilarProducts,
     Size,
-    Gender
+    Gender,
+    MetalFinish,
+    Gift,
+    Design
 )
+
+class GenderInLine(admin.TabularInline):
+    model = Product.gender.through
+    extra = 0
+    classes = ('collapse', )
+    verbose_name = "для кого"
+    verbose_name_plural = "для кого"
+
+
+class MetalFinishInLine(admin.TabularInline):
+    model = Product.metal_finish.through
+    extra = 0
+    classes = ('collapse', )
+    verbose_name = "Вид обработки металла"
+    verbose_name_plural = "Виды обработки металла"
+
+
+class GiftInLine(admin.TabularInline):
+    model = Product.gift.through
+    extra = 0
+    classes = ('collapse', )
+    verbose_name = "Подарок"
+    verbose_name_plural = "Подарки"
+
+
+class DesignInLine(admin.TabularInline):
+    model = Product.design.through
+    extra = 0
+    classes = ('collapse', )
+    verbose_name = "Дизайн"
+    verbose_name_plural = "Дизайны"
+
 
 class ProductImageInLine(admin.TabularInline):
     model = ProductImage
@@ -76,7 +111,7 @@ class GemSetInLine(admin.StackedInline):
     model = GemSet
     extra = 0
     fields = (
-        'product',
+        ('product', 'size'),
         'order',
         ('precious_stone', 'cut_type', 'gem_color'),
         ('gem_weight', 'gem_quantity'),
@@ -134,7 +169,6 @@ class ProductAdmin(admin.ModelAdmin):
         'collection',
         'metal',
         'metal_content',
-        'metal_finish',
         'color',
         'unit',
         'available_for_order',
@@ -146,9 +180,13 @@ class ProductAdmin(admin.ModelAdmin):
         'status',
         ('name', 'articul', 'unit'),
         ('brand', 'collection'),
-        ('metal', 'metal_content', 'metal_finish', 'color'),
-        'gender',
+        ('metal', 'metal_content', 'color', 'str_color'),
         'available_for_order',
+        ('lock_type_earings', 'lock_type_chain', 'lock_type_bracelet'),
+        ('chain_width', 'bracelet_width'),
+        ('chain_weave', 'bracelet_weave'),
+        'q_borders_c_b',
+        'mark_description'
     ]
     list_filter = [
         'brand',
@@ -157,15 +195,15 @@ class ProductAdmin(admin.ModelAdmin):
         'status',
         'metal',
         'metal_content',
-        'metal_finish',
         'color',
-        'gender',
         'available_for_order'
     ]
     readonly_fields = [
         'created_at'
     ]
     inlines = [
+        GenderInLine,
+        MetalFinishInLine,
         GemSetInLine,
         StockAndCostInLine,
         ProductImageInLine,
@@ -299,5 +337,23 @@ class SizeAdmin(admin.ModelAdmin):
 
 @admin.register(Gender)
 class GenderAdmin(admin.ModelAdmin):
+    search_fields = ['name',]
+    fields = ['name',]
+
+
+@admin.register(MetalFinish)
+class MetalFinishAdmin(admin.ModelAdmin):
+    search_fields = ['name',]
+    fields = ['name',]
+
+
+@admin.register(Gift)
+class GiftAdmin(admin.ModelAdmin):
+    search_fields = ['name',]
+    fields = ['name',]
+
+
+@admin.register(Design)
+class DesignAdmin(admin.ModelAdmin):
     search_fields = ['name',]
     fields = ['name',]
