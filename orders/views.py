@@ -14,7 +14,10 @@ from django.template.loader import get_template
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from contextlib import suppress
-from rest_framework.decorators import api_view
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
 from xhtml2pdf import pisa
 
 from clients.login import Login
@@ -426,3 +429,33 @@ def stocks_and_costs(request):
         {'replay': 'error', 'message': 'Отсутствуют Продукты для получения данных'},
         status=200
     )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def unload_orders(request, *args, **kwargs):
+    period = {}
+    if kwargs.get('data_from'):
+        period['created_at__gte'] = kwargs['data_from']
+    if kwargs.get('data_to'):
+        period['created_at__lte'] = kwargs['data_to']  
+    orders = Order.objects.filter(**period)
+    serialized_orders = []
+    for order in orders:
+        qs_order = Order.objects.filter(pk=order.id)
+        serialized_order = json.loads(serialize(
+            "json", qs_order, use_natural_foreign_keys=True
+        ))[0]
+        serialized_items = json.loads(serialize(
+            "json",
+            OrderItem.objects.filter(order__in=qs_order),
+            use_natural_foreign_keys=True
+        ))
+        items = []
+        for serialized_item in serialized_items:
+            items.append(serialized_item['fields'])
+        serialized_order['items'] = items
+
+        serialized_orders.append(serialized_order)
+
+    return JsonResponse(serialized_orders, status=200, safe=False)

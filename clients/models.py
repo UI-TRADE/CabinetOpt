@@ -71,6 +71,9 @@ class Manager(models.Model):
     
     def __str__(self):
         return f'{self.last_name} {self.first_name}'
+    
+    def natural_key(self):
+        return (self.last_name, self.first_name, )
 
 
 class Client(models.Model):
@@ -123,6 +126,9 @@ class Client(models.Model):
     
     def __str__(self):
         return f'{self.name} ({self.inn})'
+    
+    def natural_key(self):
+        return (self.name, self.inn, )
 
 
 class ContactDetail(models.Model):

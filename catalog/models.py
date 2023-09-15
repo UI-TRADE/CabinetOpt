@@ -220,6 +220,9 @@ class Product(models.Model):
     def __str__(self):
         return f'{self.articul} {self.name}'.strip()
     
+    def natural_key(self):
+        return (self.name, self.id, self.identifier_1C, )
+    
     @property
     def get_images(self):
         product_images = ProductImage.objects.filter(product_id=self.id)

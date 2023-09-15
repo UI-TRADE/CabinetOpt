@@ -61,6 +61,9 @@ class Order(models.Model):
     
     def get_total_max_cost(self):
         return sum(item.max_price for item in self.items.all())
+    
+    def natural_key(self):
+        return (self.id, self.created_at, )
 
 
 class OrderItem(models.Model):
