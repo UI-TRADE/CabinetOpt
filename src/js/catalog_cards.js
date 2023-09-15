@@ -172,7 +172,7 @@ const updateProductCards = (element) => {
         .then((result) => {
             if (result.every(Boolean)) {
                 сartEvents();
-                element.style.display = 'block';
+                element.style.visibility = 'visible';
             }
         })
         .catch((error) => {
@@ -184,7 +184,7 @@ const updateProductCards = (element) => {
 function updateProducts(elementId, data) {
     const mainElement = document.getElementById(elementId);
     if (!document.getElementById(elementId)) return;
-    mainElement.style = "display: none;";
+    mainElement.style = "visibility: hidden;";
     $.ajax({
         type: 'POST',
         data: data,

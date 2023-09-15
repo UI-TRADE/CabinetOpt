@@ -14,7 +14,7 @@
           <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
         </div>
 
-        <main id="products" class="col-md-9 products" style="display: none;">
+        <main id="products" class="col-md-9 products" style="visibility: hidden;">
             <div class="row">
               {% for product in products %}
                 {% with product_id="id"|addparam:product.id%}
