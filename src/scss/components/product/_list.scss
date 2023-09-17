@@ -1,4 +1,7 @@
 .products-list{
+  .product-item{
+    margin-bottom:78px;
+  }
   @media (max-width: 1300px) {
     .product-item__col{
       flex: 0 0 50%;

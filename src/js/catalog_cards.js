@@ -47,7 +47,7 @@ const updateProductCards = (element) => {
                     const currentId = JSON.parse(elements[i].getAttribute('data-json'));
                     const product = products.find(el => el['pk'] == currentId['id']);
                     const stock_and_cost = stocks_and_costs.filter(
-                        el => el['fields'].product == currentId['id']
+                        (el) => el['fields'].product[1] == currentId['id']
                     ).find(_ => true);
                     const actual_price = actual_prices.filter(
                         el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
@@ -148,7 +148,10 @@ const updateProductCards = (element) => {
             const data = JSON.parse(statusField.getAttribute('data-json'));
             if (!data) statusField.className += ' text-info';
             if (data.status === "novelty") statusField.className += ' text-info';
-            if (data.status === "order")   statusField.className += ' text-info-emphasis';
+            if (data.status === "order") {
+                statusField.className += ` badge badge-secondary ${data.status}__status`;
+                $('b', statusField).text('на заказ')
+            }
             if (data.status === "hit")     statusField.className += ' text-warning';
             if (data.status === "sale")    statusField.className += ' text-danger';
         });

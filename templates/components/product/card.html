@@ -5,10 +5,10 @@
         <div class="card-body">
             <div class="row ">
                 <div class="col col-8 product-item__brand">{{ product.brand }}</div>
-                <div class="col col-4 product-item__tags">
+                <div class="product-item__tags">
                     {% if product.status %}
                         {% with product_status="status"|addparam:product.status %}
-                            <div name="product-status" class="text-right fs-3"
+                            <div name="product-status" class="fs-3"
                                data-json="{{ product_status|tojson }}">
                                 <b>{{ product.get_status_display }}</b>
                             </div>
@@ -50,6 +50,7 @@
                         <div class="product__price-block__row--position">
                             <div class="product__price-block__element--position text-warning discount"></div>
                             <div class="product__price-block__element--position price"></div>
+                            <div class="hidden max-price"></div>
                         </div>
                     </div>
                 </div>
@@ -92,13 +93,15 @@
                 <div class="row px-4 px-sm-0">
                     <a href="{% url 'catalog:product' product.id %}" class="stretched-link"></a>
                 </div>
-                <div class="col col-12 product-item__additional-data hidden">
-                    <div class="product-item__articul">{{ product.articul }}</div>
-                    <div>
-                        <span class="product-item__weight weight"></span>
-                        <span class="product-item__price-per-gramm price-per-weight"></span>
-                    </div>
-                </div>
+
+            </div>
+        </div>
+
+        <div class="col col-12 product-item__additional-data hidden">
+            <div class="product-item__articul">{{ product.articul }}</div>
+            <div>
+                <span class="product-item__weight weight"></span>
+                <span class="product-item__price-per-gramm price-per-weight"></span>
             </div>
         </div>
     </div>
