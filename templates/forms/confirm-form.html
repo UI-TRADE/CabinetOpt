@@ -1,0 +1,17 @@
+{% load static %}
+
+<form class="justify-content-xl-center confirm-form" action="{% url 'clients:reg_request_confirm' %}">
+    {% csrf_token %}
+    <div class="d-flex flex-column flex-nowrap">
+        <div class="d-sm-flex flex-row title-registration-form sign-in-form-item">
+            <p id="title-part-1">Уважаемый партнёр!</p>
+        </div>
+        <div class="d-sm-flex flex-row title-registration-form sign-in-form-item">
+            <p id="title-part-2">Ваша заявка успешно отправленна.</p>
+        </div>
+        <div style="height: 7px;"></div>
+        <div class="text-center registration-form-btn">
+            <button class="btn btn-primary btn-sign-in" type="submit">OK</button>
+        </div>
+    </div>
+</form>

@@ -35,8 +35,12 @@ const updateModalForm = (formId) => {
                     showErrors(formId, data['errors']);
                     data['errors'] = {}
                 } else {
-                    $('.modal').modal('hide');
-                    location.reload();
+                    if ($(event.target).hasClass('registration-form')) {
+                        $('#registration-form').html(data);
+                    } else {
+                        $('.modal').modal('hide');
+                        location.reload();
+                    }
                 }
             },
             error: (error) => {
