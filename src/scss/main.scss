@@ -1,0 +1,72 @@
+@import "libs/boilerplate";
+@import "utils/variables";
+@import 'bootstrap/scss/bootstrap';
+
+
+@import "common/fonts";
+@import "common/forms";
+
+@import "layout/default";
+
+@import "components/forms/old_form";
+@import "components/navigation/mainmenu";
+@import "components/auth/registration";
+@import "components/auth/login";
+
+@import "components/cart/old";
+@import "components/_old/brand";
+
+@import "components/product/list";
+@import "components/product/detail";
+@import "components/product/card";
+
+
+#show-password {
+    position: absolute;
+    right: 13px;
+    bottom: 8px;
+    z-index: 3;
+}
+
+.navbar-custom-pos {
+    position: absolute;
+    left: 10px;
+}
+
+#link-catalog {
+    color: #FFF;
+    font-family: "Open Sans";
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    text-align: center;
+}
+
+#login-info {
+    margin: 0px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: inherit;
+}
+
+
+
+@media (max-width: 991px) {
+    .navbar .collapsing,
+    .navbar .show {
+        position: absolute;
+        top: 70px;
+        left: 6px;
+        z-index: 1;
+        background:#242A35 !important;
+        border-radius: 10px;
+    }
+}
+
+@media (max-width: 991px) {
+    .navbar .collapsing,
+    .navbar .show li{
+        padding: 2px 0px 2px 10px;
+    }
+}

@@ -28,7 +28,7 @@ const getDefaultValues = (sliderId, min, max) => {
     const attributeName = getSliderAttr(sliderId);
     const filters = JSON.parse(sessionStorage.getItem('filters'));
     if (filters) {
-        filters.forEach(item => {
+        (filters || []).forEach(item => {
             if (Object.keys(item).find(k => k == `${attributeName}_min`)) {
                 min = item[`${attributeName}_min`];
             }
@@ -43,7 +43,7 @@ const getDefaultValues = (sliderId, min, max) => {
 
 const updateFilters = (filters, key, value) => {
     let addKey = true;
-    filters.forEach(item => {
+    (filters || []).forEach(item => {
         if (Object.keys(item).find(k => k == key)) {
             item[key] = parseFloat(value);
             addKey = false;

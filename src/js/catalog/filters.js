@@ -134,7 +134,7 @@ export function filtersEvents() {
     $(document).on('click', '.form-check-input', event => {
         const filters = JSON.parse(sessionStorage.getItem('filters'));
         let foundFilter = false;
-        filters.forEach(item => {
+        (filters ||[]).forEach(item => {
             if (Object.keys(item).find(k => k == 'available_for_order')) {
                 foundFilter = true;
                 item['available_for_order'] = event.target.checked;

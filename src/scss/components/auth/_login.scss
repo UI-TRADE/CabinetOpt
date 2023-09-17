@@ -1,0 +1,38 @@
+
+
+.login-form {
+    width: 440px;
+    height: 281px;
+    flex-shrink: 0;
+    border-radius: 15px;
+    background: #FFF;
+    padding-top: 15px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+
+.sign-in-form-item {
+    margin-bottom: 7px;
+    position: relative;
+}
+
+
+.sign-in-form-item:last-child {
+    margin-bottom: 0px;
+}
+
+.sign-in-form-layout {
+    position: absolute!important;
+    top: 127px!important;
+    left: 0!important;
+    right: 0!important;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.sign-in-icon {
+    height: 32px;
+    width: 32px;
+    flex-shrink: 0;
+}

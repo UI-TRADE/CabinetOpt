@@ -1,0 +1,85 @@
+.product-item{
+  transition: all 0.25s;
+  .product-item__brand{
+    font-size: 0.75em;
+  }
+  .product-item__tags{
+    font-size: 1em;
+  }
+  .card-body{
+    padding-top:1rem;
+    padding-bottom:1rem;
+
+    .carousel{
+      min-height:210px;
+      max-height: 210px;
+      line-height: 210px;
+      vertical-align: middle;
+      figure{
+        margin:0;
+      }
+    }
+
+    .product-item__name{
+      padding-top:8px;
+    }
+    .product-item__name{
+      margin-top:-2px;
+    }
+
+    .product__price-block__row--position{
+      padding-top:23px;
+      font-size:20px;
+    }
+    .price{
+      font-weight: 600;
+      i{
+        font-size:0.86em;
+      }
+    }
+    .inStock-block{
+      padding:2px 0 0;
+      .inStock-block__value {
+        font-size: .75em;
+      }
+      .add-to-cart__button{
+        width:140px;
+        font-weight: 600;
+        position: relative;
+        z-index: 10;
+        &:focus,
+        &:hover{
+          color:#fff
+        }
+      }
+    }
+
+    .product-item__additional-data{
+      padding-top:20px;
+      .product-item__articul{
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .product-item__weight{
+        display: none;
+        &:after{
+          content:"\00a0"
+        }
+      }
+      .product-item__price-per-gramm{
+        font-size: 12px;
+        i{
+          font-size:0.95em
+        }
+      }
+    }
+  }
+
+  &:hover{
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
+    .product-item__additional-data{
+      display: block!important;
+
+    }
+  }
+}
