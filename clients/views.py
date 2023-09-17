@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.shortcuts import (
     render, redirect, get_object_or_404
 )
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, UpdateView, CreateView
 from contextlib import suppress
 
@@ -37,7 +37,7 @@ def login(request):
     
     with suppress(AuthenticationError):
         login.auth(**form.cleaned_data)
-        return redirect("start_page")
+        return JsonResponse({'redirect_url': reverse('catalog:products')})
 
     return JsonResponse(
         {'errors': json.dumps(

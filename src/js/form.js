@@ -34,6 +34,8 @@ const updateModalForm = (formId) => {
                 if(data['errors']) {
                     showErrors(formId, data['errors']);
                     data['errors'] = {}
+                } else if(data['redirect_url']) {
+                    location.replace(data['redirect_url']);
                 } else {
                     if ($(event.target).hasClass('registration-form')) {
                         $('#registration-form').html(data);
