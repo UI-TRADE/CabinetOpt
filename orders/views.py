@@ -21,8 +21,8 @@ from rest_framework.permissions import IsAuthenticated
 from xhtml2pdf import pisa
 
 from clients.login import Login
-from clients.models import ContactDetail
-from catalog.models import Product, StockAndCost, Size
+from clients.models import Client, Manager, ContactDetail
+from catalog.models import Product, StockAndCost, Size, PriceType
 from orders.models import Order, OrderItem
 
 from .forms import (
@@ -439,23 +439,35 @@ def unload_orders(request, *args, **kwargs):
         period['created_at__gte'] = kwargs['data_from']
     if kwargs.get('data_to'):
         period['created_at__lte'] = kwargs['data_to']  
-    orders = Order.objects.filter(**period)
     serialized_orders = []
-    for order in orders:
-        qs_order = Order.objects.filter(pk=order.id)
-        serialized_order = json.loads(serialize(
-            "json", qs_order, use_natural_foreign_keys=True
-        ))[0]
-        serialized_items = json.loads(serialize(
-            "json",
-            OrderItem.objects.filter(order__in=qs_order),
-            use_natural_foreign_keys=True
-        ))
-        items = []
-        for serialized_item in serialized_items:
-            items.append(serialized_item['fields'])
-        serialized_order['items'] = items
+    for order in Order.objects.filter(**period):
+        serialized_order = json.loads(
+            serialize('json', Order.objects.filter(pk=order.id))
+        )
+        for item in serialized_order:
+            item['fields']['client'] = json.loads(
+                serialize('json', Client.objects.filter(pk=item['fields']['client']))
+            )
+            item['fields']['manager'] = json.loads(
+                serialize('json', Manager.objects.filter(pk=item['fields']['manager']))
+            )
 
-        serialized_orders.append(serialized_order)
+            serialized_items = json.loads(serialize(
+                "json",
+                OrderItem.objects.filter(order_id=item['pk'])
+            ))
+            for order_item in serialized_items:
+                order_item['fields']['product'] = json.loads(
+                    serialize('json', Product.objects.filter(pk=order_item['fields']['product']))
+                )
+                order_item['fields']['size'] = json.loads(
+                    serialize('json', Size.objects.filter(pk=order_item['fields']['size']))
+                )
+                order_item['fields']['price_type'] = json.loads(
+                    serialize('json', PriceType.objects.filter(pk=order_item['fields']['price_type']))
+                )
+            item['items'] = serialized_items
+
+        serialized_orders.append(item)
 
     return JsonResponse(serialized_orders, status=200, safe=False)
