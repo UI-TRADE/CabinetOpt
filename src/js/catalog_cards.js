@@ -92,13 +92,18 @@ const updateProductCards = (element) => {
                     const maxPriceField       = priceBlock.querySelector('.max-price');
                     const discountField       = priceBlock.querySelector('.discount');
                     const stockField          = inStockBlock.querySelector('.in_stock');
-                    if (currentPrice) pricePerweightField.textContent = `${currentPrice} руб/гр`;
-                    if (price.clientPrice) priceField.textContent = `${price.clientPrice} руб`;
+                    if (currentPrice) pricePerweightField.innerHTML = `${currentPrice} <i class="fa fa-rub" aria-hidden="true"></i>/гр`;
+                    if (price.clientPrice) priceField.innerHTML = `${price.clientPrice} <i class="fa fa-rub" aria-hidden="true"></i>`;
                     if (currentDiscount>0) {
-                        if (price.maxPrice) maxPriceField.textContent = `${price.maxPrice} руб`;
+                        if (price.maxPrice) maxPriceField.innerHTML = `${price.maxPrice} <i class="fa fa-rub" aria-hidden="true"></i>`;
                         discountField.textContent = `- ${currentDiscount} %`
                     };
-                    if (product['fields'].unit == '163' && weight) weightField.textContent = `Вес: ${weight} гр`;
+                    if (product['fields'].unit == '163' && weight) {
+                        weightField.style.display = "inline-block"
+                        weightField.textContent = `Вес: ${weight} гр`
+                    }else{
+                        weightField.style.display = "none"
+                    }
                     if (inStok) stockField.textContent = `${inStok} шт`;
 
                     var inputFields = inStockBlock.getElementsByTagName('input');

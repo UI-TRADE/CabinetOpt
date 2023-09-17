@@ -1,9 +1,14 @@
 .products-list{
-  @media (min-width: 1024px) {
-    .product-item__col.col-lg-4 {
+  @media (max-width: 1300px) {
+    .product-item__col{
       flex: 0 0 50%;
       max-width: 50%;
-        //padding-right: 300px;
+    }
+  }
+  @media (max-width: 1300px) {
+    .product-item__col{
+      flex: 0 0 100%;
+      max-width: 100%;
     }
   }
 

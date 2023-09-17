@@ -8,17 +8,19 @@
     <div style="display: none" id="collections" data-json="{{ collections }}"></div>
 
       <div class="row">
-        <div class="container d-flex flex-column" id="filter-container"></div>
+        <div class="container col-xl-3 col-md-5 col-sm-6 col-xs-12">
+            <div id="filter-container"></div>
+        </div>
 
         <div style="display:none">
           <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
         </div>
 
-        <main id="products" class="col-md-9 products products-list" style="visibility: hidden;">
+        <main id="products" class="col-xl-9 col-md-7 col-sm-6 col-xs-12 products products-list" style="visibility: hidden;">
             <div class="row">
               {% for product in products %}
                 {% with product_id="id"|addparam:product.id%}
-                <div class="product-item__col col-xxl-3 col-xl-4 col-lg-4 col-md-6 col-sm-12 col-xs-12" data-json="{{ product_id|tojson }}">
+                <div class="product-item__col col-xxl-3 col-xl-4 col-lg-6 col-md-12 col-sm-12 col-xs-12" data-json="{{ product_id|tojson }}">
                 {% endwith %}
                 {% include "components/product/card.html" with product=product %}
                 </div>
