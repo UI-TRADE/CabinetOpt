@@ -161,7 +161,14 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
                 'login'   : personal_manager.login,
                 'password': personal_manager.password
             } | self.get_images(['logo.png', 'confirm.jpg'])
-            self.send_email(context, [obj.email])
+
+            recipient_list = [
+                obj.email,
+                'opt@talant-gold.ru',
+                'Chikunova.Anastasiya@talant-gold.ru',
+            ]
+
+            self.send_email(context, recipient_list)
 
             return super().save_model(request, obj, form, change)
     

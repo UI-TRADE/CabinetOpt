@@ -60,7 +60,6 @@ def register(request):
         defaults=form.cleaned_data,
     )
     return render(request, 'forms/confirm-form.html', {})
-    # return redirect("start_page")
 
 
 def register_confirm(request):
