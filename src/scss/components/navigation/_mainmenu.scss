@@ -1,0 +1,74 @@
+#main-menu{
+    margin-bottom: 20px;
+}
+
+#main-menu, #login-menu {
+    height: 64px;
+    background: #242A35;
+}
+
+#link-retail-sales {
+    width: 202px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-right: 30px;
+}
+
+#link-managers {
+    width: 93px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-right: 4px;
+}
+
+#link-orders {
+    width: 76px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-right: 63px;
+}
+
+#link-products {
+    width: 76px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-right: 6px;
+}
+#link-client {
+    width: 138px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-right: 25px;
+}
+
+#link-cart {
+    width: 26px;
+    height: 24px;
+    flex-shrink: 0;
+    margin-bottom: 2px;
+    margin-right: 25px;
+}
+
+.login-area {
+    position: absolute;
+    right: 0;
+}
+
+.login-icons {
+    padding-right: 102px;
+}
+
+#main-menu-info {
+    position: absolute;
+    right: 88px;
+}
+
+#main-menu-hart {
+    width: 23px;
+    height: 19px;
+    flex-shrink: 0;
+    stroke-width: 2px;
+    stroke: #FFF;
+    margin-right: 10px;
+}
+

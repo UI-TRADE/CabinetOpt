@@ -1,0 +1,35 @@
+.products-list{
+
+  .product-item{
+    margin-bottom:78px;
+  }
+
+
+
+  @media (max-width: 1300px) {
+    .product-item__col{
+      flex: 0 0 50%;
+      max-width: 50%;
+    }
+  }
+  @media (max-width: 1300px) {
+    .product-item__col{
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+  }
+
+  @media (min-width: 1700px) {
+    .product-item__col.col-xl-4 {
+      flex: 0 0 25%;
+      max-width: 25%;
+        //padding-right: 300px;
+    }
+  }
+
+  @media (min-width: 1900px) {
+    .product-item__col.col-xl-4{
+      max-width:337px;
+    }
+  }
+}

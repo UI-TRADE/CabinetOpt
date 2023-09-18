@@ -1,7 +1,6 @@
 import getPrice from './price'
 import {сartEvents, waitUpdateCart} from './cart';
 
-
 const extractContent = (html, elementId) => {
     const DOMModel = new DOMParser().parseFromString(html, 'text/html');
     return DOMModel.getElementById(elementId)?.innerHTML;
@@ -48,7 +47,7 @@ const updateProductCards = (element) => {
                     const currentId = JSON.parse(elements[i].getAttribute('data-json'));
                     const product = products.find(el => el['pk'] == currentId['id']);
                     const stock_and_cost = stocks_and_costs.filter(
-                        el => el['fields'].product == currentId['id']
+                        (el) => el['fields'].product[1] == currentId['id']
                     ).find(_ => true);
                     const actual_price = actual_prices.filter(
                         el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
@@ -88,18 +87,23 @@ const updateProductCards = (element) => {
                     const priceBlock          = elements[i].querySelector('.price-block');
                     const inStockBlock        = elements[i].querySelector('.inStock-block');
                     const priceField          = priceBlock.querySelector('.price');
-                    const weightField         = priceBlock.querySelector('.weight');
-                    const pricePerweightField = priceBlock.querySelector('.price-per-weight');
+                    const weightField         = elements[i].querySelector('.weight');
+                    const pricePerweightField =  elements[i].querySelector('.price-per-weight');
                     const maxPriceField       = priceBlock.querySelector('.max-price');
                     const discountField       = priceBlock.querySelector('.discount');
                     const stockField          = inStockBlock.querySelector('.in_stock');
-                    if (currentPrice) pricePerweightField.textContent = `${currentPrice} руб/гр`;
-                    if (price.clientPrice) priceField.textContent = `${price.clientPrice} руб`;
+                    if (currentPrice) pricePerweightField.innerHTML = `${currentPrice} <i class="fa fa-rub" aria-hidden="true"></i>/гр`;
+                    if (price.clientPrice) priceField.innerHTML = `${price.clientPrice} <i class="fa fa-rub" aria-hidden="true"></i>`;
                     if (currentDiscount>0) {
-                        if (price.maxPrice) maxPriceField.textContent = `${price.maxPrice} руб`;
+                        if (price.maxPrice) maxPriceField.innerHTML = `${price.maxPrice} <i class="fa fa-rub" aria-hidden="true"></i>`;
                         discountField.textContent = `- ${currentDiscount} %`
                     };
-                    if (product['fields'].unit == '163' && weight) weightField.textContent = `Вес: ${weight} гр`;
+                    if (product['fields'].unit == '163' && weight) {
+                        weightField.style.display = "inline-block"
+                        weightField.textContent = `Вес: ${weight} гр`
+                    }else{
+                        weightField.style.display = "none"
+                    }
                     if (inStok) stockField.textContent = `${inStok} шт`;
 
                     var inputFields = inStockBlock.getElementsByTagName('input');
@@ -139,25 +143,28 @@ const updateProductCards = (element) => {
     }
     
     const updateProductsStatusStyle = () => {
-        const statusFields = document.querySelectorAll('p[name="product-status"]');
+        const statusFields = document.querySelectorAll('div[name="product-status"]');
         statusFields.forEach((statusField) => {
             const data = JSON.parse(statusField.getAttribute('data-json'));
-            if (!data) return;
-            if (data.status === "novelty") statusField.className = 'text-primary fs-3';
-            if (data.status === "order")   statusField.className = 'text-info-emphasis fs-3';
-            if (data.status === "hit")     statusField.className = 'text-warning fs-3';
-            if (data.status === "sale")    statusField.className = 'text-danger fs-3';
+            if (!data) statusField.className += ' text-info';
+            if (data.status === "novelty") statusField.className += ' text-info';
+            if (data.status === "order") {
+                statusField.className += ` badge badge-secondary ${data.status}__status`;
+                $('b', statusField).text('на заказ')
+            }
+            if (data.status === "hit")     statusField.className += ' text-warning';
+            if (data.status === "sale")    statusField.className += ' text-danger';
         });
     }
     
     updateProductsStatusStyle();
 
-    const productIds = []
-    const elements = document.getElementsByClassName('good-block');
-    for (var j=0; j<elements.length; j++) {
-        const productId = JSON.parse(elements[j].getAttribute('data-json'));
-        if (productId) productIds.push(productId['id']);
-    }
+
+    const elements = $('.good-block, .product-item').toArray() || []
+    const productIds = elements.map((element) => {
+        const productId = JSON.parse(element.getAttribute('data-json')).id;
+        return productId
+    })
 
     if (productIds.length == 0) {
         return
@@ -173,7 +180,7 @@ const updateProductCards = (element) => {
         .then((result) => {
             if (result.every(Boolean)) {
                 сartEvents();
-                element.style.display = 'block';
+                element.style.visibility = 'visible';
             }
         })
         .catch((error) => {
@@ -185,7 +192,7 @@ const updateProductCards = (element) => {
 function updateProducts(elementId, data) {
     const mainElement = document.getElementById(elementId);
     if (!document.getElementById(elementId)) return;
-    mainElement.style = "display: none;";
+    mainElement.style = "visibility: hidden;";
     $.ajax({
         type: 'POST',
         data: data,

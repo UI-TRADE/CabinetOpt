@@ -8,110 +8,24 @@
     <div style="display: none" id="collections" data-json="{{ collections }}"></div>
 
       <div class="row">
-        <div class="container d-flex flex-column" id="filter-container"></div>
+        <div class="container col-xl-3 col-md-5 col-sm-6 col-xs-12">
+            <div id="filter-container"></div>
+        </div>
 
         <div style="display:none">
           <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
         </div>
 
-        <main id="products" class="col-md-9 products" style="display: none;">
-          {% for product in products %}
-            {% with product_id="id"|addparam:product.id%}
-            <div class="good-block position-relative" data-json="{{ product_id|tojson }}">
-            {% endwith %}
-              <div class="row good-row">
-                <div class="col col-center">
-                  {% if product.status %}
-                    <div class="product__block__status--position z-3">
-                      {% with product_status="status"|addparam:product.status %}
-                        <p name="product-status" class="text-dark" style="font-size: medium;" data-json="{{ product_status|tojson }}">
-                          <b>{{ product.get_status_display }}</b>
-                        </p>
-                      {% endwith %}
-                    </div>
-                  {% endif %}
-                  {% for image in product.get_images|slice:":1" %}
-                    <figure>
-                      <img 
-                        src="{{ image }}"
-                        class="img-fluid rounded img-thumbnail thumbnail-150"
-                        alt="{{ product.name }}"
-                        style="border: none;"
-                      >
-                    </figure>
-                  {% endfor %}
+        <main id="products" class="col-xl-9 col-md-7 col-sm-6 col-xs-12 products products-list" style="visibility: hidden;">
+            <div class="row">
+              {% for product in products %}
+                {% with product_id="id"|addparam:product.id%}
+                <div class="product-item__col col-xxl-3 col-xl-4 col-lg-6 col-md-12 col-sm-12 col-xs-12" data-json="{{ product_id|tojson }}">
+                {% endwith %}
+                {% include "components/product/card.html" with product=product %}
                 </div>
-                <div class="col col-center">
-                  <div class="row px-4 px-sm-0">
-                    <a href="{% url 'catalog:product' product.id %}" class="stretched-link">{{ product.articul }}</a>
-                  </div>
-                  <div class="row px-4 px-sm-0">
-                    <b>{{ product.name }}</b>
-                  </div>
-                  <div class="row px-4 px-sm-0">
-                    {{ product.metal }} {{ product.metal_content }}` <br>
-                    {{ product.brand }}
-                  </div>
-                </div>
-                <div class="col col-center pt-4 price-block">
-                    <div class="px-4 px-sm-0 mb-2 product__price-block--position">
-                      <div class="product__price-block__row--position">
-                        <div class="product__price-block__element--position weight"></div>
-                        <div class="product__price-block__element--position price-per-weight"></div>
-                      </div>
-                    </div>
-                    <div class="px-4 px-sm-0 product__price-block--position max-price"></div>
-                    <div class="px-4 px-sm-0 product__price-block--position">
-                      <div class="product__price-block__row--position">
-                        <div class="product__price-block__element--position text-warning discount"></div>
-                        <div class="product__price-block__element--position price">Цена --</div>
-                      </div>
-                    </div>
-                </div>
-                <div class="col col-center pt-5 mb-3 inStock-block">
-                    <div class="px-4 px-sm-0" style="text-align: center;">
-                      В наличии:
-                    </div>
-                    <div class="px-4 px-sm-0 in_stock" style="text-align: center;">
-                      -- шт.
-                    </div>
-                    <div class="px-4 px-sm-0" style="text-align: center;">
-                      <form id="cartForm-{{product.id}}" method="post" action="{% url 'cart:cart_add' product.id %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="quantity" value=1 />
-                        <input type="hidden" name="update" value="False" />
-                        <input type="hidden" name="price" value="0" />
-                        <input type="hidden" name="unit" value="796" />
-                        <input type="hidden" name="size" value="" />
-                        <input type="hidden" name="weight" value=0 />
-                      </form>
-                      <div>
-                        <input
-                          id="cartForm-{{product.id}}"
-                          name="add-to-cart"
-                          type="button"
-                          value="В корзину"
-                          class="btn btn-outline-primary"/>
-                      </div>
-                    </div>
-                    <div name="cart-row" class="px-4 px-sm-0 cart">
-                      <a class="cart-element delOneFromCart" href="#">-</a>
-                      <input 
-                        type="text"
-                        class="
-                          form-control
-                          cart-element
-                          product__inStock-block__cart__input--position
-                        "
-                        readonly
-                      >
-                      <a class="cart-element addOneToCart" href="#">+</a>
-                      <div name="cart-key" style="display: none;"></div>
-                    </div>
-                </div>
-              </div>
+              {% endfor %}
             </div>
-          {% endfor %}
 
           <nav aria-label="Pagination">
             <ul class="pagination justify-content-end">

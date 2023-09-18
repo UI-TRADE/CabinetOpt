@@ -1,0 +1,22 @@
+html {
+  font-size: 1rem;
+}
+
+#main {
+    width: 1440px;
+    height: 977px;
+    flex-shrink: 0;
+    background-size: cover;
+}
+
+.main {
+    width: 1440px;
+    height: 977px;
+    flex-shrink: 0;
+    background-color: #d8d9d5;
+}
+
+.btn-primary{
+  @include button-variant(#E3A358, #E3A358);
+  color:#fff;
+}

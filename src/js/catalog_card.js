@@ -761,9 +761,6 @@ function updateProductCard() {
         })
         .then((result) => {
             if (result.every(Boolean)) {
-                $('.product__thumbnail__block').on('click', (event) => {
-                    changeMainImg(event.currentTarget);
-                });
                 сartEvents();
                 addInfoTabsEvents();
                 priceBlockFake.style.display = 'none';

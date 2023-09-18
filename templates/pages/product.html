@@ -35,7 +35,7 @@
                         </div>
                         <div class="row product__block__row--wrap">
                             <div class="col product__col--position product__col__images">
-            
+
                                 {% if product.status %}
                                     <div class="product__card__status--position z-3">
                                     {% with product_status="status"|addparam:product.status %}
@@ -62,10 +62,10 @@
                                         alt="Пустое изображение"
                                     >
                                 {% endfor %}
-            
-                                <div class="row"> 
+
+                                <div class="row">
                                     {% for image in product.get_images|slice:":7" %}
-                                        <img 
+                                        <img
                                             src="{{ image }}"
                                             class="
                                                 img-fluid
@@ -76,7 +76,7 @@
                                                 product__thumbnail__block--position"
                                             alt="{{ product.name }}"
                                         >
-                                    {% endfor %} 
+                                    {% endfor %}
                                 </div>
 
                                 <div class="row" style="margin-bottom: 8px;">
@@ -93,10 +93,10 @@
                                         </div>
                                     </div>
                                 </div>
-            
+
                             </div>
                             <div class="col product__col--position product__col__info">
-            
+
                                 {% if product.articul %}
                                     <div> {{ product.articul }} </div>
                                 {% else %}
@@ -112,8 +112,11 @@
                                 {% if product.brand %}
                                     <p><u>Бренд:        {{ product.brand|upper }}</u></p>
                                 {% endif %}
+                                {% if product.gender %}
+                                    <p>{{ product.gender|lower }}</p>
+                                {% endif %}
                                 <p>{{ product|get_gender_repr }}</p>
-                                
+
                                 &nbsp;
                                 <div class="product__block__size-container" style="display: flex; flex-direction: row; align-items: flex-start;">
                                     <div id="size-block" class="row product__block__size-row--position">
@@ -148,14 +151,14 @@
 
                                 <div id="descriptionForm" style="display: none;">
                                 </div>
-                
+
                                 <div id="guaranteesForm" style="display: none;">
                                 </div>
-            
+
                             </div>
                             <div id="fake-col" style="width: 20vw; display: flex;"></div>
                             <div class="col product__col--position product__col__prices" style="max-width: 20vw; display: none;">
-                            
+
                                 <div class="product__price-card__element discount" style="padding-top: 25px;">
                                     <input
                                     type="button"
@@ -163,7 +166,7 @@
                                     class="btn btn-outline-warning"
                                     style="width: 150px;"/>
                                 </div>
-                                
+
                                 <div class="
                                     product__price-card__element
                                     product__price-card__element--discount
@@ -209,7 +212,7 @@
                                 </div>
                                 <div name="cart-row" class="px-4 px-sm-0 cart product__price-card__element--cart">
                                     <a class="cart-element delOneFromCart" href="#">-</a>
-                                    <input 
+                                    <input
                                       type="text"
                                       class="
                                         form-control
@@ -231,7 +234,7 @@
                         </div>
 
                     </div>
-                    
+
                 </div>
 
             </div>

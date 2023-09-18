@@ -1,0 +1,35 @@
+#brand-container {
+    padding-right: 400px;
+}
+
+@media (max-width: 1370px) {
+    #brand-container {
+        padding-right: 300px;
+    }
+}
+
+@media (max-width: 1275px) {
+    #brand-container {
+        padding-right: 200px;
+    }
+}
+
+
+@media (max-width: 1200px) {
+    #brand-container {
+        padding-right: 100px;
+    }
+}
+
+@media (max-width: 1070px) {
+    #brand-container {
+        padding-right: 50px;
+    }
+}
+
+@media (max-width: 1023px) {
+    #brand-container {
+        padding-right: 5px;
+    }
+}
+

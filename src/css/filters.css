@@ -1,6 +1,5 @@
 #filter-container {
-    width: 270px;
-    position: absolute;
+    max-width: 270px;
     padding-top: 19px;
     padding-left: 19px;
   }
