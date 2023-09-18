@@ -38,9 +38,25 @@
       padding-top:14px;
     }
 
+    .price-block{
+      padding-right:5px;
+    }
+
     .product__price-block__row--position{
       padding-top:20px;
       font-size:20px;
+      .product__price-block__element--position{
+        margin-right:0
+      }
+
+      .max-price {
+          font-size: 0.8em;
+          color:#ADADAA;
+          text-decoration: line-through;
+          i{
+            font-size:0.66em;
+          }
+      }
     }
     .price{
       font-weight: 600;
