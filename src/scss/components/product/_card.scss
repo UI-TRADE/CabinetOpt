@@ -66,6 +66,27 @@
     }
     .inStock-block{
       padding:26px 0 0;
+      .cart{
+        position: relative;
+        z-index: 10;
+        border-radius: 5px;
+        border: 1px solid #E3A358;
+        margin:0 5px;
+        .cart-element{
+          color:#000;
+          text-align:center;
+        }
+        input{
+          background:#fff;
+          box-shadow: 1px 2px 2px 0px rgba(0, 0, 0, 0.25) inset;
+          margin:4px 8px;
+          height:30px;
+          font-weight:600;
+          padding:0;
+          width: 38px;
+          font-size: 16px;
+        }
+      }
       .inStock-block__value {
         font-size: .75em;
       }

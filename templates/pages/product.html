@@ -200,7 +200,7 @@
                                             <form id="cartForm-{{ product.id }}" method="post"
                                                   action="{% url 'cart:cart_add' product.id %}">
                                                 {% csrf_token %}
-                                                <input type="hidden" name="quantity" value=1/>
+                                                <input type="hidden" name="quantity" value="1"/>
                                                 <input type="hidden" name="update" value="False"/>
                                                 <input type="hidden" name="price" value="0"/>
                                                 <input type="hidden" name="unit" value="796"/>
