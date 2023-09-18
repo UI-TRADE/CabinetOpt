@@ -86,7 +86,8 @@ $(document).ready(() => {
     addEvents();
 })
 
-import '../css/filters.css';
+
 import '../scss/main.scss';
+import '../css/filters.css';
 import '../scss/autocomplete.scss';
 import '../scss/index.scss';
