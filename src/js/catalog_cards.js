@@ -1,5 +1,6 @@
 import getPrice from './price'
 import {сartEvents, waitUpdateCart} from './cart';
+import {decimalFormat} from "./utils/money_format";
 
 const extractContent = (html, elementId) => {
     const DOMModel = new DOMParser().parseFromString(html, 'text/html');
@@ -92,11 +93,11 @@ const updateProductCards = (element) => {
                     const maxPriceField       = priceBlock.querySelector('.max-price');
                     const discountField       = priceBlock.querySelector('.discount');
                     const stockField          = inStockBlock.querySelector('.in_stock');
-                    if (currentPrice) pricePerweightField.innerHTML = `${currentPrice} <i class="fa fa-rub" aria-hidden="true"></i>/гр`;
-                    if (price.clientPrice) priceField.innerHTML = `${price.clientPrice} <i class="fa fa-rub" aria-hidden="true"></i>`;
+                    if (currentPrice) pricePerweightField.innerHTML = `${decimalFormat(currentPrice)} <i class="fa fa-rub" aria-hidden="true"></i>/гр`;
+                    if (price.clientPrice) priceField.innerHTML = `${decimalFormat(price.clientPrice)} <i class="fa fa-rub" aria-hidden="true"></i>`;
                     if (currentDiscount>0) {
-                        if (price.maxPrice) maxPriceField.innerHTML = `${price.maxPrice} <i class="fa fa-rub" aria-hidden="true"></i>`;
-                        discountField.textContent = `- ${currentDiscount} %`
+                        if (price.maxPrice) maxPriceField.innerHTML = `${decimalFormat(price.maxPrice)} <i class="fa fa-rub" aria-hidden="true"></i>`;
+                        discountField.textContent = `- ${decimalFormat(currentDiscount)} %`
                     };
                     if (product['fields'].unit == '163' && weight) {
                         weightField.style.display = "inline-block"
