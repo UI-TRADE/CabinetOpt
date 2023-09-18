@@ -112,6 +112,9 @@
                                 {% if product.brand %}
                                     <p><u>Бренд:        {{ product.brand|upper }}</u></p>
                                 {% endif %}
+                                {% if product.gender %}
+                                    <p>{{ product.gender|lower }}</p>
+                                {% endif %}
                                 <p>{{ product|get_gender_repr }}</p>
 
                                 &nbsp;
@@ -151,7 +154,7 @@
 
                                 <div id="guaranteesForm" style="display: none;">
                                 </div>
-            
+
                             </div>
                             <div id="fake-col" style="width: 20vw; display: flex;"></div>
                             <div class="col product__col--position product__col__prices" style="max-width: 20vw; display: none;">
