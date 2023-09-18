@@ -1,0 +1,33 @@
+.pagination.default_paginator{
+  ul.pagination{
+    .page-item{
+      .page-link{
+        border-radius: 50%;
+        min-width:40px;
+        height:38px;
+        margin-right: 20px;
+        text-align:center;
+        color:#92959A;
+        line-height: 40px;
+        vertical-align: middle;
+        font-size:16px;
+        font-weight:700;
+        padding:0;
+        box-sizing: border-box;
+        border:1px solid transparent;;
+        &.page-item-selected--background{
+          background:#DC9B51;
+          color:#fff;
+        }
+
+
+        &:hover{
+          color:#242A35;
+          border:1px solid #DC9B51;
+          background:transparent;
+          transition: all 0.2s;
+        }
+      }
+    }
+  }
+}
