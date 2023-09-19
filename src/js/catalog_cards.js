@@ -93,7 +93,7 @@ const updateProductCards = (element) => {
                     const maxPriceField       = priceBlock.querySelector('.max-price');
                     const discountField       = priceBlock.querySelector('.discount');
                     const stockField          = inStockBlock.querySelector('.in_stock');
-                    if (currentPrice) pricePerweightField.innerHTML = `${decimalFormat(Math.ceil(currentPrice))} <i class="fa fa-rub" aria-hidden="true"></i>/гр`;
+                    if (currentPrice) pricePerweightField.innerHTML = `${decimalFormat(Math.ceil(currentPrice))} руб/гр.`;
                     if (price.clientPrice) priceField.innerHTML = `${decimalFormat(Math.ceil(price.clientPrice))} <i class="fa fa-rub" aria-hidden="true"></i>`;
                     if (currentDiscount>0) {
                         if (price.maxPrice) maxPriceField.innerHTML = `${decimalFormat(Math.ceil(price.maxPrice))} <i class="fa fa-rub" aria-hidden="true"></i>`;
@@ -101,7 +101,7 @@ const updateProductCards = (element) => {
                     };
                     if (product['fields'].unit == '163' && weight) {
                         weightField.style.display = "inline-block"
-                        weightField.textContent = `Вес: ${weight} гр`
+                        weightField.textContent = `${decimalFormat(weight)} гр.`
                     }else{
                         weightField.style.display = "none"
                     }

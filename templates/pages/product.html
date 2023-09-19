@@ -104,7 +104,7 @@
                                 {% endif %}
                                 <div class="product__col__info--title">{{ product.name }}</div>
                                 &nbsp;
-                                <p><u>{{ product.color }} {{ product.metal|lower }} {{ product.metal_content|lower }}</u></p>
+                                <p><u>{{ product.str_color|default:product.color }} {{ product.metal|lower }} {{ product.metal_content|lower }}</u></p>
                                 &nbsp;
                                 {% if product.collection.group %}
                                     <p><u>Коллекция   - {{ product.collection.group|lower }}</u></p>

@@ -1,6 +1,6 @@
 {% load static %}
 {% load catalog_tags %}
-
+{% spaceless %}
     <div class="d-flex justify-content-center row filter-item"><span class="filter-item-title">ФИЛЬТР</span><span class="reset">Сбросить</span></div>
     <div class="filter-item top-node">
         <div class="form-check"><input class="form-check-input" type="checkbox" id="onOrder" name="available_for_order"><label class="form-check-label filter-item-title" for="onOrder">Показать товары под заказ</label></div>
@@ -181,7 +181,7 @@
                     <div style="width: 5px;"></div><span class="filter-item-title">Количество</span>
                 </div>
                 <div name="slider" style="height: 20px;"></div>
-                <div id="stone-quantity" name="slider" style="position: relative;">
+                <div id="quantity-range" name="slider" style="position: relative;">
                     <span name="start-range" class="range">0</span>
                     <span name="start-value" class="slider-value">50</span>
                     <span name="end-value" class="slider-value">150</span>
@@ -202,3 +202,4 @@
             </li>
         </ul>
     </div>
+{% endspaceless %}

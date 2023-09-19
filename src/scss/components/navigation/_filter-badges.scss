@@ -1,0 +1,20 @@
+.filter-badges__list{
+  margin-top:18px;
+  margin-bottom: 22px;
+  .badge{
+    background:#E3A358;
+    color:#fff;
+    height:22px;
+    line-height: 22px;
+    vertical-align: middle;
+    padding:0 10px;
+    margin-right:10px;
+    &:hover{
+      background:#de9137;
+    }
+    i{
+      cursor: pointer;
+      margin-left:15px
+    }
+  }
+}

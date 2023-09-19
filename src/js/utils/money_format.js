@@ -9,5 +9,4 @@ const formatConfig = {
 formatDefaultLocale(formatConfig)
 
 const decimalFormat = format("$,")
-
 export { decimalFormat }

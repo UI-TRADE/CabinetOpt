@@ -16,18 +16,39 @@
           <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
         </div>
 
-        <main id="products" class="col-xl-9 col-md-7 col-sm-6 col-xs-12 products products-list" style="visibility: hidden;">
-            <div class="row">
-              {% for product in products %}
-                {% with product_id="id"|addparam:product.id%}
-                <div class="product-item__col col-xxl-3 col-xl-4 col-lg-6 col-md-12 col-sm-12 col-xs-12" data-json="{{ product_id|tojson }}">
-                {% endwith %}
-                {% include "components/product/card.html" with product=product %}
-                </div>
-              {% endfor %}
-            </div>
+        <main class="col-xl-9 col-md-7 col-sm-6 col-xs-12 products products-list" >
+            <div id="selected-filter-container" class="filter-badges__list"></div>
+            <div id="products" style="visibility: hidden;">
+                <div class="row">
+                  {% for product in products %}
+                    {% with product_id="id"|addparam:product.id%}
+                    <div class="product-item__col col-xxl-3 col-xl-4 col-lg-6 col-md-12 col-sm-12 col-xs-12" data-json="{{ product_id|tojson }}">
+                    {% endwith %}
+                    {% include "components/product/card.html" with product=product %}
+                    </div>
 
-            {% include "components/pagination/default_paginator.html" with paginator=paginator page_obj=page_obj %}
+                    {% if forloop.counter == 12 %}
+                        <div class="col-12 banner">
+                            <div class="jumbotron jumbotron-fluid">
+                              <div class="container">
+                                <h1 class="display-4">Banner 1</h1>
+                              </div>
+                            </div>
+                        </div>
+                    {% elif forloop.counter == 24 %}
+                        <div class="col-12 banner">
+                            <div class="jumbotron jumbotron-fluid">
+                              <div class="container">
+                                <h1 class="display-4">Banner 1</h1>
+                              </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+
+                {% include "components/pagination/default_paginator.html" with paginator=paginator page_obj=page_obj %}
+            </div>
 
         </main>
 

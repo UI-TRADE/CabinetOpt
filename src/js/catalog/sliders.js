@@ -17,7 +17,7 @@ const getSliderAttr = (sliderId) => {
         attributeName = 'weight';
     } else if (sliderId == 'price-range') {
         attributeName = 'price';
-    } else if (sliderId == 'stone-quantity') {
+    } else if (sliderId == 'quantity-range') {
         attributeName = 'gem_quantity';
     }
     return attributeName;
@@ -113,7 +113,7 @@ function showSliders() {
 
     renderSlider('weight-range', 0, 150, 0.1, 20, 80);
     renderSlider('price-range', 500, 150000, 1, 700, 80000);
-    renderSlider('stone-quantity', 0, 200, 1, 50, 150);
+    renderSlider('quantity-range', 0, 200, 1, 50, 150);
 
 }
 
