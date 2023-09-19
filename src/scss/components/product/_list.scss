@@ -1,7 +1,7 @@
 .products-list{
 
   .product-item{
-    margin-bottom:78px;
+    margin-bottom:28px;
   }
 
 
@@ -30,6 +30,9 @@
   @media (min-width: 1900px) {
     .product-item__col.col-xl-4{
       max-width:337px;
+    }
+    .banner{
+      max-width: 1348px;
     }
   }
 }

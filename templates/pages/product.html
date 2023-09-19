@@ -132,6 +132,32 @@
                                             </div>
                                         </div>
 
+                            </div>
+                            <div class="col product__col--position product__col__info">
+
+                                {% if product.articul %}
+                                    <div> {{ product.articul }} </div>
+                                {% else %}
+                                    <div> Артикул: -- </div>
+                                {% endif %}
+                                <div class="product__col__info--title">{{ product.name }}</div>
+                                &nbsp;
+                                <p><u>{{ product.str_color|default:product.color }} {{ product.metal|lower }} {{ product.metal_content|lower }}</u></p>
+                                &nbsp;
+                                {% if product.collection.group %}
+                                    <p><u>Коллекция   - {{ product.collection.group|lower }}</u></p>
+                                {% endif %}
+                                {% if product.brand %}
+                                    <p><u>Бренд:        {{ product.brand|upper }}</u></p>
+                                {% endif %}
+                                {% if product.gender %}
+                                    <p>{{ product.gender|lower }}</p>
+                                {% endif %}
+                                <p>{{ product|get_gender_repr }}</p>
+
+                                &nbsp;
+                                <div class="product__block__size-container" style="display: flex; flex-direction: row; align-items: flex-start;">
+                                    <div id="size-block" class="row product__block__size-row--position">
                                     </div>
 
                                     <div class="product-detail_additional col-6">

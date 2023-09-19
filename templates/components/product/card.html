@@ -3,7 +3,7 @@
     <div class="product-item card position-relative "
          data-json="{{ product_id|tojson }}">
         <div class="card-body">
-            <div class="row ">
+            <div class="row card-body__inner-row">
                 <div class="col col-8 product-item__brand">{{ product.brand }}</div>
                 <div class="product-item__tags">
                     {% if product.status %}
@@ -43,7 +43,6 @@
                 </div>
                 <div class="col col-12">
                     <div class="product-item__name">{{ product.name }}</div>
-                    <div class="product-item__material">{{ product.metal }} {{ product.metal_content }}`</div>
                 </div>
                 <div class="col col-6 price-block">
                     <div class="product__price-block--position">

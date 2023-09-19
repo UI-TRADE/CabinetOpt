@@ -136,7 +136,7 @@
     height: 2px;
   }
 
-  #stone-quantity {
+  #quantity-range {
     margin-left: 35px;
     margin-bottom: 10px;
     height: 2px;
@@ -188,22 +188,22 @@
     left: 105.727px;
   }
 
-  #stone-quantity span[name="start-range"] {
+  #quantity-range span[name="start-range"] {
     top: -20px;
     left: -10px;
   }
   
-  #stone-quantity span[name="end-range"] {
+  #quantity-range span[name="end-range"] {
     top: -20px;
     right: -10px;
   }
   
-  #stone-quantity span[name="start-value"] {
+  #quantity-range span[name="start-value"] {
     top: -25px;
     left: 53.4062px;
   }
   
-  #stone-quantity span[name="end-value"] {
+  #quantity-range span[name="end-value"] {
     top: -25px;
     left: 162.406px;
   }

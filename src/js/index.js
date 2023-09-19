@@ -49,7 +49,7 @@ $(window).on("load", () => {
     // Очищаем список выбора скрытого поля product, за исключением выбранного значения
     const orderFields = document.getElementsByClassName('order__field__product');
     for(var i=0; i<orderFields.length; i++) {
-        fieldOptions = orderFields[i].querySelectorAll('*');
+        const fieldOptions = orderFields[i].querySelectorAll('*');
         for(var j=0; j<fieldOptions.length; j++) {
             if (!fieldOptions[j].selected) {
                 fieldOptions[j].parentNode.removeChild(fieldOptions[j]);
