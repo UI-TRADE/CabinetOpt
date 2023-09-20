@@ -161,9 +161,6 @@ def update_or_create_collection(collection, group):
 
 
 def update_or_create_gender(genders):
-    if not genders:
-        return
-    
     result = []
     for gender in genders:
         gender_obj, _ = Gender.objects.update_or_create(name=gender)
@@ -173,9 +170,6 @@ def update_or_create_gender(genders):
 
 
 def update_or_create_gift(gifts):
-    if not gifts:
-        return
-    
     result = []
     for gift in gifts:
         gift_obj, _ = Gift.objects.update_or_create(name=gift)
@@ -184,10 +178,7 @@ def update_or_create_gift(gifts):
     return result
 
 
-def update_or_create_design(designs):
-    if not designs:
-        return
-    
+def update_or_create_design(designs):    
     result = []
     for design in designs:
         design_obj, _ = Design.objects.update_or_create(name=design)
