@@ -1,8 +1,22 @@
+#################
+# FRONT BUILDER #
+#################
+
+FROM node:latest as node_builder
+
+WORKDIR /usr/src/app/
+
+COPY ./package*.json .
+COPY ./webpack*.js .
+COPY ./src ./src
+
+RUN npm install && npm run build
+
 ###########
 # BUILDER #
 ###########
 
-FROM python:3.9.12-alpine as builder
+FROM python:3.9.12-alpine as env_builder
 
 WORKDIR /usr/src/app
 
@@ -35,8 +49,8 @@ RUN mkdir $APP_HOME/mediafiles
 WORKDIR $APP_HOME
 
 RUN apk update && apk add libpq
-COPY --from=builder /usr/src/app/wheels /wheels
-COPY --from=builder /usr/src/app/requirements.txt .
+COPY --from=env_builder /usr/src/app/wheels /wheels
+COPY --from=env_builder /usr/src/app/requirements.txt .
 RUN pip install --no-cache /wheels/*
 
 COPY ./entrypoint.prod.sh .
@@ -44,6 +58,7 @@ RUN sed -i 's/\r$//g'  $APP_HOME/entrypoint.prod.sh
 RUN chmod +x  $APP_HOME/entrypoint.prod.sh
 
 COPY . $APP_HOME
+COPY --from=node_builder /usr/src/app/static $APP_HOME/static
 
 RUN chown -R app:app $APP_HOME
 
