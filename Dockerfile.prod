@@ -48,7 +48,10 @@ RUN mkdir $APP_HOME/staticfiles
 RUN mkdir $APP_HOME/mediafiles
 WORKDIR $APP_HOME
 
-RUN apk update && apk add libpq
+RUN apk update \
+    && apk add libpq postgresql-dev g++ gcc python3-dev \
+    musl-dev libxslt-dev libffi-dev freetype-dev freetype-dev
+
 COPY --from=env_builder /usr/src/app/wheels /wheels
 COPY --from=env_builder /usr/src/app/requirements.txt .
 RUN pip install --no-cache /wheels/*
