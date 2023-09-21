@@ -24,7 +24,7 @@
                                 {% endfor %}
                             </div>
                         </div>
-                        <div class="col-10 product__col--position" style="align-content: stretch;">
+                        <div class="col-10 product__col--position ">
 
                             <div class="row">
                                 <nav aria-label="breadcrumb">
@@ -36,243 +36,173 @@
                                 </nav>
                             </div>
 
-                            <div class="product-detail__header">
-                                <div class="product-detail__brand">{{ product.brand }}</div>
-                                <div class="product-detail__articul">
-                                    {{ product.articul|default:"Артикул: --" }}
+                            <div class="product-detail__main">
+                                <div class="product-detail__header">
+                                    <div class="product-detail__brand">{{ product.brand }}</div>
+                                    <div class="product-detail__articul">
+                                        {{ product.articul|default:"Артикул: --" }}
+                                    </div>
+                                    <div class="product-detail__title">{{ product.name }}</div>
                                 </div>
-                                <div class="product-detail__title">{{ product.name }}</div>
-                            </div>
 
-                            <div class="row product__block__row--wrap ">
-                                <div class="col col-3 pl-0">
+                                <div class="row product__block__row--wrap ">
+                                    <div class="col col-6 product-detail__slider">
 
-                                    <div class="product-item__tags">
-                                        {% if product.status %}
-                                            {% with product_status="status"|addparam:product.status %}
-                                                <div name="product-status" class="fs-3"
-                                                   data-json="{{ product_status|tojson }}">
-                                                    <b>{{ product.get_status_display }}</b>
+                                        <div class="product-item__tags">
+                                            {% if product.status %}
+                                                {% with product_status="status"|addparam:product.status %}
+                                                    <div name="product-status" class="fs-3"
+                                                       data-json="{{ product_status|tojson }}">
+                                                        <b>{{ product.get_status_display }}</b>
+                                                    </div>
+                                                {% endwith %}
+                                            {% endif %}
+                                        </div>
+
+                                        <div id="product-carousel-{{ product.id }}" class="carousel slide"
+                                             data-ride="carousel">
+                                            <div class="carousel-inner border">
+                                                {% for image in product.get_images|slice:":5" %}
+                                                    <div class="carousel-item{% if forloop.first %} active{% endif %}">
+                                                        <a href="{{ image }}">
+                                                            <img src="{{ image }}" class="main-image" alt="{{ prod.name }}" />
+                                                        </a>
+                                                    </div>
+                                                {% empty %}
+                                                    <div class="carousel-item active">
+                                                        <img src="{{ MEDIA_URL }}/0.jpg" class="img-fluid rounded" alt="Пустое изображение" />
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="carousel-navigation">
+                                                <ol class="carousel-indicators">
+                                                {% for image in product.get_images|slice:":7" %}
+                                                    <li data-target="#product-carousel-{{ product.id }}" data-slide-to="{{ forloop.counter0 }}" class="img-thumbnail{% if forloop.first %} active{% endif %}">
+                                                        <img
+                                                                    src="{{ image }}"
+                                                                    class="
+                                                        img-fluid
+                                                        product__thumbnail__block
+                                                        product__thumbnail__block--position"
+                                                                    alt="{{ product.name }}"
+                                                            />
+                                                    </li>
+                                                {% endfor %}
+                                                </ol>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <div class="col col-6 product__col__info">
+
+                                        <div class="product-detail_main-info">
+
+                                            <ul class="list-unstyled">
+                                                {% if product.collection.group %}
+                                                    <li>{{ product.metal }}</li>
+                                                {% endif %}
+                                                {% if product.metal_content %}
+                                                    <li>{{ product.metal_content }}</li>
+                                                {% endif %}
+                                                {% if product.collection.group %}
+                                                    <li>{{ product.str_color|default:product.color }}</li>
+                                                {% endif %}
+                                                {% if product.collection.group %}
+                                                    <li>Коллекция - {{ product.collection.group|lower }}</li>
+                                                {% endif %}
+                                                {% if product.brand %}
+                                                    <li>Бренд: {{ product.brand|upper }}</li>
+                                                {% endif %}
+                                                {% if product.gender %}
+                                                    <li>{{ product.gender|lower }}</li>
+                                                {% endif %}
+                                                <li>
+                                            </ul>
+
+                                            <div class="row product-detail__similar-products">
+                                                <div class="col-6">
+                                                    <div class="product-detail__similar-products__title">Комплекты</div>
+                                                    <div id="set-block" class="row"></div>
                                                 </div>
-                                            {% endwith %}
-                                        {% endif %}
-                                    </div>
 
-                                    <div id="product-carousel-{{ product.id }}" class="carousel slide"
-                                         data-ride="carousel">
-                                        <div class="carousel-inner border">
-                                            {% for image in product.get_images|slice:":5" %}
-                                                <div class="carousel-item{% if forloop.first %} active{% endif %}">
-                                                    <a href="{{ image }}">
-                                                        <img src="{{ image }}" class="main-image" alt="{{ prod.name }}" />
-                                                    </a>
+                                                <div class="col-6">
+                                                    <div class="product-detail__similar-products__title">Аналоги</div>
+                                                    <div id="analogues-block"></div>
                                                 </div>
-                                            {% empty %}
-                                                <div class="carousel-item active">
-                                                    <img src="{{ MEDIA_URL }}/0.jpg" class="img-fluid rounded" alt="Пустое изображение" />
-                                                </div>
-                                            {% endfor %}
-                                        </div>
-                                        <div class="carousel-navigation">
-                                            <ol class="carousel-indicators">
-                                            {% for image in product.get_images|slice:":7" %}
-                                                <li data-target="#product-carousel-{{ product.id }}" data-slide-to="{{ forloop.counter0 }}" class="img-thumbnail{% if forloop.first %} active{% endif %}">
-                                                    <img
-                                                                src="{{ image }}"
-                                                                class="
-                                                    img-fluid
-                                                    product__thumbnail__block
-                                                    product__thumbnail__block--position"
-                                                                alt="{{ product.name }}"
-                                                        />
-                                                </li>
-                                            {% endfor %}
-                                            </ol>
+                                            </div>
+
                                         </div>
                                     </div>
-
-
-
                                 </div>
-                                <div class="col product__col--position product__col__info">
 
-                                    <div class="product-detail_main-info col-6">
-
-                                        <ul class="list-unstyled">
-                                            {% if product.collection.group %}
-                                                <li>{{ product.metal }}</li>
-                                            {% endif %}
-                                            {% if product.metal_content %}
-                                                <li>{{ product.metal_content }}</li>
-                                            {% endif %}
-                                            {% if product.collection.group %}
-                                                <li>{{ product.color }}</li>
-                                            {% endif %}
-                                            {% if product.collection.group %}
-                                                <li>Коллекция - {{ product.collection.group|lower }}</li>
-                                            {% endif %}
-                                            {% if product.brand %}
-                                                <li>Бренд: {{ product.brand|upper }}</li>
-                                            {% endif %}
-                                            {% if product.gender %}
-                                                <li>{{ product.gender|lower }}</li>
-                                            {% endif %}
-                                            <li>
-                                        </ul>
-
-                                        <div class="row">
-                                            <div class="col-6">
-                                                <div>Комплекты</div>
-                                                <div id="set-block" class="row"></div>
-                                            </div>
-
-                                            <div class="col-6">
-                                                <div>Аналоги</div>
-                                                <div id="analogues-block"></div>
+                                <div class="row justify-content-end">
+                                    <div class="col-8">
+                                        <div class="product__block__size-container">
+                                            <div id="size-block" class="product__block__size-row--position">
                                             </div>
                                         </div>
-
-                            </div>
-                            <div class="col product__col--position product__col__info">
-
-                                {% if product.articul %}
-                                    <div> {{ product.articul }} </div>
-                                {% else %}
-                                    <div> Артикул: -- </div>
-                                {% endif %}
-                                <div class="product__col__info--title">{{ product.name }}</div>
-                                &nbsp;
-                                <p><u>{{ product.str_color|default:product.color }} {{ product.metal|lower }} {{ product.metal_content|lower }}</u></p>
-                                &nbsp;
-                                {% if product.collection.group %}
-                                    <p><u>Коллекция   - {{ product.collection.group|lower }}</u></p>
-                                {% endif %}
-                                {% if product.brand %}
-                                    <p><u>Бренд:        {{ product.brand|upper }}</u></p>
-                                {% endif %}
-                                {% if product.gender %}
-                                    <p>{{ product.gender|lower }}</p>
-                                {% endif %}
-                                <p>{{ product|get_gender_repr }}</p>
-
-                                &nbsp;
-                                <div class="product__block__size-container" style="display: flex; flex-direction: row; align-items: flex-start;">
-                                    <div id="size-block" class="row product__block__size-row--position">
                                     </div>
-
-                                    <div class="product-detail_additional col-6">
-                                        {% if product.status %}
-                                            <div class="product__card__status--position z-3">
-                                            {% with product_status="status"|addparam:product.status %}
-                                                <p class="product-status" style="font-size: 30px;" data-json="{{ product_status|tojson }}">
-                                                {{ product.get_status_display }}
-                                                </p>
-                                            {% endwith %}
-                                            </div>
-                                        {% endif %}
-
-                                        <div id="fake-col" style="width: 20vw; display: flex;"></div>
-
-                                    </div>
-
                                 </div>
 
-                            </div>
+                                <div class="row">
+                                    <div class="col col-4 product__col--position product__col__prices"
+                                         style="max-width: 20vw; display: none;">
 
-                            <div class="row">
-                                <div class="col">
-                                    <div class="product__block__size-container"
-                                        style="display: flex; flex-direction: row; align-items: flex-start;">
-                                        <div id="size-block" class="row product__block__size-row--position">
+                                        <div class="
+                                        product__price-card__element
+                                        product__price-card__element--instock">
+                                            <p id="in_stock"></p>
                                         </div>
-                                    </div>
+                                        <a href="/cart" class="btn btn-primary">В корзину</a>
 
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col product__col--position product__col__prices"
-                                     style="max-width: 20vw; display: none;">
-
-                                            <div class="product__price-card__element discount" style="padding-top: 25px;">
-                                                <input
-                                                        type="button"
-                                                        value="АКЦИЯ"
-                                                        class="btn btn-outline-warning"
-                                                        style="width: 150px;"/>
-                                            </div>
-
-                                            <div class="
-                                            product__price-card__element
-                                            product__price-card__element--discount
-                                            text-warning
-                                            discount"
-                                                 style="padding-top: 20px;">
-                                                <p id="discount-block"></p>
-                                            </div>
-                                            <div class="
-                                            product__price-card__element
-                                            product__price-card__element--price">
-                                                <p id="price-block"></p>
-                                            </div>
-                                            <div class="
-                                            product__price-card__element
-                                            product__price-card__element--max-price
-                                            px-4 px-sm-0 max-price">
-                                                <p id="max-price"></p>
-                                            </div>
-                                            <div class="
-                                            product__price-card__element
-                                            product__price-card__element--price-per-weight">
-                                                <p id="price-per-weight"></p>
-                                            </div>
-
-                                            <form id="cartForm-{{ product.id }}" method="post"
-                                                  action="{% url 'cart:cart_add' product.id %}">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="quantity" value="1"/>
-                                                <input type="hidden" name="update" value="False"/>
-                                                <input type="hidden" name="price" value="0"/>
-                                                <input type="hidden" name="unit" value="796"/>
-                                                <input type="hidden" name="size" value=""/>
-                                                <input type="hidden" name="weight" value=0/>
-                                            </form>
-                                            <div class="product__price-card__element">
-                                                <input
-                                                        id="cartForm-{{ product.id }}"
-                                                        name="add-to-cart"
-                                                        type="button"
-                                                        value="В корзину"
-                                                        class="btn btn-primary add-to-cart__button"
-                                                        style="width: 150px;"/>
-                                            </div>
-                                            <div name="cart-row" class="px-4 px-sm-0 cart product__price-card__element--cart">
-                                                <a class="cart-element delOneFromCart" href="#">-</a>
-                                                <input
-                                                        type="text"
-                                                        class="
-                                                form-control
-                                                cart-element
-                                                product__inStock-block__cart__input--position
-                                              "
-                                                        readonly
-                                                >
-                                                <a class="cart-element addOneToCart" href="#">+</a>
-                                                <div name="cart-key" style="display: none;"></div>
-                                            </div>
-                                            <div class="
-                                            product__price-card__element
-                                            product__price-card__element--instock">
-                                                <p id="in_stock"></p>
-                                            </div>
-
+                                        <div class="
+                                        product__price-card__element
+                                        product__price-card__element--discount
+                                        text-warning
+                                        discount"
+                                             style="padding-top: 20px;">
+                                            <p id="discount-block"></p>
                                         </div>
+                                        <div class="
+                                        product__price-card__element
+                                        product__price-card__element--price">
+                                            <p id="price-block"></p>
+                                        </div>
+                                        <div class="
+                                        product__price-card__element
+                                        product__price-card__element--max-price
+                                        px-4 px-sm-0 max-price">
+                                            <p id="max-price"></p>
+                                        </div>
+                                        <div class="
+                                        product__price-card__element
+                                        product__price-card__element--price-per-weight">
+                                            <p id="price-per-weight"></p>
+                                        </div>
+
+                                        <form id="cartForm-{{ product.id }}" method="post"
+                                              action="{% url 'cart:cart_add' product.id %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="quantity" value="1"/>
+                                            <input type="hidden" name="update" value="False"/>
+                                            <input type="hidden" name="price" value="0"/>
+                                            <input type="hidden" name="unit" value="796"/>
+                                            <input type="hidden" name="size" value=""/>
+                                            <input type="hidden" name="weight" value=0/>
+                                        </form>
+
+
+
+                                    </div>
                                 </div>
+
                             </div>
                         </div>
-
                     </div>
 
                 </div>
+
+
             {% endwith %}
 
         </main>

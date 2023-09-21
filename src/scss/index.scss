@@ -275,18 +275,8 @@ figure {
     font-size: medium;
 }
 
-.product__price-card__element {
-    margin-left: auto;
-    margin-right: 0;
-    margin-bottom: 15px;
-}
-
 .product__price-card__element--discount {
     font-size: 20px;
-}
-
-.product__price-card__element--price {
-    font-size: 25px;
 }
 
 .product__price-card__element--price-per-weight {
@@ -376,20 +366,6 @@ figure {
 
 
 /* Стили размеров в карточках товара */
-
-.product__block__size-group--position  {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
-
-.product__block__size-row--position  {
-    width: 350px;
-    height: 55px;
-    margin-bottom: 30px;
-    padding-left: 15px;
-}
-
 .product__block__size-btn--position  {
     padding-left: 1px;
     padding-right: 1px;

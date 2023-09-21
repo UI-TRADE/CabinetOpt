@@ -179,10 +179,8 @@ const updateProductCards = (element) => {
             return updateCarts(data);
         })
         .then((result) => {
-            if (result.every(Boolean)) {
-                сartEvents();
-                element.style.visibility = 'visible';
-            }
+            сartEvents();
+            element.style.visibility = 'visible';
         })
         .catch((error) => {
             alert('Ошибка обновления каталога: ' + error);
