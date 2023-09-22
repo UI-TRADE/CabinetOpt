@@ -6,8 +6,8 @@ FROM node:latest as node_builder
 
 WORKDIR /usr/src/app/
 
-COPY ./package*.json .
-COPY ./webpack*.js .
+COPY ./package*.json ./
+COPY ./webpack*.js ./
 COPY ./src ./src
 
 RUN npm install && npm run build

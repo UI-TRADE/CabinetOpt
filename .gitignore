@@ -26,3 +26,4 @@ node_modules
 snippets
 *.tar.gz
 *.db.json
+certbot

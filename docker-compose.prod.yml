@@ -34,8 +34,9 @@ services:
     volumes:
       - static_volume:/home/app/web/staticfiles
       - media_volume:/home/app/web/mediafiles
-      - ./certbot/www:/var/www/certbot/:ro
-      - ./certbot/conf/:/etc/nginx/ssl/:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+
     ports:
       - 80:80
       - 443:443
@@ -45,12 +46,13 @@ services:
 
   certbot:
     image: certbot/certbot
+    container_name: certbot
     volumes:
-      - ./certbot/www/:/var/www/certbot/:rw
-      - ./certbot/conf/:/etc/letsencrypt/:rw
+      - ./certbot/conf:/etc/letsencrypt:rw
+      - ./certbot/www:/var/www/certbot:rw
+    command: certonly --webroot --webroot-path=/var/www/certbot/ --email admin@cabinet-opt.ru --agree-tos --no-eff-email -d cabinet-opt.ru
     depends_on:
       - nginx
-    command: certonly --webroot --webroot-path=/var/www/certbot --email admin@cabinet-opt.ru --agree-tos --no-eff-email --staging -d cabinet-opt.ru  -d www.cabinet-opt.ru
 
 volumes:
   postgres_data:
