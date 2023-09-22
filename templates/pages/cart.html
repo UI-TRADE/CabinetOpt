@@ -97,7 +97,7 @@
                                     </td>
                                     <td class="metal">{{ product.metal }}</td>
                                     <td class="size">{% if item.size %}<span>{{ item.size }}</span>{% endif %}</td>
-                                    <td class="weight">{{ item.weight }}</td>
+                                    <td class="weight">{{ item.weight|floatformat:"0" }}</td>
                                     <td class="price" name="cart-price">{{ item.price|floatformat:"0" }} р.</td>
                                     <td class="quantity">
                                         {% unique_id as id %}
@@ -120,7 +120,7 @@
                                     </td>
                                     <td class="total_weight">
                                         {% total_weight item.weight item.quantity as total_weight %}
-                                        {{ total_weight }}
+                                        {{ total_weight|floatformat:"2" }}
                                     </td>
                                     <td class="total_price" name="cart-sum">{{ item.total_price|floatformat:"0" }} р.</td>
                                     <td class="actions">
