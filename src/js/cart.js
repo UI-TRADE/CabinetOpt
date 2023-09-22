@@ -225,7 +225,6 @@ const OnQuantityChange = (element, preventReload=false) => {
             .then((response) => {
                 response.forEach(item => {
                     const currentParam = params.filter(el => el.param.productId == item.pk).find(_ => true);
-                    console.log(currentParam)
                     const quantityField = currentParam.row.querySelector('input[name="cart-quantity"]');
                     const priceField    = currentParam.row.querySelector('[name="cart-price"]');
                     const sumField      = currentParam.row.querySelector('[name="cart-sum"]');
@@ -297,7 +296,6 @@ export function cartViewEvents() {
         const inputElement = $($(this).attr("href"));
         const inputElementValue = inputElement.val();
         if(inputElementValue > inputElement.attr("min")){
-            console.log(inputElement, inputElementValue)
             inputElement.val(inputElementValue - 1).trigger('change')
         }
     })
@@ -306,9 +304,7 @@ export function cartViewEvents() {
         e.preventDefault();
         const inputElement = $($(this).attr("href"));
         const inputElementValue = inputElement.val();
-        console.log(inputElementValue, inputElement.attr("max"))
         if(inputElementValue < inputElement.attr("max")){
-            console.log(inputElementValue)
             inputElement.val(inputElementValue + 1).trigger('change')
         }
     })
@@ -325,9 +321,6 @@ export function cartViewEvents() {
                 }
             }
         })
-            .on("sortEnd", function(e, table){
-                console.log(e, table)
-            })
     }
 
 
