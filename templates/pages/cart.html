@@ -8,140 +8,102 @@
         <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
     </div>    
 
-    <div class="row" style="justify-content: flex-end; align-items: top;">
-        <div id="cartViewArea" class="custom-control custom-switch" style="padding: 8px 16px 8px 16px; display: none;">
-            <input type="checkbox" class="custom-control-input" id="cartView">
-            <label class="custom-control-label" for="cartView">компактный вид</label>
-        </div>
-    </div>
-
     <div class="container-fluid">
         <div class="row justify-content-center">    
-            <main id="products" class="col products-in-cart" style="display: none;">
-                {% for item in cart %}
-                {% with product=item.product %}
-                    <div class="good-block position-relative">
-                        {% unique_id as id %}
-                        <div id="{{id}}" name="cart-row" class="row good-row">
-                            <div class="col-xs-1 col-md-2 col-md-3 col-center">
-                                {% first_product_image product.id as image %}
-                                    {% if item.errors %}
-                                        <div class="formset-field errors">
-                                            {{ item.errors|cut:"\n" }}
-                                        </div>
-                                    {% endif %}
-                                    <figure>
-                                        <img 
+            <main id="cart-table" class="col cart-view">
+
+                <div class="cart-view__content">
+                    <div class="cart-view__title">Корзина</div>
+                    <table id="cart-items" class="table table__thead--border cart-view__table">
+                        <thead>
+                            <tr >
+                                <th scope="col" class="image"></th>
+                                <th scope="col" class="articul">
+                                    <span>
+                                        <i class="fa fa-sort-amount-desc"></i>
+                                        <i class="fa fa-sort-amount-asc"></i>
+                                        артикул
+                                    </span>
+                                </th>
+                                <th scope="col" class="metal">
+                                    <span>
+                                        <i class="fa fa-sort-amount-desc"></i>
+                                        <i class="fa fa-sort-amount-asc"></i>
+                                        металл
+                                    </span>
+                                </th>
+                                <th scope="col" class="size">
+                                    <span>
+                                        <i class="fa fa-sort-amount-desc"></i>
+                                        <i class="fa fa-sort-amount-asc"></i>
+                                        размер
+                                    </span>
+                                </th>
+                                <th scope="col" class="weight">
+                                    <span>
+                                        <i class="fa fa-sort-amount-desc"></i>
+                                        <i class="fa fa-sort-amount-asc"></i>
+                                        вес, шт.
+                                    </span>
+                                </th>
+                                <th scope="col" class="price">
+                                    <span>
+                                        <i class="fa fa-sort-amount-desc"></i>
+                                        <i class="fa fa-sort-amount-asc"></i>
+                                        цена, шт.
+                                    </span>
+                                </th>
+                                <th scope="col" class="quantity">
+                                    <span>
+                                        <i class="fa fa-sort-amount-desc"></i>
+                                        <i class="fa fa-sort-amount-asc"></i>
+                                        кол-во
+                                    </span>
+                                </th>
+                                <th scope="col" class="total_weight">
+                                    <span>
+                                        <i class="fa fa-sort-amount-desc"></i>
+                                        <i class="fa fa-sort-amount-asc"></i>
+                                        вес, общ.
+                                    </span>
+                                </th>
+                                <th scope="col" class="total_price">
+                                    <span>
+                                        <i class="fa fa-sort-amount-desc"></i>
+                                        <i class="fa fa-sort-amount-asc"></i>
+                                        стоимость
+                                    </span>
+                                </th>
+                                <th scope="col" class="actions"></th>
+                                <th scope="col" class="errors"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart %}
+                            {% with product=item.product %}
+                                {% unique_id as id %}
+                                <tr id="{{id}}" name="cart-row">
+                                    <td class="image">
+                                        {% first_product_image product.id as image %}
+                                        <img
                                             src="{{ MEDIA_URL }}{{ image }}"
-                                            class="img-fluid rounded img-thumbnail thumbnail-150"
                                             alt="{{ product.name }}"
-                                            style="border: none;"
                                         >
-                                    </figure>
-                            </div>
-                            <div class="col-xs-1 col-sm-2 col-center">
-                                <div class="row px-4 px-sm-0">
-                                    Артикул: &nbsp;
-                                    <a href="{% url 'catalog:product' product.id %}">
-                                        {{ product.articul }}
-                                    </a>
-                                </div>
-                                <div class="row px-4 px-sm-0">
-                                    <div><b>{{ product.name }}</b></div>
-                                    <div>
-                                        Вес: {{ item.weight }};<br>
-                                        Размер: {{ item.size }};<br>
-                                        Металл: {{ product.metal }} {{ product.metal_content }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xs-1 col-sm-2 col-center">
-                                <div class="form-outline cart__quantity--position">
-                                    {% unique_id as id %}
-                                    <input
-                                        id="{{ id }}"
-                                        name="cart-quantity"
-                                        value="{{ item.quantity }}"
-                                        min="0"
-                                        max="{{ product.stock }}"
-                                        step="1"
-                                        type="number"
-                                        class="form-control"
-                                    />
-                                    <label for="{{ id }}" style="margin-bottom: 0px; margin-left: 5px;">{{ item.unit|get_unit_repr }}</label>
-                                </div>
-                            </div>
-                            <div name="cart-sum" class="col-xs-1 col-sm-2 col-center">{{ item.total_price }} руб.</div>
-                            <div class="col-xs-1 col-sm-2 col-center text-center">
-                                <a href="{% url 'cart:cart_remove' product.id item.size %}">
-                                    <i class="fa fa-trash-o" aria-hidden="true"></i>
-                                </a>
-                            </div>
-                            <div name="cart-key" style="display: none;">
-                                {{'{'}}"productId":"{{product.id}}","size":"{{item.size}}"{{'}'}}
-                            </div>
-                        </div>
-                    </div>
-                {% endwith %}
-                {% empty %}
-                    <h5 class="text-center h-100">Ваша корзина пуста</h5>
-                {% endfor %}
-                <form id="createOrderForm" method="post" action="{% url 'cart:create' %}">
-                    {% csrf_token %}
-                </form>
-                <p class="text-right">
-                    <a 
-                        href="{% url 'catalog:products' %}"
-                        role="button"
-                        class="btn btn-primary mb-2 mr-sm-2"
-                    >
-                        Вернуться в каталог
-                    </a>
-                    <a
-                        href="#"
-                        onclick="document.getElementById('createOrderForm').submit();"
-                        role="button"
-                        class="btn btn-success mb-2 mr-sm-2"
-                    >
-                        Оформить заказ
-                    </a>
-                </p>
-            </main>
-            <main id="cart-table" class="col products-in-cart" style="display: none;">
-                <table class="table table__thead--border">
-                    <thead>
-                        <tr>
-                            <th scope="col">Артикул</th>
-                            <th scope="col">Наименование</th>
-                            <th scope="col">Характеристика</th>
-                            <th scope="col">Количество</th>
-                            <th scope="col">Цена, руб.</th>
-                            <th scope="col">Стоимость, руб.</th>
-                            <th scope="col">Удалить</th>
-                            {% if item.errors %}
-                                <th scope="col"></th>
-                            {% endif %}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in cart %}
-                        {% with product=item.product %}
-                            {% unique_id as id %}
-                            <tr id="{{id}}" name="cart-row">
-                                <td>
-                                    <a href="{% url 'catalog:product' product.id %}">
-                                        {{ product.articul }}
-                                    </a>
-                                </td>
-                                <td>{{ product.name }}</td>
-                                <td>
-                                    Вес: {{ item.weight }};<br>
-                                    Размер: {{ item.size }};<br>
-                                    Металл: {{ product.metal }} {{ product.metal_content }}
-                                </td>
-                                <td>
-                                    <div class="form-outline cart__quantity--position">
+                                    </td>
+                                    <td class="articul">
+                                        <a href="{% url 'catalog:product' product.id %}">
+                                            {{ product.articul }}
+                                        </a>
+                                    </td>
+                                    <td class="metal">{{ product.metal }}</td>
+                                    <td class="size">{% if item.size %}<span>{{ item.size }}</span>{% endif %}</td>
+                                    <td class="weight">{{ item.weight }}</td>
+                                    <td class="price" name="cart-price">{{ item.price|floatformat:"0" }} р.</td>
+                                    <td class="quantity">
                                         {% unique_id as id %}
+                                        <a href="#{{ id }}" class="remove-quantity">
+                                            <i class="fa fa-minus"></i>
+                                        </a>
                                         <input
                                             id="{{ id }}"
                                             name="cart-quantity"
@@ -149,54 +111,60 @@
                                             min="0"
                                             max="{{ product.stock }}"
                                             step="1"
-                                            type="number" 
+                                            type="text"
                                             class="form-control"
                                         />
-                                        <label for="{{ id }}" style="margin-bottom: 0px; margin-left: 5px;">{{ item.unit|get_unit_repr }}</label>
-                                    </div>
-                                </td>
-                                <td name="cart-price">{{ item.price }}</td>
-                                <td name="cart-sum">{{ item.total_price }}</td>
-                                <td class="text-center">
-                                    <a href="{% url 'cart:cart_remove' product.id item.size %}">
-                                        <i class="fa fa-trash-o" aria-hidden="true"></i>
-                                    </a>
-                                </td>
-                                {% if item.errors %}
-                                    <td>
-                                        <div class="formset-field errors">
-                                            {{ item.errors }}
+                                        <a href="#{{ id }}" class="add-quantity">
+                                            <i class="fa fa-plus"></i>
+                                        </a>
+                                    </td>
+                                    <td class="total_weight">
+                                        {% total_weight item.weight item.quantity as total_weight %}
+                                        {{ total_weight }}
+                                    </td>
+                                    <td class="total_price" name="cart-sum">{{ item.total_price|floatformat:"0" }} р.</td>
+                                    <td class="actions">
+                                        <a href="{% url 'cart:cart_remove' product.id item.size %}">
+                                            <i class="fa fa-times-circle-o" aria-hidden="true"></i>
+                                        </a>
+                                        <div name="cart-key" style="display: none;">
+                                            {{'{'}}"productId":"{{product.id}}","size":"{{item.size}}"{{'}'}}
                                         </div>
                                     </td>
-                                {% endif %}
-                                <td name="cart-key" style="display: none;">
-                                    {{'{'}}"productId":"{{product.id}}","size":"{{item.size}}"{{'}'}}
-                                </td>
-                            </tr>
-                        {% endwith %}
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <form id="createOrderFromTable" method="post" action="{% url 'cart:create' %}">
-                    {% csrf_token %}
-                </form>
-                <p class="text-right">
-                    <a 
-                        href="{% url 'catalog:products' %}"
-                        role="button"
-                        class="btn btn-primary mb-2 mr-sm-2"
-                    >
-                        Вернуться в каталог
-                    </a>
-                    <a
-                        href="#"
-                        onclick="document.getElementById('createOrderFromTable').submit();"
-                        role="button"
-                        class="btn btn-success mb-2 mr-sm-2"
-                    >
-                        Оформить заказ
-                    </a>
-                </p>
+                                    <td class="errors">
+                                        {% if item.errors %}
+                                            <div class="formset-field errors">
+                                                {{ item.errors }}
+                                            </div>
+                                        {% endif %}
+                                    </td>
+
+                                </tr>
+                            {% endwith %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <div class="cart-actions">
+
+                        <form id="createOrderFromTable" method="post" action="{% url 'cart:create' %}">
+                            {% csrf_token %}
+                        </form>
+                        <div class="text-right">
+                            <a
+                                href="#"
+                                onclick="document.getElementById('createOrderFromTable').submit();"
+                                role="button"
+                                class="btn btn-primary mb-2 mr-sm-2"
+                            >
+                                Оформить заказ
+                            </a>
+                        </div>
+
+                    </div>
+
+                </div>
+
             </main>
         </div>
     </div>

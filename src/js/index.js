@@ -5,7 +5,7 @@ import generateUUID from './lib';
 import mainMenuEvents from './main_menu';
 import showModalForm, {switchModalForm} from './form';
 import updateContactView from './contact';
-import updateCartView, {cartViewEvents} from './cart';
+import {cartViewEvents} from './cart';
 import initProductFilters, {filtersEvents} from './catalog/filters';
 import updateProductCard from './catalog_card';
 import ordersEvents from './orders';
@@ -73,7 +73,6 @@ $(document).ready(() => {
 
     // forms
     updateContactView('contactForm');
-    updateCartView('cartView');
 
     // products
     initProductFilters();

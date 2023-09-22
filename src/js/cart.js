@@ -1,23 +1,4 @@
-const switchCartView = (checked) => {
-    document.getElementById('products').style.display = checked ? 'none' : 'block';
-    document.getElementById('cart-table').style.display = checked ? 'block' : 'none';
-    localStorage.setItem('cartView', checked);
-}
-
-
-function updateCartView(elementId) {
-    const switchElement = document.getElementById(elementId);
-    if (switchElement === null) {
-        return;
-    }
-    if (localStorage.getItem('cartView') === 'true') {
-        switchElement.click();
-    }
-    switchCartView(switchElement.checked)
-    document.getElementById('cartViewArea').style.display = 'block';
-}
-
-
+import 'tablesorter';
 
 const updateCartTitle = () => {
     $.ajax({
@@ -244,6 +225,7 @@ const OnQuantityChange = (element, preventReload=false) => {
             .then((response) => {
                 response.forEach(item => {
                     const currentParam = params.filter(el => el.param.productId == item.pk).find(_ => true);
+                    console.log(currentParam)
                     const quantityField = currentParam.row.querySelector('input[name="cart-quantity"]');
                     const priceField    = currentParam.row.querySelector('[name="cart-price"]');
                     const sumField      = currentParam.row.querySelector('[name="cart-sum"]');
@@ -308,13 +290,50 @@ export function сartEvents() {
 
 
 export function cartViewEvents() {
-    $('#cartView').click((event) => {
-        switchCartView(event.currentTarget.checked);
-    });
+    const cartViewElement = $('#cart-table');
+
+    $(".remove-quantity", cartViewElement).on("click", function(e){
+        e.preventDefault();
+        const inputElement = $($(this).attr("href"));
+        const inputElementValue = inputElement.val();
+        if(inputElementValue > inputElement.attr("min")){
+            console.log(inputElement, inputElementValue)
+            inputElement.val(inputElementValue - 1).trigger('change')
+        }
+    })
+
+    $(".add-quantity", cartViewElement).on("click", function(e){
+        e.preventDefault();
+        const inputElement = $($(this).attr("href"));
+        const inputElementValue = inputElement.val();
+        console.log(inputElementValue, inputElement.attr("max"))
+        if(inputElementValue < inputElement.attr("max")){
+            console.log(inputElementValue)
+            inputElement.val(inputElementValue + 1).trigger('change')
+        }
+    })
+
+    const cartTableItems = $('#cart-items');
+    if(cartTableItems.length) {
+        cartTableItems.tablesorter({
+            textExtraction: {
+                '.articul' : function(node, table, cellIndex) {
+                    return "#"  + $(node).text();
+                },
+                '.quantity' : function(node, table, cellIndex) {
+                    return $(node).find("input").val();
+                }
+            }
+        })
+            .on("sortEnd", function(e, table){
+                console.log(e, table)
+            })
+    }
+
+
     $('input[name="cart-quantity"]').on('change', (event) => {
         OnQuantityChange(event.currentTarget);
     });
 }
 
 
-export default updateCartView;
