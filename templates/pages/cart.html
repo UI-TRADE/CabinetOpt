@@ -1,5 +1,6 @@
 {% extends "main.html" %}
 {% load cart_tags %}
+{% load catalog_tags %}
 
 {% block page %}
 	{% block content %}
@@ -151,11 +152,19 @@
                             {% csrf_token %}
                         </form>
                         <div class="text-right">
+
+                            <div class="cart-result">
+                                <div class="cart-result__title">Итог:</div>
+                                <div class="cart-result__total-count">{{ cart|length|floatformat:"0" }} шт</div>
+                                <div class="cart-result__total-weight">{{ cart.get_total_weight|floatformat:"2" }} гр</div>
+                                <div class="cart-result__total-price">{{ cart.get_total_price|floatformat:"0" }} р</div>
+                            </div>
+
                             <a
                                 href="#"
                                 onclick="document.getElementById('createOrderFromTable').submit();"
                                 role="button"
-                                class="btn btn-primary mb-2 mr-sm-2"
+                                class="btn btn-primary mb-2 mr-sm-2 send-to-order"
                             >
                                 Оформить заказ
                             </a>
