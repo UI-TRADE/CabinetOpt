@@ -296,7 +296,7 @@ export function cartViewEvents() {
         const inputElement = $($(this).attr("href"));
         const inputElementValue = inputElement.val();
         if(inputElementValue > inputElement.attr("min")){
-            inputElement.val(inputElementValue - 1).trigger('change')
+            inputElement.val(parseInt(inputElementValue) - 1).trigger('change')
         }
     })
 
@@ -304,8 +304,8 @@ export function cartViewEvents() {
         e.preventDefault();
         const inputElement = $($(this).attr("href"));
         const inputElementValue = inputElement.val();
-        if(inputElementValue < inputElement.attr("max")){
-            inputElement.val(inputElementValue + 1).trigger('change')
+        if(inputElementValue < inputElement.attr("max") || !inputElement.attr("max")){
+            inputElement.val(parseInt(inputElementValue) + 1).trigger('change')
         }
     })
 
