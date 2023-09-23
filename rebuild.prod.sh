@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Проверить наличие изменений в репозитории
-git checkout stage
+git checkout main
 git fetch
 
 # Проверить, есть ли локальные изменения
-if [[ $(git log HEAD..origin/stage --oneline) ]]; then
+if [[ $(git log HEAD..origin/main --oneline) ]]; then
     echo "Внимание: есть локальные изменения в репозитории!"
     
     # Проверить, есть ли незакоммиченные изменения
@@ -17,11 +17,11 @@ if [[ $(git log HEAD..origin/stage --oneline) ]]; then
     git pull
     if [ $? -eq 0 ]; then
         echo "Команда git pull выполнена успешно."
-        docker-compose down --volumes --rmi all
         docker-compose up -d --build
     else
         echo "Ошибка выполнения команды git pull."
     fi
 else
     echo "Нет локальных изменений в репозитории."
+    docker-compose up -d --build
 fi
