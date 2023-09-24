@@ -68,6 +68,16 @@ cd CabinetOpt
 
 `LOGTAIL_SOURCE_TOKEN` - токен сервиса [LogTail](https://logs.betterstack.com/), который используется в качестве внешнего инструмента сбора логов.
 
+`EMAIL_HOST` - адрес smtp сервера.
+`EMAIL_PORT` - порт smtp сервера.
+`EMAIL_HOST_USER` - имя пользователя от которого отправляется почта.
+`EMAIL_HOST_PASSWORD` - пароль почты.
+`EMAIL_USE_TLS` - TLS (по умолчанию не используется)
+`EMAIL_USE_SSL` - SSL (по умолчанию включено) 
+
+`REDIS_HOST` - адрес сервера redis
+`REDIS_PORT` - порт сервера redis
+
 Установите зависимости в виртуальное окружение:
 ```sh
 pip install -r requirements.txt
@@ -186,6 +196,8 @@ Webpack будет следить за файлами в каталоге `src`.
 `EMAIL_USE_TLS` - TLS (по умолчанию не используется)
 `EMAIL_USE_SSL` - SSL (по умолчанию включено) 
 
+`REDIS_HOST` - адрес сервера redis
+`REDIS_PORT` - порт сервера redis
 
 Запустите развертывание сайта в Docker:
 
@@ -279,6 +291,12 @@ sudo nano nginx/nginx.conf
 
 ```sh
 docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+Запустите отправку заявок на почту по расписанию
+
+```sh
+docker-compose -f docker-compose.prod.yml exec web python manage.py mailing
 ```
 
 

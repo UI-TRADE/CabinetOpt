@@ -75,6 +75,7 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
         'email',
         'phone',
         'status',
+        'manager_talant',
     ]
     list_display = [
         'name',
@@ -83,6 +84,7 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
         'email',
         'phone',
         'status',
+        'manager_talant'
     ]
     list_filter = [
         'status',
@@ -96,6 +98,7 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
             'email',
             'phone',
         ),
+        'manager_talant',
         'priority_direction',
         ('login', 'password'),
     ]

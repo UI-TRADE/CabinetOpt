@@ -21,9 +21,9 @@ class RegistrationOrder(models.Model):
     name = models.CharField('Имя', max_length=150)
     organization = models.CharField('Организация', max_length=150, db_index=True, default='')
     identification_number = models.CharField('ИНН', max_length=12, db_index=True)
-    name_of_manager = models.CharField('ФИО менеджера', max_length=150, blank=True)
-    email = models.EmailField('email менеджера', db_index=True)
-    phone = PhoneNumberField('Контактный телефон менеджера', db_index=True)
+    name_of_manager = models.CharField('ФИО менеджера клиента', max_length=150, blank=True)
+    email = models.EmailField('email менеджера клиента', db_index=True)
+    phone = PhoneNumberField('Телефон менеджера клиента', db_index=True)
     priority_direction = models.ForeignKey(
         PriorityDirection,
         null=True,
@@ -31,6 +31,14 @@ class RegistrationOrder(models.Model):
         on_delete=models.SET_NULL,
         verbose_name='Приоритетное направление',
         related_name='registration_orders'
+    )
+    manager_talant = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        verbose_name='менеджер TALANT',
+        related_name='managers_talant'
     )
     status = models.CharField(
         'Статус регистрации', max_length=10, default='pending', choices=(

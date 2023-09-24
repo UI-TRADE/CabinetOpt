@@ -29,6 +29,14 @@ services:
       - POSTGRES_PASSWORD=12345
       - POSTGRES_DB=cabinet_opt
 
+  redis:
+    image: 'redis:6.2-alpine'
+    restart: always
+    hostname: redis
+    privileged: true
+    ports:
+      - "6379:6379"
+
   nginx:
     build: ./nginx
     volumes:

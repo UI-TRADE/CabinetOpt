@@ -1,4 +1,5 @@
 import json
+import redis
 
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
@@ -94,11 +95,17 @@ class UpdateOrderView(UpdateView):
         context = self.get_context_data()
         order_items = context['order_items']
         if form.is_valid() and order_items.is_valid():
+            current_status = form.instance.status
+            with suppress(Order.DoesNotExist):
+                current_order = Order.objects.get(pk=form.instance.id)
+                current_status = current_order.status
             with transaction.atomic():
                 form.instance.save()
                 for order_item in order_items.deleted_forms:
                     order_item.instance.delete()
                 order_items.save()
+            
+            schedule_send_order(form.instance, current_status)
 
             return redirect('orders:orders')
 
@@ -326,6 +333,16 @@ def import_xlsx(request):
     )
 
     return redirect('orders:orders')
+
+
+def schedule_send_order(order, status_before):
+    if not order.status == 'confirmed' and not status_before == 'introductory':
+        return
+
+    redis_storage = redis.StrictRedis(
+        host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0
+    )
+    redis_storage.set(order.id, order.status)
 
 
 def save_order(order_params, order_items):
