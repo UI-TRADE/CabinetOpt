@@ -396,6 +396,7 @@ def add_order_item(request):
 def stocks_and_costs(request):
     order_id = request.query_params.get('orderId')
     if order_id:
+        current_order = Order.objects.filter(pk=order_id)
         productIds = OrderItem.objects.filter(order_id=order_id).values_list('product_id', flat=True)
 
         _, products, stocks_and_costs, prices, discount_prices = \
@@ -411,6 +412,7 @@ def stocks_and_costs(request):
         return JsonResponse(
             {
                 'replay'           : 'ok',
+                'order'            : serialize("json", current_order),
                 'products'         : serialize("json", products),
                 'stocks_and_costs' : serialize(
                     "json", stocks_and_costs, use_natural_foreign_keys=True
@@ -440,7 +442,7 @@ def unload_orders(request, *args, **kwargs):
     if kwargs.get('data_to'):
         period['created_at__lte'] = kwargs['data_to']  
     serialized_orders = []
-    for order in Order.objects.filter(**period):
+    for order in Order.objects.filter(status='confirmed', **period):
         serialized_order = json.loads(
             serialize('json', Order.objects.filter(pk=order.id))
         )

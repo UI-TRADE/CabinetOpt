@@ -220,6 +220,7 @@ const addOrderItem = () => {
         const newCol = document.createElement('td');
         newCol.innerHTML = element;
         row.appendChild(newCol);
+        return newCol;
     }
 
     if(window.document.location.pathname.indexOf("/orders/order/edit/") === -1){
@@ -258,7 +259,8 @@ const addOrderItem = () => {
                     if (node.name == "items-__prefix__-nomenclature_size") node.innerHTML = '<option value="0">--</option>';
                     const nodeId = node.id.replaceAll('__prefix__',  __prefix__);
                     const htmlElement = node.outerHTML.replaceAll('__prefix__',  __prefix__);
-                    addColToTableRow(newRow, `${htmlElement}<div class="formset-field"></div>`);
+                    const newCol = addColToTableRow(newRow, `${htmlElement}<div class="formset-field"></div>`);
+                    if (node.style.display == 'none') newCol.style.display = "none";
                     if (nodeId && newRow.querySelector(`#${nodeId}`)) newRow.querySelector(`#${nodeId}`).addEventListener(
                             'change',
                             (event) => {
@@ -479,6 +481,7 @@ export function updateOrder() {
         .then((data) => {
             if (data['replay'] == 'error') throw new Error(data['message']);
 
+            const order            = JSON.parse(data['order']);
             const products         = JSON.parse(data['products']);
             const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
 
@@ -520,6 +523,14 @@ export function updateOrder() {
                     );
                 })
             }
+
+            const orderStatus = order.find(_=>true)['fields']['status'];
+            if(orderStatus !== 'introductory') {
+                $('input').attr('disabled', true);
+                $('select').attr('disabled', true);
+                $('#closeOrder').attr('disabled', false);
+            }
+
         })
         .catch((error) => {
             alert('Ошибка: ' + error);
@@ -560,9 +571,6 @@ function orderEvents() {
             for (var j=0; j<orderItems.length; j++) {
                 if (orderItems[j].contains(event.target)) {
                     const sizeField = orderItems[j].querySelector(`select[name="items-${j}-size"]`);
-                    // const selectedOption = event.target.options[event.target.selectedIndex];
-                    // if (!selectedOption) continue;
-                    // selectedOption.selected = true;
                     updateOrderItem(sizeField);
                     break;
                 }
@@ -576,6 +584,30 @@ function orderEvents() {
 
     $('.order__field').on('change', (event) => {
         updateOrderItem(event.currentTarget);
+    });
+
+    $(`#sendTalant`).on('click', (event) => {
+        const formData = new FormData($('#orderForm')[0]);
+        formData.set('status', 'confirmed');
+        $.ajax({
+            type: 'POST',
+            url: event.target.action,
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: (data) => {
+                const redirect_url = $('#sendTalant').attr("data-url");
+                document.location.href = redirect_url;
+            },
+            error: (error) => {
+                alert('Ошибка отправки заказа в Talant: ' + error);
+            }
+        });
+    });
+
+    $(`#closeOrder`).on('click', (event) => {
+        const redirect_url = event.target.getAttribute("data-url");
+        document.location.href = redirect_url;
     });
 }
 

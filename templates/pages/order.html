@@ -11,7 +11,7 @@
           </li>
         </ul>
 
-        <form method="post" autocomplete="off">
+        <form id="orderForm" method="post" autocomplete="off">
 
             <div id="empty-form" style="display: none;">{{ empty_items }}</div>
             <div id="fields" style="display: none" data-json="{{ order_fields }}"></div>
@@ -28,6 +28,7 @@
                 {% endfor %}
             </div>
 
+            {% if object.status == "introductory" %}
             <div class="row order__toolbar--position">
                 <button
                     name="add-item" 
@@ -58,14 +59,15 @@
                     <i class="fa fa-square-o" aria-hidden="true"></i>
                 </button>
             </div>
+            {% endif %}
 
             <table id="order_items" class="table table__thead--border">
                 <thead>
                     <tr>
                     <th scope="col"><i class="fa fa-check-square-o" aria-hidden="true"></i></th>
                     <th scope="col">Номенклатура</th>
-                    <th scope="col">Серия</th>
-                    <th scope="col">УИН</th>
+                    <!-- <th scope="col">Серия</th>
+                    <th scope="col">УИН</th> -->
                     <th scope="col">Вес</th>
                     <th scope="col">Размер</th>
                     <th scope="col">Кол-во</th>
@@ -103,7 +105,12 @@
 
                 </tbody>
             </table>
+            {% if object.status == "introductory" %}
             <button type="submit" class="btn btn-primary">Сохранить</button>
+            <input id="sendTalant" class="btn btn-primary" data-url="{% url 'orders:orders' %}" value="Отправить в Talant">
+            {% else %}
+            <input id="closeOrder" class="btn btn-primary" data-url="{% url 'orders:orders' %}" value="Закрыть">
+            {% endif %}
         </form>
 
     </main>
