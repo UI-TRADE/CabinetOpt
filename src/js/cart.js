@@ -1,4 +1,6 @@
 import 'tablesorter';
+import Cart from "./components/cart";
+import {decimalFormat} from "./utils/money_format";
 
 const updateCartTitle = () => {
     $.ajax({
@@ -117,6 +119,10 @@ const OnQuantityChange = (element, preventReload=false) => {
                                 url: url,
                                 success: (response) => {
                                     item.cartInfo = response;
+                                    $(document).trigger("cart.quantity-change", {
+                                        productId: item.param['productId'],
+                                        ...response
+                                    })
                                     resolve(item);
                                 }
                             });
@@ -229,8 +235,8 @@ const OnQuantityChange = (element, preventReload=false) => {
                     const priceField    = currentParam.row.querySelector('[name="cart-price"]');
                     const sumField      = currentParam.row.querySelector('[name="cart-sum"]');
                     if (quantityField) quantityField.value = item.quantity;
-                    if (priceField)    sumField.textContent = item.price;
-                    if (sumField)      sumField.textContent = item.sum;
+                    if (priceField)    sumField.textContent = decimalFormat(item.price) + " р.";
+                    if (sumField)      sumField.textContent = decimalFormat(item.sum) + " р.";
 
                     updateCartTitle();
                 });    
@@ -290,6 +296,7 @@ export function сartEvents() {
 
 export function cartViewEvents() {
     const cartViewElement = $('#cart-table');
+    const cart = new Cart();
 
     $(".remove-quantity", cartViewElement).on("click", function(e){
         e.preventDefault();
@@ -327,6 +334,10 @@ export function cartViewEvents() {
     $('input[name="cart-quantity"]').on('change', (event) => {
         OnQuantityChange(event.currentTarget);
     });
+
+    $(document).on("cart.quantity-change", function(e, data){
+        cart.update(data);
+    })
 }
 
 
