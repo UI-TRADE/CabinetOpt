@@ -26,3 +26,8 @@ def get_unit_repr(unit):
     if unit == '163':
         return 'грамм'
     return 'штук'
+
+@register.simple_tag
+def total_weight(weight, quantity):
+    return weight * quantity
+

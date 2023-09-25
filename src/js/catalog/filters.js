@@ -1,6 +1,107 @@
 import showSliders from './sliders';
 import updateProducts from '../catalog_cards';
 
+var selectedFiltersBadges;
+class FilterBadges {
+    constructor(element, filterContainer) {
+        this.element = element;
+        this.filterContainer = filterContainer;
+
+        /*this.defaultValues = {
+            // по размеру б, вес - г, цена р
+            "size_name": "б",
+            "weight": {
+                value: {
+                    min: 0,
+                    max: 80,
+                },
+                range:{
+                    min: 20,
+                    max: 150
+                }
+            },
+            "price": {
+                value: {
+                    min: 700,
+                    max: 8000,
+                },
+                range:{
+                    min: 500,
+                    max: 150000
+                }
+            },
+            "gem_quantity": {
+                value: {
+                    min: 50,
+                    max: 150,
+                },
+                range:{
+                    min: 0,
+                    max: 200
+                }
+            }
+        }*/
+        this.filterTemplates = {
+            'default': (value) => `${value}`,
+            "size__name": (value) => `${value} б`,
+            "weight_min": (value) => `от ${value} гр.`,
+            "weight_max": (value) => `до ${value} гр.`,
+            "price_min": (value) => `от ${value} р.`,
+            "price_max": (value) => `до ${value} р.`,
+            "gem_quantity_min": (value) => `от ${value} шт.`,
+            "gem_quantity_max": (value) => `от ${value} шт.`
+        }
+
+        this.ignore_filters = ['available_for_order', 'weight_min', 'weight_max', 'price_min', 'price_max', 'gem_quantity_min', 'gem_quantity_max']
+    }
+
+    update(filters){
+
+        this.filters = filters;
+
+        this.filtersElements = this.filters
+            .filter(value => this.ignore_filters.indexOf(Object.keys(value)[0]) === -1)
+            .filter((value =>
+                Object.values(value)
+                .filter(value =>  value !== null && typeof value !== "boolean").length)) // hide boolean(available_for_order) or null values
+            .map(filter =>
+                $("<span />")
+                    .addClass('badge badge-secondary')
+                    .text(
+                        (this.filterTemplates[Object.keys(filter)[0]] || this.filterTemplates['default'])(
+                            Object.values(filter).filter(value => !!value).join(' ')
+                        )
+                    )
+                    .append(
+                        $("<i />")
+                            .addClass("fa fa-close")
+                            .attr("aria-hidden", "true")
+                            .on("click", this.removeFilter(filter))
+                    )
+            )
+        this.element.empty().append(this.filtersElements)
+    }
+
+    removeFilter(filter){
+        return (e) => {
+            e.preventDefault();
+            /*
+                $("#weight-range").slider('values', [0, 100])
+                .slider('option', 'slide').call(
+                    $("#weight-range"),
+                    null,
+                    {
+                        //handle: $('.ui-slider-handle', hs),
+                        values: [0, 100]
+                    }
+                )
+            )*/
+            $(".filter-item-title-active", this.filterContainer).filter((index, element) =>
+                JSON.stringify($(element).data("json")) === JSON.stringify(filter)
+            ).trigger("click")
+        }
+    }
+}
 
 const loadJson = (selector) => {
     const element = document.querySelector(selector);
@@ -69,6 +170,7 @@ const selectMenuItem = (element) => {
             });
         }
         sessionStorage.setItem('filters', JSON.stringify(filters));
+        selectedFiltersBadges.update(filters)
     }
 }
 
@@ -93,6 +195,8 @@ const updateMenuItems = () => {
         let foundObject = filters.filter(item => item[element.name]).find(_ => true);
         if (foundObject) element.checked = foundObject[element.name];   
     });
+
+    selectedFiltersBadges.update(filters)
 }
 
 
@@ -174,7 +278,8 @@ function initProductFilters() {
     $.ajax({
         url: '/catalog/filters',
         success: (data) => {
-            $('#filter-container').html(data);
+            const filterContainer = $('#filter-container').html(data);
+            selectedFiltersBadges = new FilterBadges($("#selected-filter-container"), filterContainer)
             showSliders();
             updateMenuItems();
             showCatalog();

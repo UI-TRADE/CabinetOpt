@@ -1,6 +1,7 @@
 import getPrice from './price'
 import {сartEvents, waitUpdateCart} from './cart';
-
+import slick from "slick-carousel"
+import {decimalFormat} from "./utils/money_format";
 
 /**
  * Удаляет css класс элемента.
@@ -50,283 +51,77 @@ const addSelectSizeEvent = (element) => {
 }
 
 
-/**
- * Управляет отображением элементов прокрутки размеров.
- */
-const showSizeControls = () => {
-    const sizeBlock      = document.querySelector('#size-block');
-    const sizeElements   = JSON.parse(sizeBlock.getAttribute('data-json'));
-    const sizeItemsShown = sizeBlock.querySelectorAll('.product__block__size-group--position');
 
-    const minElement = sizeElements[0];
-    const maxElement = sizeElements[sizeElements.length-1];
-    const firstElement = sizeItemsShown[0];
-    const endElement = sizeItemsShown[sizeItemsShown.length-1];
-
-    const minId   = minElement['id'];
-    const maxId   = maxElement['id'];
-    const firstId = firstElement.getAttribute('data-id');
-    const lastId  = endElement.getAttribute('data-id');
-
-    const sizeBackElement = '<div id="size-back"><i class="fa fa-caret-left fa-2x" aria-hidden="true" style="padding-top: 8px; padding-right: 5px; color: gainsboro;"></i></div>';
-    const sizeNextElement = '<div id="size-next"><i class="fa fa-caret-right fa-2x" aria-hidden="true" style="padding-top: 8px; padding-left: 5px; color: gainsboro;"></i></div>';
-
-    if (firstId > minId) sizeBlock.innerHTML = sizeBackElement + sizeBlock.innerHTML;
-    if (lastId < maxId)  sizeBlock.innerHTML = sizeBlock.innerHTML + sizeNextElement;
-}
-
+// data-ride="carousel"
+const sliderTemplateFn = (items, name, slidesToShow, slidesToScroll) => `
+    <div id="${name}-carousel" class="slider" data-slick='{"slidesToShow": ${slidesToShow}, "slidesToScroll": ${slidesToScroll}}'  >
+        ${items.map((item, index) => 
+           `<div class="slide ${index === 0 ? 'active' : ''}">${item.element}</div>`
+        ).join('')}
+    </div>
+`;
 
 /**
  * Отображает таблицу размеров и весов в карточке товаров.
- * 
- * firstIdx   - начальный индекс отображаемых размеров.
- * lastIdx    - начальный индекс отображаемых размеров.
  */
-const showSizes = (firstIdx=0, lastIdx=0) => {
-    const widthSizeElement = 58;
-    const sizeBlock = document.querySelector('#size-block');
-    let maxLength = sizeBlock.offsetWidth;
-    const sizeElements = JSON.parse(sizeBlock.getAttribute('data-json'));
-    const maxIdx = Math.max(lastIdx, sizeElements.length);
-    sizeBlock.innerHTML = '';
-    for (var i=firstIdx; i < maxIdx; i++) {
-        maxLength = maxLength - widthSizeElement;
-        if (maxLength > widthSizeElement) {
-            sizeBlock.innerHTML += sizeElements[i]['element'];   
+const showSizes = async (stock_and_cost) => {
+    const sizeBlock = $('#size-block');
+    const sizeElements = sizeBlock.data('json');
+    const carouselSizes = $(sliderTemplateFn(sizeElements, 'sets', 8, 1));
+    carouselSizes.addClass('hidden')
+    sizeBlock.append(carouselSizes);
+
+    await updateCarts(stock_and_cost.map((item) => {
+        return {
+            element: $('#size-' + item.fields.size[0], carouselSizes).get(0),
+            key: {
+                productId: item.fields.product[1],
+                size: item.fields.size[0]
+            }
         }
-    }
-    showSizeControls();
-    Array.from(sizeBlock.childNodes).forEach(element => {
-        element.addEventListener('click', (event) => {
-            addSelectSizeEvent(event.target);
-        });
-    });
-    $('#size-back').on('click', (event) => {
-        backSize(event.currentTarget.id);
-    });
-    $('#size-next').on('click', (event) => {
-        nextSize(event.currentTarget.id);
-    });
+    }));
+    carouselSizes.removeClass('hidden')
+    sizeBlock.append(carouselSizes);
+    $('.slider', sizeBlock).slick({
+        infinite:false,
+        variableWidth: true,
+        prevArrow: '<button type="button" class="slick-prev"></button>',
+        nextArrow: '<button type="button" class="slick-next"></button>'
+    })
+
 }
-
-
-/**
- * Добавляет обработчк события перемещения по линейке размера.
- * 
- * element   - выбранный элемент DOM.
- */
-const nextSize = (element) => {
-    const sizeBlock      = document.querySelector('#size-block');
-    const sizeItemsShown = sizeBlock.querySelectorAll('.product__block__size-group--position');
-
-    const shownIds = [];
-    sizeItemsShown.forEach((item) => {
-        let idx = parseInt(item.getAttribute('data-id'));
-        shownIds.push(++idx);    
-    });
-    showSizes(shownIds[0], shownIds[shownIds.length-1]);
-}
-
-
-/**
- * Добавляет обработчк события перемещения по линейке размера.
- * 
- * element   - выбранный элемент DOM.
- */
-const backSize = (element) => {
-    const sizeBlock      = document.querySelector('#size-block');
-    const sizeItemsShown = sizeBlock.querySelectorAll('.product__block__size-group--position');
-
-    const shownIds = [];
-    sizeItemsShown.forEach((item) => {
-        let idx = parseInt(item.getAttribute('data-id'));
-        shownIds.push(--idx);    
-    });
-    showSizes(shownIds[0], shownIds[shownIds.length-1]);
-}
-
 
 /**
  * Управляет отображением элементов прокрутки комплектов.
  */
-const showSetsControls = () => {
-    const setBlock      = document.querySelector('#set-block');
-    const setElements   = JSON.parse(setBlock.getAttribute('data-json'));
-    const setItemsShown = setBlock.querySelectorAll('.product__set-block__imgs');
+// data-ride="carousel"
+const showSets = () => {
+    const setBlock = $('#set-block');
+    const setElements = setBlock.data('json');
+    const carouselSets = $(sliderTemplateFn(setElements, 'sets', 2, 1));
+    setBlock.append(carouselSets);
 
-    const minElement   = setElements[0];
-    const maxElement   = setElements[setElements.length-1];
-    const firstElement = setItemsShown[0];
-    const endElement   = setItemsShown[setItemsShown.length-1];
-
-    const minId   = (minElement)   ? minElement['id']                    : 0;
-    const maxId   = (maxElement)   ? maxElement['id']                    : 0;
-    const firstId = (firstElement) ? firstElement.getAttribute('data-id'): 0;
-    const lastId  = (endElement)   ? endElement.getAttribute('data-id')  : 0;
-
-    const backElement = '<div id="set-back"><i class="fa fa-caret-left fa-2x" aria-hidden="true" style="padding-top: 8px; padding-right: 5px; color: gainsboro;"></i></div>';
-    const nextElement = '<div id="set-next"><i class="fa fa-caret-right fa-2x" aria-hidden="true" style="padding-top: 8px; padding-left: 5px; color: gainsboro;"></i></div>';
-
-    if (firstId > minId) setBlock.innerHTML = backElement + setBlock.innerHTML;
-    if (lastId < maxId)  setBlock.innerHTML = setBlock.innerHTML + nextElement;
+    $('.slider', setBlock).slick({
+        prevArrow: '<button type="button" class="slick-prev"></button>',
+        nextArrow: '<button type="button" class="slick-next"></button>'
+    })
 }
 
+// data-ride="carousel"
 
-/**
- * Отображает картинки коллекций товаров.
- * 
- * firstIdx   - начальный индекс отображаемых картинок.
- * lastIdx    - начальный индекс отображаемых картинок.
- */
-const showSets = (firstIdx=0, lastIdx=0) => {
-    const widthSetElement = 50;
-    const setBlock = document.querySelector('#set-block');
-    let maxLength = setBlock.offsetWidth;
-    const setElements = JSON.parse(setBlock.getAttribute('data-json'));
-    const maxIdx = Math.max(lastIdx, setElements.length);
-    setBlock.innerHTML = '';
-    for (var i=firstIdx; i < maxIdx; i++) {
-        maxLength = maxLength - widthSetElement;
-        if (maxLength > widthSetElement) {
-            setBlock.innerHTML += setElements[i]['element'];   
-        }
-    }
-    showSetsControls();
-    $('#set-back').on('click', (event) => {
-        backSets(event.currentTarget);
-    });
-    $('#set-next').on('click', (event) => {
-        nextSets(event.currentTarget);
-    });
+
+const showAnalogues = () => {
+
+    const analoguesBlock = $('#analogues-block');
+    const analoguesElements = analoguesBlock.data('json');
+
+    const carouselAnalogues = $(sliderTemplateFn(analoguesElements, 'analogues', 2, 1));
+    analoguesBlock.append(carouselAnalogues)
+    $('.slider', analoguesBlock).slick({
+        prevArrow: '<button type="button" class="slick-prev"></button>',
+        nextArrow: '<button type="button" class="slick-next"></button>'
+    })
 }
-
-
-/**
- * Добавляет обработчк события перемещения по линейке изображений.
- * 
- * element   - выбранный элемент DOM.
- */
-const nextSets = (element) => {
-    const setBlock      = document.querySelector('#set-block');
-    const setItemsShown = setBlock.querySelectorAll('.product__set-block__imgs');
-
-    const shownIds = [];
-    setItemsShown.forEach((item) => {
-        let idx = parseInt(item.getAttribute('data-id'));
-        shownIds.push(++idx);    
-    });
-    showSets(shownIds[0], shownIds[shownIds.length-1]);
-}
-
-
-/**
- * Добавляет обработчк события перемещения по линейке изображений.
- * 
- * element   - выбранный элемент DOM.
- */
-const backSets = (element) => {
-    const setBlock      = document.querySelector('#set-block');
-    const setItemsShown = setBlock.querySelectorAll('.product__set-block__imgs');
-
-    const shownIds = [];
-    setItemsShown.forEach((item) => {
-        let idx = parseInt(item.getAttribute('data-id'));
-        shownIds.push(--idx);    
-    });
-    showSets(shownIds[0], shownIds[shownIds.length-1]);
-}
-
-
-/**
- * Управляет отображением элементов прокрутки аналогов.
- */
-const showAnaloguesControls = () => {
-    const analoguesBlock      = document.querySelector('#analogues-block');
-    const analoguesElements   = JSON.parse(analoguesBlock.getAttribute('data-json'));
-    const analoguesItemsShown = analoguesBlock.querySelectorAll('.product__analogues-block__imgs');
-
-    const minElement   = analoguesElements[0];
-    const maxElement   = analoguesElements[analoguesElements.length-1];
-    const firstElement = analoguesItemsShown[0];
-    const endElement   = analoguesItemsShown[analoguesItemsShown.length-1];
-
-    const minId   = (minElement)   ? minElement['id']                    : 0;
-    const maxId   = (maxElement)   ? maxElement['id']                    : 0;
-    const firstId = (firstElement) ? firstElement.getAttribute('data-id'): 0;
-    const lastId  = (endElement)   ? endElement.getAttribute('data-id')  : 0;
-
-    const backElement = '<div id="analogues-back"><i class="fa fa-caret-left fa-2x" aria-hidden="true" style="padding-top: 8px; padding-right: 5px; color: gainsboro;"></i></div>';
-    const nextElement = '<div id="analogues-next"><i class="fa fa-caret-right fa-2x" aria-hidden="true" style="padding-top: 8px; padding-left: 5px; color: gainsboro;"></i></div>';
-
-    if (firstId > minId) analoguesBlock.innerHTML = backElement + analoguesBlock.innerHTML;
-    if (lastId < maxId)  analoguesBlock.innerHTML = analoguesBlock.innerHTML + nextElement;
-}
-
-
-/**
- * Отображает картинки аналогов товаров.
- * 
- * firstIdx   - начальный индекс отображаемых картинок.
- * lastIdx    - начальный индекс отображаемых картинок.
- */
-const showAnalogues = (firstIdx=0, lastIdx=0) => {
-    const widthAnaloguesElement = 50;
-    const analoguesBlock = document.querySelector('#analogues-block');
-    let maxLength = analoguesBlock.offsetWidth;
-    const analoguesElements = JSON.parse(analoguesBlock.getAttribute('data-json'));
-    const maxIdx = Math.max(lastIdx, analoguesElements.length);
-    analoguesBlock.innerHTML = '';
-    for (var i=firstIdx; i < maxIdx; i++) {
-        maxLength = maxLength - widthAnaloguesElement;
-        if (maxLength > widthAnaloguesElement) {
-            analoguesBlock.innerHTML += analoguesElements[i]['element'];   
-        }
-    }
-    showAnaloguesControls();
-    $('#analogues-back').on('click', (event) => {
-        backAnalogues(event.currentTarget);
-    });
-    $('#analogues-next').on('click', (event) => {
-        nextAnalogues(event.currentTarget);
-    });
-}
-
-
-/**
- * Добавляет обработчк события перемещения по линейке изображений.
- * 
- * element   - выбранный элемент DOM.
- */
-const nextAnalogues = (element) => {
-    const analoguesBlock      = document.querySelector('#analogues-block');
-    const analoguesItemsShown = analoguesBlock.querySelectorAll('.product__analogues-block__imgs');
-
-    const shownIds = [];
-    analoguesItemsShown.forEach((item) => {
-        let idx = parseInt(item.getAttribute('data-id'));
-        shownIds.push(++idx);    
-    });
-    showAnalogues(shownIds[0], shownIds[shownIds.length-1]);
-}
-
-
-/**
- * Добавляет обработчк события перемещения по линейке изображений.
- * 
- * element   - выбранный элемент DOM.
- */
-const backAnalogues = (element) => {
-    const analoguesBlock      = document.querySelector('#analogues-block');
-    const analoguesItemsShown = analoguesBlock.querySelectorAll('.product__analogues-block__imgs');
-
-    const shownIds = [];
-    analoguesItemsShown.forEach((item) => {
-        let idx = parseInt(item.getAttribute('data-id'));
-        shownIds.push(--idx);    
-    });
-    showAnalogues(shownIds[0], shownIds[shownIds.length-1]);
-}
-
 
 /**
  * Обновляет элементы цен в карточке номенклатуры.
@@ -356,15 +151,15 @@ const updatePriceInProductCard = (context) => {
         const discountElements = element.querySelectorAll('.discount');
         discountElements.forEach(item => {item.style.display = 'none'});
     }
-    if (price.clientPrice && priceElement) priceElement.outerHTML = 
-        `<p id="price-block"> ${price.clientPrice} руб </p>`;
+    if (price.clientPrice && priceElement) priceElement.outerHTML =
+        `<p id="price-block">${decimalFormat(Math.ceil(price.clientPrice))} <i class="fa fa-rub" aria-hidden="true"></i></p>`;
     if (parseFloat(price.maxPrice) && maxPriceElement) {
-        maxPriceElement.outerHTML = `<p id="max-price"> ${price.maxPrice} руб </p> `;
+        maxPriceElement.outerHTML = `<p id="max-price">${decimalFormat(Math.ceil(price.maxPrice))} <i class="fa fa-rub" aria-hidden="true"></i></p> `;
     } else {
         maxPriceElement.parentElement.style.display = 'none';
     }
-    if (context.price && pricePerweightField) pricePerweightField.outerHTML = 
-        `<p id="price-per-weight"> Цена за 1 г ${context.price} руб </p>`;
+    if (context.price && pricePerweightField) pricePerweightField.outerHTML =
+        `<p id="price-per-weight">${decimalFormat(Math.ceil(context.price))} руб/гр.</p>`;
     if (context.inStok && inStokelement) inStokelement.outerHTML = 
         `<p id="in_stock"> В наличии ${context.inStok} шт </p>`;
 
@@ -396,6 +191,21 @@ const selectProductDetails = (element) => {
 const changeMainImg = (element) => {
     const mainImgElement = document.querySelector('.main-image');
     if (mainImgElement) mainImgElement.src = element.src;
+}
+
+const updateCarts = (cartElements) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const result = Promise.all(
+                cartElements.map((item) => {
+                    return waitUpdateCart(item.element, item.key)
+                })
+            );
+            resolve(result);
+        } catch (error) {
+            reject(error);
+        }
+    });
 }
 
 /**
@@ -431,21 +241,21 @@ function updateProductCard() {
                 const actual_prices    = JSON.parse(data['actual_prices']);
                 const discount_prices  = JSON.parse(data['discount_prices']);
                 const default_sizes    = JSON.parse(data['default_sizes']);
-    
+
                 for (var i=0; i < elements.length; i++) {
                     let inStok = 0; let weight = 0; let size = '';
                     let currentPrice = 0; let currentDiscount = 0; let maxPrice = 0;
                     const currentId = JSON.parse(elements[i].getAttribute('data-json'));
                     const product = products.find(el => el['pk'] == currentId['id']);
-                    const stock_and_cost = stocks_and_costs.filter(el => el['fields'].product == currentId['id']);
+                    const stock_and_cost = stocks_and_costs.filter(el => el['fields'].product[1] == currentId['id']);
                     const actual_price = actual_prices.filter(
-                        el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
+                        el => el['fields'].product[1] == currentId['id'] && el['fields'].unit == product['fields'].unit
                     ).find(_ => true);
                     const discount_price = discount_prices.filter(
-                        el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
+                        el => el['fields'].product[1] == currentId['id'] && el['fields'].unit == product['fields'].unit
                     ).find(_ => true);
                     const defaultSize = default_sizes.filter(
-                        el => el['fields'].product == currentId['id']
+                        el => el['fields'].product[1] == currentId['id']
                     ).find(_ => true);
 
                     const firstStockAndCost = stock_and_cost.find(_ => true);
@@ -477,18 +287,17 @@ function updateProductCard() {
                             'size': size, 'weight': weight, 'inStok': inStok,
                             'price': currentPrice, 'discount': currentDiscount, 'maxPrice': maxPrice
                     });
-    
+
                     if (size) {
                         const sizeElements = elements[i].querySelector('#size-block');
                         if (stock_and_cost && sizeElements) {
-                            sizeElements.style.display = 'flex';
                             addSizeElements(
                                 sizeElements, stock_and_cost,
                                 currentPrice, currentDiscount,
                                 maxPrice, size
                             );
+                            showSizes(stock_and_cost)
                         }
-                        showSizes();
                     }
     
                     cartElementsForUpdate.push(
@@ -506,19 +315,6 @@ function updateProductCard() {
     
             }
         });        
-    }
-
-    const updateCarts = (cartElements) => {
-        return new Promise((resolve, reject) => {
-            try {
-                const result = Promise.all(
-                    cartElements.map((item) => waitUpdateCart(item.element, item.key))
-                );
-                resolve(result);
-            } catch (error) {
-                reject(error);
-            }
-        });
     }
 
     const updateProductAttributes = (productId) => {
@@ -597,15 +393,8 @@ function updateProductCard() {
             item['clientDiscount'] = discount;
             item['clientMaxPrice'] = maxPrice;
             const itemFields = item['fields'];
-            const sizeElement = addSizeElement(idx, itemFields.size.find(_ => true), itemFields.weight);
-            sizeElement.setAttribute('data-json', JSON.stringify(item));
-            if (itemFields.size == default_size) {
-                const btnElement = sizeElement.querySelector('input');
-                if (btnElement) btnElement.classList.add('product__block__size-btn--selected');
-                const labelElement = sizeElement.querySelector('label');
-                if (labelElement) labelElement.classList.add('product__block__size-label--selected');
-            }
-            sizes.push({ 'id': idx, 'element': sizeElement.outerHTML });
+            const sizeElement = addSizeElement(idx, itemFields.size.find(_ => true), itemFields.weight, item);
+            sizes.push({ 'id': idx, 'element': sizeElement });
         });
         element.setAttribute('data-json', JSON.stringify(sizes));
     }
@@ -617,21 +406,43 @@ function updateProductCard() {
      * size - значение размера изделия.
      * weight - значение веса изделия.
      */
-    const addSizeElement = (idx, size, weight='0') => {
-        const element = document.createElement("div");
-        element.classList.add('product__block__size-group--position');
-        element.innerHTML = 
-            `<input
-                id="size-${size}"
-                type="button"
-                value="${size}"
-                class="btn product__block__size-btn--design product__block__size-btn product__block__size-btn--position"
-            />
-            <label for="size-${size}" class="product__block__size-label product__block__size-label--position">${(weight) ? weight : "-"}</label>
-            `;
-        element.setAttribute('data-id', idx);
-        return element;
-    }
+    const addSizeElement = (idx, size, weight = '0', item) => `
+        <div id="size-${size}" class="product__block__sizes" data-size="${size}" data-id="${idx}" data-json="${JSON.stringify(item)}">
+            
+            <div class="product__block__group">
+                <div class="product__block__group-title"><span>размер</span></div>
+                <span type="button" class="btn btn-lg btn-primary size-button">${size}</span>
+            </div>
+
+            <div class="product__block__group product__block__group-weight">
+                <div class="product__block__group-title"><span>вес, гр.</span></div>
+                <div class="product__block__group-value">${weight}</div>
+            </div>
+            
+            <div class="product__block__group product__block__group-stock">
+                <div class="product__block__group-title"><span>остаток, шт.</span></div>
+                <div class="product__block__group-value">${item.fields.stock}</div>
+            </div>
+            
+            <div class="product__block__group product__block__group-size">
+                <div class="product__block__group-title"><span>ваш заказ, шт.</span></div>
+                <div class="product__block__group-value">
+                    <div class="input" name="cart-row">
+                        <div>
+                            <a class="cart-element addOneToCart" href="#">+</a>
+                        </div>
+                        <input type="text" class="form-control" name="quantity" value="0"/>
+                        <div>
+                            <a class="cart-element delOneFromCart" href="#">-</a>
+                        </div>
+                        <input type="hidden" name="add-to-cart" />
+                        <div name="cart-key" class="hidden"></div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    `
 
     /**
      * Подготавливает элементы коллекций и сохраняет их в json формате.
@@ -654,25 +465,16 @@ function updateProductCard() {
      * idx - индекс элемента.
      * item - данные изображений полученные с бэка.
      */
-    const addSetElement = (idx, item) => {
-        const element = document.createElement("a");
-        element.href = `/catalog/product/${item.product}/`;
-        element.classList.add('product__set-block__imgs');
-        element.target="_blank";
-        element.innerHTML = 
-            `<img
+    const addSetElement = (idx, item) => `<a href="/catalog/product/${item.product}/"
+            class="product__analogues-block__imgs"
+            target="_blank"
+            data-id="${idx}"
+        >
+            <img
                 src="/media/${item.image}"
-                class="
-                    img-fluid
-                    img-thumbnail
-                    thumbnail-50
-                    product__thumbnail__block--design
-                    product__thumbnail__block--position"
-                alt="${item.product}"
-            >`;
-        element.setAttribute('data-id', idx);
-        return element;
-    }
+                class="img-fluid" alt="${item.product}"
+            >
+        </a>`
 
 
     /**
@@ -685,10 +487,11 @@ function updateProductCard() {
         const prepared_sets = [];
         analogues.forEach((item, idx) => {
             const sizeElement = addAnaloguesElement(idx, item['fields']);
-            prepared_sets.push({ 'id': idx, 'element': sizeElement.outerHTML });
+            prepared_sets.push({ 'id': idx, 'element': sizeElement });
         });
         element.setAttribute('data-json', JSON.stringify(prepared_sets));
     }
+
 
 
     /**
@@ -697,40 +500,16 @@ function updateProductCard() {
      * idx - индекс элемента.
      * item - данные изображений полученные с бэка.
      */
-    const addAnaloguesElement = (idx, item) => {
-        const element = document.createElement("a");
-        element.href = `/catalog/product/${item.product}/`;
-        element.classList.add('product__analogues-block__imgs');
-        element.target="_blank";
-        element.innerHTML = 
-            `<img
-                src="/media/${item.image}"
-                class="
-                    img-fluid
-                    img-thumbnail
-                    thumbnail-50
-                    product__thumbnail__block--design
-                    product__thumbnail__block--position"
-                alt="${item.product}"
-            >`;
-        element.setAttribute('data-id', idx);
-        return element;
-    }
-
-    /**
-     * Доюавляет обработчки события выбора пунктов и нформкации о продукте.
-     */
-    const addInfoTabsEvents = () => {
-        const infoTabsElement = document.querySelector('#product-info-tabs');
-        if (!infoTabsElement) return;
-
-        const infoLinksElements = infoTabsElement.querySelectorAll('a');
-        for (var i=0; i<infoLinksElements.length; i++) {
-            infoLinksElements[i].addEventListener('click', (event) => {
-                selectProductDetails(event.currentTarget);
-            });  
-        }
-    }
+    const addAnaloguesElement = (idx, item) => `<a href="/catalog/product/${item.product}/"
+        class="product__analogues-block__imgs"
+        target="_blank"
+        data-id="${idx}"
+    >
+        <img
+            src="/media/${item.image}"
+            class="img-fluid" alt="${item.product}"
+        >
+    </a>`
 
     if(document.location.pathname.indexOf("/catalog/product/") === -1){
         return;    
@@ -743,7 +522,6 @@ function updateProductCard() {
         if (productId) productIds.push(productId['id']);
     }
 
-    const priceBlockFake = document.querySelector('#fake-col');
     const priceBlock     = document.querySelector('.product__col__prices');
 
     if (productIds.length == 0) {
@@ -760,12 +538,8 @@ function updateProductCard() {
             return updateCarts(data);
         })
         .then((result) => {
-            if (result.every(Boolean)) {
-                сartEvents();
-                addInfoTabsEvents();
-                priceBlockFake.style.display = 'none';
-                priceBlock.style.display     = 'flex';
-            };
+            сartEvents();
+            priceBlock.style.display     = 'flex';
         })
         .then(() => {
             return updateProductAttributes(productIds.toString());

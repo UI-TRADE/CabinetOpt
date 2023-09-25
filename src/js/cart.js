@@ -1,23 +1,4 @@
-const switchCartView = (checked) => {
-    document.getElementById('products').style.display = checked ? 'none' : 'block';
-    document.getElementById('cart-table').style.display = checked ? 'block' : 'none';
-    localStorage.setItem('cartView', checked);
-}
-
-
-function updateCartView(elementId) {
-    const switchElement = document.getElementById(elementId);
-    if (switchElement === null) {
-        return;
-    }
-    if (localStorage.getItem('cartView') === 'true') {
-        switchElement.click();
-    }
-    switchCartView(switchElement.checked)
-    document.getElementById('cartViewArea').style.display = 'block';
-}
-
-
+import 'tablesorter';
 
 const updateCartTitle = () => {
     $.ajax({
@@ -56,17 +37,20 @@ const addToCart = (formId) => {
 }
 
 
-const addOneToCart = (element) => {
-    const cartElement = element.parentElement.querySelector('input');
+export const addOneToCart = (element) => {
+    const cartElement = $(element).closest("[name='cart-row']").get(0).querySelector('input');
+
     cartElement.value = parseInt(cartElement.value) + 1;
     OnQuantityChange(cartElement, true);
 }
 
 
-const delOneFromCart = (element) => {
-    const cartElement = element.parentElement.querySelector('input');
-    cartElement.value = parseInt(cartElement.value) - 1;
-    OnQuantityChange(cartElement, true);
+export const delOneFromCart = (element) => {
+    const cartElement = $(element).closest("[name='cart-row']").get(0).querySelector('input');
+    if(cartElement.value != '0') {
+        cartElement.value = parseInt(cartElement.value) - 1;
+        OnQuantityChange(cartElement, true);
+    }
 }
 
 
@@ -97,11 +81,12 @@ const updateCartElements = (element, cartData, params) => {
     const cartKeyElement = cartElements.querySelector('[name="cart-key"]');
     cartButton.parentElement.style = "display: block";
     cartElements.style             = "display: none";
+    cartKeyElement.textContent     = JSON.stringify(params);
+    cartElement.value              = 0;
     if (cartData) {
         cartButton.parentElement.style = "display: none";
         cartElements.style             = "display: flex";
         cartElement.value              = cartData['quantity'];
-        cartKeyElement.textContent     = JSON.stringify(params);
     }
 }
 
@@ -265,7 +250,7 @@ export function waitUpdateCart(element, params) {
             url: url,
             success: (cartData) => {
                 updateCartElements(element, cartData, params);
-                resolve(true);
+                resolve(cartData);
             },
             error: () => {
                 reject();
@@ -282,23 +267,66 @@ export function сartEvents() {
     });
 
     $('.addOneToCart').on('click', (event) => {
-        addOneToCart(event.currentTarget);
+        event.preventDefault()
+        const $cartRowElement = $(event.target).closest("[name='cart-row']");
+        const $cartKey = $("[name='cart-key']", $cartRowElement)
+        if($cartRowElement.length && $("input", $cartRowElement).val() == 0){
+            const $cartData = JSON.parse($cartKey.text())
+            const formElement = $(`#cartForm-${$cartData.productId }`)
+            $("input[name='size']", formElement).val($cartData.size)
+            $("input[name='quantity']", $cartRowElement).val(1);
+            addToCart(`cartForm-${$cartData.productId }`);
+        }else{
+            addOneToCart(event.currentTarget);
+        }
     });
 
     $('.delOneFromCart').on('click', (event) => {
+        event.preventDefault()
         delOneFromCart(event.currentTarget);
     });
 }
 
 
 export function cartViewEvents() {
-    $('#cartView').click((event) => {
-        switchCartView(event.currentTarget.checked);
-    });
+    const cartViewElement = $('#cart-table');
+
+    $(".remove-quantity", cartViewElement).on("click", function(e){
+        e.preventDefault();
+        const inputElement = $($(this).attr("href"));
+        const inputElementValue = inputElement.val();
+        if(inputElementValue > inputElement.attr("min")){
+            inputElement.val(parseInt(inputElementValue) - 1).trigger('change')
+        }
+    })
+
+    $(".add-quantity", cartViewElement).on("click", function(e){
+        e.preventDefault();
+        const inputElement = $($(this).attr("href"));
+        const inputElementValue = inputElement.val();
+        if(inputElementValue < inputElement.attr("max") || !inputElement.attr("max")){
+            inputElement.val(parseInt(inputElementValue) + 1).trigger('change')
+        }
+    })
+
+    const cartTableItems = $('#cart-items');
+    if(cartTableItems.length) {
+        cartTableItems.tablesorter({
+            textExtraction: {
+                '.articul' : function(node, table, cellIndex) {
+                    return "#"  + $(node).text();
+                },
+                '.quantity' : function(node, table, cellIndex) {
+                    return $(node).find("input").val();
+                }
+            }
+        })
+    }
+
+
     $('input[name="cart-quantity"]').on('change', (event) => {
         OnQuantityChange(event.currentTarget);
     });
 }
 
 
-export default updateCartView;

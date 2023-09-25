@@ -5,7 +5,7 @@ import generateUUID from './lib';
 import mainMenuEvents from './main_menu';
 import showModalForm, {switchModalForm} from './form';
 import updateContactView from './contact';
-import updateCartView, {cartViewEvents} from './cart';
+import {cartViewEvents} from './cart';
 import initProductFilters, {filtersEvents} from './catalog/filters';
 import updateProductCard from './catalog_card';
 import ordersEvents from './orders';
@@ -49,7 +49,7 @@ $(window).on("load", () => {
     // Очищаем список выбора скрытого поля product, за исключением выбранного значения
     const orderFields = document.getElementsByClassName('order__field__product');
     for(var i=0; i<orderFields.length; i++) {
-        fieldOptions = orderFields[i].querySelectorAll('*');
+        const fieldOptions = orderFields[i].querySelectorAll('*');
         for(var j=0; j<fieldOptions.length; j++) {
             if (!fieldOptions[j].selected) {
                 fieldOptions[j].parentNode.removeChild(fieldOptions[j]);
@@ -73,7 +73,6 @@ $(document).ready(() => {
 
     // forms
     updateContactView('contactForm');
-    updateCartView('cartView');
 
     // products
     initProductFilters();
