@@ -1,6 +1,5 @@
 import os
 import base64
-import redis
 import schedule
 import time
 
@@ -28,9 +27,7 @@ class Command(BaseCommand):
 
 
 def launch_mailing():
-    redis_storage = redis.StrictRedis(
-        host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0
-    )
+    redis_storage = settings.REDIS_CONN
 
     order_ids = redis_storage.keys()
     print(order_ids)
@@ -81,7 +78,4 @@ def send_email(context, recipient_list):
     subject = 'отправка заказа менеджеру talant'
     from_email = settings.EMAIL_HOST_USER
     message = 'отправка заказа менеджеру talant'
-    print(html_content)
-    print(recipient_list)
-    print(from_email)
     send_mail(subject, message, from_email, recipient_list, html_message=html_content)

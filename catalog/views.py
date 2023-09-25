@@ -110,7 +110,7 @@ class ProductView(ListView):
         except PageNotAnInteger:
             products_page = paginator.page(1)
         except EmptyPage:
-            products_page = paginator.page(paginator.num_pages)            
+            products_page = paginator.page(paginator.num_pages)
 
         context['products']    = products_page
         context['MEDIA_URL']   = settings.MEDIA_URL

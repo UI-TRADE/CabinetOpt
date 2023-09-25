@@ -1,5 +1,4 @@
 import json
-import redis
 
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
@@ -338,11 +337,7 @@ def import_xlsx(request):
 def schedule_send_order(order, status_before):
     if not order.status == 'confirmed' and not status_before == 'introductory':
         return
-
-    redis_storage = redis.StrictRedis(
-        host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0
-    )
-    redis_storage.set(order.id, order.status)
+    settings.REDIS_CONN.set(order.id, order.status)
 
 
 def save_order(order_params, order_items):
