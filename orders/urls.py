@@ -28,4 +28,5 @@ urlpatterns = [
     path('order/export/pdf/<slug:order_id>/', views.ExportPDFView.as_view(), name='export-pdf'),
     path('order/export/xlsx/<slug:order_id>/', views.ExportXLSXView.as_view(), name='export-xlsx'),
     path('order/import/xlsx/', views.import_xlsx, name='import-xlsx'),
+    path('order/update/number', views.update_order_number),
 ]

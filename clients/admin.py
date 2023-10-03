@@ -194,10 +194,19 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
         send_mail(subject, message, from_email, recipient_list, html_message=html_content)
 
 
-
 @admin.register(Manager)
 class ManagerAdmin(admin.ModelAdmin):
-    pass
+    search_fields = [
+        'first_name',
+        'last_name',
+        'surname',
+    ]
+    list_display = [
+        'first_name',
+        'last_name',
+        'surname',
+    ]
+    list_display_links = ('first_name', 'last_name', 'surname')
 
 
 @admin.register(ContactDetail)

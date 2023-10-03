@@ -296,8 +296,9 @@ docker-compose -f docker-compose.prod.yml up -d --build
 Запустите отправку заявок на почту по расписанию
 
 ```sh
-docker-compose -f docker-compose.prod.yml exec web python manage.py mailing
+docker-compose -f docker-compose.prod.yml exec web python manage.py mailing -d
 ```
+p.s. Флаг -d позволяет запустить команду в фоновом режиме.
 
 
 ## Как получить токен пользователя и выполнить обмен с 1С
@@ -447,6 +448,11 @@ curl -X POST -H "Content-Type: application/json" -d @media/stock_and_costs.json 
 curl http://127.0.0.1:8000/orders/order/export/2004-01-01/2012-10-19 -H "Authorization: Token 0000000000000000000000000000000000000000"
 ```
 
+Отправка номера заказа назначенного в 1С на сайт
+
+```sh
+curl http://127.0.0.1:8000/orders/order/update/number\?id\=0\&num\=0\&ident\=0000000000000000000000000000000000000000 -H "Authorization: Token 0000000000000000000000000000000000000000"
+```
 
 ## Как запустить сайта
 Откройте сайт в браузере по адресу [http://127.0.0.1:8000/](http://127.0.0.1:8000/). Если вы увидели пустую белую страницу, то не пугайтесь, выдохните и вернитесь к сборки фронтенда.

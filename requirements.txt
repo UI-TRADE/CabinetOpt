@@ -21,3 +21,4 @@ openpyxl==3.1.2
 django-filter==23.2
 redis==5.0.0
 schedule==1.1.0
+django-meta==2.4.0

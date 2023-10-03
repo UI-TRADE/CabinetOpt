@@ -74,6 +74,7 @@ class Manager(models.Model):
     password = models.CharField(max_length=128, verbose_name='Пароль')
 
     class Meta:
+        ordering = ('last_name', 'first_name', )
         verbose_name = 'Персональный менеджер'
         verbose_name_plural = 'Персональные менеджеры'
     
@@ -126,6 +127,7 @@ class Client(models.Model):
     ))
 
     class Meta:
+        ordering = ('name', )
         verbose_name = 'Клиент'
         verbose_name_plural = 'Клиенты'
     

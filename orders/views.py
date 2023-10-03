@@ -485,3 +485,34 @@ def unload_orders(request, *args, **kwargs):
         serialized_orders.append(item)
 
     return JsonResponse(serialized_orders, status=200, safe=False)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def update_order_number(request):
+    order_id = request.query_params.get('id')
+    order_number = request.query_params.get('num')
+    order_ident = request.query_params.get('ident')
+
+    try:
+        if order_id and order_number and order_ident:
+            Order.objects.filter(id=order_id).update(**{
+                'num_in_1C': order_number,
+                'identifier_1C': order_ident
+            })
+        else:
+            raise Order.DoesNotExist
+    except Order.DoesNotExist as err:
+        return JsonResponse(
+            {'replay': 'error', 'message': 'Не найден заказ'},
+            status=200,
+            safe=False,
+            json_dumps_params={'ensure_ascii': False}
+        )
+    
+    return JsonResponse(
+        {'replay': 'ok'},
+        status=200,
+        safe=False,
+        json_dumps_params={'ensure_ascii': False}
+    )
