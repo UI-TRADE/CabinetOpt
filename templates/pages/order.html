@@ -1,111 +1,244 @@
 {% extends "main.html" %}
 {% load order_tags %}
+{% load catalog_tags %}
+{% load cart_tags %}
 
 {% block page %}
 	{% block content %}
 
     <main role="main" class="col-lg-12 px-4">
-        <ul class="nav nav-tabs">
-          <li class="nav-item">
-            <b>Заказ № {{ object.id }} от {{ object.created_at }}</b>
-          </li>
-        </ul>
+        <div id="order-item" data-id="{{ object.id }}" class="order-detail">
+            <div class="order-number__title">№ {{ object.id }}</div>
+            <div class="order-item__wrapper">
+                <div class="order-item">
+                    <div class="order-item__full-title">Ваш заказ № {{ object.id }} от {{ object.created_at }}</div>
 
-        <form method="post" autocomplete="off">
+                    <form method="post" autocomplete="off" action="{% url 'orders:create' order_id=object.id %}">
 
-            <div id="empty-form" style="display: none;">{{ empty_items }}</div>
-            <div id="fields" style="display: none" data-json="{{ order_fields }}"></div>
+                        <div id="empty-form" style="display: none;">{{ empty_items }}</div>
+                        <div id="fields" style="display: none" data-json="{{ order_fields }}"></div>
 
-            <div class="order__order_header--position" style="display: none">
-                {% csrf_token %}
-                {{ form }}
-            </div>
+                        <div class="order__order_header--position" style="display: none">
+                            {% csrf_token %}
+                            {{ form }}
+                        </div>
 
-            <div class="order__order_header--position">
-                {% for field in fields %}
-                    <label for="{{ field.id }}">{{ field.label }}</label>
-                    <input type="text" id="{{ field.id }}" class="form-control" value="{{ field.value }}" disabled/>
-                {% endfor %}
-            </div>
-
-            <div class="row order__toolbar--position">
-                <button
-                    name="add-item" 
-                    type="button"
-                    class="btn btn-outline-secondary order__toolbar__btn order__toolbar__btn--position"
-                >
-                    <i class="fa fa-plus-square-o" aria-hidden="true"></i>
-                </button>
-                <button
-                    name="delete-item"
-                    type="button"
-                    class="btn btn-outline-secondary order__toolbar__btn order__toolbar__btn--position"
-                >
-                    <i class="fa fa-trash-o" aria-hidden="true"></i>
-                </button>
-                <button
-                    name="select-items"
-                    type="button"
-                    class="btn btn-outline-secondary order__toolbar__btn order__toolbar__btn--position"
-                >
-                    <i class="fa fa-check-square-o" aria-hidden="true"></i>
-                </button>
-                <button
-                    name="unselect-items"
-                    type="button"
-                    class="btn btn-outline-secondary order__toolbar__btn order__toolbar__btn--position"
-                >
-                    <i class="fa fa-square-o" aria-hidden="true"></i>
-                </button>
-            </div>
-
-            <table id="order_items" class="table table__thead--border">
-                <thead>
-                    <tr>
-                    <th scope="col"><i class="fa fa-check-square-o" aria-hidden="true"></i></th>
-                    <th scope="col">Номенклатура</th>
-                    <th scope="col">Серия</th>
-                    <th scope="col">УИН</th>
-                    <th scope="col">Вес</th>
-                    <th scope="col">Размер</th>
-                    <th scope="col">Кол-во</th>
-                    <th scope="col">Ед.изм.</th>
-                    <th scope="col">Цена</th>
-                    <th scope="col">Скидка</th>
-                    <th scope="col">Сумма</th>
-                    <!-- <th scope="col">Тип цены</th> -->
-                </thead>
-                <tbody id="order_items_formset" class="order_items">
-                    {{ order_items.management_form }}
-                    {% for line in order_items %}
-                        {% for hidden in line.hidden_fields %}
-                            {{ hidden }}
-                        {% endfor %}
-                        <tr class="order-product-item" style="display: table-row">
-                            {% unique_id as id %}
-                            <td><input type="checkbox" id="{{id}}" name="order-product-item-selection"></td>
-                            {% for field in line %}
-                                {% if field.name != "order" and field.name != "id" %}
-                                    {% if field|is_hidden_field %}
-                                        <td style="display: none;">{{ field }}</td>
-                                    {% else %}
-                                        <td>
-                                            <div> {{ field }} </div>
-                                            <div class="formset-field{% if field.errors %} errors{% endif %}">
-                                                {{ field.errors }}
-                                            </div>
-                                        </td>
-                                    {% endif %}
-                                {% endif %}
+                        <div class="order__order_header--position hidden">
+                            {% for field in fields %}
+                                <label for="{{ field.id }}">{{ field.label }}</label>
+                                <input type="text" id="{{ field.id }}" class="form-control" value="{{ field.value }}" disabled/>
                             {% endfor %}
-                        </tr>
-                    {% endfor %}
+                        </div>
 
-                </tbody>
-            </table>
-            <button type="submit" class="btn btn-primary">Сохранить</button>
-        </form>
+                        <div class="row order__toolbar--position hidden">
+                            <button
+                                name="add-item"
+                                type="button"
+                                class="btn btn-outline-secondary order__toolbar__btn order__toolbar__btn--position"
+                            >
+                                <i class="fa fa-plus-square-o" aria-hidden="true"></i>
+                            </button>
+                            <button
+                                name="delete-item"
+                                type="button"
+                                class="btn btn-outline-secondary order__toolbar__btn order__toolbar__btn--position"
+                            >
+                                <i class="fa fa-trash-o" aria-hidden="true"></i>
+                            </button>
+                            <button
+                                name="select-items"
+                                type="button"
+                                class="btn btn-outline-secondary order__toolbar__btn order__toolbar__btn--position"
+                            >
+                                <i class="fa fa-check-square-o" aria-hidden="true"></i>
+                            </button>
+                            <button
+                                name="unselect-items"
+                                type="button"
+                                class="btn btn-outline-secondary order__toolbar__btn order__toolbar__btn--position"
+                            >
+                                <i class="fa fa-square-o" aria-hidden="true"></i>
+                            </button>
+                        </div>
 
+                        <table id="order-items" class="table table__thead--border order-preview__table">
+                            <thead>
+                                <tr >
+                                    <th scope="col" class="image"></th>
+                                    <th scope="col" class="articul">
+                                        <span>
+                                            <i class="fa fa-sort-amount-desc"></i>
+                                            <i class="fa fa-sort-amount-asc"></i>
+                                            артикул
+                                        </span>
+                                    </th>
+                                    <th scope="col" class="metal">
+                                        <span>
+                                            <i class="fa fa-sort-amount-desc"></i>
+                                            <i class="fa fa-sort-amount-asc"></i>
+                                            металл
+                                        </span>
+                                    </th>
+                                    <th scope="col" class="size">
+                                        <span>
+                                            <i class="fa fa-sort-amount-desc"></i>
+                                            <i class="fa fa-sort-amount-asc"></i>
+                                            размер
+                                        </span>
+                                    </th>
+                                    <th scope="col" class="weight">
+                                        <span>
+                                            <i class="fa fa-sort-amount-desc"></i>
+                                            <i class="fa fa-sort-amount-asc"></i>
+                                            вес, шт.
+                                        </span>
+                                    </th>
+                                    <th scope="col" class="price">
+                                        <span>
+                                            <i class="fa fa-sort-amount-desc"></i>
+                                            <i class="fa fa-sort-amount-asc"></i>
+                                            цена, шт.
+                                        </span>
+                                    </th>
+                                    <th scope="col" class="quantity">
+                                        <span>
+                                            <i class="fa fa-sort-amount-desc"></i>
+                                            <i class="fa fa-sort-amount-asc"></i>
+                                            кол-во
+                                        </span>
+                                    </th>
+                                    <th scope="col" class="total_weight">
+                                        <span>
+                                            <i class="fa fa-sort-amount-desc"></i>
+                                            <i class="fa fa-sort-amount-asc"></i>
+                                            вес, общ.
+                                        </span>
+                                    </th>
+                                    <th scope="col" class="total_price">
+                                        <span>
+                                            <i class="fa fa-sort-amount-desc"></i>
+                                            <i class="fa fa-sort-amount-asc"></i>
+                                            стоимость
+                                        </span>
+                                    </th>
+                                    <th scope="col" class="actions"></th>
+                                    <th scope="col" class="errors"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{ order_items.management_form }}
+                                {% for line in order_items %}
+                                    {% for hidden in line.hidden_fields %}
+                                        {{ hidden }}
+                                    {% endfor %}
+                                    <tr class="order-product-item" style="display: table-row">
+                                        {% unique_id as id %}
+                                            <td class="image">
+                                                {% first_product_image line.instance.product as image %}
+                                                <img
+                                                    width="50"
+                                                    src="{{ MEDIA_URL }}{{ image }}"
+                                                >
+                                            </td>
+                                            <td class="articul">
+                                                <a href="{% url 'catalog:product' line.instance.product.id %}">
+                                                    {{ line.instance.product.articul }}
+                                                </a>
+                                            </td>
+                                            <td class="metal">{{ line.instance.product.metal }}</td>
+                                            <td class="size">{% if line.instance.size %}<span>{{ line.instance.size }}</span>{% endif %}</td>
+                                            <td class="weight">{{ line.instance.weight|floatformat:"0" }}</td>
+                                            <td class="price" name="cart-price">{{ line.instance.price|floatformat:"0" }} р.</td>
+                                            <td class="quantity">
+                                                {% unique_id as id %}
+                                                <a href="#{{ id }}" class="remove-quantity">
+                                                    <i class="fa fa-minus"></i>
+                                                </a>
+                                                <input
+                                                    id="{{ id }}"
+                                                    name="cart-quantity"
+                                                    value="{{ line.instance.quantity }}"
+                                                    min="0"
+                                                    max="{{ line.instance.product.stock }}"
+                                                    step="1"
+                                                    type="text"
+                                                    class="form-control"
+                                                />
+                                                <a href="#{{ id }}" class="add-quantity">
+                                                    <i class="fa fa-plus"></i>
+                                                </a>
+                                            </td>
+                                            <td class="total_weight">
+                                                {% total_weight line.instance.weight line.instance.quantity as total_weight %}
+                                                {{ total_weight|floatformat:"2" }}
+                                            </td>
+                                            <td class="total_price" name="cart-sum">{{ line.instance.sum|floatformat:"0" }} р.</td>
+                                            <td class="actions">
+                                                <a href="{% url 'cart:cart_remove' line.instance.product.id item.size %}">
+                                                    <i class="fa fa-times-circle-o" aria-hidden="true"></i>
+                                                </a>
+                                                <div name="cart-key" style="display: none;">
+                                                    {{'{'}}"productId":"{{line.instance.product.id}}","size":"{{line.instance.size}}"{{'}'}}
+                                                </div>
+                                            </td>
+                                            <td class="errors">
+                                                {% if item.errors %}
+                                                    <div class="formset-field errors">
+                                                        {{ item.errors }}
+                                                    </div>
+                                                {% endif %}
+                                            </td>
+                                            <td class="hidden">
+                                                <input type="checkbox" id="{{id}}" name="order-product-item-selection">
+                                                {% for field in line %}
+                                                {% if field.name != "order" and field.name != "id" %}
+                                                    {% if field|is_hidden_field %}
+                                                        {{ field }}
+                                                    {% else %}
+                                                        <div> {{ field }} </div>
+                                                        <div>{{ field.name }}
+                                                        <div class="formset-field{% if field.errors %} errors{% endif %}">
+                                                            {{ field.errors }}
+                                                        </div>
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <div class="text-right">
+
+                            <div class="order-item-result">
+                                <div class="order-item-result__title">Итог:</div>
+                                <div class="order-item-result__total-count">{{ order_items.instance.get_total_quantity|floatformat:"0" }} шт</div>
+                                <div class="order-item-result__total-weight">{{ order_items.instance.get_total_weight|floatformat:"2" }} гр</div>
+                                <div class="order-item-result__total-price">{{ order_items.instance.get_total_cost|floatformat:"2"}} р</div>
+                            </div>
+                        </div>
+                        <div class="order-item__actions">
+                            <a href="{% url 'orders:remove' order_id=object.id %}"
+                                name="delete-item"
+                                type="button"
+                                class="btn btn-outline-secondary order__toolbar__btn order__toolbar__btn--position"
+                            >
+                                <i class="fa fa-times" aria-hidden="true"></i>
+                            </a>
+                            <a href="{% url 'orders:export-pdf' order_id=object.id %}"
+                                name="download-item"
+                                type="button"
+                                class="btn btn-outline-secondary order__toolbar__btn order__toolbar__btn--position"
+                            >
+                                <i class="fa fa-download" aria-hidden="true"></i>
+                            </a>
+                            <button type="submit" class="btn btn-primary button-create">Оформить заказ</button>
+                            <!--<button type="submit" class="btn btn-primary">Отправить на рассмотрение</button>-->
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </main>
     {% endblock %}
 {% endblock %}

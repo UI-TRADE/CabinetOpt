@@ -20,7 +20,6 @@ const updateOrderItem = (element) => {
     }
 
     const getItemParams = (data, productId) => {
-
         const products         = JSON.parse(data['products']);
         const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
         const actual_prices    = JSON.parse(data['actual_prices']);
@@ -226,7 +225,7 @@ const addOrderItem = () => {
         return;
     }
 
-    const orderTableBody = document.getElementById('order_items').getElementsByTagName('tbody')[0];
+    const orderTableBody = document.getElementById('order-items').getElementsByTagName('tbody')[0];
     const __prefix__ = orderTableBody.getElementsByClassName('order-product-item').length;
     const orderItemForm = $('#empty-form').clone()[0];
     const newRow = document.createElement('tr');
@@ -294,7 +293,7 @@ const deleteOrderItem = (orderTableBody, removedElement) => {
 
 
 const deleteOrderItems = () => {
-    const orderTableBody = document.getElementById('order_items').getElementsByTagName('tbody')[0];
+    const orderTableBody = document.getElementById('order-items').getElementsByTagName('tbody')[0];
     const selectionFields = orderTableBody.querySelectorAll('input[name="order-product-item-selection"]');
     selectionFields.forEach((el) => {
         if(el.checked) {
@@ -312,9 +311,7 @@ const deleteOrderItems = () => {
 
 
 const autocomplete = (element) => {
-
     var currentFocus = 0;
-
     const pickUpProducts = (searchString) => {
         return new Promise((resolve, reject) => {
             $.ajax({
@@ -395,8 +392,7 @@ const autocomplete = (element) => {
                     });
                     autocompleteElement.appendChild(listItem);
                 });
-                
-                event.target.parentElement.appendChild(autocompleteElement);        
+                event.target.parentElement.appendChild(autocompleteElement);
             })
             .catch((error) => {
                 alert('Ошибка заполнения строки заказа: ' + error);
@@ -469,11 +465,17 @@ export function updateOrder() {
         return dataOfSelectedOption;
     }
 
-    if (document.location.pathname.indexOf("/orders/order/") === -1) {
+    if (document.location.pathname.indexOf("/orders/order/") === -1 && document.location.pathname.indexOf("/orders/orders/") === -1 ) {
         return;
     }
 
-    const orderId = window.location.pathname.split('/').reverse().find(x=>x!=='');
+    let orderId = window.location.pathname.split('/').reverse().find(x=>x!=='');
+    const orderItemElement = $("#order-item");
+    if(orderId === 'orders' && orderItemElement.length){
+        orderId = orderItemElement.data("id")
+    }else{
+        return;
+    }
 
     orderStocksAndCosts(orderId)
         .then((data) => {
@@ -481,10 +483,9 @@ export function updateOrder() {
 
             const products         = JSON.parse(data['products']);
             const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
-
             const orderItems = document.getElementsByClassName('order-product-item');
+
             for (var i=0; i<orderItems.length; i++) {
-                
                 //очищаем элементы со списком выбора
                 const nomenclatureElement         = orderItems[i].querySelector(`#id_items-${i}-nomenclature`);
                 const nomenclatureSizeElement     = orderItems[i].querySelector(`#id_items-${i}-nomenclature_size`);
@@ -528,7 +529,7 @@ export function updateOrder() {
 }
 
 
-function orderEvents() {
+export function orderEvents() {
 
     $('.order__toolbar__btn').on('click', (event) => {
         let elementName = event.target.getAttribute('name');
