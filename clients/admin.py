@@ -11,7 +11,6 @@ from django.template.loader import render_to_string
 from django.conf import settings
 
 from .models import (
-    PriorityDirection,
     RegistrationOrder,
     Client,
     Manager,
@@ -57,14 +56,6 @@ class ContactDetailInLine(admin.TabularInline):
     verbose_name_plural = "Контактная информация"
 
 
-@admin.register(PriorityDirection)
-class PriorityDirectionAdmin(admin.ModelAdmin):
-    search_fields = ['name',]
-    list_display = ['name',]
-    fields = ['name',]
-    readonly_fields = ['identifier_1C',]
-
-
 @admin.register(RegistrationOrder)
 class RegistrationOrderAdmin(admin.ModelAdmin):
     form = CustomRegOrderForm
@@ -99,7 +90,6 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
             'phone',
         ),
         'manager_talant',
-        'priority_direction',
         ('login', 'password'),
     ]
     list_filter = (RegistrationOrderFilter,)

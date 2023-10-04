@@ -13,5 +13,5 @@ class CustomUserAdmin(admin.ModelAdmin):
         'created_at',
         'is_staff'
     )
-    fields = ['username', ('email', 'phone'), ('gender', 'date_of_birth'), 'priority_direction', 'is_staff']
+    fields = ['username', ('email', 'phone'), ('gender', 'date_of_birth'), 'is_staff']
 

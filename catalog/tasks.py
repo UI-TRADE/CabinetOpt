@@ -7,12 +7,13 @@ from django.db.models import Q
 from django.core.files.images import ImageFile
 from django.core.exceptions import ValidationError
 
-from clients.models import Client, PriorityDirection
+from clients.models import Client
 from catalog.models import (
     Product,
     ProductImage,
     CollectionGroup,
     Collection,
+    Brand,
     StockAndCost,
     Size,
     GemSet,
@@ -124,11 +125,11 @@ def update_or_create_brand(brand):
         return
     
     if brand['Удален']:
-        found_brand = PriorityDirection.objects.get(identifier_1C=identifier_1C)
+        found_brand = Brand.objects.get(identifier_1C=identifier_1C)
         found_brand.delete()
         return
     
-    brand_obj, _ = PriorityDirection.objects.update_or_create(
+    brand_obj, _ = Brand.objects.update_or_create(
         identifier_1C=identifier_1C,
         defaults={
             'name': brand['Наименование']

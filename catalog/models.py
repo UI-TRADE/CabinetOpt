@@ -4,8 +4,7 @@ from django.core.validators import MinValueValidator
 from django.db.models import F, Q, Max
 from django.utils import timezone
 
-from clients.models import PriorityDirection, Client
-
+from clients.models import Client
 
 class CollectionGroup(models.Model):
     name = models.CharField('Наименование', max_length=100, db_index=True)
@@ -41,6 +40,19 @@ class Collection(models.Model):
     class Meta:
         verbose_name = 'Коллекция'
         verbose_name_plural = 'Коллекции'
+
+    def __str__(self):
+        return self.name
+
+
+class Brand(models.Model):
+    name = models.CharField('Наименование', max_length=50)
+    identifier_1C = models.CharField(
+        'Идентификатор 1С', max_length=50, blank=True, db_index=True
+    )
+    class Meta:
+        verbose_name = 'Бренд'
+        verbose_name_plural = 'Бренды'
 
     def __str__(self):
         return self.name
@@ -119,7 +131,7 @@ class Product(models.Model):
         db_index=True,
     )
     brand = models.ForeignKey(
-        PriorityDirection,
+        Brand,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -297,7 +309,10 @@ class StockAndCostQuerySet(models.QuerySet):
         return self.get(first_name=first_name, last_name=last_name)
 
     def available_stocks_and_costs(self, products_ids, **kwargs):
-        clients = kwargs.get('clients', Client.objects.none())
+        clients = kwargs.get(
+            'clients',
+            Client.objects.none()
+        )
         products = Product.objects.filter(pk__in = products_ids)
         stocks_and_costs = self.filter(product_id__in = products_ids)
         prices = Price.objects.available_prices(products_ids)

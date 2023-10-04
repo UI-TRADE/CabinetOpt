@@ -3,20 +3,6 @@ from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from django.conf import settings
 
-
-class PriorityDirection(models.Model):
-    name = models.CharField('Наименование', max_length=50)
-    identifier_1C = models.CharField(
-        'Идентификатор 1С', max_length=50, blank=True, db_index=True
-    )
-    class Meta:
-        verbose_name = 'Бренд'
-        verbose_name_plural = 'Бренды'
-
-    def __str__(self):
-        return self.name
-
-
 class RegistrationOrder(models.Model):
     name = models.CharField('Имя', max_length=150)
     organization = models.CharField('Организация', max_length=150, db_index=True, default='')
@@ -24,14 +10,6 @@ class RegistrationOrder(models.Model):
     name_of_manager = models.CharField('ФИО менеджера клиента', max_length=150, blank=True)
     email = models.EmailField('email менеджера клиента', db_index=True)
     phone = PhoneNumberField('Телефон менеджера клиента', db_index=True)
-    priority_direction = models.ForeignKey(
-        PriorityDirection,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        verbose_name='Приоритетное направление',
-        related_name='registration_orders'
-    )
     manager_talant = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,

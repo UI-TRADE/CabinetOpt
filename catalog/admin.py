@@ -4,6 +4,7 @@ from django.utils.html import format_html
 from .models import (
     CollectionGroup,
     Collection,
+    Brand,
     ProductImage,
     Product,
     PriceType,
@@ -122,6 +123,14 @@ class GemSetInLine(admin.StackedInline):
 
     verbose_name = "Вставка"
     verbose_name_plural = "Вставки"
+
+
+@admin.register(Brand)
+class BrandAdmin(admin.ModelAdmin):
+    search_fields = ['name',]
+    list_display = ['name',]
+    fields = ['name',]
+    readonly_fields = ['identifier_1C',]
 
 
 @admin.register(CollectionGroup)
