@@ -21,6 +21,7 @@ class OrderForm(forms.ModelForm):
             'client',
             'manager',
             'status',
+            'provision',
         ]
 
 

@@ -358,6 +358,17 @@ class StockAndCostQuerySet(models.QuerySet):
                 )
 
         return result
+    
+    def get_stocks(self, products_ids, **kwargs):
+        stocks_and_costs = self.filter(product_id__in = products_ids)
+        if kwargs.get('size'):
+            stocks_and_costs = stocks_and_costs.filter(
+                size_id__in=Size.objects.filter(
+                    name=kwargs['size']
+                ).values_list('pk', flat=True)
+            )
+
+        return stocks_and_costs
 
 
 class StockAndCost(models.Model):

@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from contextlib import suppress
 
 from clients.login import Login
-from catalog.models import Product, Size
+from catalog.models import Product, Size, StockAndCost
 from .cart import Cart
 from .forms import CartAddProductForm
 from orders.views import save_order
@@ -69,32 +69,66 @@ def cart_detail_with_errors(request):
 
 @require_POST
 def add_order(request):
+    
+    def split_products(cart):
+        cart_in_stock = []
+        cart_out_of_stock = []
+
+        for item in cart:
+            product_id = item['product']['id']
+            if item['size']: 
+                stocks = StockAndCost.objects.get_stocks([product_id], size=item['size'])
+            else:
+                stocks = StockAndCost.objects.get_stocks([product_id])
+
+            if not stocks or stocks.first().stock == 0:
+                cart_out_of_stock.append(item)
+                continue
+
+            cart_in_stock.append(item)
+
+        return cart_in_stock, cart_out_of_stock
+
+    def create_order(client, manager, provision, cart):
+        order_items = []
+        for item in cart:
+            item['product'] = Product.objects.get(pk=item['product']['id'])
+            with suppress(Size.DoesNotExist):
+                size_name = item['size']
+                item['size']    = None
+                item['size']    = Size.objects.get(name=size_name)
+            if item['weight']:
+                item['weight'] = round(item['quantity'] * item['weight'], 3)
+            order_items.append(item)
+
+        save_order(
+            {
+                'client'   : client,
+                'manager'  : manager,
+                'provision': provision,
+                'status'   : 'introductory'
+            },
+            order_items
+        )
+
     cart = Cart(request)
     login = Login(request)
 
     clients = login.get_clients()
     managers = login.get_managers()
 
-    order_items = []
-    for item in cart:
-        item['product'] = Product.objects.get(pk=item['product']['id'])
-        with suppress(Size.DoesNotExist):
-            size_name = item['size']
-            item['size']    = None
-            item['size']    = Size.objects.get(name=size_name)
-        if item['weight']:
-            item['weight'] = round(item['quantity'] * item['weight'], 3)
-        order_items.append(item)
+    if request.POST['split_orders']:
+        cart_in_stock, cart_out_of_stock = split_products(cart)
+    else:
+        cart_in_stock = [item for item in cart]
 
     try:
-        save_order(
-            {
-                'client': clients.first(),
-                'manager': managers.first(),
-                'status': 'introductory'
-            },
-            order_items
-        )
+
+        if cart_in_stock: 
+            create_order(clients.first(), managers.first(), 'П', cart_in_stock)
+
+        if cart_out_of_stock:
+            create_order(clients.first(), managers.first(), 'З', cart_out_of_stock)
 
     except ValidationError as errors:
         for error in json.loads(errors.message):
