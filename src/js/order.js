@@ -539,6 +539,21 @@ export function updateOrder() {
 
 }
 
+function editOrder(){
+    const orderForm = $("#orderForm")
+    return $.ajax({
+        url: `/orders/order/update/${orderForm.data("order-id")}/`,
+        method: "post",
+        data: orderForm.serialize(),
+        succes: (response) => {
+            $(document).trigger("order.updated", response);
+            return response;
+        },
+        error: (error) => {
+            console.warn(error);
+        }
+    });
+}
 
 export function orderEvents() {
 
@@ -610,6 +625,37 @@ export function orderEvents() {
         const redirect_url = event.target.getAttribute("data-url");
         document.location.href = redirect_url;
     });
+
+    $('.add-quantity').on("click", function(){
+        const element = $($(this).attr("href"))
+        const newVal = parseInt(element.val()) + 1;
+        element.val(parseInt(element.val()) + 1).trigger('change')
+        $(`[name=items-${element.data("index")}-quantity]`).val(newVal).trigger('change')
+        editOrder()
+            .then((response) => {
+                const DOMModel = new DOMParser().parseFromString(response, 'text/html');
+                $(DOMModel.querySelector("#order-item")).appendTo($("#order, #order-item").empty())
+                orderEvents()
+                $(document).trigger("order.updated")
+            })
+    })
+    $('.remove-quantity').on("click", function(){
+        const element = $($(this).attr("href"))
+        const currentValue = element.val()
+        if(currentValue != 1){
+            const newVal = parseInt(element.val()) - 1
+            element.val(newVal).trigger('change')
+
+            $(`[name=items-${element.data("index")}-quantity]`).val(newVal).trigger('change')
+            editOrder()
+                .then((response) => {
+                    const DOMModel = new DOMParser().parseFromString(response, 'text/html');
+                    $(DOMModel.querySelector("#order-item")).appendTo($("#order, #order-item").empty())
+                    orderEvents()
+                    $(document).trigger("order.updated")
+                })
+        }
+    })
 }
 
 

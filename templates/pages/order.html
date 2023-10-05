@@ -13,7 +13,8 @@
                 <div class="order-item">
                     <div class="order-item__full-title">Ваш заказ № {{ object.id }} от {{ object.created_at }}</div>
 
-                    <form id="orderForm" method="post" autocomplete="off" action="{% url 'orders:create' order_id=object.id %}">
+                    <form id="orderForm" method="post" autocomplete="off" action="{% url 'orders:create' order_id=object.id %}"
+                    data-edit-url="{% url 'orders:edit' order_id=object.id %}" data-order-id="{{ object.id }}">
 
                         <div id="empty-form" style="display: none;">{{ empty_items }}</div>
                         <div id="fields" style="display: none" data-json="{{ order_fields }}"></div>
@@ -151,12 +152,13 @@
                                             <td class="price" name="cart-price">{{ line.instance.price|floatformat:"0" }} р.</td>
                                             <td class="quantity">
                                                 {% unique_id as id %}
-                                                <a href="#{{ id }}" class="remove-quantity">
+                                                <a href="#{{ id }}" class="remove-quantity" name="delete-item">
                                                     <i class="fa fa-minus"></i>
                                                 </a>
                                                 <input
                                                     id="{{ id }}"
-                                                    name="cart-quantity"
+                                                    name="quantity"
+                                                    data-index="{{ forloop.counter0 }}"
                                                     value="{{ line.instance.quantity }}"
                                                     min="0"
                                                     max="{{ line.instance.product.stock }}"
@@ -164,7 +166,7 @@
                                                     type="text"
                                                     class="form-control"
                                                 />
-                                                <a href="#{{ id }}" class="add-quantity">
+                                                <a href="#{{ id }}" class="add-quantity" name="add-item">
                                                     <i class="fa fa-plus"></i>
                                                 </a>
                                             </td>
