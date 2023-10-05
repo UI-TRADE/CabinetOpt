@@ -28,6 +28,10 @@
 
 @import "components/cart/cart-view";
 
+@import "components/order/default";
+@import "components/order/list";
+@import "components/order/preview";
+
 #show-password {
     position: absolute;
     right: 13px;

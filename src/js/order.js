@@ -20,7 +20,6 @@ const updateOrderItem = (element) => {
     }
 
     const getItemParams = (data, productId) => {
-
         const products         = JSON.parse(data['products']);
         const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
         const actual_prices    = JSON.parse(data['actual_prices']);
@@ -227,7 +226,7 @@ const addOrderItem = () => {
         return;
     }
 
-    const orderTableBody = document.getElementById('order_items').getElementsByTagName('tbody')[0];
+    const orderTableBody = document.getElementById('order-items').getElementsByTagName('tbody')[0];
     const __prefix__ = orderTableBody.getElementsByClassName('order-product-item').length;
     const orderItemForm = $('#empty-form').clone()[0];
     const newRow = document.createElement('tr');
@@ -296,7 +295,7 @@ const deleteOrderItem = (orderTableBody, removedElement) => {
 
 
 const deleteOrderItems = () => {
-    const orderTableBody = document.getElementById('order_items').getElementsByTagName('tbody')[0];
+    const orderTableBody = document.getElementById('order-items').getElementsByTagName('tbody')[0];
     const selectionFields = orderTableBody.querySelectorAll('input[name="order-product-item-selection"]');
     selectionFields.forEach((el) => {
         if(el.checked) {
@@ -314,9 +313,7 @@ const deleteOrderItems = () => {
 
 
 const autocomplete = (element) => {
-
     var currentFocus = 0;
-
     const pickUpProducts = (searchString) => {
         return new Promise((resolve, reject) => {
             $.ajax({
@@ -397,8 +394,7 @@ const autocomplete = (element) => {
                     });
                     autocompleteElement.appendChild(listItem);
                 });
-                
-                event.target.parentElement.appendChild(autocompleteElement);        
+                event.target.parentElement.appendChild(autocompleteElement);
             })
             .catch((error) => {
                 alert('Ошибка заполнения строки заказа: ' + error);
@@ -471,11 +467,17 @@ export function updateOrder() {
         return dataOfSelectedOption;
     }
 
-    if (document.location.pathname.indexOf("/orders/order/") === -1) {
+    if (document.location.pathname.indexOf("/orders/order/") === -1 && document.location.pathname.indexOf("/orders/orders/") === -1 ) {
         return;
     }
 
-    const orderId = window.location.pathname.split('/').reverse().find(x=>x!=='');
+    let orderId = window.location.pathname.split('/').reverse().find(x=>x!=='');
+    const orderItemElement = $("#order-item");
+    if(orderId === 'orders' && orderItemElement.length){
+        orderId = orderItemElement.data("id")
+    }else{
+        return;
+    }
 
     orderStocksAndCosts(orderId)
         .then((data) => {
@@ -484,10 +486,9 @@ export function updateOrder() {
             const order            = JSON.parse(data['order']);
             const products         = JSON.parse(data['products']);
             const stocks_and_costs = JSON.parse(data['stocks_and_costs']);
-
             const orderItems = document.getElementsByClassName('order-product-item');
+
             for (var i=0; i<orderItems.length; i++) {
-                
                 //очищаем элементы со списком выбора
                 const nomenclatureElement         = orderItems[i].querySelector(`#id_items-${i}-nomenclature`);
                 const nomenclatureSizeElement     = orderItems[i].querySelector(`#id_items-${i}-nomenclature_size`);
@@ -538,8 +539,23 @@ export function updateOrder() {
 
 }
 
+function editOrder(){
+    const orderForm = $("#orderForm")
+    return $.ajax({
+        url: `/orders/order/update/${orderForm.data("order-id")}/`,
+        method: "post",
+        data: orderForm.serialize(),
+        succes: (response) => {
+            $(document).trigger("order.updated", response);
+            return response;
+        },
+        error: (error) => {
+            console.warn(error);
+        }
+    });
+}
 
-function orderEvents() {
+export function orderEvents() {
 
     $('.order__toolbar__btn').on('click', (event) => {
         let elementName = event.target.getAttribute('name');
@@ -609,6 +625,37 @@ function orderEvents() {
         const redirect_url = event.target.getAttribute("data-url");
         document.location.href = redirect_url;
     });
+
+    $('.add-quantity').on("click", function(){
+        const element = $($(this).attr("href"))
+        const newVal = parseInt(element.val()) + 1;
+        element.val(parseInt(element.val()) + 1).trigger('change')
+        $(`[name=items-${element.data("index")}-quantity]`).val(newVal).trigger('change')
+        editOrder()
+            .then((response) => {
+                const DOMModel = new DOMParser().parseFromString(response, 'text/html');
+                $(DOMModel.querySelector("#order-item")).appendTo($("#order, #order-item").empty())
+                orderEvents()
+                $(document).trigger("order.updated")
+            })
+    })
+    $('.remove-quantity').on("click", function(){
+        const element = $($(this).attr("href"))
+        const currentValue = element.val()
+        if(currentValue != 1){
+            const newVal = parseInt(element.val()) - 1
+            element.val(newVal).trigger('change')
+
+            $(`[name=items-${element.data("index")}-quantity]`).val(newVal).trigger('change')
+            editOrder()
+                .then((response) => {
+                    const DOMModel = new DOMParser().parseFromString(response, 'text/html');
+                    $(DOMModel.querySelector("#order-item")).appendTo($("#order, #order-item").empty())
+                    orderEvents()
+                    $(document).trigger("order.updated")
+                })
+        }
+    })
 }
 
 
