@@ -24,6 +24,7 @@ urlpatterns = [
     path(''                                     , views.cart_detail, name='cart_detail'),
     path('send/<str:product_id>/'               , views.send_to_cart),
     path('add/<str:product_id>/'                , views.cart_add, name='cart_add'),
+    path('info/'                                , views.cart_info),
     path('info/<str:product_id>/'               , views.cart_info),
     path('info/<str:product_id>/<size:size>/'   , views.cart_info),
     path('remove/<str:product_id>/<size:size>/' , views.cart_remove, name='cart_remove'),

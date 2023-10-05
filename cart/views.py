@@ -46,7 +46,7 @@ def send_to_cart(request, product_id=-1):
     return JsonResponse({'reply': 'error', 'message': form.errors})
 
 
-def cart_info(request, product_id, size=''):
+def cart_info(request, product_id='', size=''):
     cart = Cart(request)
     return JsonResponse(cart.info(product_id, size=size), safe=False)
 

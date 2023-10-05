@@ -94,9 +94,12 @@ class Cart(object):
 
 
     def info(self, product_id, **kwargs):
-        key = self.get_key(product_id, size= kwargs['size'])
-        if key in self.cart:
-            return self.cart[key] | {'sum': self.get_total_price(key)}
+        if product_id:
+            key = self.get_key(product_id, size= kwargs['size'])
+            if key in self.cart:
+                return self.cart[key] | {'sum': self.get_total_price(key)}
+        
+        return [self.keys[key] | value | {'sum': self.get_total_price(key)} for key, value in self.cart.items()]
 
 
     def get_total_price(self, *keys):
