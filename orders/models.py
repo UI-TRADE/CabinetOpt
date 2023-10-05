@@ -32,17 +32,32 @@ class Order(models.Model):
             ('shipment'    , 'Отгрузка'),
             ('completed'   , 'Завершен'),
     ))
+    provision = models.CharField(
+        'Обеспечение',
+        max_length=1,
+        default='П',
+        db_index=True,
+        choices=(
+            ('П', 'Поставка'),
+            ('З', 'Заказ'),
+    ))
     created_at = models.DateTimeField(
         'Дата создания', db_index=True, auto_now_add=True
     )
+    num_in_1C = models.CharField(
+        'номер в ЮТД', max_length=50, blank=True, db_index=True
+    )
+    identifier_1C = models.CharField(
+        'Идентификатор 1С', max_length=50, blank=True, db_index=True
+    )
 
     class Meta:
-        ordering = ('-created_at',)
+        # ordering = ('-created_at',)
         verbose_name = 'Заказ'
         verbose_name_plural = 'Заказы'
 
     def __str__(self):
-        return f'Заказ № {self.id} от {self.created_at}'
+        return f'Заказ № {self.id}/{self.provision} от {self.created_at.strftime("%d-%b-%Y %H:%M:%S")}'
     
     def get_total_cost(self):
         return sum(item.sum for item in self.items.all())

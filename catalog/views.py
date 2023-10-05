@@ -65,7 +65,7 @@ class ProductView(ListView):
     context_object_name = 'products'
     allow_empty = True
     filters = []
-    paginate_by = 20
+    paginate_by = 72
 
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
@@ -110,7 +110,7 @@ class ProductView(ListView):
         except PageNotAnInteger:
             products_page = paginator.page(1)
         except EmptyPage:
-            products_page = paginator.page(paginator.num_pages)            
+            products_page = paginator.page(paginator.num_pages)
 
         context['products']    = products_page
         context['MEDIA_URL']   = settings.MEDIA_URL
@@ -122,7 +122,7 @@ class CertificateView(ListView):
     template_name = 'pages/сertificate.html'
     context_object_name = 'сertificates'
     allow_empty = True
-    paginate_by = 20
+    paginate_by = 72
 
     def get_queryset(self):
         return Product.objects.filter(product_type='gift_сertificate')
@@ -150,7 +150,7 @@ class ServiceView(ListView):
     template_name = 'pages/service.html'
     context_object_name = 'services'
     allow_empty = True
-    paginate_by = 20
+    paginate_by = 72
 
     def get_queryset(self):
         return Product.objects.filter(product_type='service')

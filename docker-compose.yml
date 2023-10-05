@@ -13,6 +13,7 @@ services:
       - ./.env.stage
     depends_on:
       - db
+      - redis
 
   db:
     image: postgres:13.0-alpine
@@ -24,6 +25,14 @@ services:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=12345
       - POSTGRES_DB=cabinet_opt
+
+  redis:
+    image: 'redis:6.2-alpine'
+    restart: always
+    hostname: redis
+    privileged: true
+    ports:
+      - "6379:6379"
 
 volumes:
   postgres_data:

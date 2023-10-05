@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 import os
+import redis
+
 from pathlib import Path
 from environs import Env
 
@@ -41,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'django_extensions',
     'django_filters',
+    'meta',
     'users',
     'clients',
     'catalog',
@@ -239,3 +242,12 @@ EMAIL_HOST_USER = env('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', False)
 EMAIL_USE_SSL = env.bool('EMAIL_USE_SSL', True)
+
+
+# REDIS settings
+REDIS_HOST = env('REDIS_HOST', '127.0.0.1')
+REDIS_PORT = env.int('REDIS_PORT', 6379)
+
+REDIS_CONN = redis.StrictRedis(
+    host=REDIS_HOST, port=REDIS_PORT, db=0
+)

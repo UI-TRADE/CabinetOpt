@@ -200,6 +200,16 @@ const updateMenuItems = () => {
 }
 
 
+const setDefaultInStockFilter = () => {
+    const filters = JSON.parse(sessionStorage.getItem('filters'));
+    if (!filters.filter(item => item['in_stock']).find(_ => true)) {
+        $('#inStockFilter').prop('checked', true);
+        filters.push({'in_stock': true});
+        sessionStorage.setItem('filters', JSON.stringify(filters));
+    }
+}
+
+
 export function filtersEvents() {
     
     $(document).on('click', '.filter-item-title', event => {
@@ -231,20 +241,27 @@ export function filtersEvents() {
             $('.form-check-input').each((_, element) => {
                 element.checked = false;   
             });
+            setDefaultInStockFilter();
         }
         showCatalog();
     });
 
     $(document).on('click', '.form-check-input', event => {
         const filters = JSON.parse(sessionStorage.getItem('filters'));
-        let foundFilter = false;
-        (filters ||[]).forEach(item => {
-            if (Object.keys(item).find(k => k == 'available_for_order')) {
-                foundFilter = true;
-                item['available_for_order'] = event.target.checked;
+        for (var nameOfCeckedFilter of ['in_stock', 'available_for_order']) {
+            let foundFilter = false;
+            (filters ||[]).forEach(item => {
+                if (Object.keys(item).find(k => k == nameOfCeckedFilter)) {
+                    foundFilter = true;
+                    item[nameOfCeckedFilter] = event.target.checked;
+                }
+            });
+            if (!foundFilter) {
+                let obj = {};
+                obj[`${nameOfCeckedFilter}`] = event.target.checked;
+                filters.push(obj);
             }
-        });
-        if (!foundFilter) filters.push({'available_for_order': event.target.checked});
+        }
         sessionStorage.setItem('filters', JSON.stringify(filters));
         showCatalog();
     });
@@ -257,6 +274,7 @@ function initProductFilters() {
         return;
     }
     
+    setDefaultInStockFilter();
     $.ajax({
         url: '/catalog/filters',
         success: (data) => {

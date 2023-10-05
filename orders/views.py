@@ -21,8 +21,8 @@ from rest_framework.permissions import IsAuthenticated
 from xhtml2pdf import pisa
 
 from clients.login import Login
-from clients.models import ContactDetail
-from catalog.models import Product, StockAndCost, Size
+from clients.models import Client, Manager, ContactDetail
+from catalog.models import Product, StockAndCost, Size, PriceType
 from orders.models import Order, OrderItem
 
 from .forms import (
@@ -53,7 +53,7 @@ class OrderView(ListView):
         return dict(list(context.items()))
 
 
-class UpdateOrderView(UpdateView):
+class EditOrderView(UpdateView):
     model = Order
     slug_url_kwarg, slug_field = 'order_id', 'pk'
     template_name = 'pages/order.html'
@@ -94,14 +94,64 @@ class UpdateOrderView(UpdateView):
         context = self.get_context_data()
         order_items = context['order_items']
         if form.is_valid() and order_items.is_valid():
+            current_status = form.instance.status
+            with suppress(Order.DoesNotExist):
+                current_order = Order.objects.get(pk=form.instance.id)
+                current_status = current_order.status
             with transaction.atomic():
                 form.instance.save()
                 for order_item in order_items.deleted_forms:
                     order_item.instance.delete()
                 order_items.save()
-
+            
+            schedule_send_order(form.instance, current_status)
             return redirect('orders:orders')
 
+        return render(self.request, self.template_name, context)
+
+
+class UpdateOrderView(UpdateView):
+    model = Order
+    slug_url_kwarg, slug_field = 'order_id', 'pk'
+    template_name = 'pages/order.html'
+    success_url = reverse_lazy('orders')
+    fields = ['status', 'client', 'manager',]
+
+    def get_form(self):
+        form = super().get_form()
+        for field in form.fields:
+            form.fields[field].widget.attrs['class'] = 'form-control'
+        return form
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context['order_items'] = OrderItemInline(self.request.POST, instance=self.object)
+        else:
+            context['order_items'] = OrderItemInline(instance=self.object)
+        context['empty_items'] = context['order_items'].empty_form
+        context['fields'] = [
+            {"id": "_id_status", "label": "Статус:", "value": context['order'].get_status_display()},
+            {"id": "_id_client", "label": "Клиент:", "value": context['order'].client},
+            {"id": "_id_manager", "label": "Менеджер:", "value": context['order'].manager}
+        ]
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        order_items = context['order_items']
+        if form.is_valid() and order_items.is_valid():
+            current_status = form.instance.status
+            with suppress(Order.DoesNotExist):
+                current_order = Order.objects.get(pk=form.instance.id)
+                current_status = current_order.status
+            with transaction.atomic():
+                form.instance.save()
+                for order_item in order_items.deleted_forms:
+                    order_item.instance.delete()
+                order_items.save()
+            
+            schedule_send_order(form.instance, current_status)
         return render(self.request, self.template_name, context)
     
 
@@ -328,6 +378,12 @@ def import_xlsx(request):
     return redirect('orders:orders')
 
 
+def schedule_send_order(order, status_before):
+    if not order.status == 'confirmed' and not status_before == 'introductory':
+        return
+    settings.REDIS_CONN.set(order.id, order.status)
+
+
 def save_order(order_params, order_items):
     order_form = OrderForm(order_params)
     order_instance = order_form.save(commit=False)
@@ -396,6 +452,7 @@ def add_order_item(request):
 def stocks_and_costs(request):
     order_id = request.query_params.get('orderId')
     if order_id:
+        current_order = Order.objects.filter(pk=order_id)
         productIds = OrderItem.objects.filter(order_id=order_id).values_list('product_id', flat=True)
 
         _, products, stocks_and_costs, prices, discount_prices = \
@@ -411,6 +468,7 @@ def stocks_and_costs(request):
         return JsonResponse(
             {
                 'replay'           : 'ok',
+                'order'            : serialize("json", current_order),
                 'products'         : serialize("json", products),
                 'stocks_and_costs' : serialize(
                     "json", stocks_and_costs, use_natural_foreign_keys=True
@@ -439,23 +497,66 @@ def unload_orders(request, *args, **kwargs):
         period['created_at__gte'] = kwargs['data_from']
     if kwargs.get('data_to'):
         period['created_at__lte'] = kwargs['data_to']  
-    orders = Order.objects.filter(**period)
     serialized_orders = []
-    for order in orders:
-        qs_order = Order.objects.filter(pk=order.id)
-        serialized_order = json.loads(serialize(
-            "json", qs_order, use_natural_foreign_keys=True
-        ))[0]
-        serialized_items = json.loads(serialize(
-            "json",
-            OrderItem.objects.filter(order__in=qs_order),
-            use_natural_foreign_keys=True
-        ))
-        items = []
-        for serialized_item in serialized_items:
-            items.append(serialized_item['fields'])
-        serialized_order['items'] = items
+    for order in Order.objects.filter(status='confirmed', **period):
+        serialized_order = json.loads(
+            serialize('json', Order.objects.filter(pk=order.id))
+        )
+        for item in serialized_order:
+            item['fields']['client'] = json.loads(
+                serialize('json', Client.objects.filter(pk=item['fields']['client']))
+            )
+            item['fields']['manager'] = json.loads(
+                serialize('json', Manager.objects.filter(pk=item['fields']['manager']))
+            )
 
-        serialized_orders.append(serialized_order)
+            serialized_items = json.loads(serialize(
+                "json",
+                OrderItem.objects.filter(order_id=item['pk'])
+            ))
+            for order_item in serialized_items:
+                order_item['fields']['product'] = json.loads(
+                    serialize('json', Product.objects.filter(pk=order_item['fields']['product']))
+                )
+                order_item['fields']['size'] = json.loads(
+                    serialize('json', Size.objects.filter(pk=order_item['fields']['size']))
+                )
+                order_item['fields']['price_type'] = json.loads(
+                    serialize('json', PriceType.objects.filter(pk=order_item['fields']['price_type']))
+                )
+            item['items'] = serialized_items
+
+        serialized_orders.append(item)
 
     return JsonResponse(serialized_orders, status=200, safe=False)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def update_order_number(request):
+    order_id = request.query_params.get('id')
+    order_number = request.query_params.get('num')
+    order_ident = request.query_params.get('ident')
+
+    try:
+        if order_id and order_number and order_ident:
+            Order.objects.filter(id=order_id).update(**{
+                'num_in_1C': order_number,
+                'identifier_1C': order_ident
+            })
+        else:
+            raise Order.DoesNotExist
+    except Order.DoesNotExist as err:
+        return JsonResponse(
+            {'replay': 'error', 'message': 'Не найден заказ'},
+            status=200,
+            safe=False,
+            json_dumps_params={'ensure_ascii': False}
+        )
+    
+    return JsonResponse(
+        {'replay': 'ok'},
+        status=200,
+        safe=False,
+        json_dumps_params={'ensure_ascii': False}
+    )

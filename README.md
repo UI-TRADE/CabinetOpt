@@ -68,6 +68,16 @@ cd CabinetOpt
 
 `LOGTAIL_SOURCE_TOKEN` - токен сервиса [LogTail](https://logs.betterstack.com/), который используется в качестве внешнего инструмента сбора логов.
 
+`EMAIL_HOST` - адрес smtp сервера.
+`EMAIL_PORT` - порт smtp сервера.
+`EMAIL_HOST_USER` - имя пользователя от которого отправляется почта.
+`EMAIL_HOST_PASSWORD` - пароль почты.
+`EMAIL_USE_TLS` - TLS (по умолчанию не используется)
+`EMAIL_USE_SSL` - SSL (по умолчанию включено) 
+
+`REDIS_HOST` - адрес сервера redis
+`REDIS_PORT` - порт сервера redis
+
 Установите зависимости в виртуальное окружение:
 ```sh
 pip install -r requirements.txt
@@ -186,6 +196,8 @@ Webpack будет следить за файлами в каталоге `src`.
 `EMAIL_USE_TLS` - TLS (по умолчанию не используется)
 `EMAIL_USE_SSL` - SSL (по умолчанию включено) 
 
+`REDIS_HOST` - адрес сервера redis
+`REDIS_PORT` - порт сервера redis
 
 Запустите развертывание сайта в Docker:
 
@@ -225,6 +237,13 @@ docker-compose up -d --build
 
 `LOGTAIL_SOURCE_TOKEN` - токен сервиса [LogTail](https://logs.betterstack.com/), который используется в качестве внешнего инструмента сбора логов.
 
+`EMAIL_HOST` - адрес smtp сервера.
+`EMAIL_PORT` - порт smtp сервера.
+`EMAIL_HOST_USER` - имя пользователя от которого отправляется почта.
+`EMAIL_HOST_PASSWORD` - пароль почты.
+`EMAIL_USE_TLS` - TLS (по умолчанию не используется)
+`EMAIL_USE_SSL` - SSL (по умолчанию включено) 
+
 Запустите развертывание сайта в Docker:
 
 ```sh
@@ -248,6 +267,38 @@ docker-compose -f docker-compose.prod.yml exec web python manage.py createsuperu
 ```sh
 docker-compose -f docker-compose.prod.yml exec web python manage.py collectstatic --no-input --clear
 ```
+
+Получите SSL сертификаты:
+
+```sh
+sudo nano docker-compose.prod.yml
+```
+
+закомментируйте строку следующую строку файла и сохраните его:
+
+```
+command: certonly --webroot --webroot-path=/var/www/certbot/ --email admin@cabinet-opt.ru --agree-tos --no-eff-email -d cabinet-opt.ru
+```
+
+```sh
+sudo nano nginx/nginx.conf
+```
+
+раскомментируйте блок SSL и сохраните файл
+
+
+Запустите заново сборку контейнеров
+
+```sh
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+Запустите отправку заявок на почту по расписанию
+
+```sh
+docker-compose -f docker-compose.prod.yml exec web python manage.py mailing -d
+```
+p.s. Флаг -d позволяет запустить команду в фоновом режиме.
 
 
 ## Как получить токен пользователя и выполнить обмен с 1С
@@ -397,6 +448,11 @@ curl -X POST -H "Content-Type: application/json" -d @media/stock_and_costs.json 
 curl http://127.0.0.1:8000/orders/order/export/2004-01-01/2012-10-19 -H "Authorization: Token 0000000000000000000000000000000000000000"
 ```
 
+Отправка номера заказа назначенного в 1С на сайт
+
+```sh
+curl http://127.0.0.1:8000/orders/order/update/number\?id\=0\&num\=0\&ident\=0000000000000000000000000000000000000000 -H "Authorization: Token 0000000000000000000000000000000000000000"
+```
 
 ## Как запустить сайта
 Откройте сайт в браузере по адресу [http://127.0.0.1:8000/](http://127.0.0.1:8000/). Если вы увидели пустую белую страницу, то не пугайтесь, выдохните и вернитесь к сборки фронтенда.

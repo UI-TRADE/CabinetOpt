@@ -11,7 +11,6 @@ from django.template.loader import render_to_string
 from django.conf import settings
 
 from .models import (
-    PriorityDirection,
     RegistrationOrder,
     Client,
     Manager,
@@ -57,14 +56,6 @@ class ContactDetailInLine(admin.TabularInline):
     verbose_name_plural = "Контактная информация"
 
 
-@admin.register(PriorityDirection)
-class PriorityDirectionAdmin(admin.ModelAdmin):
-    search_fields = ['name',]
-    list_display = ['name',]
-    fields = ['name',]
-    readonly_fields = ['identifier_1C',]
-
-
 @admin.register(RegistrationOrder)
 class RegistrationOrderAdmin(admin.ModelAdmin):
     form = CustomRegOrderForm
@@ -75,6 +66,7 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
         'email',
         'phone',
         'status',
+        'manager_talant',
     ]
     list_display = [
         'name',
@@ -83,6 +75,7 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
         'email',
         'phone',
         'status',
+        'manager_talant'
     ]
     list_filter = [
         'status',
@@ -96,7 +89,7 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
             'email',
             'phone',
         ),
-        'priority_direction',
+        'manager_talant',
         ('login', 'password'),
     ]
     list_filter = (RegistrationOrderFilter,)
@@ -161,7 +154,14 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
                 'login'   : personal_manager.login,
                 'password': personal_manager.password
             } | self.get_images(['logo.png', 'confirm.jpg'])
-            self.send_email(context, [obj.email])
+
+            recipient_list = [
+                obj.email,
+                'opt@talant-gold.ru',
+                'Chikunova.Anastasiya@talant-gold.ru',
+            ]
+
+            self.send_email(context, recipient_list)
 
             return super().save_model(request, obj, form, change)
     
@@ -184,10 +184,19 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
         send_mail(subject, message, from_email, recipient_list, html_message=html_content)
 
 
-
 @admin.register(Manager)
 class ManagerAdmin(admin.ModelAdmin):
-    pass
+    search_fields = [
+        'first_name',
+        'last_name',
+        'surname',
+    ]
+    list_display = [
+        'first_name',
+        'last_name',
+        'surname',
+    ]
+    list_display_links = ('first_name', 'last_name', 'surname')
 
 
 @admin.register(ContactDetail)

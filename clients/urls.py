@@ -6,6 +6,7 @@ app_name = "clients"
 
 urlpatterns = [
     path('reg_request/'          , views.register, name='reg_request'),
+    path('reg_request_confirm/'  , views.register_confirm, name='reg_request_confirm'),
     path('login/'                , views.login, name='login'),
     path('logout/'               , views.logout, name='logout'),
     path('contact/'              , views.ContactDetailView.as_view(), name='contact'),

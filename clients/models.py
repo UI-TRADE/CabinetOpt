@@ -3,34 +3,20 @@ from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from django.conf import settings
 
-
-class PriorityDirection(models.Model):
-    name = models.CharField('Наименование', max_length=50)
-    identifier_1C = models.CharField(
-        'Идентификатор 1С', max_length=50, blank=True, db_index=True
-    )
-    class Meta:
-        verbose_name = 'Бренд'
-        verbose_name_plural = 'Бренды'
-
-    def __str__(self):
-        return self.name
-
-
 class RegistrationOrder(models.Model):
     name = models.CharField('Имя', max_length=150)
     organization = models.CharField('Организация', max_length=150, db_index=True, default='')
     identification_number = models.CharField('ИНН', max_length=12, db_index=True)
-    name_of_manager = models.CharField('ФИО менеджера', max_length=150, blank=True)
-    email = models.EmailField('email менеджера', db_index=True)
-    phone = PhoneNumberField('Контактный телефон менеджера', db_index=True)
-    priority_direction = models.ForeignKey(
-        PriorityDirection,
+    name_of_manager = models.CharField('ФИО менеджера клиента', max_length=150, blank=True)
+    email = models.EmailField('email менеджера клиента', db_index=True)
+    phone = PhoneNumberField('Телефон менеджера клиента', db_index=True)
+    manager_talant = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        verbose_name='Приоритетное направление',
-        related_name='registration_orders'
+        verbose_name='менеджер TALANT',
+        related_name='managers_talant'
     )
     status = models.CharField(
         'Статус регистрации', max_length=10, default='pending', choices=(
@@ -66,15 +52,13 @@ class Manager(models.Model):
     password = models.CharField(max_length=128, verbose_name='Пароль')
 
     class Meta:
+        ordering = ('last_name', 'first_name', )
         verbose_name = 'Персональный менеджер'
         verbose_name_plural = 'Персональные менеджеры'
     
     def __str__(self):
         return f'{self.last_name} {self.first_name}'
     
-    def natural_key(self):
-        return (self.last_name, self.first_name, )
-
 
 class Client(models.Model):
     name = models.CharField('Организация', max_length=150)
@@ -121,14 +105,12 @@ class Client(models.Model):
     ))
 
     class Meta:
+        ordering = ('name', )
         verbose_name = 'Клиент'
         verbose_name_plural = 'Клиенты'
     
     def __str__(self):
         return f'{self.name} ({self.inn})'
-    
-    def natural_key(self):
-        return (self.name, self.inn, )
 
 
 class ContactDetail(models.Model):

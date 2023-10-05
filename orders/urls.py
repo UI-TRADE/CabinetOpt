@@ -17,7 +17,8 @@ register_converter(DateConverter, 'data')
 app_name = "orders"
 urlpatterns = [
     path('orders/', views.OrderView.as_view(), name='orders'),
-    path('order/edit/<slug:order_id>/', views.UpdateOrderView.as_view(), name='edit'),
+    path('order/edit/<slug:order_id>/', views.EditOrderView.as_view(), name='edit'),
+    path('order/update/<slug:order_id>/', views.UpdateOrderView.as_view(), name='update'),
     path('order/remove/<slug:order_id>/', views.remove_order, name='remove'),
     path('order/create/<slug:order_id>/', views.CreateOrderView.as_view(), name='create'),
     path('order/item/create', views.add_order_item),
@@ -28,4 +29,5 @@ urlpatterns = [
     path('order/export/pdf/<slug:order_id>/', views.ExportPDFView.as_view(), name='export-pdf'),
     path('order/export/xlsx/<slug:order_id>/', views.ExportXLSXView.as_view(), name='export-xlsx'),
     path('order/import/xlsx/', views.import_xlsx, name='import-xlsx'),
+    path('order/update/number', views.update_order_number),
 ]

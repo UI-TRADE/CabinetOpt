@@ -13,7 +13,7 @@
                 <div class="order-item">
                     <div class="order-item__full-title">Ваш заказ № {{ object.id }} от {{ object.created_at }}</div>
 
-                    <form method="post" autocomplete="off" action="{% url 'orders:create' order_id=object.id %}">
+                    <form id="orderForm" method="post" autocomplete="off" action="{% url 'orders:create' order_id=object.id %}">
 
                         <div id="empty-form" style="display: none;">{{ empty_items }}</div>
                         <div id="fields" style="display: none" data-json="{{ order_fields }}"></div>
@@ -232,7 +232,12 @@
                             >
                                 <i class="fa fa-download" aria-hidden="true"></i>
                             </a>
-                            <button type="submit" class="btn btn-primary button-create">Оформить заказ</button>
+                            {% if object.status == "introductory" %}
+                                <button type="submit" class="btn btn-primary button-create">Оформить заказ</button>
+                                <input id="sendTalant" class="btn btn-primary" data-url="{% url 'orders:orders' %}" value="Отправить в Talant">
+                            {% else %}
+                                <input id="closeOrder" class="btn btn-primary" data-url="{% url 'orders:orders' %}" value="Закрыть">
+                            {% endif %}
                             <!--<button type="submit" class="btn btn-primary">Отправить на рассмотрение</button>-->
                         </div>
                     </form>

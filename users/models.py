@@ -2,8 +2,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from phonenumber_field.modelfields import PhoneNumberField
 
-from clients.models import PriorityDirection
-
 
 class CustomUser(AbstractUser):
    
@@ -16,12 +14,6 @@ class CustomUser(AbstractUser):
     ))
     date_of_birth = models.DateField(
         'Дата рождения', blank=True, null=True
-    )
-    priority_direction = models.ManyToManyField(
-        PriorityDirection,
-        blank=True,
-        verbose_name='Приоритетное направление',
-        related_name='users'
     )
     created_at = models.DateTimeField(
         'Дата создания', db_index=True, auto_now_add=True

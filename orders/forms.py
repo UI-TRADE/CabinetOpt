@@ -15,6 +15,7 @@ class OrderForm(forms.ModelForm):
             'client',
             'manager',
             'status',
+            'provision',
         ]
 
 
@@ -26,8 +27,8 @@ class OrderItemForm(forms.ModelForm):
         model = OrderItem
         fields = [
             'product',
-            'series',
-            'uin',
+            # 'series',
+            # 'uin',
             'weight',
             'size',
             'quantity',
@@ -56,7 +57,7 @@ class OrderItemInlineForm(BaseInlineFormSet):
 
     def add_fields(self, form, index):
         hidden_fields = ['DELETE', 'product', 'size']
-        readonly_fields = ['series', 'uin', 'weight', 'unit', 'price', 'discount', 'sum']
+        readonly_fields = ['uin', 'series', 'weight', 'unit', 'price', 'discount', 'sum']
         super().add_fields(form, index)
         for field in form.fields:
             if field in hidden_fields:
@@ -88,8 +89,8 @@ OrderItemInline = inlineformset_factory(
     formset=OrderItemInlineForm,
     fields = [
         'nomenclature',
-        'series',
-        'uin',
+        # 'series',
+        # 'uin',
         'weight',
         'nomenclature_size',
         'quantity',

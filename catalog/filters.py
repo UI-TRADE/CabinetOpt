@@ -36,6 +36,7 @@ class CharInFilter(BaseInFilter, CharFilter):
 
 
 class ProductFilter(django_filters.FilterSet):
+    in_stock                = BooleanFilter(field_name = 'in_stock', method='instock_filter')
     available_for_order     = BooleanFilter(field_name = 'available_for_order')
     metal                   = CharInFilter(field_name = 'metal', lookup_expr='in')
     metal_finish__name      = CharInFilter(field_name = 'metal_finish__name', lookup_expr='in')
@@ -77,6 +78,14 @@ class ProductFilter(django_filters.FilterSet):
             'status',
         ]
     
+
+    def instock_filter(self, queryset, name, value):
+        print(queryset, name, value, sep=', ')
+        return queryset.filter(
+            pk__in=StockAndCost.objects.filter(stock__gte=0).values_list('product_id', flat=True)
+        )
+
+
     def size_filter(self, queryset, name, value):
         return queryset.filter(
             pk__in=StockAndCost.objects.filter(

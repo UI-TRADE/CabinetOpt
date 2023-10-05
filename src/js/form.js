@@ -34,9 +34,15 @@ const updateModalForm = (formId) => {
                 if(data['errors']) {
                     showErrors(formId, data['errors']);
                     data['errors'] = {}
+                } else if(data['redirect_url']) {
+                    location.replace(data['redirect_url']);
                 } else {
-                    $('.modal').modal('hide');
-                    location.reload();
+                    if ($(event.target).hasClass('registration-form')) {
+                        $('#registration-form').html(data);
+                    } else {
+                        $('.modal').modal('hide');
+                        location.reload();
+                    }
                 }
             },
             error: (error) => {
