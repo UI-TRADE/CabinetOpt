@@ -53,7 +53,7 @@ class OrderView(ListView):
         return dict(list(context.items()))
 
 
-class UpdateOrderView(UpdateView):
+class EditOrderView(UpdateView):
     model = Order
     slug_url_kwarg, slug_field = 'order_id', 'pk'
     template_name = 'pages/order.html'
@@ -105,9 +105,53 @@ class UpdateOrderView(UpdateView):
                 order_items.save()
             
             schedule_send_order(form.instance, current_status)
-
             return redirect('orders:orders')
 
+        return render(self.request, self.template_name, context)
+
+
+class UpdateOrderView(UpdateView):
+    model = Order
+    slug_url_kwarg, slug_field = 'order_id', 'pk'
+    template_name = 'pages/order.html'
+    success_url = reverse_lazy('orders')
+    fields = ['status', 'client', 'manager',]
+
+    def get_form(self):
+        form = super().get_form()
+        for field in form.fields:
+            form.fields[field].widget.attrs['class'] = 'form-control'
+        return form
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context['order_items'] = OrderItemInline(self.request.POST, instance=self.object)
+        else:
+            context['order_items'] = OrderItemInline(instance=self.object)
+        context['empty_items'] = context['order_items'].empty_form
+        context['fields'] = [
+            {"id": "_id_status", "label": "Статус:", "value": context['order'].get_status_display()},
+            {"id": "_id_client", "label": "Клиент:", "value": context['order'].client},
+            {"id": "_id_manager", "label": "Менеджер:", "value": context['order'].manager}
+        ]
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        order_items = context['order_items']
+        if form.is_valid() and order_items.is_valid():
+            current_status = form.instance.status
+            with suppress(Order.DoesNotExist):
+                current_order = Order.objects.get(pk=form.instance.id)
+                current_status = current_order.status
+            with transaction.atomic():
+                form.instance.save()
+                for order_item in order_items.deleted_forms:
+                    order_item.instance.delete()
+                order_items.save()
+            
+            schedule_send_order(form.instance, current_status)
         return render(self.request, self.template_name, context)
     
 
