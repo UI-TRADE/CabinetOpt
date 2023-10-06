@@ -154,7 +154,7 @@ class Product(models.Model):
         'Дата создания', db_index=True, auto_now_add=True
     )
     product_type = models.CharField(
-        'Тип номенклатуры',
+        'Тип',
         max_length=20,
         default='product',
         db_index=True,

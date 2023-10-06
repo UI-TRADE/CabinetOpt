@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import Avg, Sum
 from django.utils.html import format_html
 
 from .models import (
@@ -171,18 +172,17 @@ class ProductAdmin(admin.ModelAdmin):
         'articul',
     ]
     list_display = [
-        'product_type',
         'articul',
         'name',
-        'brand',
-        'collection',
-        'metal',
-        'metal_content',
-        'color',
+        'product_type',
+        'ct_color',
+        'avg_weight',
         'unit',
         'available_for_order',
+        'stock',
         'status',
-        'created_at',
+        'brand',
+        'collection',
     ]
     fields = [
         'product_type',
@@ -219,6 +219,23 @@ class ProductAdmin(admin.ModelAdmin):
         ProductsSetInLine,
         SimilarProductsInLine
     ]
+
+    def ct_color(self, obj):
+        if obj.str_color:
+            return obj.str_color
+        return f'{obj.metal} {obj.color} {obj.metal_content}`'
+    ct_color.short_description = 'Цвет металла'
+    ct_color.admin_order_field = 'color'
+
+    def avg_weight(self, obj):
+        result = StockAndCost.objects.filter(product_id=obj.id).aggregate(Avg('weight'))
+        return result['weight__avg']
+    avg_weight.short_description = 'Ср.вес, гр'
+
+    def stock(self, obj):
+        result = StockAndCost.objects.filter(product_id=obj.id).aggregate(Sum('stock'))
+        return result['stock__sum']
+    stock.short_description = 'Остаток, шт'
 
 
 @admin.register(PriceType)
