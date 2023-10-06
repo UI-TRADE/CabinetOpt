@@ -7,12 +7,6 @@ from orders.models import Order, OrderItem
 class FileSelectionForm(forms.Form):
     file_path = forms.FileField(validators = [], widget=forms.FileInput())
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field in self.fields:
-            self.fields[field].widget.attrs['class'] = 'file-selection-control'
-            self.fields[field].widget.attrs['style'] = 'margin-bottom: 13px;'
-
 
 class OrderForm(forms.ModelForm):
     class Meta:

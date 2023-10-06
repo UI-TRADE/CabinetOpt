@@ -51,7 +51,7 @@ const updateProductCards = (element) => {
                         (el) => el['fields'].product[1] == currentId['id']
                     ).find(_ => true);
                     const actual_price = actual_prices.filter(
-                        el => el['fields'].product[1] == currentId['id'] && el['fields'].unit == product['fields'].unit
+                        el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
                     ).find(_ => true);
                     const discount_price = discount_prices.filter(
                         el => el['fields'].product[1] == currentId['id'] && el['fields'].unit == product['fields'].unit

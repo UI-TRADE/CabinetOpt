@@ -1,0 +1,17 @@
+<div class="order-list__title">Заказы</div>
+<ul class="list-unstyled">
+    {% for order in orders %}
+        <li class="order-item__links">
+            <a href="{% url 'orders:edit' order.id %}" class="order-item__title">Заказ № {{ order.id }} </a>
+            <span class="order-item__status">{{ order.get_status_display }}</span>
+            {% if order.status == 'shipment' %}
+                {{ order.created_at }}
+            {% endif %}
+            {% if order.status == 'introductory' %}
+                <span class="order-item__edit-button">
+                    <a href="{% url 'orders:edit' order.id %}">редактировать</a>
+                </span>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
