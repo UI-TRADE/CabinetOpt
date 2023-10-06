@@ -228,7 +228,7 @@ function updateProductCard() {
                     const product = products.find(el => el['pk'] == currentId['id']);
                     const stock_and_cost = stocks_and_costs.filter(el => el['fields'].product[1] == currentId['id']);
                     const actual_price = actual_prices.filter(
-                        el => el['fields'].product[1] == currentId['id'] && el['fields'].unit == product['fields'].unit
+                        el => el['fields'].product == currentId['id'] && el['fields'].unit == product['fields'].unit
                     ).find(_ => true);
                     const discount_price = discount_prices.filter(
                         el => el['fields'].product[1] == currentId['id'] && el['fields'].unit == product['fields'].unit
