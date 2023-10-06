@@ -17,8 +17,21 @@ from .models import (
     Manager,
     ContactDetail
 )
+from orders.models import Order
 from .forms import CustomRegOrderForm
 from .utils import parse_of_name
+
+
+class OrderInLine(admin.TabularInline):
+    model = Order
+    extra = 0
+    show_change_link = True
+    fields = ('num_in_1C' ,'provision', 'status', 'manager')
+    readonly_fields = ('num_in_1C' ,'provision', 'status', 'manager')
+    classes = ('collapse', )
+ 
+    verbose_name = "Заказ"
+    verbose_name_plural = "Заказы"
 
 
 class RegistrationOrderFilter(SimpleListFilter):
@@ -250,4 +263,4 @@ class ClientAdmin(admin.ModelAdmin):
     list_filter = [
         'status',
     ]
-    inlines = [ManagerInLine, ContactDetailInLine]
+    inlines = [ManagerInLine, ContactDetailInLine, OrderInLine]
