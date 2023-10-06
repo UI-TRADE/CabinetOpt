@@ -80,7 +80,6 @@ class ProductFilter(django_filters.FilterSet):
     
 
     def instock_filter(self, queryset, name, value):
-        print(queryset, name, value, sep=', ')
         return queryset.filter(
             pk__in=StockAndCost.objects.filter(stock__gte=0).values_list('product_id', flat=True)
         )
