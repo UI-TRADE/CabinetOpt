@@ -296,10 +296,8 @@ docker-compose -f docker-compose.prod.yml up -d --build
 Запустите отправку заявок на почту по расписанию
 
 ```sh
-docker-compose -f docker-compose.prod.yml exec web python manage.py mailing -d
+docker-compose -f docker-compose.prod.yml exec web python manage.py mailing
 ```
-p.s. Флаг -d позволяет запустить команду в фоновом режиме.
-
 
 ## Как получить токен пользователя и выполнить обмен с 1С
 
