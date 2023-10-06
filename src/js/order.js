@@ -556,7 +556,7 @@ function editOrder(){
 }
 
 export function orderEvents() {
-
+    const orderForm = $("#orderForm")
     $('.order__toolbar__btn').on('click', (event) => {
         let elementName = event.target.getAttribute('name');
         if (!elementName) {
@@ -626,7 +626,7 @@ export function orderEvents() {
         document.location.href = redirect_url;
     });
 
-    $('.add-quantity').on("click", function(){
+    $('.add-quantity', orderForm).on("click", function(){
         const element = $($(this).attr("href"))
         const newVal = parseInt(element.val()) + 1;
         element.val(parseInt(element.val()) + 1).trigger('change')
@@ -639,7 +639,7 @@ export function orderEvents() {
                 $(document).trigger("order.updated")
             })
     })
-    $('.remove-quantity').on("click", function(){
+    $('.remove-quantity', orderForm).on("click", function(){
         const element = $($(this).attr("href"))
         const currentValue = element.val()
         if(currentValue != 1){
