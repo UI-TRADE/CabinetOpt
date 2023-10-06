@@ -73,13 +73,13 @@
                 </a>
                 <div id="cart-container">
                     {% with total_items=cart|length %}
-                    {% if cart|length > 0 %}
                     <div class="d-flex flex-nowrap justify-content-center align-items-end row" id="cart-info">
+                        {% if cart|length > 0 %}
                         <span class="d-sm-flex cart-total-sum">{{ cart.get_total_price }}</span>
                         <span class="d-sm-flex cart-currency">₽</span>
                         <span class="flex-nowrap cart-total-weight">/ {{ cart.get_total_weight }} гр</span>
-                    </div>
-                    {% endif %}
+                        {% endif %}
+                    </div> 
                     {% endwith %}
                 </div>
             </div>

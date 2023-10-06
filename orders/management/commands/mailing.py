@@ -30,7 +30,6 @@ def launch_mailing():
     redis_storage = settings.REDIS_CONN
 
     order_ids = redis_storage.keys()
-    print(order_ids)
     for order_id in order_ids:
         with suppress(Order.DoesNotExist, ValueError):
             order = Order.objects.get(pk=order_id.decode())
