@@ -1,0 +1,30 @@
+{% extends "main.html" %}
+{% load static %}
+
+{% block form %}
+    <div class="sign-in-form-layout" id="change-pass-form" tabindex="-1" data-backdrop="false" role="dialog" style="width: 440px;">
+        <form class="justify-content-xl-center change-pass-form" method="post" action="{% url 'clients:change_pass' %}">
+            {% csrf_token %}
+            <div id="change-pass-errors"  style="display: none;" data-error="{{ errors }}"></div>
+            <div class="d-flex flex-column flex-nowrap">
+                <div class="d-sm-flex flex-row title-registration-form sign-in-form-item">
+                    <p id="title-part-1">СМЕНА ПАРОЛЯ</p>
+                </div>
+                {% for field in form %}
+                    <div class="sign-in-form-item">
+                        {% if field.name == 'password' %}
+                            <a id="show-password" href="#"><img src="{% static 'img/show-pass.svg' %}"></a>
+                        {% endif %}
+                        <label class="default-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                {% endfor %}
+                <div style="height: 7px;"></div>
+                <div class="text-center registration-form-btn">
+                    <button class="btn btn-primary btn-sign-in" type="submit">ВОЙТИ</button>
+                </div>
+                <a class="d-sm-flex justify-content-sm-center registration-text-sm registration-form-item" id="registration-confidential-text">Политика конфиденциальности</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}
