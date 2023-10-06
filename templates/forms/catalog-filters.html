@@ -75,16 +75,22 @@
                 </div>
                 <ul style="padding: 0px;">
                     {% for item in filters.collections.tree %}
-                        <div class="d-xl-flex row filter-item slave-node"><img class="d-xl-flex" src="{% static 'img/f-open.svg' %}" style="padding: 0px;" width="12" height="17">
-                            <div style="width: 5px;"></div><span class="filter-item-title" data-json="{{item|filtertojson}}">{{ item.collection__group__name }}</span><a href="#">({{ item.count }})</a>
-                        </div>
-                        <ul>
-                            {% for node in item.nodes %}
-                                <li>
-                                    <div class="d-xl-flex row filter-node-item"><span class="filter-item-title" data-json="{{node|filtertojson}}">{{ node.collection__name }}</span><a href="#">({{ node.count }})</a></div>
-                                </li>
-                            {% endfor %}
-                        </ul>
+                        <li>
+                            <div class="d-xl-flex row filter-item slave-node">
+                                <img class="d-xl-flex" src="{% static 'img/f-open.svg' %}" style="padding: 0px;" width="12" height="17">
+                                <div style="width: 5px;"></div><span class="filter-item-title" data-json="{{item|filtertojson}}">{{ item.collection__group__name }}</span><a href="#">({{ item.count }})</a>
+                            </div>
+
+                            <div>
+                                <ul>
+                                    {% for node in item.nodes %}
+                                        <li>
+                                            <div class="d-xl-flex row filter-node-item"><span class="filter-item-title" data-json="{{node|filtertojson}}">{{ node.collection__name }}</span><a href="#">({{ node.count }})</a></div>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </li>
                     {% endfor %}
                 </ul>
             </li>
