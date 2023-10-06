@@ -14,6 +14,7 @@ from .login import Login, AuthenticationError
 from .forms import (
     RegForm,
     LoginForm,
+    ChangePassForm,
     ContactDetailForm,
     ManagerForm
 )
@@ -70,6 +71,29 @@ def logout(request):
     login = Login(request)
     login.unauth()
     return redirect("start_page")
+
+
+def change_password(request):
+    if request.method != 'POST':
+        form = ChangePassForm()
+        return render(request, 'pages/change-pass.html', {'form': form, 'errors': ''})
+    
+    login = Login(request)
+    form = ChangePassForm(request.POST)
+    if not form.is_valid():
+        errors = json.dumps(form.errors)
+        return render(request, 'pages/change-pass.html', {'form': form, 'errors': errors})
+    
+    with suppress(AuthenticationError):
+        data = form.cleaned_data
+        login.cahnge_pass_and_auth(data['login'], data['old_pass'], data['new_pass'])
+        return redirect('catalog:products')
+
+    return JsonResponse(
+        {'errors': json.dumps(
+            {'login': [{'message': 'Неверный логин или пароль'},]}
+        )}
+    )
 
 
 class ContactDetailView(ListView):

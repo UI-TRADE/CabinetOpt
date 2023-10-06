@@ -4,6 +4,7 @@ import base64
 
 from django.contrib import admin
 from django.db import transaction
+from django.urls import reverse
 from django.core.mail import send_mail
 from django.core.exceptions import ValidationError
 from django.contrib.admin import SimpleListFilter
@@ -151,6 +152,7 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
             client.manager.add(personal_manager)
 
             context = {
+                'url'     : request.build_absolute_uri(reverse('clients:change_pass')),
                 'login'   : personal_manager.login,
                 'password': personal_manager.password
             } | self.get_images(['logo.png', 'confirm.jpg'])

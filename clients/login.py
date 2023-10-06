@@ -40,6 +40,31 @@ class Login(object):
             raise AuthenticationError
 
 
+    def cahnge_pass_and_auth(self, login='', password='', new_password=''):
+        def is_email(email):
+            regex = re.compile(
+                r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+'
+            )
+            return re.fullmatch(regex, email)
+
+        try:
+            if is_email(login):
+                obj = Manager.objects.get(email=login)
+                if obj.password != password:
+                    raise AuthenticationError
+                self.login['manager'] = obj.id
+            else:
+                obj = Client.objects.get(inn=login)
+                self.login['client'] = obj.id
+                managers = self.get_managers()
+                if managers:
+                    managers.update(password=new_password)
+
+            self.login['login'] = login
+        except (Manager.DoesNotExist, Client.DoesNotExist):
+            raise AuthenticationError
+
+
     def unauth(self):
         del self.session[settings.SESSION_LOGIN]
         self.session.modified = True

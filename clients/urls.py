@@ -9,6 +9,7 @@ urlpatterns = [
     path('reg_request_confirm/'  , views.register_confirm, name='reg_request_confirm'),
     path('login/'                , views.login, name='login'),
     path('logout/'               , views.logout, name='logout'),
+    path('change_pass/'          , views.change_password, name='change_pass'),
     path('contact/'              , views.ContactDetailView.as_view(), name='contact'),
     path('contact/edit/<str:id>/', views.ContactDetailEditView.as_view(), name='edit'),
     path('contact/edit/'         , views.ContactDetailCreateView.as_view(), name='edit'),

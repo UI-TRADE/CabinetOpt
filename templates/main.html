@@ -32,7 +32,10 @@
             </div>
         </nav>
 
-        <div id="main" class="main-background"></div>
+        <div id="main" class="main-background">
+            {% block form %}
+            {% endblock %}
+        </div>
     {% else %}
         <nav class="d-lg-flex justify-content-lg-start navbar navbar-dark navbar-expand-lg" id="main-menu">
             <div id="brand-container"></div>

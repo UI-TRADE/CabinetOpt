@@ -61,6 +61,23 @@ const renderModalForm = (data, targetId, submitFormId) => {
 }
 
 
+export function showChangePassErrors() {
+    if (!$('#change-pass-errors').length) return;
+    const dataError = $('#change-pass-errors').attr('data-error')
+    if (!dataError) return;
+    const errors = JSON.parse(dataError);
+    for (var key in errors) {
+        if (errors.hasOwnProperty(key)) {
+            let element = $(`input[name=${key}]`)
+            if (element) {
+                element.attr('placeholder', errors[key]);
+                element.addClass('is-invalid');
+            }
+        }
+    }
+}
+
+
 export function switchModalForm(idFrom, idTo, submitFormId) {
     $(document).on('click', `#${idFrom}` , event =>{
         $.ajax({

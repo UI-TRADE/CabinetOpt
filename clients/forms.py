@@ -1,3 +1,4 @@
+from typing import Any
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from contextlib import suppress
@@ -141,6 +142,47 @@ class LoginForm(forms.Form):
         )
     )
     fields = ['login', 'password']
+
+
+class ChangePassForm(forms.Form):
+    login = forms.CharField(
+        label='ИНН',
+        widget=forms.TextInput(
+            attrs={'class': 'form-control default-input reg-field-layout', 'placeholder': 'ИНН'}
+        )
+    )
+    old_pass = forms.CharField(
+        label='Старый пароль',
+        widget=forms.PasswordInput(
+            attrs={'class': 'form-control default-input reg-field-layout', 'placeholder': ''}
+        )
+    )
+    new_pass = forms.CharField(
+        label='Новый пароль',
+        widget=forms.PasswordInput(
+            attrs={'class': 'form-control default-input reg-field-layout', 'placeholder': ''}
+        )
+    )
+    repeat_pass = forms.CharField(
+        label='Повторите пароль еще раз',
+        widget=forms.PasswordInput(
+            attrs={'class': 'form-control default-input reg-field-layout', 'placeholder': ''}
+        )
+    )
+    fields = ['login', 'old_pass', 'new_pass', 'repeat_pass']
+
+    def clean_login(self):
+        value = self.cleaned_data['login']  
+        if not RegistrationOrder.objects.filter(identification_number=value).exists():
+            raise ValidationError('Клиент с таким ИНН не существует')
+        return value
+    
+    def clean_repeat_pass(self):
+        new_pass = self.cleaned_data['new_pass']
+        repeat_pass = self.cleaned_data['repeat_pass']
+        if not new_pass == repeat_pass:
+            raise ValidationError('Пароли не совпадают')
+        return repeat_pass
 
 
 class ContactDetailForm(forms.ModelForm):

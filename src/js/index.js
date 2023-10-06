@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'jquery-ui-dist/jquery-ui.css';
 import generateUUID from './lib';
 import mainMenuEvents from './main_menu';
-import showModalForm, {switchModalForm} from './form';
+import showModalForm, {switchModalForm, showChangePassErrors} from './form';
 import updateContactView from './contact';
 import {cartViewEvents} from './cart';
 import initProductFilters, {filtersEvents} from './catalog/filters';
@@ -67,6 +67,9 @@ $(document).ready(() => {
     showModalForm(mainAuthForm, generateUUID());
     switchModalForm('entry', mainAuthForm, generateUUID());
     switchModalForm('register', mainAuthForm, generateUUID());
+
+    // change pass
+    showChangePassErrors();
 
     // file selection
     showModalForm('fileSelectionForm');
