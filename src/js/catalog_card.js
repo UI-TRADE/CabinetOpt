@@ -20,35 +20,6 @@ const removeClass = (element, className, toggleClassName) => {
 }
 
 
-/**
- * Добавляет обработчк события выбора размера.
- * 
- * element   - выбранный элемент DOM.
- */
-const addSelectSizeEvent = (element) => {
-    const boundInfo = JSON.parse(element.parentElement.getAttribute('data-json'));
-    if (!boundInfo) return;
-    const boundFields = boundInfo['fields'];
-    if (!boundFields) return;
-    const currentSize = boundFields.size.find(_ => true);
-    updatePriceInProductCard({
-            'size': currentSize, 'weight': boundFields.weight,
-            'inStok': boundFields.stock, 'price': boundInfo['clientPrice'],
-            'discount': boundInfo['clientDiscount'], 'maxPrice': boundInfo['clientMaxPrice']
-    });
-    removeClass(document, 'product__block__size-btn'  , 'product__block__size-btn--selected');
-    removeClass(document, 'product__block__size-label', 'product__block__size-label--selected');
-    element.classList.toggle('product__block__size-btn--selected');
-    element.parentElement.querySelector('label').
-        classList.toggle('product__block__size-label--selected');
-    
-    const elementOfPrices = document.querySelector('.product__col__prices');
-    if (!elementOfPrices) return;
-    waitUpdateCart(elementOfPrices, {'productId': boundFields['product'], 'size': currentSize})
-        .catch(error => {
-            alert('Ошибка обновления корзины покупок: ' + error);
-        })
-}
 
 
 
@@ -165,6 +136,7 @@ const updatePriceInProductCard = (context) => {
 
     if (!formElement) return;
     var inputFields = formElement.querySelectorAll('input');
+
     for (let item of inputFields) {
         if (item.name === 'price' && price.clientPrice) item.value = price.clientPrice;
         if (item.name === 'size' && context.size)       item.value = context.size;
@@ -195,13 +167,20 @@ const changeMainImg = (element) => {
 
 const updateCarts = (cartElements) => {
     return new Promise((resolve, reject) => {
+
         try {
-            const result = Promise.all(
-                cartElements.map((item) => {
-                    return waitUpdateCart(item.element, item.key)
-                })
-            );
-            resolve(result);
+
+            const cart = $(document).data("cart");
+                cart.getProducts()
+                    .then(products => {
+                        const result = Promise.all(
+                            cartElements.map((item) => {
+                                const product = products[item.key.productId  + '_' + item.key.size]
+                                return waitUpdateCart(item.element, item.key, product)
+                            })
+                        );
+                        resolve(result);
+                    })
         } catch (error) {
             reject(error);
         }
@@ -397,6 +376,7 @@ function updateProductCard() {
             sizes.push({ 'id': idx, 'element': sizeElement });
         });
         element.setAttribute('data-json', JSON.stringify(sizes));
+
     }
 
     /**

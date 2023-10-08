@@ -31,7 +31,6 @@ const updateProductCards = (element) => {
 
     const updateElements = (data) => {
         return new Promise((resolve, reject) => {
-
             try {
                 if (data['replay'] == 'error') throw new Error(data['message']);
 
@@ -70,10 +69,9 @@ const updateProductCards = (element) => {
                         maxPrice = defaultSize['fields'].cost;
                         weight = defaultSize['fields'].weight;
                         size = defaultSize['fields'].size.find(_ => true);
-                        inStok = defaultSize['fields'].stock;   
+                        inStok = defaultSize['fields'].stock;
                     }
-
-                    if (actual_price) { 
+                    if (actual_price) {
                         currentPrice = actual_price['fields'].price;
                         currentDiscount = actual_price['fields'].discount;
                     }
@@ -133,10 +131,18 @@ const updateProductCards = (element) => {
     const updateCarts = (cartElements) => {
         return new Promise((resolve, reject) => {
             try {
-                const result = Promise.all(
-                    cartElements.map((item) => waitUpdateCart(item.element, item.key))
-                );
-                resolve(result);
+                const cart = $(document).data("cart");
+                cart.getProducts()
+                    .then(products => {
+                        const result = Promise.all(
+                            cartElements.map((item) => {
+                                const product = products[item.key.productId  + '_' + item.key.size]
+                                return waitUpdateCart(item.element, item.key, product)
+                            })
+                        );
+                        resolve(result);
+                    })
+
             } catch (error) {
                 reject(error);
             }

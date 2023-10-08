@@ -2,19 +2,6 @@ import 'tablesorter';
 import Cart from "./components/cart";
 import {decimalFormat} from "./utils/money_format";
 
-const updateCartTitle = () => {
-    $.ajax({
-        url: location.href,
-        success: (response) => {
-            const reloadHtml = new DOMParser().parseFromString(response, 'text/html');
-            document.querySelector('#cart-container').innerHTML = reloadHtml.querySelector('#cart-info').outerHTML;
-        },
-        error: (error) => {
-            alert('Ошибка обновления заголовка корзины: ' + error);
-        }
-    });
-}
-
 
 const addToCart = (formId) => {
 
@@ -27,11 +14,12 @@ const addToCart = (formId) => {
             if (response['replay'] == 'error') throw new Error(response['message']);
             return waitUpdateCart(
                 productForm.parentElement.parentElement,
-                {'productId': response['pk'], 'size': response['size']}
+                {'productId': response['pk'], 'size': response['size']},
+                response
             );
         })
         .then(_ => {
-            updateCartTitle();
+            $(document).data("cart").getProducts()
         })
         .catch((error) => {
             alert('Ошибка обновления корзины покупок: ' + error);
@@ -107,33 +95,13 @@ const OnQuantityChange = (element, preventReload=false) => {
      * params         - структура с productId и size для идентификации товара в корзине.
      */
     const getCartInfo = (params) => {
-
-        return new Promise((resolve, reject) => {
-            try {
-                const result = Promise.all(
-                    params.map((item) => {
-                        let url = `/cart/info/${item.param['productId']}`;
-                        if (item.param['size']) url += `/${item.param['size']}`;
-                        return new Promise((resolve, reject) => {
-                            $.ajax({
-                                url: url,
-                                success: (response) => {
-                                    item.cartInfo = response;
-                                    $(document).trigger("cart.quantity-change", {
-                                        productId: item.param['productId'],
-                                        ...response
-                                    })
-                                    resolve(item);
-                                }
-                            });
-                        });
-                    })
-                );
-                resolve(result);
-            } catch (error) {
-                reject(error);
-            }
-        });
+        const cart = $(document).data("cart");
+        return cart.getProducts().then((products) => {
+            return params.map((item) => {
+                item.cartInfo = products[item.param.productId + '_' + item.param.size];
+                return item
+            })
+        })
     }
 
     /**
@@ -187,7 +155,7 @@ const OnQuantityChange = (element, preventReload=false) => {
                 return waitUpdateCart(element.parentElement.parentElement, cartKey);
             })
             .then(_ => {
-                updateCartTitle();
+                $(document).data("cart").getProducts()
             })
             .catch((error) => {
                 alert('Ошибка удаления позиции из корзины покупок: ' + error);
@@ -198,6 +166,7 @@ const OnQuantityChange = (element, preventReload=false) => {
         cartRows.forEach((cartRow) => {
             if (cartRow.contains(element)) {
                 const cartKey = cartRow.querySelector('[name="cart-key"]');
+
                 params.push({
                     'csrfToken': document.querySelector('[name="csrfmiddlewaretoken"]'),
                     'row'      : cartRow,
@@ -229,17 +198,28 @@ const OnQuantityChange = (element, preventReload=false) => {
 
             })
             .then((response) => {
+                let totalQuantity = 0;
+                let totalWeight = 0;
+                let totalPrice = 0;
                 response.forEach(item => {
                     const currentParam = params.filter(el => el.param.productId == item.pk).find(_ => true);
                     const quantityField = currentParam.row.querySelector('input[name="cart-quantity"]');
                     const priceField    = currentParam.row.querySelector('[name="cart-price"]');
                     const sumField      = currentParam.row.querySelector('[name="cart-sum"]');
-                    if (quantityField) quantityField.value = item.quantity;
-                    if (priceField)    sumField.textContent = decimalFormat(item.price) + " р.";
-                    if (sumField)      sumField.textContent = decimalFormat(item.sum) + " р.";
 
-                    updateCartTitle();
-                });    
+                    if (quantityField) {
+                        quantityField.value = item.quantity;
+                        totalQuantity += item.quantity
+                    }
+                    if (priceField)    sumField.textContent = decimalFormat(item.price) + " р.";
+                    if (sumField){
+                        sumField.textContent = decimalFormat(Math.ceil(item.sum)) + " р.";
+                        totalPrice +=item.sum
+                    }
+                    totalWeight += item.weight;
+
+                    $(document).data("cart").getProducts()
+                });
             })
             .catch((error) => {
                 alert('Ошибка обновления количества товара в корзине: ' + error);
@@ -248,25 +228,18 @@ const OnQuantityChange = (element, preventReload=false) => {
 }
 
 
-export function waitUpdateCart(element, params) {
-    let url = `/cart/info/${params['productId']}`;
-    if (params['size']) url += `/${params['size']}`;
-    return new Promise((resolve, reject) => {
-        $.ajax({
-            url: url,
-            success: (cartData) => {
-                updateCartElements(element, cartData, params);
-                resolve(cartData);
-            },
-            error: () => {
-                reject();
-            }
-        });
+// need to refactor and remove this promise
+export function waitUpdateCart(element, params, product) {
+    return new Promise((resolve) => {
+        updateCartElements(element, product, params);
+        resolve(product);
     });
 };
 
 
 export function сartEvents() {
+
+    const cartTable = $('#cart-table');
 
     $('input[name="add-to-cart"]').on('click', (event) => {
         addToCart(event.currentTarget.id);
@@ -292,11 +265,34 @@ export function сartEvents() {
         delOneFromCart(event.currentTarget);
     });
 }
+var cart = undefined;
+$(document).ready(() => {
+    cart = new Cart();
+})
 
 
 export function cartViewEvents() {
     const cartViewElement = $('#cart-table');
-    const cart = new Cart();
+    // Temp page fix
+    if(cartViewElement.length) {
+        $(document).on('cart.updated', function (e, data){
+            let totalCount = 0;
+            let totalWeight = 0;
+            let totalSum = 0;
+
+            $('[name=cart-row]', cartViewElement).each(function (index, item){
+                const rawData = JSON.parse($('[name="cart-key"]', item)[0].textContent)
+                const product = cart.products[rawData.productId + '_' + rawData.size];
+                $('td.total_weight', item).text(decimalFormat(product.weight * product.quantity))
+                totalCount += product.quantity;
+                totalWeight += product.weight * product.quantity
+                totalSum += product.sum;
+            })
+            $('.cart-result__total-count', cartViewElement).text(decimalFormat(totalCount) + " шт")
+            $('.cart-result__total-weight', cartViewElement).text(decimalFormat(totalWeight) + " гр")
+            $('.cart-result__total-price', cartViewElement).text(decimalFormat(Math.ceil(totalSum)) + " р")
+        })
+    }
 
     $(".remove-quantity", cartViewElement).on("click", function(e){
         e.preventDefault();
@@ -336,7 +332,7 @@ export function cartViewEvents() {
     });
 
     $(document).on("cart.quantity-change", function(e, data){
-        cart.update(data);
+        cart.updateItem(data);
     })
 }
 
