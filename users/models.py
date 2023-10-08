@@ -20,8 +20,8 @@ class CustomUser(AbstractUser):
     )
 
     class Meta:
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
+        verbose_name = 'Менеджер ЮИ-Трейд'
+        verbose_name_plural = 'Менеджеры ЮИ-Трейд'
 
     def __str__(self):
         return self.username

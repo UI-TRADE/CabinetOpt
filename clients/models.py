@@ -15,7 +15,7 @@ class RegistrationOrder(models.Model):
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        verbose_name='менеджер TALANT',
+        verbose_name='Менеджер ЮИ-Трейд',
         related_name='managers_talant'
     )
     status = models.CharField(
@@ -53,8 +53,8 @@ class Manager(models.Model):
 
     class Meta:
         ordering = ('last_name', 'first_name', )
-        verbose_name = 'Персональный менеджер'
-        verbose_name_plural = 'Персональные менеджеры'
+        verbose_name = 'Менеджер клиента'
+        verbose_name_plural = 'Менеджеры клиента'
     
     def __str__(self):
         return f'{self.last_name} {self.first_name}'
