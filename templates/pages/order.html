@@ -235,7 +235,7 @@
                                 <i class="fa fa-download" aria-hidden="true"></i>
                             </a>
                             {% if object.status == "introductory" %}
-                                <button type="submit" class="btn btn-primary button-create">Оформить заказ</button>
+                                <button type="submit" class="btn btn-primary button-create">Отправить на рассмотрение</button>
                                 <input id="sendTalant" class="btn btn-primary" data-url="{% url 'orders:orders' %}" value="Отправить в Talant">
                             {% else %}
                                 <input id="closeOrder" class="btn btn-primary" data-url="{% url 'orders:orders' %}" value="Закрыть">

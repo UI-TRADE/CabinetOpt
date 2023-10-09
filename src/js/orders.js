@@ -13,7 +13,8 @@ function ordersEvents() {
         })
     }
 
-    $(".order-list .order-item__title").on("click", function (e){
+    const orderListElement = $('.order-list');
+    $(".order-item__title, .order-item__edit-button a", orderListElement).on("click", function (e){
         e.preventDefault();
         if(orderRequest){
             orderRequest.abort()
@@ -24,7 +25,7 @@ function ordersEvents() {
                 $(DOMModel.querySelector("#order-item")).appendTo($("#order").empty())
                 initOrderInfo()
             })
-    })
+    }).first().trigger("click")
 
     function initOrderInfo(){
         const orderTableItems = $('#order-items');
