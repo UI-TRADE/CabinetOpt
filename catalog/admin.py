@@ -1,3 +1,4 @@
+from contextlib import suppress
 from django.contrib import admin
 from django.db.models import Avg, Sum
 from django.utils.html import format_html
@@ -181,6 +182,8 @@ class ProductAdmin(admin.ModelAdmin):
         'available_for_order',
         'stock',
         'status',
+        'gem_set',
+        'active',
         'brand',
         'collection',
     ]
@@ -236,6 +239,27 @@ class ProductAdmin(admin.ModelAdmin):
         result = StockAndCost.objects.filter(product_id=obj.id).aggregate(Sum('stock'))
         return result['stock__sum']
     stock.short_description = 'Остаток, шт'
+
+    def gem_set(self, obj):
+        with suppress(AttributeError):
+            result = GemSet.objects.filter(product_id=obj.id).order_by('-description').first()
+            return result.description
+        return ''
+    gem_set.short_description = 'Вставки'
+
+    def active(self, obj):
+        result = 'Активный'
+        product_stock = StockAndCost.objects.filter(product_id=obj.id).aggregate(Sum('stock'))
+        if not product_stock['stock__sum']:
+            result = 'Не активный'
+        product_prices = Price.objects.available_prices([obj.id])
+        if not product_prices:
+            result = 'Не активный'
+        product_images = ProductImage.objects.filter(product_id=obj.id)  
+        if not product_images:
+            result = 'Не активный'
+        return result
+    active.short_description = ''
 
 
 @admin.register(PriceType)

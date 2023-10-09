@@ -156,27 +156,30 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
                         key in ['email', 'phone', 'login', 'password']
                 } | parsed_manager_name
             )
-            client = Client.objects.create(**{
-                'name'              : registration_order['name'],
-                'inn'               : registration_order['identification_number'],
-                'registration_order': obj,
-                'approved_by'       : request.user,
+            client, created = Client.objects.update_or_create(
+                inn=registration_order['identification_number'],
+                defaults = {
+                    'name'              : registration_order['name'],
+                    'registration_order': obj,
+                    'approved_by'       : request.user,
+                    'manager_talant'    : registration_order['manager_talant'],
             })
-            client.manager.add(personal_manager)
+            if created:
+                client.manager.add(personal_manager)
 
-            context = {
-                'url'     : request.build_absolute_uri(reverse('clients:change_pass')),
-                'login'   : personal_manager.login,
-                'password': personal_manager.password
-            } | self.get_images(['logo.png', 'confirm.jpg'])
+                context = {
+                    'url'     : request.build_absolute_uri(reverse('clients:change_pass')),
+                    'login'   : personal_manager.login,
+                    'password': personal_manager.password
+                } | self.get_images(['logo.png', 'confirm.jpg'])
 
-            recipient_list = [
-                obj.email,
-                'opt@talant-gold.ru',
-                'Chikunova.Anastasiya@talant-gold.ru',
-            ]
+                recipient_list = [
+                    obj.email,
+                    'opt@talant-gold.ru',
+                    'Chikunova.Anastasiya@talant-gold.ru',
+                ]
 
-            self.send_email(context, recipient_list)
+                self.send_email(context, recipient_list)
 
             return super().save_model(request, obj, form, change)
     
@@ -237,6 +240,7 @@ class ClientAdmin(admin.ModelAdmin):
         'registration_order',
         'approved_by',
         'updated_by',
+        'manager_talant',
     ]
     list_display = [
         'status',
@@ -245,6 +249,7 @@ class ClientAdmin(admin.ModelAdmin):
         'registration_order',
         'created_at',
         'approved_by',
+        'manager_talant',
     ]
     fields = [
         'status',
@@ -252,6 +257,7 @@ class ClientAdmin(admin.ModelAdmin):
         'registration_order',
         ('created_at', 'approved_by'),
         ('updated_at', 'updated_by'),
+        'manager_talant',
     ]
     readonly_fields = [
         'created_at',

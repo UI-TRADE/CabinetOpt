@@ -103,6 +103,14 @@ class Client(models.Model):
             ('active'   , 'Активный'),
             ('locked', 'Заблокирован')
     ))
+    manager_talant = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        verbose_name='Менеджер ЮИ-Трейд',
+        related_name='clients_by_talants_managers'
+    )
 
     class Meta:
         ordering = ('name', )
