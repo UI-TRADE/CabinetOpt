@@ -38,34 +38,33 @@ class FiltersView(TemplateView):
         method = getattr(filter_tree, func)
         method(field, *groups)
         return filter_tree
-
+    
+    def get_filters(self, qs):
+        return {
+            'metals'      : self.get_filter(qs, 'count', 'metal', 'str_color'),
+            'metal_finish': self.get_filter(qs.annotate(metal_finish_count=Count('metal_finish')), 'count', 'metal_finish__name'),
+            'brands'      : self.get_filter(qs, 'count', 'brand__name'),
+            'prod_status' : self.get_filter(qs, 'count', 'status'),
+            'collections' : self.get_filter(qs, 'count', 'collection__group__name', 'collection__name'),
+            'genders'     : self.get_filter(qs.annotate(gender_count=Count('gender')), 'count', 'gender__name'),
+            'sizes'       : self.get_filter(StockAndCost.objects.filter(product__in=qs), 'sum', 'size__name'),
+            'gems'        : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'precious_stone__name'),
+            'colors'      : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'gem_color'),
+            'cuts'        : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'cut_type__name'),
+        }
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        products = Product.objects.all()
-        context['filters'] = {
-            'metals'      : self.get_filter(products, 'count', 'metal', 'metal_finish__name', 'color', 'metal_content'),
-            'metal_finish': self.get_filter(products.annotate(metal_finish_count=Count('metal_finish')), 'count', 'metal_finish__name'),
-            'brands'      : self.get_filter(products, 'count', 'brand__name'),
-            'prod_status' : self.get_filter(products, 'count', 'status'),
-            'collections' : self.get_filter(products, 'count', 'collection__group__name', 'collection__name'),
-            'genders'     : self.get_filter(products.annotate(gender_count=Count('gender')), 'count', 'gender__name'),
-            'sizes'       : self.get_filter(StockAndCost.objects.filter(product__in=products), 'sum', 'size__name'),
-            'gems'        : self.get_filter(GemSet.objects.filter(product__in=products), 'count', 'precious_stone__name'),
-            'colors'      : self.get_filter(GemSet.objects.filter(product__in=products), 'count', 'gem_color'),
-            'cuts'        : self.get_filter(GemSet.objects.filter(product__in=products), 'count', 'cut_type__name'),
-        }
+        context['filters'] = self.get_filters(Product.objects.all())
 
         return context
 
 
-class ProductView(ListView):
+class ProductView(FiltersView, ListView):
     model = Product
     template_name = 'pages/catalog.html'
     context_object_name = 'products'
-    allow_empty = True
-    filters = []
-    paginate_by = 72
+    allow_empty, filters, paginate_by = True, [], 72
 
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
@@ -101,8 +100,9 @@ class ProductView(ListView):
         return products
 
     def get_context_data(self, *, object_list=None, **kwargs):
+        self.object_list = self.get_queryset()
         context = super().get_context_data(**kwargs)
-        paginator = Paginator(context['products'], self.paginate_by)
+        paginator = Paginator(self.object_list, self.paginate_by)
         page = self.request.GET.get('page')
 
         try:
@@ -112,7 +112,10 @@ class ProductView(ListView):
         except EmptyPage:
             products_page = paginator.page(paginator.num_pages)
 
+        # filters = self.get_filters(self.object_list)
+        print({key: value.__json__() for key, value in self.get_filters(self.object_list).items()})
         context['products']    = products_page
+        context['filters']     = json.dumps({key: value.__json__() for key, value in self.get_filters(self.object_list).items()})
         context['MEDIA_URL']   = settings.MEDIA_URL
         return context
 

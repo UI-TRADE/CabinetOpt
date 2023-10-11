@@ -7,40 +7,6 @@ class FilterBadges {
         this.element = element;
         this.filterContainer = filterContainer;
 
-        /*this.defaultValues = {
-            // по размеру б, вес - г, цена р
-            "size_name": "б",
-            "weight": {
-                value: {
-                    min: 0,
-                    max: 80,
-                },
-                range:{
-                    min: 20,
-                    max: 150
-                }
-            },
-            "price": {
-                value: {
-                    min: 700,
-                    max: 8000,
-                },
-                range:{
-                    min: 500,
-                    max: 150000
-                }
-            },
-            "gem_quantity": {
-                value: {
-                    min: 50,
-                    max: 150,
-                },
-                range:{
-                    min: 0,
-                    max: 200
-                }
-            }
-        }*/
         this.filterTemplates = {
             'default': (value) => `${value}`,
             "size__name": (value) => `${value} б`,
@@ -85,23 +51,13 @@ class FilterBadges {
     removeFilter(filter){
         return (e) => {
             e.preventDefault();
-            /*
-                $("#weight-range").slider('values', [0, 100])
-                .slider('option', 'slide').call(
-                    $("#weight-range"),
-                    null,
-                    {
-                        //handle: $('.ui-slider-handle', hs),
-                        values: [0, 100]
-                    }
-                )
-            )*/
             $(".filter-item-title-active", this.filterContainer).filter((index, element) =>
                 JSON.stringify($(element).data("json")) === JSON.stringify(filter)
             ).trigger("click")
         }
     }
 }
+
 
 const loadJson = (selector) => {
     const element = document.querySelector(selector);
@@ -210,6 +166,51 @@ const setDefaultInStockFilter = () => {
 }
 
 
+const updateFilterElements = (elements) => {
+    $('.filter-item-title').each((_, item) => {
+        const foundElement = elements.find(el => el['element'] == item);
+        if (!foundElement) {
+            const parentElement = $(item).parent();
+            const countElement = parentElement.find('a');
+            if (countElement) countElement.text('(0)');
+            if ($(item).is('.filter-point')) $(item).addClass('filter-item-title-disable'); 
+        } else {
+            const parentElement = $(foundElement['element']).parent();
+            const countElement = parentElement.find('a');
+            if (countElement) countElement.text(`(${foundElement['count']})`);
+            $(foundElement['element']).removeClass('filter-item-title-disable');
+        }
+    });
+
+}
+
+
+export function  updateFilters(html) {
+    try {
+        const DOMModel = new DOMParser().parseFromString(html, 'text/html');
+        const filters = JSON.parse(DOMModel.getElementById('filters')?.getAttribute('data-json'))
+        const activeFilters = new Array;
+        for (var key in filters) {
+            if (filters.hasOwnProperty(key)) {
+                filters[key].forEach(item => {
+                    const elements = $(`[name='${item['name']}']`);
+                    elements.each((_, element) => {
+                        const dataJson = JSON.parse($(element).attr('data-json'));
+                        if (item[item['name']] === dataJson[$(element).attr('name')])
+                            activeFilters.push({'element': element, 'count': item['count']});
+                    });
+                });
+            }
+        }
+        updateFilterElements(activeFilters);
+    }
+    catch (error) {
+        console.warn(error);
+    }
+
+}
+
+
 export function filtersEvents() {
     
     $(document).on('click', '.filter-item-title', event => {
@@ -217,6 +218,7 @@ export function filtersEvents() {
             const imgOfNode = $(event.target.closest('.top-node')).find('img');
             if (imgOfNode) openMenuItems(imgOfNode);
         } else {
+            if ($(event.target).is('.filter-item-title-disable')) return;
             selectMenuItem(event.target);
             showCatalog();
         }

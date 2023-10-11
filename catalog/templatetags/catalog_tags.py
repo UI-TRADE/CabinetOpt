@@ -1,9 +1,6 @@
 import simplejson as json
 from django import template
 
-from catalog.models import Collection
-from catalog.tree import get_tree, find_in_tree
-
 register = template.Library()
 
 

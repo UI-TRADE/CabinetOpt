@@ -1,4 +1,5 @@
 import getPrice from './price'
+import {updateFilters} from './catalog/filters';
 import {сartEvents, waitUpdateCart} from './cart';
 import {decimalFormat} from "./utils/money_format";
 
@@ -6,6 +7,7 @@ const extractContent = (html, elementId) => {
     const DOMModel = new DOMParser().parseFromString(html, 'text/html');
     return DOMModel.getElementById(elementId)?.innerHTML;
 }
+
 
 /**
  * Действия при рендеринге каталога номенклатуры.
@@ -206,6 +208,7 @@ function updateProducts(elementId, data) {
             $(`#${elementId}`).html(
                 extractContent(data, elementId)
             );
+            updateFilters(data);
             updateProductCards(mainElement);
         },
         error: (error) => {

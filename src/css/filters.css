@@ -43,6 +43,10 @@
     margin-right: 5px;
   }
 
+  .filter-item-title:hover {
+    cursor: pointer;
+  }
+
   .filter-item-disable {
     visibility: hidden;
     height: 0px!important;
@@ -50,6 +54,11 @@
 
   .filter-item-title-active {
     color: #E3A358!important;
+  }
+
+  .filter-item-title-disable {
+    color: #ADADAA!important;
+    cursor: default!important;
   }
   
   .filter-item a,

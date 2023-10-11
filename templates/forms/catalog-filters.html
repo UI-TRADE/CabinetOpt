@@ -16,14 +16,12 @@
                     {% for item in filters.metals.tree %}
                         <li>
                             <div class="d-flex row filter-item slave-node"><img class="d-xl-flex" src="{% static 'img/f-open.svg' %}" style="padding: 0px;" width="12" height="17">
-                                <div style="width: 5px;"></div><span class="filter-item-title" data-json="{{item|filtertojson}}">{{ item.metal }}</span><a href="#">({{ item.count }})</a>
+                                <div style="width: 5px;"></div><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}">{{ item.metal }}</span><a href="#">({{ item.count }})</a>
                             </div>
                             <ul>
                             {% for node in item.nodes %}
                                 <li>
-                                    {% with ""|add:node.metal_finish__name|add:" "|add:node.color|add:" "|add:node.metal_content|add:"`" as node_repr %}
-                                        <div class="d-flex row filter-node-item"><span class="filter-item-title" data-json="{{node|filtertojson}}">{{node_repr}}</span><a href="#">({{ node.count }})</a></div>
-                                    {% endwith %}
+                                    <div class="d-flex row filter-node-item"><span class="filter-point filter-item-title" name="{{ node.name }}" data-json="{{node|filtertojson}}">{{ node.str_color }}</span><a href="#">({{ node.count }})</a></div>
                                 </li>
                             {% endfor %}
                             </ul>
@@ -39,7 +37,7 @@
                     {% for item in filters.metal_finish.tree %}
                         <li>
                         {% if item.metal_finish__name %}
-                            <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-item-title" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.metal_finish__name }}</span><a href="#">({{ item.count }})</a></div>
+                            <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.metal_finish__name }}</span><a href="#">({{ item.count }})</a></div>
                         {% endif %}
                         </li>
                     {% endfor %}
@@ -52,7 +50,7 @@
                 <ul id="collections">
                     {% for item in filters.brands.tree %}
                         <li>
-                            <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-item-title" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.brand__name }}</span><a href="#">({{ item.count }})</a></div>
+                            <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.brand__name }}</span><a href="#">({{ item.count }})</a></div>
                         </li>
                     {% endfor %}
                 </ul>
@@ -64,7 +62,7 @@
                 <ul id="prod_status">
                     {% for item in filters.prod_status.tree %}
                         <li>
-                            <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-item-title" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.status }}</span><a href="#">({{ item.count }})</a></div>
+                            <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.status }}</span><a href="#">({{ item.count }})</a></div>
                         </li>
                     {% endfor %}
                 </ul>
@@ -78,14 +76,14 @@
                         <li>
                             <div class="d-xl-flex row filter-item slave-node">
                                 <img class="d-xl-flex" src="{% static 'img/f-open.svg' %}" style="padding: 0px;" width="12" height="17">
-                                <div style="width: 5px;"></div><span class="filter-item-title" data-json="{{item|filtertojson}}">{{ item.collection__group__name }}</span><a href="#">({{ item.count }})</a>
+                                <div style="width: 5px;"></div><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}">{{ item.collection__group__name }}</span><a href="#">({{ item.count }})</a>
                             </div>
 
                             <div>
                                 <ul>
                                     {% for node in item.nodes %}
                                         <li>
-                                            <div class="d-xl-flex row filter-node-item"><span class="filter-item-title" data-json="{{node|filtertojson}}">{{ node.collection__name }}</span><a href="#">({{ node.count }})</a></div>
+                                            <div class="d-xl-flex row filter-node-item"><span class="filter-point filter-item-title" name="{{ node.name }}" data-json="{{node|filtertojson}}">{{ node.collection__name }}</span><a href="#">({{ node.count }})</a></div>
                                         </li>
                                     {% endfor %}
                                 </ul>
@@ -102,9 +100,9 @@
                     {% for item in filters.sizes.tree %}
                         {% if item.size__name %}
                             {% if item.sum > 0 %}
-                                <span class="size-item size-active filter-item-title" data-json="{{item|filtertojson}}">{{ item.size__name }}</span>
+                                <span class="size-item size-active filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}">{{ item.size__name }}</span>
                             {% else %}
-                                <span class="size-item filter-item-title" data-json="{{item|filtertojson}}">{{ item.size__name }}</span>
+                                <span class="size-item filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}">{{ item.size__name }}</span>
                             {% endif %}
                         {% endif %}
                     {% endfor %}
@@ -129,7 +127,7 @@
                 <ul id="gender">
                     {% for item in filters.genders.tree %}
                         <li>
-                            <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-item-title" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.gender__name }}</span><a href="#">({{ item.count }})</a></div>
+                            <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.gender__name }}</span><a href="#">({{ item.count }})</a></div>
                         </li>
                     {% endfor %}
                 </ul>
@@ -151,7 +149,7 @@
                 <div class="gems">
                     <span href="#" class="gem">Без вставок</span>
                     {% for item in filters.gems.tree %}
-                        <span class="gem filter-item-title" data-json="{{item|filtertojson}}">{{ item.precious_stone__name }}</span>
+                        <span class="gem filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}">{{ item.precious_stone__name }}</span>
                     {% endfor %}
                 </div>
             </li>
@@ -163,7 +161,7 @@
                     {% for item in filters.colors.tree %}
                         <li>
                             {% if item.gem_color %}
-                                <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-item-title" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.gem_color }}</span><a href="#">({{ item.count }})</a></div>
+                                <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.gem_color }}</span><a href="#">({{ item.count }})</a></div>
                             {% endif %}
                         </li>
                     {% endfor %}
@@ -177,7 +175,7 @@
                     {% for item in filters.cuts.tree %}
                         <li>
                             {% if item.cut_type__name %}
-                                <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-item-title" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.cut_type__name }}</span><a href="#">({{ item.count }})</a></div>
+                                <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.cut_type__name }}</span><a href="#">({{ item.count }})</a></div>
                             {% endif %}
                         </li>
                     {% endfor %}
