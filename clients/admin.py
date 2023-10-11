@@ -159,7 +159,7 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
             client, created = Client.objects.update_or_create(
                 inn=registration_order['identification_number'],
                 defaults = {
-                    'name'              : registration_order['name'],
+                    'name'              : registration_order['organization'],
                     'registration_order': obj,
                     'approved_by'       : request.user,
                     'manager_talant'    : registration_order['manager_talant'],
