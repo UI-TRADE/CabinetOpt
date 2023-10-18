@@ -9,6 +9,10 @@ html {
     min-height: 100%;
 }
 
+.btn-primary:hover {
+    color: #fff;
+}
+
 .errors {
     color: red;
     font-size: small;
@@ -42,6 +46,11 @@ html {
 .content-menu {
     flex-direction: row;
     justify-content: space-between;
+}
+
+.custom-card {
+    border-radius: 3px;
+    background: #FFF;
 }
 
 .search {
@@ -402,3 +411,10 @@ figure {
     color: black;
 }
 
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.underlined {
+    text-decoration-line: underline;
+}

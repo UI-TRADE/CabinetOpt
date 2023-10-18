@@ -3,13 +3,13 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'jquery-ui-dist/jquery-ui.css';
 import generateUUID from './lib';
 import mainMenuEvents from './main_menu';
-import showModalForm, {switchModalForm, showChangePassErrors} from './form';
+import showModalForm, { switchModalForm, showChangePassForm } from './form';
 import updateContactView from './contact';
-import {cartViewEvents} from './cart';
-import initProductFilters, {filtersEvents} from './catalog/filters';
+import { cartViewEvents } from './cart';
+import initProductFilters, { filtersEvents } from './catalog/filters';
 import updateProductCard from './catalog_card';
 import ordersEvents from './orders';
-import orderEvents, {updateOrder} from './order';
+import orderEvents, { updateOrder } from './order';
 
 
 require('jquery-ui');
@@ -27,9 +27,9 @@ const addEvents = () => {
 
 
 $(window).on("load", () => {
-    if (localStorage.getItem('cartView') === null) 
+    if (localStorage.getItem('cartView') === null)
         localStorage.setItem('cartView', false);
-    if (sessionStorage.getItem('filters') === null) 
+    if (sessionStorage.getItem('filters') === null)
         sessionStorage.setItem('filters', JSON.stringify([]));
 
     const selectedURI = sessionStorage.getItem('selectedURI');
@@ -41,7 +41,7 @@ $(window).on("load", () => {
                 continue;
             }
             if (mainMenuItems[i].classList.contains('main__menu__item--selected')) {
-                mainMenuItems[i].classList.remove('main__menu__item--selected');    
+                mainMenuItems[i].classList.remove('main__menu__item--selected');
             }
         }
     }
@@ -54,7 +54,7 @@ $(window).on("load", () => {
             if (!fieldOptions[j].selected) {
                 fieldOptions[j].parentNode.removeChild(fieldOptions[j]);
             }
-        }    
+        }
     }
 
 });
@@ -69,7 +69,7 @@ $(document).ready(() => {
     switchModalForm('register', mainAuthForm, generateUUID());
 
     // change pass
-    showChangePassErrors();
+    showChangePassForm();
 
     // file selection
     showModalForm('fileSelectionForm');

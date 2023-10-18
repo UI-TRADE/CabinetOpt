@@ -1,0 +1,11 @@
+.navbar-custom {
+    justify-content: end;
+
+    &__logo {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 119px;
+        height: 36px;
+    }
+}

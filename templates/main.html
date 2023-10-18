@@ -19,17 +19,20 @@
 </head>
 <body>
     <script src="{% static 'main.js' %}"></script>
-
     {% if not request.session.login %}
-        <nav class="d-xl-flex justify-content-xl-center navbar navbar-light navbar-expand-md" id="login-menu">
-            <a class="text-nowrap text-white">Розничные продажи</a>
-            <div class="login-area">
-                <span class="login-icons">
-                    <a data-toggle="modal" data-target="#registration-form" data-url="{% url 'clients:reg_request' %}">
-                        <img class="sign-in-icon" src="{% static 'img/sign-in.svg' %}">
-                    </a>
-                </span>
-            </div>
+        <nav class="navbar navbar-custom" id="login-menu">
+            <img class="navbar-custom__logo" src="{% static 'img/logo-white.svg' %}" alt="Лого">
+            <a
+                class="text-nowrap text-white"
+                data-toggle="modal"
+                data-target="#registration-form"
+                data-url="{% url 'clients:reg_request' %}"
+                href="/"
+            >
+                Оптовая торговля
+            </a>
+            <span class="text-nowrap text-white">&nbsp;/&nbsp;</span>
+            <a class="text-nowrap text-white underlined" href="https://talantgold.ru/" target="_blank">Розничная торговля</a>
         </nav>
 
         <div id="main" class="main-background">
@@ -47,7 +50,7 @@
                     <li class="d-lg-flex align-items-lg-center nav-item">
                         <a class="text-nowrap text-white d-md-flex align-items-md-center main-menu-item" id="link-retail-sales" href="https://talantgold.ru/" target="_blank">
                             Сайт розницы
-                        </a>    
+                        </a>
                     </li>
                     <li class="d-lg-flex align-items-lg-center nav-item">
                         <a class="text-nowrap text-center text-white d-lg-flex justify-content-lg-center align-items-lg-center main-menu-item" id="link-products" href="{% url 'catalog:products' %}" style="width: 88px;">
@@ -94,7 +97,7 @@
         </div>
     {% endif %}
 
-    <div class="modal fade sign-in-form-layout" id="registration-form" tabindex="-1" data-backdrop="false" role="dialog" style="width: 440px;">
+    <div class="modal fade sign-in-form-layout" id="registration-form" tabindex="-1" data-backdrop="false" role="dialog">
     </div>
 
 </body>

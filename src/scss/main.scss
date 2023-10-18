@@ -3,8 +3,6 @@
 @import 'bootstrap/scss/bootstrap';
 @import "slick-carousel/slick/slick";
 
-
-
 @import "common/fonts";
 @import "common/forms";
 
@@ -15,6 +13,8 @@
 @import "components/auth/registration";
 @import "components/auth/login";
 @import "components/forms/confirm";
+@import "components/navbar/navbar";
+@import "components/show-password-btn/show-password-btn";
 
 @import "components/cart/old";
 @import "components/_old/brand";
@@ -31,13 +31,6 @@
 @import "components/order/default";
 @import "components/order/list";
 @import "components/order/preview";
-
-#show-password {
-    position: absolute;
-    right: 13px;
-    bottom: 8px;
-    z-index: 3;
-}
 
 .navbar-custom-pos {
     position: absolute;

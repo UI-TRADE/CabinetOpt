@@ -2,46 +2,46 @@
     font-family: "Open Sans";
     font-weight: light;
     font-style: normal;
-  
+
     src: local("OpenSans-Light"),
          url("../fonts/OpenSans-Light.ttf") format("truetype");
-  
+
 }
 @font-face {
     font-family: "Open Sans";
     font-weight: light;
     font-style: italic;
-  
+
     src: local("OpenSans-LightItalic"),
          url("../fonts/OpenSans-LightItalic.ttf") format("truetype");
-  
+
 }
 @font-face {
     font-family: "Open Sans";
     font-weight: normal;
     font-style: italic;
-  
+
     src: local("OpenSans-Italic"),
          url("../fonts/OpenSans-Italic.ttf") format("truetype");
-  
+
 }
 @font-face {
     font-family: "Open Sans";
     font-weight: normal;
     font-style: normal;
-  
+
     src: local("OpenSans-Regular"),
          url("../fonts/OpenSans-Regular.ttf") format("truetype");
-  
+
 }
 @font-face {
     font-family: "Open Sans";
     font-weight: normal;
     font-style: italic;
-  
+
     src: local("OpenSans-Italic"),
          url("../fonts/OpenSans-Italic.ttf") format("truetype");
-  
+
 }
 @font-face {
     font-family: "Open Sans";
@@ -291,13 +291,6 @@ registration-confidential-text {
     margin-bottom: 8px;
 }
 
-#show-password {
-    position: absolute;
-    right: 13px;
-    bottom: 8px;
-    z-index: 3;
-}
-
 .sign-in-form-layout {
     position: absolute!important;
     top: 127px!important;
@@ -425,21 +418,6 @@ registration-confidential-text {
     margin-right: 25px;
 }
 
-.login-area {
-    position: absolute;
-    right: 0;
-}
-
-.login-icons {
-    padding-right: 102px;
-}
-
-.sign-in-icon {
-    height: 32px;
-    width: 32px;
-    flex-shrink: 0;
-}
-
 .cart-total-sum {
     color: #FFF;
     text-align: center;
@@ -493,4 +471,3 @@ registration-confidential-text {
         padding: 2px 0px 2px 10px;
     }
 }
-    

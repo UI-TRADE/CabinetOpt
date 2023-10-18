@@ -1,3 +1,22 @@
+const applyShowPasswordButtons = ($modal) => {
+    const $btnWrappers = $modal.find('.show-password-btn-wrapper');
+    for (let i = 0; i < $btnWrappers.length; i+=1) {
+        const parent = $btnWrappers[i].parentElement;
+        const button = $btnWrappers[i].querySelector('button');
+        const crossedEyeIcon = $btnWrappers[i].querySelector('.show-password-btn-wrapper__eye-icon.crossed');
+        const eyeIcon = $btnWrappers[i].querySelector('.show-password-btn-wrapper__eye-icon');
+        const input = parent.querySelector('input');
+        $(button).click(() => {
+            crossedEyeIcon.classList.toggle('hidden');
+            eyeIcon.classList.toggle('hidden');
+            if (input.type === 'password') {
+                input.type = 'text';
+            } else {
+                input.type = 'password';
+            }
+        });
+    }
+};
 
 const showErrors = (formId, errors) => {
     const form = document.querySelector(`[id="${formId}"]`);
@@ -5,7 +24,7 @@ const showErrors = (formId, errors) => {
     const invalidFields = form.querySelectorAll('.is-invalid');
     invalidFields.forEach(item => {
         item.classList.remove('is-invalid');
-        item.placeholder = '';    
+        item.placeholder = '';
     });
     $.each(JSON.parse(errors), (name, error) => {
         error.forEach(item => {
@@ -56,13 +75,13 @@ const updateModalForm = (formId) => {
 const renderModalForm = (data, targetId, submitFormId) => {
     const reloadHtml = new DOMParser().parseFromString(data, 'text/html');
     const currentForm = reloadHtml.querySelector('form');
+    const $modal = $(`#${targetId}`);
     currentForm.id = submitFormId;
-    $(`#${targetId}`).html(currentForm.outerHTML);
+    $modal.html(currentForm.outerHTML);
+    applyShowPasswordButtons($modal);
 }
 
-
-export function showChangePassErrors() {
-    if (!$('#change-pass-errors').length) return;
+function showChangePassErrors() {
     const dataError = $('#change-pass-errors').attr('data-error')
     if (!dataError) return;
     const errors = JSON.parse(dataError);
@@ -77,6 +96,13 @@ export function showChangePassErrors() {
     }
 }
 
+export const showChangePassForm = () => {
+    const $form = $('#change-pass-form');
+    if ($form.length) {
+        showChangePassErrors();
+        applyShowPasswordButtons($form);
+    }
+};
 
 export function switchModalForm(idFrom, idTo, submitFormId) {
     $(document).on('click', `#${idFrom}` , event =>{
@@ -92,7 +118,6 @@ export function switchModalForm(idFrom, idTo, submitFormId) {
         });
     });
 }
-
 
 function showModalForm(formId, submitFormId) {
     $(document).on('show.bs.modal',`#${formId}`, (event) => {

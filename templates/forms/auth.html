@@ -1,25 +1,42 @@
 {% load static %}
 
-<form class="justify-content-xl-center login-form" method="post" action="{% url 'clients:login' %}">
+<form class="justify-content-xl-center login-form custom-card" method="post" action="{% url 'clients:login' %}">
     {% csrf_token %}
     <div class="d-flex flex-column flex-nowrap">
-        <div class="d-sm-flex flex-row title-registration-form sign-in-form-item">
+        <div class="d-sm-flex flex-row sign-in-form-item auth-form-title">
             <p id="title-part-1">ВХОД</p>
-            <p id="title-part-2">/&nbsp;<a id="register" data-url="{% url 'clients:reg_request' %}">регистрация</a></p>
+            <p class="cursor-pointer" id="title-part-2">/&nbsp;<a id="register" data-url="{% url 'clients:reg_request' %}">регистрация</a></p>
         </div>
-        {% for field in form %}
-            <div class="sign-in-form-item">
-                {% if field.name == 'password' %}
-                    <a id="show-password" href="#"><img src="{% static 'img/show-pass.svg' %}"></a>
-                {% endif %}
-                <label class="default-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {{ field }}
-            </div>
-        {% endfor %}
-        <div style="height: 7px;"></div>
-        <div class="text-center registration-form-btn">
-            <button class="btn btn-primary btn-sign-in" type="submit">ВОЙТИ</button>
+        <div>
+            {% for field in form %}
+                <div class="sign-in-form-item">
+                    {% if field.name == 'password' %}
+                        <div class="show-password-btn-wrapper sign-in-form-item__show-password-btn-wrapper">
+                            <div
+                                class="show-password-btn-wrapper__eye-icon hidden"
+                                style="background-image: url('{% static "img/eye.svg"%}')"
+                            ></div>
+                            <div
+                                class="show-password-btn-wrapper__eye-icon crossed"
+                                style="background-image: url('{% static "img/eye-crossed.svg"%}')"
+                            ></div>
+                            <button class="show-password-btn-wrapper__btn" type="button"></button>
+                        </div>
+                    {% endif %}
+                    <label class="default-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+            {% endfor %}
         </div>
-        <a class="d-sm-flex justify-content-sm-center registration-text-sm registration-form-item" id="registration-confidential-text">Политика конфиденциальности</a>
+        <div class="text-center auth-form-btn">
+            <button class="btn btn-primary btn-sign-in font-weight-bold" type="submit">ВОЙТИ</button>
+        </div>
+        <a
+            class="d-sm-flex justify-content-sm-center registration-text-sm registration-form-item"
+            id="registration-confidential-text"
+            href="#"
+        >
+            <u>Политика конфиденциальности</u>
+        </a>
     </div>
 </form>
