@@ -2,12 +2,12 @@
 # FRONT BUILDER #
 #################
 
-FROM node:latest as builder
+FROM node:20.3.0 as builder
 
 WORKDIR /usr/src/app/
 
-COPY ./package*.json .
-COPY ./webpack*.js .
+COPY ./package.json .
+COPY ./webpack.config.js .
 COPY ./src ./src
 
 RUN npm install && npm run build
