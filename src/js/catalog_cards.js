@@ -1,6 +1,6 @@
 import getPrice from './price'
 import {updateFilters} from './catalog/filters';
-import {сartEvents, waitUpdateCart} from './cart';
+import {cartEvents, waitUpdateCart} from './cart';
 import {decimalFormat} from "./utils/money_format";
 
 const extractContent = (html, elementId) => {
@@ -11,10 +11,11 @@ const extractContent = (html, elementId) => {
 
 /**
  * Действия при рендеринге каталога номенклатуры.
- * 
+ *
  * element   - контейнер с каталогом номенклатуры.
  */
 const updateProductCards = (element) => {
+    const productsData = {};
 
     const productStocksAndCosts = (productIds, size='') => {
         return new Promise((resolve, reject) => {
@@ -42,6 +43,8 @@ const updateProductCards = (element) => {
                 const actual_prices    = JSON.parse(data['actual_prices']);
                 const discount_prices  = JSON.parse(data['discount_prices']);
                 const default_sizes    = JSON.parse(data['default_sizes']);
+                productsData.products = products;
+                productsData.stockAndCosts = stocks_and_costs;
 
                 for (var i=0; i < elements.length; i++) {
                     let inStok = 0; let weight = 0; let size = '';
@@ -64,7 +67,7 @@ const updateProductCards = (element) => {
                     if (stock_and_cost) {
                         maxPrice = stock_and_cost['fields'].cost;
                         weight = stock_and_cost['fields'].weight;
-                        inStok = stock_and_cost['fields'].stock;    
+                        inStok = stock_and_cost['fields'].stock;
                     }
 
                     if (defaultSize) {
@@ -79,8 +82,8 @@ const updateProductCards = (element) => {
                     }
 
                     if (discount_price) {
-                        maxPrice = discount_price['fields'].price; 
-                        currentDiscount = discount_price['fields'].discount;   
+                        maxPrice = discount_price['fields'].price;
+                        currentDiscount = discount_price['fields'].discount;
                     }
 
                     const price = getPrice(currentPrice, maxPrice, currentDiscount, weight);
@@ -109,7 +112,7 @@ const updateProductCards = (element) => {
 
                     var inputFields = inStockBlock.getElementsByTagName('input');
                     for (let item of inputFields) {
-                        if (item.name === 'price' && price.clientPrice) item.value = price.clientPrice;    
+                        if (item.name === 'price' && price.clientPrice) item.value = price.clientPrice;
                         if (item.name === 'size' && size) item.value = size;
                         if (item.name === 'weight' && weight) item.value = weight;
                     }
@@ -125,7 +128,7 @@ const updateProductCards = (element) => {
             } catch (error) {
 
                 reject(error);
-    
+
             }
         });
     }
@@ -150,7 +153,7 @@ const updateProductCards = (element) => {
             }
         });
     }
-    
+
     const updateProductsStatusStyle = () => {
         const statusFields = document.querySelectorAll('div[name="product-status"]');
         statusFields.forEach((statusField) => {
@@ -165,7 +168,7 @@ const updateProductCards = (element) => {
             if (data.status === "sale")    statusField.className += ' text-danger';
         });
     }
-    
+
     updateProductsStatusStyle();
 
 
@@ -186,8 +189,8 @@ const updateProductCards = (element) => {
         .then((data) => {
             return updateCarts(data);
         })
-        .then((result) => {
-            сartEvents();
+        .then(() => {
+            cartEvents(productsData);
             element.style.visibility = 'visible';
         })
         .catch((error) => {

@@ -1,7 +1,239 @@
 import 'tablesorter';
 import Cart from "./components/cart";
-import {decimalFormat} from "./utils/money_format";
+import { sliderTemplateFn } from './catalog_card';
+import { decimalFormat } from "./utils/money_format";
 
+const showSizesSelectionWindow = (productsData) => {
+    const $card = $('.sizes-selection');
+    const $addToCartBtn = $card.find('.sizes-selection__add-to-cart-button');
+    const $form = $(`#cartForm-${productsData.stockAndCosts[0].fields.product[1]}`);
+    const $overlay = $('.background-overlay');
+    const $sizesSlider = $card.find('.sizes-selection__slider-1');
+    const $availableCount = $card.find('.sizes-selection__available-count');
+    const $totalCost = $card.find('.sizes-selection__sum');
+    const $totalCount = $card.find('.sizes-selection__total-count');
+    const $totalWeight = $card.find('.sizes-selection__total-weight');
+    const $quantitiesSlider = $card.find('.sizes-selection__slider-2');
+    let availableCount = 0;
+    $card.removeClass('hidden');
+    $overlay.removeClass('hidden');
+    const changedValues = {};
+    const errorIndexes = {};
+    const inputValues = {};
+    const selectedIndexes = {};
+
+    const closeAddToCartSettingsWindow = () => {
+        $sizesSlider.slick('unslick');
+        $sizesSlider.html('');
+        $quantitiesSlider.slick('unslick');
+        $quantitiesSlider.html('');
+        $card.addClass('hidden');
+        $overlay.addClass('hidden');
+        $addToCartBtn.off();
+        $overlay.off();
+    };
+
+    const sendCartData = () => {
+        const keys = Object.keys(changedValues);
+        if (Object.keys(errorIndexes).length || !keys.length) return;
+        const promises = [];
+
+        let i = 0;
+        const sendNext = () => {
+            if (i === keys.length) {
+                $.when(...promises).done(() => {
+                    closeAddToCartSettingsWindow();
+                    return $(document).data("cart").getProducts();
+                });
+                return ;
+            }
+            const key = keys[i];
+            const data = productsData.stockAndCosts[key];
+            if (!changedValues[key].newValue) {
+                if (!changedValues[key].prevValue) {
+                    i += 1;
+                    setTimeout(sendNext, 300);
+                }
+                promises.push(removeElementFromCart({
+                    productId: productsData.stockAndCosts[key].fields.product[1],
+                    size: productsData.stockAndCosts[key].fields.size[0]
+                }));
+            } else if (changedValues[key].prevValue && changedValues[key].newValue) {
+                const formData = new FormData();
+                formData.append('csrfmiddlewaretoken', $form.find('input[name="csrfmiddlewaretoken"]').val());
+                formData.append('quantity', changedValues[key].newValue - changedValues[key].prevValue);
+                formData.append('update', 'true');
+                formData.append('size', data.fields.size[0]);
+                promises.push(sendElementToCart(data.fields.product[1], formData));
+            } else {
+                const formData = new FormData();
+                formData.append('csrfmiddlewaretoken', $form.find('input[name="csrfmiddlewaretoken"]').val());
+                formData.append('quantity', changedValues[key].newValue);
+                formData.append('update', 'false');
+                formData.append('price', data.fields.cost);
+                formData.append('unit', productsData.product.fields.unit);
+                formData.append('size', data.fields.size[0]);
+                formData.append('weight', data.fields.weight);
+                promises.push(sendElementToCart(data.fields.product[1], formData));
+            }
+            i += 1;
+            setTimeout(sendNext, 300);
+        }
+
+        sendNext();
+    };
+
+    const syncSlidersArrows = () => {
+        const $nextSizesArrow = $sizesSlider.find('.sizes-selection__slider-1-next');
+        const $prevSizesArrow = $sizesSlider.find('.sizes-selection__slider-1-prev');
+        const $nextQuantitiesArrow = $quantitiesSlider.find('.sizes-selection__slider-2-next');
+        const $prevQuantitiesArrow = $quantitiesSlider.find('.sizes-selection__slider-2-prev');
+        $nextSizesArrow.click(() => $quantitiesSlider.slick('slickNext'));
+        $prevSizesArrow.click(() => $quantitiesSlider.slick('slickPrev'));
+        $nextQuantitiesArrow.click(() => $sizesSlider.slick('slickNext'));
+        $prevQuantitiesArrow.click(() => $sizesSlider.slick('slickPrev'));
+    };
+
+    const updateTotalInfo = () => {
+        const { stockAndCosts } = productsData;
+        let totalCost = 0;
+        let totalCount = 0;
+        let totalWeight = 0;
+        for (const key in selectedIndexes) {
+            if (+inputValues[key]) {
+                totalCost += +stockAndCosts[key].fields.cost * (+inputValues[key]);
+                totalCount += +inputValues[key];
+                totalWeight += +stockAndCosts[key].fields.weight * (+inputValues[key]);
+            }
+        }
+        $totalCost.html(totalCost.toLocaleString());
+        $totalCount.html(totalCount.toLocaleString());
+        $totalWeight.html(totalWeight.toLocaleString());
+    };
+
+    const validateInput = ($input, data, initialInputValue) => {
+        const index = +$input.data('index');
+        $input.parent().toggleClass('error', !Number.isInteger(+$input.val()));
+        const { stock } = data.fields;
+        if (selectedIndexes[index]) {
+            $input.parent().toggleClass('error', +$input.val() > +stock);
+        }
+        if ($input.parent().hasClass('error')) {
+            errorIndexes[index] = true;
+        } else {
+            delete errorIndexes[index];
+            const newValue = selectedIndexes[index] ? +$input.val() : null;
+            if (newValue !== +initialInputValue) {
+                if (newValue || (+initialInputValue))
+                    changedValues[index] = {
+                        newValue,
+                        prevValue: +initialInputValue || null
+                    }
+            } else {
+                delete changedValues[index];
+            }
+        }
+        inputValues[index] = $input.val();
+        updateTotalInfo();
+    };
+
+    for (const key in productsData.stockAndCosts) {
+        const data = productsData.stockAndCosts[key];
+        const productDataBySize =
+            cart.products[`${data.fields.product[1]}_${data.fields.size[0]}`];
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('d-flex', 'flex-column', 'align-items-center');
+        wrapper.innerHTML = `
+            <button class="btn sizes-selection__select-btn font-weight-bold ${productDataBySize ? 'selected' : ''}">
+                ${data.fields.size[0]}
+            </button>
+            <div class="sizes-selection__select-btn-foot">
+                ${data.fields.weight}
+            </div>
+        `;
+        $sizesSlider.append(wrapper);
+        const $btn = $(wrapper).find('.btn');
+        $btn.click(() => {
+            if ($btn.hasClass('selected')) {
+                $btn.removeClass('selected');
+                delete selectedIndexes[key];
+            } else {
+                $btn.addClass('selected');
+                selectedIndexes[key] = true;
+            }
+            validateInput($quantitiesSlider.find(`input[data-index="${key}"]`), data, productDataBySize?.quantity);
+        });
+        if (productDataBySize) {
+            selectedIndexes[key] = true;
+        }
+        availableCount += productsData.stockAndCosts[key].fields.stock;
+    }
+    $sizesSlider.slick({
+        draggable: false,
+        infinite: false,
+        nextArrow: `<button class="slick-prev sizes-selection__slider-1-next" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
+        prevArrow: `<button class="slick-prev sizes-selection__slider-1-prev" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
+        slidesToShow: 7,
+        variableWidth: true,
+    });
+    for (const key in productsData.stockAndCosts) {
+        const data = productsData.stockAndCosts[key];
+        const wrapper = document.createElement('div');
+        const productDataBySize =
+            cart.products[`${data.fields.product[1]}_${data.fields.size[0]}`];
+        wrapper.classList.add('d-flex', 'flex-column', 'align-items-center');
+        wrapper.innerHTML = `
+            <div class="sizes-selection__quantity-input-wrapper">
+                <input
+                    class="form-control font-weight-bold sizes-selection__quantity-input"
+                    data-index="${key}"
+                    min="0"
+                    max="999"
+                    type="number"
+                    value="${productDataBySize?.quantity || 0}"
+                >
+                <button class="font-weight-bold sizes-selection__quantity-input-spin-btn increment">
+                    <span class="font-weight-bold sizes-selection__quantity-input-spin-btn-text">+</span>
+                </button>
+                <button class="font-weight-bold sizes-selection__quantity-input-spin-btn decrement">
+                    <span class="font-weight-bold sizes-selection__quantity-input-spin-btn-text">-</span>
+                </button>
+            </div>
+            <div class="sizes-selection__select-btn-foot">${data.fields.stock}</div>
+        `;
+        const $incrementButton = $(wrapper).find('.sizes-selection__quantity-input-spin-btn.increment');
+        const $decrementButton = $(wrapper).find('.sizes-selection__quantity-input-spin-btn.decrement');
+        const $input = $(wrapper).find('input');
+        const initialInputValue = $input.val();
+        $input.on('change', () => {
+            if ($input.val() > 999) $input.val(999);
+            validateInput($input, data, initialInputValue);
+        });
+        $incrementButton.click(() => {
+            $input.val((_,val) => +val + 1 < 1000 ? +val+1 : 999);
+            validateInput($input, data, initialInputValue);
+        });
+        $decrementButton.click(() => {
+            $input.val((_,val) => +val - 1 > -1 ? +val-1 : 0);
+            validateInput($input, data, initialInputValue);
+        });
+        $quantitiesSlider.append(wrapper);
+        validateInput($input, data, initialInputValue);
+    }
+    $quantitiesSlider.slick({
+        draggable: false,
+        infinite: false,
+        nextArrow: `<button class="slick-prev sizes-selection__slider-2-next" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
+        prevArrow: `<button class="slick-prev sizes-selection__slider-2-prev" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
+        slidesToScroll: 1,
+        slidesToShow: 7,
+        variableWidth: true,
+    });
+    syncSlidersArrows();
+    $overlay.click(closeAddToCartSettingsWindow);
+    $addToCartBtn.click(sendCartData);
+    $availableCount.html(availableCount);
+};
 
 const addToCart = (formId) => {
 
@@ -62,6 +294,24 @@ const sendElementToCart = (productId, formData) => {
     });
 }
 
+/**
+ * Удаляет позицию товара из корзины.
+ *
+ * cartKey         - ключ позиции товара в корзине.
+ */
+const removeElementFromCart = (cartKey) => {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: `/cart/remove/${cartKey.productId}/${cartKey.size}/`,
+            success: (response) => {
+                resolve(response);
+            },
+            error: (error) => {
+                reject(error);
+            }
+        });
+    });
+}
 
 const updateCartElements = (element, cartData, params) => {
     const cartButton     = element.querySelector('input[name="add-to-cart"]');
@@ -73,17 +323,18 @@ const updateCartElements = (element, cartData, params) => {
     cartElements.style             = "display: none";
     cartKeyElement.textContent     = JSON.stringify(params);
     cartElement.value              = 0;
-    if (cartData) {
-        cartButton.parentElement.style = "display: none";
-        cartElements.style             = "display: flex";
-        cartElement.value              = cartData['quantity'];
-    }
+    // TODO удалить старый функционал
+    // if (cartData) {
+    //     cartButton.parentElement.style = "display: none";
+    //     cartElements.style             = "display: flex";
+    //     cartElement.value              = cartData['quantity'];
+    // }
 }
 
 
 /**
  * Действия при изменении индикатора количество изделий в корзине.
- * 
+ *
  * element         - поле ввода количества в корзине.
  * preventReload   - удаляет текущую позицию в корзине если количество 0.
  */
@@ -91,7 +342,7 @@ const OnQuantityChange = (element, preventReload=false) => {
 
     /**
      * Получает информацию о позиции корзины с бэка.
-     * 
+     *
      * params         - структура с productId и size для идентификации товара в корзине.
      */
     const getCartInfo = (params) => {
@@ -106,7 +357,7 @@ const OnQuantityChange = (element, preventReload=false) => {
 
     /**
      * Рекурсивно получает ключ позиции в корзине.
-     * 
+     *
      * element - поле ввода количества в корзине.
      * i       - порядковый номер интерации, не более 5
      */
@@ -117,25 +368,6 @@ const OnQuantityChange = (element, preventReload=false) => {
             return JSON.parse(foundElement.textContent);
         }
         return getCartKey(element.parentElement, i);
-    }
-
-    /**
-     * Удаляет позицию товара из корзины.
-     * 
-     * cartKey         - ключ позиции товара в корзине.
-     */
-    const removeElementFromCart = (cartKey) => {
-        return new Promise((resolve, reject) => {
-            $.ajax({
-                url: `/cart/remove/${cartKey.productId}/${cartKey.size}/`,
-                success: (response) => {
-                    resolve(response);
-                },
-                error: (error) => {
-                    reject(error);
-                }
-            });
-        });
     }
 
     const quantity = parseInt(element.value);
@@ -186,7 +418,7 @@ const OnQuantityChange = (element, preventReload=false) => {
                                 formData.append('quantity', element.value - quantity);
                                 formData.append('update'  , true);
                                 formData.append('size'    , item.param.size);
-                                
+
                                 return sendElementToCart(item.param.productId, formData);
                             })
                         );
@@ -223,8 +455,8 @@ const OnQuantityChange = (element, preventReload=false) => {
             })
             .catch((error) => {
                 alert('Ошибка обновления количества товара в корзине: ' + error);
-            });  
-    }   
+            });
+    }
 }
 
 
@@ -237,12 +469,20 @@ export function waitUpdateCart(element, params, product) {
 };
 
 
-export function сartEvents() {
-
-    const cartTable = $('#cart-table');
+export function cartEvents(productsData) {
+    const productsDataMap = {};
+    if (productsData)
+        for (const product of productsData.products) {
+            const stockAndCosts = productsData.stockAndCosts
+                .filter(data => data.fields.product[0] === product.fields.name);
+            productsDataMap[stockAndCosts[0].fields.product[1]] = {
+                product,
+                stockAndCosts
+            };
+        }
 
     $('input[name="add-to-cart"]').on('click', (event) => {
-        addToCart(event.currentTarget.id);
+        showSizesSelectionWindow(productsDataMap[event.currentTarget.id.replace('cartForm-', '')]);
     });
 
     $('.addOneToCart').on('click', (event) => {
