@@ -3,17 +3,17 @@ import Cart from "./components/cart";
 import { sliderTemplateFn } from './catalog_card';
 import { decimalFormat } from "./utils/money_format";
 
-const showAddToCartSettingsWindow = (productsData) => {
-    const $card = $('.add-to-cart-settings');
-    const $addToCartBtn = $card.find('.add-to-cart-settings__add-to-cart-button');
+const showSizesSelectionWindow = (productsData) => {
+    const $card = $('.sizes-selection');
+    const $addToCartBtn = $card.find('.sizes-selection__add-to-cart-button');
     const $form = $(`#cartForm-${productsData.stockAndCosts[0].fields.product[1]}`);
     const $overlay = $('.background-overlay');
-    const $sizesSlider = $card.find('.add-to-cart-settings__slider-1');
-    const $availableCount = $card.find('.add-to-cart-settings__available-count');
-    const $totalCost = $card.find('.add-to-cart-settings__sum');
-    const $totalCount = $card.find('.add-to-cart-settings__total-count');
-    const $totalWeight = $card.find('.add-to-cart-settings__total-weight');
-    const $quantitiesSlider = $card.find('.add-to-cart-settings__slider-2');
+    const $sizesSlider = $card.find('.sizes-selection__slider-1');
+    const $availableCount = $card.find('.sizes-selection__available-count');
+    const $totalCost = $card.find('.sizes-selection__sum');
+    const $totalCount = $card.find('.sizes-selection__total-count');
+    const $totalWeight = $card.find('.sizes-selection__total-weight');
+    const $quantitiesSlider = $card.find('.sizes-selection__slider-2');
     let availableCount = 0;
     $card.removeClass('hidden');
     $overlay.removeClass('hidden');
@@ -84,10 +84,10 @@ const showAddToCartSettingsWindow = (productsData) => {
     };
 
     const syncSlidersArrows = () => {
-        const $nextSizesArrow = $sizesSlider.find('.add-to-cart-settings__slider-1-next');
-        const $prevSizesArrow = $sizesSlider.find('.add-to-cart-settings__slider-1-prev');
-        const $nextQuantitiesArrow = $quantitiesSlider.find('.add-to-cart-settings__slider-2-next');
-        const $prevQuantitiesArrow = $quantitiesSlider.find('.add-to-cart-settings__slider-2-prev');
+        const $nextSizesArrow = $sizesSlider.find('.sizes-selection__slider-1-next');
+        const $prevSizesArrow = $sizesSlider.find('.sizes-selection__slider-1-prev');
+        const $nextQuantitiesArrow = $quantitiesSlider.find('.sizes-selection__slider-2-next');
+        const $prevQuantitiesArrow = $quantitiesSlider.find('.sizes-selection__slider-2-prev');
         $nextSizesArrow.click(() => $quantitiesSlider.slick('slickNext'));
         $prevSizesArrow.click(() => $quantitiesSlider.slick('slickPrev'));
         $nextQuantitiesArrow.click(() => $sizesSlider.slick('slickNext'));
@@ -144,10 +144,10 @@ const showAddToCartSettingsWindow = (productsData) => {
         const wrapper = document.createElement('div');
         wrapper.classList.add('d-flex', 'flex-column', 'align-items-center');
         wrapper.innerHTML = `
-            <button class="btn add-to-cart-settings__select-btn font-weight-bold ${productDataBySize ? 'selected' : ''}">
+            <button class="btn sizes-selection__select-btn font-weight-bold ${productDataBySize ? 'selected' : ''}">
                 ${data.fields.size[0]}
             </button>
-            <div class="add-to-cart-settings__select-btn-foot">
+            <div class="sizes-selection__select-btn-foot">
                 ${data.fields.weight}
             </div>
         `;
@@ -171,8 +171,8 @@ const showAddToCartSettingsWindow = (productsData) => {
     $sizesSlider.slick({
         draggable: false,
         infinite: false,
-        nextArrow: `<button class="slick-prev add-to-cart-settings__slider-1-next" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
-        prevArrow: `<button class="slick-prev add-to-cart-settings__slider-1-prev" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
+        nextArrow: `<button class="slick-prev sizes-selection__slider-1-next" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
+        prevArrow: `<button class="slick-prev sizes-selection__slider-1-prev" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
         slidesToShow: 7,
         variableWidth: true,
     });
@@ -183,26 +183,26 @@ const showAddToCartSettingsWindow = (productsData) => {
             cart.products[`${data.fields.product[1]}_${data.fields.size[0]}`];
         wrapper.classList.add('d-flex', 'flex-column', 'align-items-center');
         wrapper.innerHTML = `
-            <div class="add-to-cart-settings__quantity-input-wrapper">
+            <div class="sizes-selection__quantity-input-wrapper">
                 <input
-                    class="form-control font-weight-bold add-to-cart-settings__quantity-input"
+                    class="form-control font-weight-bold sizes-selection__quantity-input"
                     data-index="${key}"
                     min="0"
                     max="999"
                     type="number"
                     value="${productDataBySize?.quantity || 0}"
                 >
-                <button class="font-weight-bold add-to-cart-settings__quantity-input-spin-btn increment">
-                    <span class="font-weight-bold add-to-cart-settings__quantity-input-spin-btn-text">+</span>
+                <button class="font-weight-bold sizes-selection__quantity-input-spin-btn increment">
+                    <span class="font-weight-bold sizes-selection__quantity-input-spin-btn-text">+</span>
                 </button>
-                <button class="font-weight-bold add-to-cart-settings__quantity-input-spin-btn decrement">
-                    <span class="font-weight-bold add-to-cart-settings__quantity-input-spin-btn-text">-</span>
+                <button class="font-weight-bold sizes-selection__quantity-input-spin-btn decrement">
+                    <span class="font-weight-bold sizes-selection__quantity-input-spin-btn-text">-</span>
                 </button>
             </div>
-            <div class="add-to-cart-settings__select-btn-foot">${data.fields.stock}</div>
+            <div class="sizes-selection__select-btn-foot">${data.fields.stock}</div>
         `;
-        const $incrementButton = $(wrapper).find('.add-to-cart-settings__quantity-input-spin-btn.increment');
-        const $decrementButton = $(wrapper).find('.add-to-cart-settings__quantity-input-spin-btn.decrement');
+        const $incrementButton = $(wrapper).find('.sizes-selection__quantity-input-spin-btn.increment');
+        const $decrementButton = $(wrapper).find('.sizes-selection__quantity-input-spin-btn.decrement');
         const $input = $(wrapper).find('input');
         const initialInputValue = $input.val();
         $input.on('change', () => {
@@ -223,8 +223,8 @@ const showAddToCartSettingsWindow = (productsData) => {
     $quantitiesSlider.slick({
         draggable: false,
         infinite: false,
-        nextArrow: `<button class="slick-prev add-to-cart-settings__slider-2-next" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
-        prevArrow: `<button class="slick-prev add-to-cart-settings__slider-2-prev" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
+        nextArrow: `<button class="slick-prev sizes-selection__slider-2-next" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
+        prevArrow: `<button class="slick-prev sizes-selection__slider-2-prev" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
         slidesToScroll: 1,
         slidesToShow: 7,
         variableWidth: true,
@@ -482,7 +482,7 @@ export function cartEvents(productsData) {
         }
 
     $('input[name="add-to-cart"]').on('click', (event) => {
-        showAddToCartSettingsWindow(productsDataMap[event.currentTarget.id.replace('cartForm-', '')]);
+        showSizesSelectionWindow(productsDataMap[event.currentTarget.id.replace('cartForm-', '')]);
     });
 
     $('.addOneToCart').on('click', (event) => {
