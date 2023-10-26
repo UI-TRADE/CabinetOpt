@@ -20,6 +20,15 @@ html {
     position: relative;
 }
 
+.background-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2000;
+    background: rgba(29, 29, 27, 0.35);
+}
 
 .file-selection-control {
     display: block;

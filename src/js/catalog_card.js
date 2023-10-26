@@ -1,5 +1,5 @@
 import getPrice from './price'
-import {сartEvents, waitUpdateCart} from './cart';
+import {cartEvents, waitUpdateCart} from './cart';
 import slick from "slick-carousel"
 import {decimalFormat} from "./utils/money_format";
 
@@ -14,7 +14,7 @@ const removeClass = (element, className, toggleClassName) => {
     const toggler = element.getElementsByClassName(className);
     for (var k=0; k<toggler.length; k++) {
         if (toggler[k].classList.contains(toggleClassName)) {
-            toggler[k].classList.remove(toggleClassName);    
+            toggler[k].classList.remove(toggleClassName);
         }
     }
 }
@@ -96,7 +96,7 @@ const showAnalogues = () => {
 
 /**
  * Обновляет элементы цен в карточке номенклатуры.
- * 
+ *
  * context   - контекст с данными полученными с бэка и расчитанными на фронте.
  */
 const updatePriceInProductCard = (context) => {
@@ -109,10 +109,10 @@ const updatePriceInProductCard = (context) => {
     const pricePerweightField = element.querySelector('#price-per-weight');
     const inStokelement       = element.querySelector('#in_stock');
     const formElement         = element.querySelector('form');
-    
+
     const price = getPrice(context.price, context.maxPrice, context.discount, context.weight);
-    
-    if (context.weight && weightElement) weightElement.outerHTML = 
+
+    if (context.weight && weightElement) weightElement.outerHTML =
         `<p id="weigth-block"> ${context.weight} </p>`;
     if (parseFloat(price.clientDiscount) && discountElement) {
         discountElement.outerHTML = `<p id="discount-block"> ${price.clientDiscount} % </p>`;
@@ -131,7 +131,7 @@ const updatePriceInProductCard = (context) => {
     }
     if (context.price && pricePerweightField) pricePerweightField.outerHTML =
         `<p id="price-per-weight">${decimalFormat(Math.ceil(context.price))} руб/гр.</p>`;
-    if (context.inStok && inStokelement) inStokelement.outerHTML = 
+    if (context.inStok && inStokelement) inStokelement.outerHTML =
         `<p id="in_stock"> В наличии ${context.inStok} шт </p>`;
 
     if (!formElement) return;
@@ -189,7 +189,7 @@ const updateCarts = (cartElements) => {
 
 /**
  * Действия при рендеринге карточки номенклатуры.
- * 
+ *
  *  - без параметров.
  */
 function updateProductCard() {
@@ -241,26 +241,26 @@ function updateProductCard() {
                     if (firstStockAndCost) {
                         maxPrice = firstStockAndCost['fields'].cost;
                         weight = firstStockAndCost['fields'].weight;
-                        inStok = firstStockAndCost['fields'].stock;    
+                        inStok = firstStockAndCost['fields'].stock;
                     }
-    
+
                     if (defaultSize) {
                         maxPrice = defaultSize['fields'].cost;
                         weight = defaultSize['fields'].weight;
                         size = defaultSize['fields'].size.find(_ => true);
-                        inStok = defaultSize['fields'].stock;   
+                        inStok = defaultSize['fields'].stock;
                     }
-    
-                    if (actual_price) { 
+
+                    if (actual_price) {
                         currentPrice = actual_price['fields'].price;
                         currentDiscount = actual_price['fields'].discount;
                     }
-    
+
                     if (discount_price) {
                         maxPrice = discount_price['fields'].price;
-                        currentDiscount = discount_price['fields'].discount;   
+                        currentDiscount = discount_price['fields'].discount;
                     }
-    
+
                     updatePriceInProductCard(
                         {
                             'size': size, 'weight': weight, 'inStok': inStok,
@@ -278,22 +278,22 @@ function updateProductCard() {
                             showSizes(stock_and_cost)
                         }
                     }
-    
+
                     cartElementsForUpdate.push(
                         {
                             'key': {'productId': currentId['id'], 'size': size},
                             'element': document.querySelector('.product__col__prices')
                     });
-    
+
                 }
                 resolve(cartElementsForUpdate);
 
             } catch (error) {
 
                 reject(error);
-    
+
             }
-        });        
+        });
     }
 
     const updateProductAttributes = (productId) => {
@@ -344,7 +344,7 @@ function updateProductCard() {
             }
         });
     }
-    
+
     const updateProductsStatusStyle = () => {
         const statusFields = document.querySelectorAll('p[name="product-status"]');
         statusFields.forEach((statusField) => {
@@ -429,7 +429,7 @@ function updateProductCard() {
      *
      * element - элемент set-block в котором будут сохранены подготовленные элементы размеров.
      * sets - массив данных о коллекциях полученные с бэка.
-     */    
+     */
     const addSetElements = (element, sets) => {
         const prepared_sets = [];
         sets.forEach((item, idx) => {
@@ -462,7 +462,7 @@ function updateProductCard() {
      *
      * element - элемент analogues-block в котором будут сохранены подготовленные элементы размеров.
      * analogues - массив данных о аналогов полученные с бэка.
-     */ 
+     */
     const addAnaloguesElements = (element, analogues) => {
         const prepared_sets = [];
         analogues.forEach((item, idx) => {
@@ -492,7 +492,7 @@ function updateProductCard() {
     </a>`
 
     if(document.location.pathname.indexOf("/catalog/product/") === -1){
-        return;    
+        return;
     }
 
     const productIds = []
@@ -518,7 +518,7 @@ function updateProductCard() {
             return updateCarts(data);
         })
         .then((result) => {
-            сartEvents();
+            cartEvents();
             priceBlock.style.display     = 'flex';
         })
         .then(() => {
