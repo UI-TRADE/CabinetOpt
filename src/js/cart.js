@@ -18,14 +18,15 @@ const showSizesSelectionWindow = (productsData) => {
     $card.removeClass('hidden');
     $overlay.removeClass('hidden');
     const changedValues = {};
-    const errorIndexes = {};
     const inputValues = {};
     const selectedIndexes = {};
 
     const closeAddToCartSettingsWindow = () => {
-        $sizesSlider.slick('unslick');
+        if (productsData.stockAndCosts.length > 6) {
+            $sizesSlider.slick('unslick');
+            $quantitiesSlider.slick('unslick');
+        }
         $sizesSlider.html('');
-        $quantitiesSlider.slick('unslick');
         $quantitiesSlider.html('');
         $card.addClass('hidden');
         $overlay.addClass('hidden');
@@ -35,7 +36,10 @@ const showSizesSelectionWindow = (productsData) => {
 
     const sendCartData = () => {
         const keys = Object.keys(changedValues);
-        if (Object.keys(errorIndexes).length || !keys.length) return;
+        if (!keys.length) {
+            closeAddToCartSettingsWindow();
+            return;
+        }
         const promises = [];
 
         let i = 0;
@@ -94,6 +98,17 @@ const showSizesSelectionWindow = (productsData) => {
         $prevQuantitiesArrow.click(() => $sizesSlider.slick('slickPrev'));
     };
 
+    const updateSizeBtnSelection = ($input) => {
+        const index = +$input.data('index');
+        const $sizeBtn = $sizesSlider.find(`.btn[data-index=${index}]`);
+        $sizeBtn.toggleClass('selected', !!(+$input.val()));
+        if ($sizeBtn.hasClass('selected')) {
+            selectedIndexes[index] = true;
+        } else {
+            delete selectedIndexes[index];
+        }
+    };
+
     const updateTotalInfo = () => {
         const { stockAndCosts } = productsData;
         let totalCost = 0;
@@ -113,27 +128,23 @@ const showSizesSelectionWindow = (productsData) => {
 
     const validateInput = ($input, data, initialInputValue) => {
         const index = +$input.data('index');
-        $input.parent().toggleClass('error', !Number.isInteger(+$input.val()));
+        const value = $input.val();
+        $input.parent().toggleClass('error', !Number.isInteger(+value));
         const { stock } = data.fields;
         if (selectedIndexes[index]) {
-            $input.parent().toggleClass('error', +$input.val() > +stock);
+            $input.parent().toggleClass('error', +value > +stock);
         }
-        if ($input.parent().hasClass('error')) {
-            errorIndexes[index] = true;
+        const newValue = selectedIndexes[index] ? +value : null;
+        if (newValue !== +initialInputValue) {
+            if (newValue || (+initialInputValue))
+                changedValues[index] = {
+                    newValue,
+                    prevValue: +initialInputValue || null
+                }
         } else {
-            delete errorIndexes[index];
-            const newValue = selectedIndexes[index] ? +$input.val() : null;
-            if (newValue !== +initialInputValue) {
-                if (newValue || (+initialInputValue))
-                    changedValues[index] = {
-                        newValue,
-                        prevValue: +initialInputValue || null
-                    }
-            } else {
-                delete changedValues[index];
-            }
+            delete changedValues[index];
         }
-        inputValues[index] = $input.val();
+        inputValues[index] = value;
         updateTotalInfo();
     };
 
@@ -144,7 +155,10 @@ const showSizesSelectionWindow = (productsData) => {
         const wrapper = document.createElement('div');
         wrapper.classList.add('d-flex', 'flex-column', 'align-items-center');
         wrapper.innerHTML = `
-            <button class="btn sizes-selection__select-btn font-weight-bold ${productDataBySize ? 'selected' : ''}">
+            <button 
+                class="btn sizes-selection__select-btn font-weight-bold ${productDataBySize ? 'selected' : ''}"
+                data-index="${key}"
+            >
                 ${data.fields.size[0]}
             </button>
             <div class="sizes-selection__select-btn-foot">
@@ -152,30 +166,21 @@ const showSizesSelectionWindow = (productsData) => {
             </div>
         `;
         $sizesSlider.append(wrapper);
-        const $btn = $(wrapper).find('.btn');
-        $btn.click(() => {
-            if ($btn.hasClass('selected')) {
-                $btn.removeClass('selected');
-                delete selectedIndexes[key];
-            } else {
-                $btn.addClass('selected');
-                selectedIndexes[key] = true;
-            }
-            validateInput($quantitiesSlider.find(`input[data-index="${key}"]`), data, productDataBySize?.quantity);
-        });
         if (productDataBySize) {
             selectedIndexes[key] = true;
         }
         availableCount += productsData.stockAndCosts[key].fields.stock;
     }
-    $sizesSlider.slick({
-        draggable: false,
-        infinite: false,
-        nextArrow: `<button class="slick-prev sizes-selection__slider-1-next" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
-        prevArrow: `<button class="slick-prev sizes-selection__slider-1-prev" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
-        slidesToShow: 7,
-        variableWidth: true,
-    });
+    if (productsData.stockAndCosts.length > 6)
+        $sizesSlider.slick({
+            draggable: false,
+            infinite: false,
+            nextArrow: `<button class="slick-prev sizes-selection__slider-1-next" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
+            prevArrow: `<button class="slick-prev sizes-selection__slider-1-prev" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
+            respondTo: 'min',
+            slidesToShow: 7,
+            variableWidth: true,
+        });
     for (const key in productsData.stockAndCosts) {
         const data = productsData.stockAndCosts[key];
         const wrapper = document.createElement('div');
@@ -207,28 +212,32 @@ const showSizesSelectionWindow = (productsData) => {
         const initialInputValue = $input.val();
         $input.on('change', () => {
             if ($input.val() > 999) $input.val(999);
+            updateSizeBtnSelection($input);
             validateInput($input, data, initialInputValue);
         });
         $incrementButton.click(() => {
             $input.val((_,val) => +val + 1 < 1000 ? +val+1 : 999);
+            updateSizeBtnSelection($input);
             validateInput($input, data, initialInputValue);
         });
         $decrementButton.click(() => {
             $input.val((_,val) => +val - 1 > -1 ? +val-1 : 0);
+            updateSizeBtnSelection($input);
             validateInput($input, data, initialInputValue);
         });
         $quantitiesSlider.append(wrapper);
         validateInput($input, data, initialInputValue);
     }
-    $quantitiesSlider.slick({
-        draggable: false,
-        infinite: false,
-        nextArrow: `<button class="slick-prev sizes-selection__slider-2-next" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
-        prevArrow: `<button class="slick-prev sizes-selection__slider-2-prev" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
-        slidesToScroll: 1,
-        slidesToShow: 7,
-        variableWidth: true,
-    });
+    if (productsData.stockAndCosts.length > 6)
+        $quantitiesSlider.slick({
+            draggable: false,
+            infinite: false,
+            nextArrow: `<button class="slick-prev sizes-selection__slider-2-next" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
+            prevArrow: `<button class="slick-prev sizes-selection__slider-2-prev" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
+            respondTo: 'min',
+            slidesToShow: 7,
+            variableWidth: true,
+        });
     syncSlidersArrows();
     $overlay.click(closeAddToCartSettingsWindow);
     $addToCartBtn.click(sendCartData);
