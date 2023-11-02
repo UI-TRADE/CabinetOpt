@@ -119,6 +119,21 @@ export function switchModalForm(idFrom, idTo, submitFormId) {
     });
 }
 
+export function showAuthForm(submitFormId) {
+    $('#registration-form-switch').click((event) => {
+        $.ajax({
+            url: event.currentTarget.getAttribute('data-url'),
+            success: (data) => {
+                renderModalForm(data, 'registration-form', submitFormId);
+                updateModalForm(submitFormId);
+            },
+            error: (xhr, status, error) => {
+                alert('Ошибка открытия формы: ' + error);
+            }
+        });
+    });
+}
+
 function showModalForm(formId, submitFormId) {
     $(document).on('show.bs.modal',`#${formId}`, (event) => {
         $.ajax({

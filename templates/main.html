@@ -24,10 +24,9 @@
             <img class="navbar-custom__logo" src="{% static 'img/logo-white.svg' %}" alt="Лого">
             <a
                 class="text-nowrap text-white"
-                data-toggle="modal"
-                data-target="#registration-form"
+                id="registration-form-switch"
                 data-url="{% url 'clients:reg_request' %}"
-                href="/"
+                href="#"
             >
                 Оптовая торговля
             </a>
@@ -119,7 +118,7 @@
             </div>
         </div>
     {% endif %}
-    <div class="modal fade sign-in-form-layout" id="registration-form" tabindex="-1" data-backdrop="false" role="dialog">
+    <div class="sign-in-form-layout" id="registration-form">
     </div>
     <div class="background-overlay hidden"></div>
 </body>
