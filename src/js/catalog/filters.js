@@ -122,7 +122,7 @@ const selectMenuItem = (element) => {
         }
         if (foundObjects.length && !isActive) {
             foundObjects.forEach(el => {
-                filters.splice(filters.indexOf(el), 1);   
+                filters.splice(filters.indexOf(el), 1);
             });
         }
         sessionStorage.setItem('filters', JSON.stringify(filters));
@@ -144,12 +144,12 @@ const updateMenuItems = () => {
             });
             if (foundObjects.length) {
                 $(element).toggleClass('filter-item-title-active');
-            }    
+            }
         }
     });
     $('.form-check-input').each((_, element) => {
         let foundObject = filters.filter(item => item[element.name]).find(_ => true);
-        if (foundObject) element.checked = foundObject[element.name];   
+        if (foundObject) element.checked = foundObject[element.name];
     });
 
     selectedFiltersBadges.update(filters)
@@ -173,7 +173,7 @@ const updateFilterElements = (elements) => {
             const parentElement = $(item).parent();
             const countElement = parentElement.find('a');
             if (countElement) countElement.text('(0)');
-            if ($(item).is('.filter-point')) $(item).addClass('filter-item-title-disable'); 
+            if ($(item).is('.filter-point')) $(item).addClass('filter-item-title-disable');
         } else {
             const parentElement = $(foundElement['element']).parent();
             const countElement = parentElement.find('a');
@@ -212,7 +212,7 @@ export function  updateFilters(html) {
 
 
 export function filtersEvents() {
-    
+
     $(document).on('click', '.filter-item-title', event => {
         if (isTopNode(event.target)) {
             const imgOfNode = $(event.target.closest('.top-node')).find('img');
@@ -233,15 +233,15 @@ export function filtersEvents() {
         if (parent.length) {
             $(parent).find('.filter-item-title-active').each((_, element) => {
                 selectMenuItem(element);
-                
+
             });
         } else {
             sessionStorage.setItem('filters', JSON.stringify([]));
             $('.filter-item-title-active').each((_, element) => {
-                $(element).removeClass('filter-item-title-active');  
+                $(element).removeClass('filter-item-title-active');
             });
             $('.form-check-input').each((_, element) => {
-                element.checked = false;   
+                element.checked = false;
             });
             setDefaultInStockFilter();
         }
@@ -271,11 +271,12 @@ export function filtersEvents() {
 
 
 function initProductFilters() {
+    const { pathname } = document.location;
 
-    if (document.location.pathname !== "/catalog/products/") {
+    if (pathname !== "/catalog/products/" && !RegExp('^\/catalog\/product\/[0-9]*\/$').test(pathname)) {
         return;
     }
-    
+
     setDefaultInStockFilter();
     $.ajax({
         url: '/catalog/filters',

@@ -39,7 +39,7 @@
             {% endblock %}
         </div>
     {% else %}
-        <nav class="d-lg-flex justify-content-lg-start navbar navbar-dark navbar-expand-lg" id="main-menu">
+        <nav class="d-lg-flex justify-content-lg-start navbar navbar-dark navbar-expand-lg navbar-fixed" id="main-menu">
             <div id="brand-container"></div>
             <button class="navbar-toggler navbar-custom-pos" data-toggle="collapse" data-target="#menu-collapse">
                 <span class="navbar-toggler-icon"></span>
@@ -88,7 +88,7 @@
             </div>
         </nav>
 
-        <div class="container-fluid">
+        <div class="container-fluid main-content">
             {% block page %}
                 {% block content %}
                 {% endblock %}

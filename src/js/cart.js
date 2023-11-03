@@ -331,7 +331,7 @@ const updateCartElements = (element, cartData, params) => {
     cartButton.parentElement.style = "display: block";
     cartElements.style             = "display: none";
     cartKeyElement.textContent     = JSON.stringify(params);
-    cartElement.value              = 0;
+    cartElement.value              = cartData?.quantity || 0;
     // TODO удалить старый функционал
     // if (cartData) {
     //     cartButton.parentElement.style = "display: none";
@@ -347,7 +347,7 @@ const updateCartElements = (element, cartData, params) => {
  * element         - поле ввода количества в корзине.
  * preventReload   - удаляет текущую позицию в корзине если количество 0.
  */
-const OnQuantityChange = (element, preventReload=false) => {
+export const OnQuantityChange = (element, preventReload=false) => {
 
     /**
      * Получает информацию о позиции корзины с бэка.
@@ -502,7 +502,7 @@ export function cartEvents(productsData) {
             const $cartData = JSON.parse($cartKey.text())
             const formElement = $(`#cartForm-${$cartData.productId }`)
             $("input[name='size']", formElement).val($cartData.size)
-            $("input[name='quantity']", $cartRowElement).val(1);
+            $("input[name='cart-quantity']", $cartRowElement).val(1);
             addToCart(`cartForm-${$cartData.productId }`);
         }else{
             addOneToCart(event.currentTarget);

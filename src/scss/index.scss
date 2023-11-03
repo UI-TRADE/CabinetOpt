@@ -9,8 +9,8 @@ html {
     min-height: 100%;
 }
 
-.btn-primary:hover {
-    color: #fff;
+.btn-primary:hover, .btn-primary:focus {
+    color: #fff !important;
 }
 
 .errors {
@@ -28,6 +28,11 @@ html {
     left: 0;
     z-index: 2000;
     background: rgba(29, 29, 27, 0.35);
+}
+
+.main-content {
+    height: calc(100% - 64px);
+    margin-top: 64px;
 }
 
 .file-selection-control {
@@ -131,11 +136,6 @@ html {
 
 figure {
     text-align: center;
-}
-
-.thumbnail-50 {
-    height: 50px;
-    width: 50px;
 }
 
 .thumbnail-150 {
@@ -270,13 +270,6 @@ figure {
     margin-right: 0px;
 }
 
-
-
-.product__thumbnail__block--position {
-    padding: 0px;
-    margin-right: 5px;
-}
-
 .product__price-block__element--position {
     margin-right: 20px;
 }
@@ -298,12 +291,12 @@ figure {
 }
 
 .product__price-card__element--price-per-weight {
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .product__price-card__element--instock {
-    margin: 0 auto;
-    font-size: 13px;
+    margin: 0 auto 8px;
+    font-size: 12px;
 }
 
 .product__price-card__element--cart {

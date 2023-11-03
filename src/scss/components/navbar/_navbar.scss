@@ -1,4 +1,8 @@
 .navbar-custom {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
     justify-content: end;
 
     &__logo {
@@ -8,4 +12,12 @@
         width: 119px;
         height: 36px;
     }
+}
+
+.navbar-fixed {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 100;
 }
