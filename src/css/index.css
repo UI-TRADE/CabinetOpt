@@ -75,7 +75,7 @@ html {
 }
 
 .list-group-item {
-    background-color: #fafbf6!important;    
+    background-color: #fafbf6!important;
 }
 
 .goods-menu-blocks ul li {
@@ -121,11 +121,6 @@ figure {
     text-align: center;
 }
 
-.thumbnail-50 {
-    height: 50px;
-    width: 50px;
-}
-
 .thumbnail-150 {
     height: 150px;
     width: 150px;
@@ -143,12 +138,12 @@ figure {
 .nested-table--position th{
     border: none;
     font-style: italic;
-    font-size: small;   
+    font-size: small;
 }
 
 .nested-table--position td{
     border: none;
-    font-size: small; 
+    font-size: small;
 }
 
 .collection-box {
@@ -158,7 +153,7 @@ figure {
     -ms-user-select: none; /* IE 10+ */
     user-select: none;
 }
-  
+
 
 .collection-box::before {
     content: "\203A";
@@ -166,10 +161,10 @@ figure {
     display: inline-block;
     margin-right: 6px;
 }
-  
+
 
 .collection-open-box::before {
-    content: "\203A"; 
+    content: "\203A";
     color: black;
     transform: rotate(90deg);
 }
@@ -178,7 +173,7 @@ figure {
 .collection-nested {
     display: none;
 }
-  
+
 
 .collection-active {
     display: block;
@@ -192,7 +187,7 @@ figure {
     -ms-user-select: none; /* IE 10+ */
     user-select: none;
 }
-  
+
 
 .order-box::before {
     content: "\203A";
@@ -200,10 +195,10 @@ figure {
     display: inline-block;
     margin-right: 6px;
 }
-  
+
 
 .order-open-box::before {
-    content: "\203A"; 
+    content: "\203A";
     color: black;
     transform: rotate(90deg);
 }
@@ -212,7 +207,7 @@ figure {
 .order-nested {
     display: none;
 }
-  
+
 
 .order-active {
     display: table-row;
@@ -271,7 +266,7 @@ figure {
     --box-shadow-color: rgb(177, 177, 177);
     border-radius: 10px;
     margin-bottom: 20px;
-    box-shadow: 0 0 5px 0 var(--box-shadow-color);    
+    box-shadow: 0 0 5px 0 var(--box-shadow-color);
 }
 
 .product__thumbnail__block--position {
@@ -343,16 +338,16 @@ figure {
 }
 
 .product__price-card__element--price {
-    font-size: 25px;    
+    font-size: 25px;
 }
 
 .product__price-card__element--price-per-weight {
-    font-size: 13px;    
+    font-size: 13px;
 }
 
 .product__price-card__element--instock {
     margin: 0 auto;
-    font-size: 13px;   
+    font-size: 13px;
 }
 
 .product__price-card__element--cart {

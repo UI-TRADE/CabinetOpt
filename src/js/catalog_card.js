@@ -19,13 +19,21 @@ const removeClass = (element, className, toggleClassName) => {
     }
 }
 
-
-
-
+const initAddToCartButton = () => {
+    const btn = $('.product-detail__add-cart-btn');
+    const sizesContainer = $('.product-detail__sizes-container');
+    btn.click(() => {
+        if (sizesContainer.hasClass('product-detail__sizes-container--hidden')) {
+            sizesContainer.removeClass('product-detail__sizes-container--hidden');
+        } else {
+            window.open('/cart', '_self');
+        }
+    });
+};
 
 // data-ride="carousel"
-const sliderTemplateFn = (items, name, slidesToShow, slidesToScroll) => `
-    <div id="${name}-carousel" class="slider" data-slick='{"slidesToShow": ${slidesToShow}, "slidesToScroll": ${slidesToScroll}}'  >
+const sliderTemplateFn = (items, name) => `
+    <div id="${name}-carousel" class="slider">
         ${items.map((item, index) => 
            `<div class="slide ${index === 0 ? 'active' : ''}">${item.element}</div>`
         ).join('')}
@@ -54,10 +62,19 @@ const showSizes = async (stock_and_cost) => {
     carouselSizes.removeClass('hidden')
     sizeBlock.append(carouselSizes);
     $('.slider', sizeBlock).slick({
-        infinite:false,
+        draggable: false,
+        infinite: false,
+        nextArrow: `
+            <button class="slick-next sizes-selection__slider-1-next" type="button" style="background-image: url('/static/img/arrow.svg')"></button>
+            <button class="slick-next sizes-selection__slider-1-next" type="button" style="background-image: url('/static/img/arrow.svg')"></button>
+        `,
+        prevArrow: `
+            <button class="slick-prev sizes-selection__slider-1-prev" type="button" style="background-image: url('/static/img/arrow.svg')"></button>
+            <button class="slick-prev sizes-selection__slider-1-prev" type="button" style="background-image: url('/static/img/arrow.svg')"></button>
+        `,
+        respondTo: 'min',
+        slidesToShow: 7,
         variableWidth: true,
-        prevArrow: '<button type="button" class="slick-prev"></button>',
-        nextArrow: '<button type="button" class="slick-next"></button>'
     })
 
 }
@@ -69,12 +86,20 @@ const showSizes = async (stock_and_cost) => {
 const showSets = () => {
     const setBlock = $('#set-block');
     const setElements = setBlock.data('json');
-    const carouselSets = $(sliderTemplateFn(setElements, 'sets', 2, 1));
+    if (!setElements.length) {
+        setBlock.parent().addClass('hidden');
+        return;
+    }
+    const carouselSets = $(sliderTemplateFn(setElements, 'sets'));
     setBlock.append(carouselSets);
-
     $('.slider', setBlock).slick({
-        prevArrow: '<button type="button" class="slick-prev"></button>',
-        nextArrow: '<button type="button" class="slick-next"></button>'
+        draggable: false,
+        infinite: false,
+        nextArrow: `<button class="slick-next product-detail__similar-products-carousel-arrow" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
+        prevArrow: `<button class="slick-prev product-detail__similar-products-carousel-arrow" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
+        respondTo: 'min',
+        slidesToShow: 3,
+        variableWidth: true,
     })
 }
 
@@ -85,12 +110,20 @@ const showAnalogues = () => {
 
     const analoguesBlock = $('#analogues-block');
     const analoguesElements = analoguesBlock.data('json');
-
+    if (!analoguesElements.length) {
+        analoguesBlock.parent().addClass('hidden');
+        return;
+    }
     const carouselAnalogues = $(sliderTemplateFn(analoguesElements, 'analogues', 2, 1));
     analoguesBlock.append(carouselAnalogues)
     $('.slider', analoguesBlock).slick({
-        prevArrow: '<button type="button" class="slick-prev"></button>',
-        nextArrow: '<button type="button" class="slick-next"></button>'
+        draggable: false,
+        infinite: false,
+        nextArrow: `<button class="slick-next product-detail__similar-products-carousel-arrow" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
+        prevArrow: `<button class="slick-prev product-detail__similar-products-carousel-arrow" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
+        respondTo: 'min',
+        slidesToShow: 3,
+        variableWidth: true,
     })
 }
 
@@ -100,7 +133,6 @@ const showAnalogues = () => {
  * context   - контекст с данными полученными с бэка и расчитанными на фронте.
  */
 const updatePriceInProductCard = (context) => {
-
     const element             = document.querySelector('.good-block');
     const weightElement       = element.querySelector('#weigth-block');
     const discountElement     = element.querySelector('#discount-block');
@@ -123,7 +155,7 @@ const updatePriceInProductCard = (context) => {
         discountElements.forEach(item => {item.style.display = 'none'});
     }
     if (price.clientPrice && priceElement) priceElement.outerHTML =
-        `<p id="price-block">${decimalFormat(Math.ceil(price.clientPrice))} <i class="fa fa-rub" aria-hidden="true"></i></p>`;
+        `<p id="price-block">${decimalFormat(Math.ceil(price.clientPrice))} <span class="product-detail__price-rub" aria-hidden="true">руб</span></p>`;
     if (parseFloat(price.maxPrice) && maxPriceElement) {
         maxPriceElement.outerHTML = `<p id="max-price">${decimalFormat(Math.ceil(price.maxPrice))} <i class="fa fa-rub" aria-hidden="true"></i></p> `;
     } else {
@@ -132,7 +164,7 @@ const updatePriceInProductCard = (context) => {
     if (context.price && pricePerweightField) pricePerweightField.outerHTML =
         `<p id="price-per-weight">${decimalFormat(Math.ceil(context.price))} руб/гр.</p>`;
     if (context.inStok && inStokelement) inStokelement.outerHTML =
-        `<p id="in_stock"> В наличии ${context.inStok} шт </p>`;
+        `<span id="in_stock"> В наличии: ${context.inStok} шт </span>`;
 
     if (!formElement) return;
     var inputFields = formElement.querySelectorAll('input');
@@ -167,9 +199,7 @@ const changeMainImg = (element) => {
 
 const updateCarts = (cartElements) => {
     return new Promise((resolve, reject) => {
-
         try {
-
             const cart = $(document).data("cart");
                 cart.getProducts()
                     .then(products => {
@@ -368,15 +398,14 @@ function updateProductCard() {
         const sizes = [];
         stock_and_cost.forEach((item, idx) => {
             if (!item['fields'].size) return;
-            item['clientPrice']    = price;
-            item['clientDiscount'] = discount;
-            item['clientMaxPrice'] = maxPrice;
+            item.clientPrice = price;
+            item.clientDiscount = discount;
+            item.clientMaxPrice = maxPrice;
             const itemFields = item['fields'];
             const sizeElement = addSizeElement(idx, itemFields.size.find(_ => true), itemFields.weight, item);
             sizes.push({ 'id': idx, 'element': sizeElement });
         });
         element.setAttribute('data-json', JSON.stringify(sizes));
-
     }
 
     /**
@@ -388,33 +417,36 @@ function updateProductCard() {
      */
     const addSizeElement = (idx, size, weight = '0', item) => `
         <div id="size-${size}" class="product__block__sizes" data-size="${size}" data-id="${idx}" data-json="${JSON.stringify(item)}">
-            
             <div class="product__block__group">
-                <div class="product__block__group-title"><span>размер</span></div>
-                <span type="button" class="btn btn-lg btn-primary size-button">${size}</span>
+                <div class="sizes-selection__subtitle product__block__group-title"><span>размер, средний вес</span></div>
+                <span class="btn font-weight-bold sizes-selection__select-btn size-button">
+                    ${size}
+                </span>
+                <div class="sizes-selection__select-btn-foot">
+                    ${weight}
+                </div>
             </div>
-
-            <div class="product__block__group product__block__group-weight">
-                <div class="product__block__group-title"><span>вес, гр.</span></div>
-                <div class="product__block__group-value">${weight}</div>
-            </div>
-            
-            <div class="product__block__group product__block__group-stock">
-                <div class="product__block__group-title"><span>остаток, шт.</span></div>
-                <div class="product__block__group-value">${item.fields.stock}</div>
-            </div>
-            
             <div class="product__block__group product__block__group-size">
-                <div class="product__block__group-title"><span>ваш заказ, шт.</span></div>
+                <div class="sizes-selection__subtitle product__block__group-title"><span>заказ, в наличии</span></div>
                 <div class="product__block__group-value">
                     <div class="input" name="cart-row">
-                        <div>
-                            <a class="cart-element addOneToCart" href="#">+</a>
+                        <div class="sizes-selection__quantity-input-wrapper">
+                            <input
+                                class="form-control font-weight-bold sizes-selection__quantity-input"
+                                min="0"
+                                max="999"
+                                name="cart-quantity"
+                                type="number"
+                                value="0"
+                            >
+                            <button class="font-weight-bold sizes-selection__quantity-input-spin-btn increment addOneToCart">
+                                <span class="font-weight-bold sizes-selection__quantity-input-spin-btn-text">+</span>
+                            </button>
+                            <button class="font-weight-bold sizes-selection__quantity-input-spin-btn decrement delOneFromCart">
+                                <span class="font-weight-bold sizes-selection__quantity-input-spin-btn-text">-</span>
+                            </button>
                         </div>
-                        <input type="text" class="form-control" name="quantity" value="0"/>
-                        <div>
-                            <a class="cart-element delOneFromCart" href="#">-</a>
-                        </div>
+                        <div class="sizes-selection__select-btn-foot">${item.fields.stock} шт</div>
                         <input type="hidden" name="add-to-cart" />
                         <div name="cart-key" class="hidden"></div>
                     </div>
@@ -445,16 +477,19 @@ function updateProductCard() {
      * idx - индекс элемента.
      * item - данные изображений полученные с бэка.
      */
-    const addSetElement = (idx, item) => `<a href="/catalog/product/${item.product}/"
-            class="product__analogues-block__imgs"
-            target="_blank"
-            data-id="${idx}"
-        >
-            <img
+    const addSetElement = (idx, item) => {
+        const element = document.createElement("a");
+        element.href = `/catalog/product/${item.product}/`;
+        element.target="_blank";
+        element.innerHTML =
+            `<img
                 src="/media/${item.image}"
-                class="img-fluid" alt="${item.product}"
-            >
-        </a>`
+                class="product-detail__similar-products-carousel-item"
+                alt="${item.product}"
+            >`;
+        element.setAttribute('data-id', idx);
+        return element;
+    }
 
 
     /**
@@ -481,13 +516,12 @@ function updateProductCard() {
      * item - данные изображений полученные с бэка.
      */
     const addAnaloguesElement = (idx, item) => `<a href="/catalog/product/${item.product}/"
-        class="product__analogues-block__imgs"
         target="_blank"
         data-id="${idx}"
     >
         <img
             src="/media/${item.image}"
-            class="img-fluid" alt="${item.product}"
+            class="product-detail__similar-products-carousel-item" alt="${item.product}"
         >
     </a>`
 
@@ -522,6 +556,7 @@ function updateProductCard() {
             priceBlock.style.display     = 'flex';
         })
         .then(() => {
+            initAddToCartButton();
             return updateProductAttributes(productIds.toString());
         })
         .catch((error) => {

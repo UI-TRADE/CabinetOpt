@@ -24,10 +24,9 @@
             <img class="navbar-custom__logo" src="{% static 'img/logo-white.svg' %}" alt="Лого">
             <a
                 class="text-nowrap text-white"
-                data-toggle="modal"
-                data-target="#registration-form"
+                id="registration-form-switch"
                 data-url="{% url 'clients:reg_request' %}"
-                href="/"
+                href="#"
             >
                 Оптовая торговля
             </a>
@@ -40,7 +39,7 @@
             {% endblock %}
         </div>
     {% else %}
-        <nav class="d-lg-flex justify-content-lg-start navbar navbar-dark navbar-expand-lg" id="main-menu">
+        <nav class="d-lg-flex justify-content-lg-start navbar navbar-dark navbar-expand-lg navbar-fixed" id="main-menu">
             <div id="brand-container"></div>
             <button class="navbar-toggler navbar-custom-pos" data-toggle="collapse" data-target="#menu-collapse">
                 <span class="navbar-toggler-icon"></span>
@@ -89,7 +88,7 @@
             </div>
         </nav>
 
-        <div class="container-fluid">
+        <div class="container-fluid main-content">
             {% block page %}
                 {% block content %}
                 {% endblock %}
@@ -119,7 +118,7 @@
             </div>
         </div>
     {% endif %}
-    <div class="modal fade sign-in-form-layout" id="registration-form" tabindex="-1" data-backdrop="false" role="dialog">
+    <div class="sign-in-form-layout" id="registration-form">
     </div>
     <div class="background-overlay hidden"></div>
 </body>
