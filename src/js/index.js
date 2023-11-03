@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'jquery-ui-dist/jquery-ui.css';
 import generateUUID from './lib';
 import mainMenuEvents from './main_menu';
-import showModalForm, { switchModalForm, showChangePassForm } from './form';
+import showModalForm, {switchModalForm, showChangePassForm, showAuthForm} from './form';
 import updateContactView from './contact';
 import { cartViewEvents } from './cart';
 import initProductFilters, { filtersEvents } from './catalog/filters';
@@ -64,7 +64,7 @@ $(document).ready(() => {
 
     // login
     const mainAuthForm = 'registration-form';
-    showModalForm(mainAuthForm, generateUUID());
+    showAuthForm(generateUUID());
     switchModalForm('entry', mainAuthForm, generateUUID());
     switchModalForm('register', mainAuthForm, generateUUID());
 
