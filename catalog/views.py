@@ -48,13 +48,14 @@ class FiltersView(TemplateView):
             'collections' : self.get_filter(qs, 'count', 'collection__group__name', 'collection__name'),
             'genders'     : self.get_filter(qs.annotate(gender_count=Count('gender')), 'count', 'gender__name'),
             'sizes'       : self.get_filter(StockAndCost.objects.filter(product__in=qs), 'sum', 'size__name'),
-            'gems'        : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'precious_stone__name'),
-            'colors'      : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'gem_color'),
-            'cuts'        : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'cut_type__name'),
+            'gems'        : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'precious_filter', 'precious_stone__name'),
+            'colors'      : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'color_filter'),
+            'cuts'        : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'cut_type__name', 'cut_type__image'),
         }
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['MEDIA_URL']   = settings.MEDIA_URL
         context['filters'] = self.get_filters(Product.objects.all())
 
         return context
@@ -113,7 +114,6 @@ class ProductView(FiltersView, ListView):
             products_page = paginator.page(paginator.num_pages)
 
         # filters = self.get_filters(self.object_list)
-        print({key: value.__json__() for key, value in self.get_filters(self.object_list).items()})
         context['products']    = products_page
         context['filters']     = json.dumps({key: value.__json__() for key, value in self.get_filters(self.object_list).items()})
         context['MEDIA_URL']   = settings.MEDIA_URL

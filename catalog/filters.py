@@ -54,7 +54,6 @@ class CharInFilter(BaseInFilter, CharFilter):
 
 
 class ProductFilter(django_filters.FilterSet):
-    in_stock                = BooleanFilter(field_name = 'in_stock', method='instock_filter')
     available_for_order     = BooleanFilter(field_name = 'available_for_order')
     metal                   = CharInFilter(field_name = 'metal', lookup_expr='in')
     metal_finish__name      = CharInFilter(field_name = 'metal_finish__name', lookup_expr='in')
@@ -68,7 +67,7 @@ class ProductFilter(django_filters.FilterSet):
     
     size__name              = CharFilter(method='size_filter')
     precious_stone__name    = CharFilter(method='gems_filter')
-    gem_color               = CharFilter(method='gems_filter')
+    color_filter            = CharFilter(method='gems_filter')
     cut_type__name          = CharFilter(method='gems_filter')
 
     weight = django_filters.NumericRangeFilter(
@@ -87,6 +86,12 @@ class ProductFilter(django_filters.FilterSet):
         method='gem_quantity_filter'
     )
 
+    stock = django_filters.NumericRangeFilter(
+        field_name='stock',
+        lookup_expr='range',
+        method='stock_filter'
+    )
+
     class Meta:
         model = Product
         fields = [
@@ -97,9 +102,17 @@ class ProductFilter(django_filters.FilterSet):
         ]
     
 
-    def instock_filter(self, queryset, name, value):
+    def stock_filter(self, queryset, name, value):
+        filters = {}
+        if value.start:
+            filters['stock__gte'] = value.start
+        if value.stop:
+            filters['stock__lte'] = value.stop 
+        print(filters) 
         return queryset.filter(
-            pk__in=StockAndCost.objects.filter(stock__gte=0).values_list('product_id', flat=True)
+            pk__in=StockAndCost.objects.filter(
+                **filters
+            ).values_list('product_id', flat=True)
         )
 
 

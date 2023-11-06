@@ -60,6 +60,11 @@
     color: #ADADAA!important;
     cursor: default!important;
   }
+
+  .filter-item-title-center {
+    display: inline-flex;
+    align-items: center !important;
+  }
   
   .filter-item a,
   .filter-item .reset {
@@ -156,6 +161,12 @@
     margin-bottom: 10px;
     height: 2px;
   }
+
+  #instok-range {
+    margin-left: 35px;
+    margin-bottom: 10px;
+    height: 2px;
+  }
   
   .range {
     color: #ADADAA;
@@ -235,6 +246,26 @@
   #price-range span[name="end-value"] {
     top: -25px;
     left: 105.727px;
+  }
+
+  #instok-range span[name="start-range"] {
+    top: -20px;
+    left: -10px;
+  }
+  
+  #instok-range span[name="end-range"] {
+    top: -20px;
+    right: -10px;
+  }
+  
+  #instok-range span[name="start-value"] {
+    top: -25px;
+    left: 53.4062px;
+  }
+  
+  #instok-range span[name="end-value"] {
+    top: -25px;
+    left: 162.406px;
   }
   
   .ui-slider-horizontal .ui-slider-handle {

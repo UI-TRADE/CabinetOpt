@@ -21,7 +21,8 @@ from .models import (
     Gender,
     MetalFinish,
     Gift,
-    Design
+    Design,
+    Style,
 )
 
 class GenderInLine(admin.TabularInline):
@@ -116,7 +117,9 @@ class GemSetInLine(admin.StackedInline):
     fields = (
         ('product', 'size'),
         'order',
-        ('precious_stone', 'cut_type', 'gem_color'),
+        'precious_stone',
+        ('precious_filter', 'color_filter'),
+        ('cut_type', 'gem_color'),
         ('gem_weight', 'gem_quantity'),
         'comment',
         'description',
@@ -327,6 +330,7 @@ class CutTypeAdmin(admin.ModelAdmin):
     ]
     fields = [
         'name',
+        'image',
     ]
 
 
@@ -335,6 +339,8 @@ class GemSetAdmin(admin.ModelAdmin):
     search_fields = [
         'product',
         'precious_stone',
+        'precious_filter',
+        'color_filter',
         'cut_type',
     ]
     list_display = [
@@ -354,9 +360,12 @@ class GemSetAdmin(admin.ModelAdmin):
         ('gem_weight', 'gem_quantity'),
         'comment',
         'description',
+        ('color_filter', 'precious_filter'),
     ]
     list_filter = [
+        'precious_filter',
         'precious_stone',
+        'color_filter',
         'cut_type',
     ]
 
@@ -405,5 +414,11 @@ class GiftAdmin(admin.ModelAdmin):
 
 @admin.register(Design)
 class DesignAdmin(admin.ModelAdmin):
+    search_fields = ['name',]
+    fields = ['name',]
+
+
+@admin.register(Style)
+class StyleAdmin(admin.ModelAdmin):
     search_fields = ['name',]
     fields = ['name',]

@@ -91,6 +91,17 @@ class Gift(models.Model):
         return self.name
 
 
+class Style(models.Model):
+    name = models.CharField('Стиль', max_length=100, db_index=True)
+
+    class Meta:
+        verbose_name = 'Стиль'
+        verbose_name_plural = 'Стили'
+
+    def __str__(self):
+        return self.name
+
+
 class Design(models.Model):
     name = models.CharField('Дизайн', max_length=100, db_index=True)
 
@@ -191,6 +202,11 @@ class Product(models.Model):
         Gift,
         verbose_name='Подарок',
         related_name='products_by_gift'
+    )
+    style = models.ManyToManyField(
+        Style,
+        verbose_name='Стиль',
+        related_name='products_by_style'
     )
     design = models.ManyToManyField(
         Design,
@@ -533,6 +549,7 @@ class PreciousStone(models.Model):
 
 class CutType(models.Model):
     name = models.CharField('Наименование', max_length=100, db_index=True)
+    image = models.ImageField('Изображение', upload_to='cut_type_images', blank=True, null=True)
 
     class Meta:
         verbose_name = 'Огранка'
@@ -586,6 +603,8 @@ class GemSet(models.Model):
     gem_quantity = models.PositiveIntegerField(
         'Количество', default=1, validators=[MinValueValidator(0)]
     )
+    color_filter = models.CharField('Группа расцветки', max_length=50, blank=True, db_index=True)
+    precious_filter = models.CharField('Тип камня', max_length=50, blank=True, db_index=True)
 
     class Meta:
         verbose_name = 'Вставка'
@@ -642,3 +661,9 @@ class SimilarProducts(models.Model):
 
     def __str__(self):
         return f'{self.similar_product}'
+
+
+class ColorOfStone(models.Model):
+    name = models.CharField('Наименование', max_length=100, db_index=True)
+    site = models.CharField('наименование для сайта', max_length=10, blank=True)
+    name_of_filter = models.CharField('наименование для фильтра', max_length=10, blank=True)

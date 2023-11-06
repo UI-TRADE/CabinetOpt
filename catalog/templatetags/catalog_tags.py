@@ -1,5 +1,7 @@
 import simplejson as json
 from django import template
+from contextlib import suppress
+
 
 register = template.Library()
 
@@ -22,3 +24,10 @@ def filtertojson(seq):
 @register.filter
 def get_gender_repr(product):
     return ", ".join(list(product.gender.values_list('name', flat=True)))
+
+
+@register.filter
+def get_cut_type_image(cut_type_nodes):
+    with suppress(IndexError, KeyError):
+        return cut_type_nodes[0]['cut_type__image']
+    return ''

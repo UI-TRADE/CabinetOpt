@@ -59,13 +59,6 @@ class FilterBadges {
 }
 
 
-const loadJson = (selector) => {
-    const element = document.querySelector(selector);
-    if (!element) return []
-    return JSON.parse(document.querySelector(selector).getAttribute('data-json'));
-}
-
-
 const isTopNode = (element) => {
     let result = false
     $('.top-node').each((_, topNodeElement) => {
@@ -156,16 +149,6 @@ const updateMenuItems = () => {
 }
 
 
-const setDefaultInStockFilter = () => {
-    const filters = JSON.parse(sessionStorage.getItem('filters'));
-    if (!filters.filter(item => item['in_stock']).find(_ => true)) {
-        $('#inStockFilter').prop('checked', true);
-        filters.push({'in_stock': true});
-        sessionStorage.setItem('filters', JSON.stringify(filters));
-    }
-}
-
-
 const updateFilterElements = (elements) => {
     $('.filter-item-title').each((_, item) => {
         const foundElement = elements.find(el => el['element'] == item);
@@ -224,7 +207,7 @@ export function filtersEvents() {
         }
     });
 
-    $(document).on('click', '.filter-item img', event => {
+    $(document).on('click', '.f-open', event => {
         openMenuItems(event.target);
     });
 
@@ -243,7 +226,6 @@ export function filtersEvents() {
             $('.form-check-input').each((_, element) => {
                 element.checked = false;
             });
-            setDefaultInStockFilter();
         }
         showCatalog();
     });
@@ -277,7 +259,6 @@ function initProductFilters() {
         return;
     }
 
-    setDefaultInStockFilter();
     $.ajax({
         url: '/catalog/filters',
         success: (data) => {

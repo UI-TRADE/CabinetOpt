@@ -483,11 +483,13 @@ export function cartEvents(productsData) {
     if (productsData)
         for (const product of productsData.products) {
             const stockAndCosts = productsData.stockAndCosts
-                .filter(data => data.fields.product[0] === product.fields.name);
-            productsDataMap[stockAndCosts[0].fields.product[1]] = {
-                product,
-                stockAndCosts
-            };
+                .filter(data => data.fields.product[1] === product.pk);
+            if (stockAndCosts.length) {
+                productsDataMap[stockAndCosts[0].fields.product[1]] = {
+                    product,
+                    stockAndCosts
+                }
+            }
         }
 
     $('input[name="add-to-cart"]').on('click', (event) => {

@@ -19,6 +19,8 @@ const getSliderAttr = (sliderId) => {
         attributeName = 'price';
     } else if (sliderId == 'quantity-range') {
         attributeName = 'gem_quantity';
+    } else if (sliderId == 'instok-range') {
+        attributeName = 'stock';
     }
     return attributeName;
 }
@@ -111,9 +113,10 @@ const renderSlider = (sliderId, min, max, step, default_min, default_max) => {
 
 function showSliders() {
 
-    renderSlider('weight-range', 0, 150, 0.1, 20, 80);
-    renderSlider('price-range', 500, 150000, 1, 700, 80000);
-    renderSlider('quantity-range', 0, 200, 1, 50, 150);
+    renderSlider('weight-range', 0, 150, 0.1, 0, 150);
+    renderSlider('price-range', 500, 150000, 1, 500, 150000);
+    renderSlider('quantity-range', 0, 200, 1, 0, 200);
+    renderSlider('instok-range', 0, 100, 1, 0, 100);
 
 }
 

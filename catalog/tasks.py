@@ -21,7 +21,8 @@ from catalog.models import (
     CutType,
     Gender,
     Gift,
-    Design
+    Design,
+    Style,
 )
 from catalog.models import PriceType, Price
 
@@ -67,6 +68,10 @@ def run_uploading_products(uploading_products):
                 for gift in gifts:
                     product.gift.add(gift)
 
+                styles = update_or_create_style(item["style"])
+                for style in styles:
+                    product.style.add(style)
+
                 designs = update_or_create_design(item["design"])
                 for design in designs:
                     product.design.add(design)
@@ -92,7 +97,9 @@ def run_uploading_products(uploading_products):
                             defaults = {
                                 'order'           : gem_set['order'],
                                 'description'     : gem_set['description'],
-                                'comment'         : gem_set['comment']
+                                'comment'         : gem_set['comment'],
+                                'color_filter'    : gem_set['color_filter'],
+                                'precious_filter' : gem_set['precious_filter'],
                             }
                         )  
 
@@ -175,6 +182,15 @@ def update_or_create_gift(gifts):
     for gift in gifts:
         gift_obj, _ = Gift.objects.update_or_create(name=gift)
         result.append(gift_obj)
+
+    return result
+
+
+def update_or_create_style(styles):    
+    result = []
+    for style in styles:
+        design_obj, _ = Style.objects.update_or_create(name=style)
+        result.append(design_obj)
 
     return result
 

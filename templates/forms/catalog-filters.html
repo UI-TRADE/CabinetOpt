@@ -3,19 +3,18 @@
 {% spaceless %}
     <div class="d-flex justify-content-center row filter-item"><span class="filter-item-title">ФИЛЬТР</span><span class="reset">Сбросить</span></div>
     <div class="filter-item top-node">
-        <div class="form-check"><input class="form-check-input" type="checkbox" id="inStockFilter" name="in_stock"><label class="form-check-label filter-item-title" for="inStockFilter">Показать только в наличии</label></div>
         <div class="form-check"><input class="form-check-input" type="checkbox" id="onOrderFilter" name="available_for_order"><label class="form-check-label filter-item-title" for="onOrderFilter">Показать товары под заказ</label></div>
     </div>
     <div class="row filter-item" style="margin-right: 0px;margin-left: 1px;">
         <ul style="padding: 0px;">
             <li>
-                <div class="d-flex row filter-item top-node"><img class="d-xl-flex" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
+                <div class="d-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
                     <div style="width: 5px;"></div><span class="filter-item-title">МЕТАЛЛ</span><span class="reset">Сбросить</span>
                 </div>
                 <ul style="padding: 0px;">
                     {% for item in filters.metals.tree %}
                         <li>
-                            <div class="d-flex row filter-item slave-node"><img class="d-xl-flex" src="{% static 'img/f-open.svg' %}" style="padding: 0px;" width="12" height="17">
+                            <div class="d-flex row filter-item slave-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;" width="12" height="17">
                                 <div style="width: 5px;"></div><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}">{{ item.metal }}</span><a href="#">({{ item.count }})</a>
                             </div>
                             <ul>
@@ -30,7 +29,7 @@
                 </ul>
             </li>
             <li>
-                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
+                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
                     <div style="width: 5px;"></div><span class="filter-item-title">Обработка металла</span><span class="reset">Сбросить</span>
                 </div>
                 <ul id="metal_finish">
@@ -44,7 +43,7 @@
                 </ul>
             </li>
             <li>
-                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
+                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
                     <div style="width: 5px;"></div><span class="filter-item-title">Коллекции</span><span class="reset">Сбросить</span>
                 </div>
                 <ul id="collections">
@@ -56,7 +55,7 @@
                 </ul>
             </li>
             <li>
-                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
+                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
                     <div style="width: 5px;"></div><span class="filter-item-title">Маркетинговый статус</span><span class="reset">Сбросить</span>
                 </div>
                 <ul id="prod_status">
@@ -68,14 +67,14 @@
                 </ul>
             </li>
             <li>
-                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
+                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
                     <div style="width: 5px;"></div><span class="filter-item-title">Тип ювелирных изделий</span><span class="reset">Сбросить</span>
                 </div>
                 <ul style="padding: 0px;">
                     {% for item in filters.collections.tree %}
                         <li>
                             <div class="d-xl-flex row filter-item slave-node">
-                                <img class="d-xl-flex" src="{% static 'img/f-open.svg' %}" style="padding: 0px;" width="12" height="17">
+                                <img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;" width="12" height="17">
                                 <div style="width: 5px;"></div><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}">{{ item.collection__group__name }}</span><a href="#">({{ item.count }})</a>
                             </div>
 
@@ -93,7 +92,7 @@
                 </ul>
             </li>
             <li>
-                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
+                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
                     <div style="width: 5px;"></div><span class="filter-item-title">Размеры</span><span class="reset">Сбросить</span>
                 </div>
                 <div id="sizes" class="row">
@@ -109,19 +108,19 @@
                 </div>
             </li>
             <li>
-                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
+                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
                     <div style="width: 5px;"></div><span class="filter-item-title">Средний общий вес, гр</span>
                 </div>
                 <div name="slider" style="height: 20px;"></div>
                 <div id="weight-range" name="slider" style="position: relative;">
-                    <span name="start-range" class="range">0</span>
-                    <span name="start-value" class="slider-value">20</span>
-                    <span name="end-value" class="slider-value">80</span>
-                    <span name="end-range" class="range">150</span>
+                    <!-- <span name="start-range" class="range">0</span> -->
+                    <span name="start-value" class="slider-value">0</span>
+                    <span name="end-value" class="slider-value">150</span>
+                    <!-- <span name="end-range" class="range">150</span> -->
                 </div>
             </li>
             <li>
-                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
+                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
                     <div style="width: 5px;"></div><span class="filter-item-title">Для кого</span><span class="reset">Сбросить</span>
                 </div>
                 <ul id="gender">
@@ -133,76 +132,111 @@
                 </ul>
             </li>
             <li>
-                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
+                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
                     <div style="width: 5px;"></div><span class="filter-item-title">Повод для подарка</span><span class="reset">Сбросить</span>
                 </div>
             </li>
             <li>
-                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
+                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
+                    <div style="width: 5px;"></div><span class="filter-item-title">Стиль</span><span class="reset">Сбросить</span>
+                </div>
+            </li>
+            <li>
+                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
                     <div style="width: 5px;"></div><span class="filter-item-title">Дизайн</span><span class="reset">Сбросить</span>
                 </div>
             </li>
             <li>
-                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
+                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
                     <div style="width: 5px;"></div><span class="filter-item-title">Вставки</span><span class="reset">Сбросить</span>
                 </div>
-                <div class="gems">
+                <ul style="padding: 0px;">
+                    {% for item in filters.gems.tree %}
+                        <li>
+                            <div class="d-flex row filter-item slave-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;" width="12" height="17">
+                                <div style="width: 5px;"></div><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}">{{ item.precious_filter }}</span><a href="#">({{ item.count }})</a>
+                            </div>
+                            <ul>
+                            {% for node in item.nodes %}
+                                <li>
+                                    <div class="d-flex row filter-node-item"><span class="filter-point filter-item-title" name="{{ node.name }}" data-json="{{node|filtertojson}}">{{ node.precious_stone__name }}</span><a href="#">({{ node.count }})</a></div>
+                                </li>
+                            {% endfor %}
+                            </ul>
+                        </li>   
+                    {% endfor %}
+                </ul>
+                <!-- <div class="gems">
                     <span href="#" class="gem">Без вставок</span>
                     {% for item in filters.gems.tree %}
                         <span class="gem filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}">{{ item.precious_stone__name }}</span>
                     {% endfor %}
-                </div>
+                </div> -->
             </li>
             <li>
-                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
+                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
                     <div style="width: 5px;"></div><span class="filter-item-title">Цвет вставки</span><span class="reset">Сбросить</span>
                 </div>
                 <ul id="gem-colors">
                     {% for item in filters.colors.tree %}
                         <li>
-                            {% if item.gem_color %}
-                                <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.gem_color }}</span><a href="#">({{ item.count }})</a></div>
+                            {% if item.color_filter %}
+                                <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.color_filter }}</span><a href="#">({{ item.count }})</a></div>
                             {% endif %}
                         </li>
                     {% endfor %}
                 </ul>
             </li>
             <li>
-                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
+                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
                     <div style="width: 5px;"></div><span class="filter-item-title">Огранка</span><span class="reset">Сбросить</span>
                 </div>
                 <ul id="cuts">
                     {% for item in filters.cuts.tree %}
                         <li>
                             {% if item.cut_type__name %}
-                                <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.cut_type__name }}</span><a href="#">({{ item.count }})</a></div>
+                                <div class="d-xl-flex justify-content-xl-start row filter-node-item">
+                                    <img class="d-xl-flex" src="{{ MEDIA_URL }}{{ item.nodes|get_cut_type_image }}" style="padding: 0px; height: 30px;" alt="{{ item.cut_type__name }}">
+                                    <span class="filter-point filter-item-title filter-item-title-center" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.cut_type__name }}</span>
+                                    <a href="#" class="filter-item-title-center">({{ item.count }})</a>
+                                </div>
                             {% endif %}
                         </li>
                     {% endfor %}
                 </ul>
             </li>
             <li>
-                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
-                    <div style="width: 5px;"></div><span class="filter-item-title">Количество</span>
+                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
+                    <div style="width: 5px;"></div><span class="filter-item-title">В наличии</span>
                 </div>
                 <div name="slider" style="height: 20px;"></div>
-                <div id="quantity-range" name="slider" style="position: relative;">
-                    <span name="start-range" class="range">0</span>
-                    <span name="start-value" class="slider-value">50</span>
-                    <span name="end-value" class="slider-value">150</span>
-                    <span name="end-range" class="range">200</span>
+                <div id="instok-range" name="slider" style="position: relative;">
+                    <span name="start-value" class="slider-value">0</span>
+                    <span name="end-value" class="slider-value">100</span>
                 </div>
             </li>
             <li>
-                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
-                    <div style="width: 5px;"></div><span class="filter-item-title">Базовая цена РРЦ, РОЦ</span>
+                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
+                    <div style="width: 5px;"></div><span class="filter-item-title">Количество вставок</span>
+                </div>
+                <div name="slider" style="height: 20px;"></div>
+                <div id="quantity-range" name="slider" style="position: relative;">
+                    <!-- <span name="start-range" class="range">0</span> -->
+                    <span name="start-value" class="slider-value">0</span>
+                    <span name="end-value" class="slider-value">200</span>
+                    <!-- <span name="end-range" class="range">200</span> -->
+                </div>
+            </li>
+            <li>
+                <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
+                    <div style="width: 5px;"></div><span class="filter-item-title">Базовая цена</span>
                 </div>
                 <div name="slider" style="height: 20px;"></div>
                 <div id="price-range" name="slider" style="position: relative;">
-                    <span name="start-range" class="range">500</span>
-                    <span name="start-value" class="slider-value">700</span>
-                    <span name="end-value" class="slider-value">8000</span>
-                    <span name="end-range" class="range">150000</span>
+                    <!-- <span name="start-range" class="range">500</span> -->
+                    <span name="start-value" class="slider-value">500</span>
+                    <span name="end-value" class="slider-value">150000</span>
+                    <!-- <span name="end-range" class="range">150000</span> -->
                 </div>
             </li>
         </ul>
