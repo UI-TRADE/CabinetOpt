@@ -1,3 +1,42 @@
+.order-preview {
+  &__edit-btn {
+    height: 22px;
+    width: 22px;
+    margin-right: 9px;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+
+  &__edit-btn-icon {
+    height: 100%;
+    width: 100%;
+  }
+
+  &__cart-row.error {
+    td {
+      border-color: #E3A358 !important;
+    }
+
+    .order-preview__cart-row-warning-logo {
+      display: block;
+      margin-right: 13px;
+    }
+  }
+
+  &__cart-row-warning {
+    padding: 0 !important;
+    border: none !important;
+  }
+
+  &__cart-row-warning-logo {
+    display: none;
+    width: 30px;
+    height: 26px;
+  }
+}
+
 table.order-preview__table{
     max-width: 1000px;
     margin:48px auto 16px; padding:0;
@@ -12,6 +51,7 @@ table.order-preview__table{
         color: #ADADAA;
         font-size: 14px;
         font-weight: 400;
+        text-align-last: left;
 
         &.image{
           width:76px;
@@ -33,12 +73,15 @@ table.order-preview__table{
         }
         &.quantity{
           width:100px;
+          text-align-last: center;
         }
         &.total_weight{
           width:104px;
+          text-align-last: center;
         }
         &.total_price{
           width:104px;
+          text-align-last: center;
         }
         span{
           display: block;
@@ -47,18 +90,38 @@ table.order-preview__table{
         i.fa-sort-amount-desc,
         i.fa-sort-amount-asc{
           display: none;
+          transform: scale(0.7);
+        }
+        i.fa-angle-down,
+        i.fa-angle-up {
+          display: none;
+          margin-left: auto;
+          transform: scale(1.4);
         }
         &.tablesorter-headerAsc{
-          i.fa-sort-amount-asc{ display: inline-block }
+          i.fa-sort-amount-asc,
+          i.fa-angle-down, {
+            display: inline-block
+          }
         }
         &.tablesorter-headerDesc{
-          i.fa-sort-amount-desc{ display: inline-block }
+          i.fa-sort-amount-desc,
+          i.fa-angle-up {
+            display: inline-block
+          }
         }
         &.tablesorter-headerAsc,
         &.tablesorter-headerDesc{
           span{
+            display: flex;
+            height: 18px;
+            align-items: center;
+            gap: 10px;
+            padding: 0 10px 0 29px;
             border:1px solid #000;
             border-radius: 9px;
+            line-height: 18px;
+            white-space: nowrap;
             color:#000;
           }
         }
@@ -70,14 +133,16 @@ table.order-preview__table{
         margin:4px 0;
         padding:6px 6px 4px;
         vertical-align: middle;
+        white-space: nowrap;
 
-        &:first-child{
+        &:nth-child(2){
           border-left:1px solid #EAEAEB;
           border-radius: 3px 0 0 3px;
         }
         &.total_price{
           border-right:1px solid #EAEAEB;
           border-radius: 3px 3px 3px 3px;
+          text-align: center;
         }
         &.errors,
         &.actions{
@@ -111,6 +176,7 @@ table.order-preview__table{
             width:40px; height:40px;
             border-color:#e6e6e5;
             text-align:center;
+            font-size: 18px;
           }
           a{
             color:#adadaa;
@@ -125,7 +191,7 @@ table.order-preview__table{
 
         &.image{
           img{
-            max-width: 50px;
+            max-height: 50px;
           }
         }
 
@@ -136,11 +202,8 @@ table.order-preview__table{
           }
         }
 
-        &.price,
-        &.total_price,
-        &.weight,
         &.total_weight{
-          text-align: right;
+          text-align: center;
         }
       }
     }

@@ -519,6 +519,7 @@ export function cartEvents(productsData) {
 var cart = undefined;
 $(document).ready(() => {
     cart = new Cart();
+    console.log(cart);
 })
 
 
@@ -531,7 +532,7 @@ export function cartViewEvents() {
             let totalWeight = 0;
             let totalSum = 0;
 
-            $('[name=cart-row]', cartViewElement).each(function (index, item){
+            $('[name=cart-row]', cartViewElement).each(function (index, item) {
                 const rawData = JSON.parse($('[name="cart-key"]', item)[0].textContent)
                 const product = cart.products[rawData.productId + '_' + rawData.size];
                 $('td.total_weight', item).text(decimalFormat(product.weight * product.quantity))

@@ -1,14 +1,18 @@
 {% load cart_tags %}
+{% load static %}
 
-<table id="cart-items" class="table table__thead--border cart-view__table order-preview__table">
+<table id="cart-items" class="table order-preview__table">
     <thead>
         <tr >
+            <th scope="col"></th>
             <th scope="col" class="image"></th>
             <th scope="col" class="articul">
                 <span>
                     <i class="fa fa-sort-amount-desc"></i>
                     <i class="fa fa-sort-amount-asc"></i>
                     артикул
+                    <i class="fa fa-angle-down"></i>
+                    <i class="fa fa-angle-up"></i>
                 </span>
             </th>
             <th scope="col" class="metal">
@@ -16,6 +20,8 @@
                     <i class="fa fa-sort-amount-desc"></i>
                     <i class="fa fa-sort-amount-asc"></i>
                     металл
+                    <i class="fa fa-angle-down"></i>
+                    <i class="fa fa-angle-up"></i>
                 </span>
             </th>
             <th scope="col" class="size">
@@ -23,20 +29,26 @@
                     <i class="fa fa-sort-amount-desc"></i>
                     <i class="fa fa-sort-amount-asc"></i>
                     размер
+                    <i class="fa fa-angle-down"></i>
+                    <i class="fa fa-angle-up"></i>
                 </span>
             </th>
             <th scope="col" class="weight">
                 <span>
                     <i class="fa fa-sort-amount-desc"></i>
                     <i class="fa fa-sort-amount-asc"></i>
-                    вес, шт.
+                    вес, шт
+                    <i class="fa fa-angle-down"></i>
+                    <i class="fa fa-angle-up"></i>
                 </span>
             </th>
             <th scope="col" class="price">
                 <span>
                     <i class="fa fa-sort-amount-desc"></i>
                     <i class="fa fa-sort-amount-asc"></i>
-                    цена, шт.
+                    цена, шт
+                    <i class="fa fa-angle-down"></i>
+                    <i class="fa fa-angle-up"></i>
                 </span>
             </th>
             <th scope="col" class="quantity">
@@ -44,13 +56,17 @@
                     <i class="fa fa-sort-amount-desc"></i>
                     <i class="fa fa-sort-amount-asc"></i>
                     кол-во
+                    <i class="fa fa-angle-down"></i>
+                    <i class="fa fa-angle-up"></i>
                 </span>
             </th>
             <th scope="col" class="total_weight">
                 <span>
                     <i class="fa fa-sort-amount-desc"></i>
                     <i class="fa fa-sort-amount-asc"></i>
-                    вес, общ.
+                    вес, общ
+                    <i class="fa fa-angle-down"></i>
+                    <i class="fa fa-angle-up"></i>
                 </span>
             </th>
             <th scope="col" class="total_price">
@@ -58,6 +74,8 @@
                     <i class="fa fa-sort-amount-desc"></i>
                     <i class="fa fa-sort-amount-asc"></i>
                     стоимость
+                    <i class="fa fa-angle-down"></i>
+                    <i class="fa fa-angle-up"></i>
                 </span>
             </th>
             <th scope="col" class="actions"></th>
@@ -68,7 +86,10 @@
         {% for item in cart %}
         {% with product=item.product %}
             {% unique_id as id %}
-            <tr id="{{id}}" name="cart-row">
+            <tr id="{{id}}" class="order-preview__cart-row" name="cart-row">
+                <td class="order-preview__cart-row-warning">
+                    <div class="order-preview__cart-row-warning-logo" style="background-image: url('{% static "img/warning.svg"%}')"></div>
+                </td>
                 <td class="image">
                     {% first_product_image product.id as image %}
                     <img
@@ -82,7 +103,13 @@
                     </a>
                 </td>
                 <td class="metal">{{ product.metal }}</td>
-                <td class="size">{% if item.size %}<span>{{ item.size }}</span>{% endif %}</td>
+                <td class="size">
+                    {% if item.size %}
+                        <span>{{ item.size }}</span>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
                 <td class="weight">{{ item.weight|floatformat:"2" }}</td>
                 <td class="price" name="cart-price">{{ item.price|floatformat:"0" }} р.</td>
                 <td class="quantity">
@@ -110,6 +137,19 @@
                 </td>
                 <td class="total_price" name="cart-sum">{{ item.total_price|floatformat:"0" }} р.</td>
                 <td class="actions">
+                    <a class="order-preview__edit-btn" href="{% url 'catalog:product' product.id %}">
+                        <svg class="order-preview__edit-btn-icon" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g clip-path="url(#clip0_506_1732)">
+                                <path d="M22 3.41786C21.943 3.62293 21.921 3.85005 21.8201 4.03087C21.6445 4.3484 21.4646 4.67916 21.2144 4.93274C18.0152 8.16758 14.8027 11.3892 11.5881 14.6108C11.4718 14.7255 11.3116 14.8203 11.1536 14.8644C9.68343 15.2856 8.20886 15.6957 6.73429 16.1036C6.17036 16.2602 5.82366 15.9162 5.97726 15.3517C6.38321 13.8699 6.78915 12.3881 7.20826 10.9107C7.25215 10.7519 7.34431 10.5888 7.45841 10.4719C10.6687 7.23704 13.8811 4.00441 17.0979 0.778388C18.1424 -0.266816 19.6367 -0.260201 20.6834 0.778388C20.8677 0.961409 21.0477 1.14443 21.2298 1.32745C21.6226 1.71995 21.8793 2.18081 21.9627 2.73429C21.9671 2.76075 21.9846 2.785 21.9978 2.80926V3.41345L22 3.41786ZM11.1514 13.4531C13.7977 10.7938 16.455 8.12348 19.0926 5.47299C18.25 4.62844 17.3964 3.77067 16.556 2.92613C13.9162 5.57883 11.2589 8.24917 8.617 10.9041C9.45522 11.7464 10.3044 12.5998 11.1514 13.4509V13.4531ZM17.3986 2.02866C18.2719 2.90628 19.1255 3.76406 19.9856 4.62844C20.1744 4.42999 20.4026 4.21168 20.6044 3.97133C20.9972 3.49945 21.0082 2.76736 20.6132 2.29989C20.3367 1.97354 20.0295 1.66703 19.7048 1.38919C19.2462 0.998895 18.522 1.01433 18.0591 1.40242C17.8133 1.6097 17.5917 1.84344 17.3986 2.02866ZM7.26531 14.8137L10.0565 14.0353L8.0377 12.0088L7.26531 14.8137Z" fill="#92959A"/>
+                                <path d="M10.4251 21.9956C7.89729 21.9956 5.36946 21.9956 2.84163 21.9956C1.64574 21.9956 0.759245 21.4642 0.258946 20.3705C0.103151 20.0287 0.0131848 19.6229 0.0131848 19.2481C-0.00217531 14.4609 -0.00217531 9.67586 0.00660187 4.89085C0.00879616 3.39361 1.14544 2.20067 2.63756 2.16538C4.28328 2.12569 5.9312 2.14995 7.57692 2.15215C7.91265 2.15215 8.15182 2.39251 8.15402 2.6946C8.15402 3.00111 7.89948 3.24366 7.55936 3.24587C5.98386 3.24587 4.40836 3.24587 2.83285 3.24587C1.98366 3.24587 1.36268 3.71114 1.15422 4.50938C1.11033 4.68137 1.09936 4.86439 1.09936 5.043C1.09717 9.72658 1.09717 14.4124 1.09936 19.0959C1.09936 19.9912 1.53383 20.6108 2.32378 20.8291C2.49274 20.8754 2.67706 20.8953 2.8526 20.8953C7.90167 20.8997 12.9486 20.8997 17.9976 20.8953C18.8556 20.8953 19.4832 20.441 19.6938 19.6538C19.7443 19.4686 19.7574 19.2701 19.7574 19.0783C19.7618 17.5237 19.7574 15.9691 19.7618 14.4146C19.7618 14.0485 19.99 13.8038 20.3148 13.8082C20.5869 13.8126 20.8217 14.0265 20.8436 14.3043C20.8546 14.4322 20.8502 14.5623 20.8502 14.6924C20.8502 16.2536 20.8656 17.8148 20.8392 19.376C20.8151 20.7674 19.6521 21.9493 18.2653 21.9757C16.6701 22.0066 15.0726 21.989 13.4752 21.9912C12.4592 21.9912 11.4411 21.9912 10.4251 21.9912V21.9956Z" fill="#92959A"/>
+                            </g>
+                            <defs>
+                                <clipPath id="clip0_506_1732">
+                                    <rect width="22" height="22" fill="white"/>
+                                </clipPath>
+                            </defs>
+                        </svg>
+                    </a>
                     <a href="{% url 'cart:cart_remove' product.id item.size %}">
                         <i class="fa fa-times-circle-o" aria-hidden="true"></i>
                     </a>

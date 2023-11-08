@@ -20,6 +20,21 @@ html {
     position: relative;
 }
 
+.breadcrumb {
+    background:none;
+    margin-bottom:3px;
+}
+
+.breadcrumb-item,
+.breadcrumb-item.active,
+.breadcrumb-item a {
+    color:#777;
+
+    &:before{
+        color:#aaa;
+    }
+}
+
 .background-overlay {
     position: fixed;
     top: 0;

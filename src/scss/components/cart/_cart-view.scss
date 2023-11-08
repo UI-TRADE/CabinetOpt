@@ -1,5 +1,10 @@
 .cart-view{
-  padding-top:110px;
+  padding-top: 30px;
+
+  &__breadcrumb-wrapper {
+    margin-bottom: 67px;
+  }
+
   .cart-view__title{
     color:#fff;
     font-size: 20px;
@@ -14,7 +19,7 @@
   }
 
   .cart-view__content{
-    border:1px solid #ADADAA;
+    border: 1px solid #ADADAA;
     border-radius: 3px;
     max-width: 1334px;
     margin:0 auto;
@@ -46,6 +51,7 @@
     }
 
     .cart-result__title{
+      margin-right: 70px;
       color: #010202;
       text-align: right;
       font-size: 20px;

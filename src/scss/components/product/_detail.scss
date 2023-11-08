@@ -14,18 +14,6 @@
     max-width: 25vw;
   }
 
-  .breadcrumb{
-    background:none;
-    margin-bottom:3px;
-    .breadcrumb-item,
-    .breadcrumb-item a{
-      color:#aaa;
-      &:before{
-        color:#aaa;
-      }
-    }
-  }
-
   .product-detail__main{
     width: 1302px;
   }

@@ -7,12 +7,20 @@
 
     <div style="display:none">
         <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-    </div>    
+    </div>
 
     <div class="container-fluid">
-        <div class="row justify-content-center">    
+        <div class="row justify-content-center">
             <main id="cart-table" class="col cart-view">
-
+                <div class="cart-view__breadcrumb-wrapper">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'catalog:products' %}">Ювелирный интернет-магазин TALANT</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">Корзина</li>
+                        </ol>
+                    </nav>
+                </div>
                 <div class="cart-view__content">
                     <div class="cart-view__title">Корзина</div>
 
