@@ -1,5 +1,5 @@
-<div class="order-list__title">Заказы</div>
-<ul class="list-unstyled">
+<div class="order-list__title">Заказы:</div>
+<ul class="list-unstyled order-list__list-unstyled">
     {% for order in orders %}
         <li class="order-item__links">
             <a href="{% url 'orders:edit' order.id %}" class="order-item__title">Заказ № {{ order.id }} </a>

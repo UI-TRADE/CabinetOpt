@@ -1,5 +1,6 @@
 .order-preview {
   &__edit-btn {
+    display: inline-block;
     height: 22px;
     width: 22px;
     margin-right: 9px;
@@ -10,6 +11,7 @@
   }
 
   &__edit-btn-icon {
+    display: block;
     height: 100%;
     width: 100%;
   }
@@ -136,7 +138,6 @@ table.order-preview__table{
         white-space: nowrap;
 
         &:nth-child(2){
-          border-left:1px solid #EAEAEB;
           border-radius: 3px 0 0 3px;
         }
         &.total_price{
@@ -147,6 +148,10 @@ table.order-preview__table{
         &.errors,
         &.actions{
           border:none;
+        }
+        &.image {
+          border-left:1px solid #EAEAEB;
+          border-radius: 3px;
         }
 
 
@@ -174,6 +179,7 @@ table.order-preview__table{
         &.quantity{
           input{
             width:40px; height:40px;
+            border-radius: 3px;
             border-color:#e6e6e5;
             text-align:center;
             font-size: 18px;

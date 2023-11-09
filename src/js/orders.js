@@ -14,8 +14,11 @@ function ordersEvents() {
     }
 
     const orderListElement = $('.order-list');
-    $(".order-item__title, .order-item__edit-button a", orderListElement).on("click", function (e){
+    const $orderListLinks = $(".order-item__title, .order-item__edit-button a", orderListElement);
+    $orderListLinks.on("click", function (e){
         e.preventDefault();
+        $orderListLinks.removeClass('active');
+        e.currentTarget.classList.add('active');
         if(orderRequest){
             orderRequest.abort()
         }

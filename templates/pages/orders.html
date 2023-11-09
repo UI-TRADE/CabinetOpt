@@ -3,12 +3,22 @@
 
 {% block page %}
 	{% block content %}
-        <div class="container-fluid">
-        <div class="row justify-content-center">
-            <div class="order-list col-12">
-                {% include "components/orders/list.html" with orders=orders %}
+        <div class="container-fluid order-list-wrapper">
+            <div class="order-list-wrapper__breadcrumb-wrapper">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'catalog:products' %}">Ювелирный интернет-магазин TALANT</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Заказы</li>
+                    </ol>
+                </nav>
             </div>
-            <div id="order" class="order-detail__wrapper col-12"></div>
+            <div class="d-flex flex-column">
+                <div class="order-list col-12">
+                    {% include "components/orders/list.html" with orders=orders %}
+                </div>
+                <div id="order" class="order-detail__wrapper"></div>
+            </div>
         </div>
 	{% endblock %}
 {% endblock %}
