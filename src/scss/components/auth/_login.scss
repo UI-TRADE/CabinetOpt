@@ -26,6 +26,15 @@
     margin-bottom: 11px;
 }
 
+.auth-form-errors {
+    color: red;
+    font-size: 12px;
+    font-style: italic;
+    font-weight: 400;
+    margin: 0;
+    text-align: center;
+}
+
 .change-pass-form {
     width: 440px;
     flex-shrink: 0;

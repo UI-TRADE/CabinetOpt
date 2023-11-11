@@ -8,17 +8,20 @@
             <p class="cursor-pointer" id="title-part-2">/&nbsp;<a id="register" data-url="{% url 'clients:reg_request' %}">регистрация</a></p>
         </div>
         <div>
+            <p class="auth-form-errors"></p>
+        </div>
+        <div>
             {% for field in form %}
                 <div class="sign-in-form-item">
                     {% if field.name == 'password' %}
                         <div class="show-password-btn-wrapper sign-in-form-item__show-password-btn-wrapper">
                             <div
                                 class="show-password-btn-wrapper__eye-icon hidden"
-                                style="background-image: url('{% static "img/eye.svg"%}')"
+                                style="background-image: url('{% static "img/eye.svg" %}')"
                             ></div>
                             <div
                                 class="show-password-btn-wrapper__eye-icon crossed"
-                                style="background-image: url('{% static "img/eye-crossed.svg"%}')"
+                                style="background-image: url('{% static "img/eye-crossed.svg" %}')"
                             ></div>
                             <button class="show-password-btn-wrapper__btn" type="button"></button>
                         </div>

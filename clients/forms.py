@@ -132,7 +132,7 @@ class LoginForm(forms.Form):
     login = forms.CharField(
         label='ИНН',
         widget=forms.TextInput(
-            attrs={'class': 'form-control default-input reg-field-layout', 'placeholder': 'ИНН / email'}
+            attrs={'class': 'form-control default-input reg-field-layout', 'placeholder': 'ИНН'}
         )
     )
     password = forms.CharField(

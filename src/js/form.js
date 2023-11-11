@@ -21,21 +21,32 @@ const applyShowPasswordButtons = ($modal) => {
 const showErrors = (formId, errors) => {
     const form = document.querySelector(`[id="${formId}"]`);
     if (!form) return;
-    const invalidFields = form.querySelectorAll('.is-invalid');
-    invalidFields.forEach(item => {
-        item.classList.remove('is-invalid');
-        item.placeholder = '';
-    });
-    $.each(JSON.parse(errors), (name, error) => {
-        error.forEach(item => {
-            const invalidField = form.querySelector(`input[name=${name}]`);
-            if (invalidField) {
-                invalidField.classList.add('is-invalid');
-                invalidField.value = '';
-                invalidField.placeholder = item['message'];
-            }
+    const errorsField = form.querySelector('.auth-form-errors');
+    if (errorsField) {
+        const errorMessages = new Array;
+        $.each(JSON.parse(errors), (_, error) => {
+            error.forEach(item => {
+                errorMessages.push(item['message']);    
+            });
         });
-    });
+        if (errorMessages.length > 0) errorsField.textContent = errorMessages.join('\n');
+    } else {
+        const invalidFields = form.querySelectorAll('.is-invalid');
+        invalidFields.forEach(item => {
+            item.classList.remove('is-invalid');
+            item.placeholder = '';
+        });
+        $.each(JSON.parse(errors), (name, error) => {
+            error.forEach(item => {
+                const invalidField = form.querySelector(`input[name=${name}]`);
+                if (invalidField) {
+                    invalidField.classList.add('is-invalid');
+                    invalidField.value = '';
+                    invalidField.placeholder = item['message'];
+                }
+            });
+        });
+    }
 }
 
 
