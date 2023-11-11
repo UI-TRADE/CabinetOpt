@@ -19,7 +19,7 @@ from .forms import ProductFilterForm
 from .filters import FilterTree, ProductFilter
 from clients.login import Login
 from catalog.models import (
-    Product, ProductImage, StockAndCost,
+    Product, ProductImage, StockAndCost, Price,
     ProductsSet, GemSet, SimilarProducts
 )
 
@@ -91,13 +91,22 @@ class ProductView(FiltersView, ListView):
             result = result | range_filters    
         return result
 
+    def get_active_products(self):
+        result = Product.objects.filter(product_type='product', show_on_site=True)
+        result = result.filter(
+            id__in=Price.objects.filter(type__name="Базовая", price__gt=0).values_list("product", flat=True)
+        )
+        result = result.filter(
+            id__in=ProductImage.objects.all().values_list("product", flat=True)
+        )
+        return result
+
     def get_queryset(self):
-        products = Product.objects.filter(product_type='product', show_on_site=True)
-        if not self.filters:
-            return products
-        parsed_filter = self.parse_filters()
-        filtered_products = ProductFilter(parsed_filter, queryset=products)
-        products = filtered_products.qs.distinct()
+        products = self.get_active_products()
+        if self.filters:
+            parsed_filter = self.parse_filters()
+            filtered_products = ProductFilter(parsed_filter, queryset=products)
+            products = filtered_products.qs.distinct()
         return products
 
     def get_context_data(self, *, object_list=None, **kwargs):
