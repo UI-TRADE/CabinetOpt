@@ -117,7 +117,7 @@
                                                     <li>Бренд: {{ product.brand|upper }}</li>
                                                 {% endif %}
                                                 {% if product.gender %}
-                                                    <li>{{ product.gender|lower }}</li>
+                                                    <li>{{ product.gender|get_gender_repr|lower }}</li>
                                                 {% endif %}
                                                 <li>
                                             </ul>

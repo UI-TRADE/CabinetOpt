@@ -22,8 +22,8 @@ def filtertojson(seq):
 
 
 @register.filter
-def get_gender_repr(product):
-    return ", ".join(list(product.gender.values_list('name', flat=True)))
+def get_gender_repr(genders):
+    return ", ".join(list(genders.values_list("name", flat=True)))
 
 
 @register.filter
