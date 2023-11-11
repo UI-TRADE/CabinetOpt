@@ -92,7 +92,7 @@ class ProductView(FiltersView, ListView):
         return result
 
     def get_queryset(self):
-        products = Product.objects.filter(product_type='product')
+        products = Product.objects.filter(product_type='product', show_on_site=True)
         if not self.filters:
             return products
         parsed_filter = self.parse_filters()

@@ -196,7 +196,7 @@ class ProductAdmin(admin.ModelAdmin):
         ('name', 'articul', 'unit'),
         ('brand', 'collection'),
         ('metal', 'metal_content', 'color', 'str_color'),
-        'available_for_order',
+        ('show_on_site', 'available_for_order'),
         ('lock_type_earings', 'lock_type_chain', 'lock_type_bracelet'),
         ('chain_width', 'bracelet_width'),
         ('chain_weave', 'bracelet_weave'),
@@ -211,7 +211,8 @@ class ProductAdmin(admin.ModelAdmin):
         'metal',
         'metal_content',
         'color',
-        'available_for_order'
+        'show_on_site',
+        'available_for_order',
     ]
     readonly_fields = [
         'created_at'
@@ -253,6 +254,8 @@ class ProductAdmin(admin.ModelAdmin):
     def active(self, obj):
         result = 'Активный'
         product_stock = StockAndCost.objects.filter(product_id=obj.id).aggregate(Sum('stock'))
+        if not obj.show_on_site:
+            result = 'Не активный'    
         if not product_stock['stock__sum']:
             result = 'Не активный'
         product_prices = Price.objects.available_prices([obj.id])

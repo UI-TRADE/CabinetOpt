@@ -161,6 +161,9 @@ class Product(models.Model):
     available_for_order = models.BooleanField(
         'Доступен для заказа', default=False, db_index=True
     )
+    show_on_site = models.BooleanField(
+        'Показывать на сайте', default=True, db_index=True
+    )
     created_at = models.DateTimeField(
         'Дата создания', db_index=True, auto_now_add=True
     )
