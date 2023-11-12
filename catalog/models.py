@@ -1,5 +1,6 @@
 from django.db import models
 from contextlib import suppress
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db.models import F, Q, Max
 from django.utils import timezone
@@ -664,6 +665,12 @@ class SimilarProducts(models.Model):
 
     def __str__(self):
         return f'{self.similar_product}'
+    
+    def save(self, *args, **kwargs):
+        if self.product == self.similar_product:
+            raise ValidationError('Изделие не может быть аналогом самому себе!')
+        
+        super(SimilarProducts, self).save(*args, **kwargs)
 
 
 class ColorOfStone(models.Model):
