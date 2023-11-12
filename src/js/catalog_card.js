@@ -139,7 +139,6 @@ const updatePriceInProductCard = (context) => {
     const priceElement        = element.querySelector('#price-block');
     const maxPriceElement     = element.querySelector('#max-price');
     const pricePerweightField = element.querySelector('#price-per-weight');
-    const inStokelement       = element.querySelector('#in_stock');
     const formElement         = element.querySelector('form');
 
     const price = getPrice(context.price, context.maxPrice, context.discount, context.weight);
@@ -163,8 +162,6 @@ const updatePriceInProductCard = (context) => {
     }
     if (context.price && pricePerweightField) pricePerweightField.outerHTML =
         `<p id="price-per-weight">${decimalFormat(Math.ceil(context.price))} руб/гр.</p>`;
-    if (context.inStok && inStokelement) inStokelement.outerHTML =
-        `<span id="in_stock"> В наличии: ${context.inStok} шт </span>`;
 
     if (!formElement) return;
     var inputFields = formElement.querySelectorAll('input');
@@ -267,6 +264,9 @@ function updateProductCard() {
                         el => el['fields'].product[1] == currentId['id']
                     ).find(_ => true);
 
+                    // console.log("stock_and_cost:");
+                    // console.log(stock_and_cost);
+
                     const firstStockAndCost = stock_and_cost.find(_ => true);
                     if (firstStockAndCost) {
                         maxPrice = firstStockAndCost['fields'].cost;
@@ -296,6 +296,14 @@ function updateProductCard() {
                             'size': size, 'weight': weight, 'inStok': inStok,
                             'price': currentPrice, 'discount': currentDiscount, 'maxPrice': maxPrice
                     });
+
+                    let sumOfStock = 0;  
+                    const inStokelement = document.querySelector('.good-block')?.querySelector('#in_stock');
+                    stock_and_cost.forEach(item => {
+                        sumOfStock += item['fields'].stock;    
+                    })
+                    if (inStokelement) inStokelement.outerHTML =
+                        `<span id="in_stock"> В наличии: ${sumOfStock} шт </span>`;
 
                     if (size) {
                         const sizeElements = elements[i].querySelector('#size-block');
