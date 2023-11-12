@@ -314,6 +314,10 @@
     border-bottom: 1px solid #D9D9D9;
   }
 
+  .product-detail__nav-tabs {
+    max-width: 770px;  
+  }
+
   &__tab-nav-link {
     padding: 3px 23px;
     background-color: transparent;
@@ -333,4 +337,17 @@
     border-radius: 3px;
     padding: 25px;
   }
+
+  .product-detail__tab-content {
+    max-width: 770px;
+  }
+
+  .tab-pane-text {
+    white-space: pre-wrap;       /* Since CSS 2.1 */
+    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+    white-space: -pre-wrap;      /* Opera 4-6 */
+    white-space: -o-pre-wrap;    /* Opera 7 */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+  }
+
 }
