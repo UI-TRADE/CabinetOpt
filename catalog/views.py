@@ -343,12 +343,11 @@ def product_accessories(request):
 def product_analogues(request):
     product_id = request.query_params.get('productId')
     if product_id:
-        product_analogues_imgs = ProductImage.objects.filter(
-            product_id__in=SimilarProducts.objects.filter(
-                product_id=product_id
-            ).values_list('similar_product', flat=True)
-        )
-
+        product_analogues_imgs = []
+        similar_products = SimilarProducts.objects.filter(product_id=product_id).values_list('similar_product', flat=True)
+        for similar_product in similar_products:
+            product_analogues_imgs.append(ProductImage.objects.filter(product_id=similar_product).first())
+        print(product_analogues_imgs)
         return JsonResponse(
             {
                 'replay'            : 'ok',
