@@ -21,13 +21,8 @@ const removeClass = (element, className, toggleClassName) => {
 
 const initAddToCartButton = () => {
     const btn = $('.product-detail__add-cart-btn');
-    const sizesContainer = $('.product-detail__sizes-container');
     btn.click(() => {
-        if (sizesContainer.hasClass('product-detail__sizes-container--hidden')) {
-            sizesContainer.removeClass('product-detail__sizes-container--hidden');
-        } else {
-            window.open('/cart', '_self');
-        }
+        window.open('/cart', '_self');
     });
 };
 
