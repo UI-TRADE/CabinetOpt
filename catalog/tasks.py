@@ -57,6 +57,7 @@ def run_uploading_products(uploading_products):
                         'chain_weave'        : item["chain_weave"],
                         'bracelet_weave'     : item["bracelet_weave"],
                         'mark_description'   : item["mark_description"],
+                        'show_on_site'       : bool(item["show_on_site"]),
                         'identifier_1C'      : identifier_1C
                 })
 
