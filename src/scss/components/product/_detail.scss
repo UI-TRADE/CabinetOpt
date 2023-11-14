@@ -315,7 +315,7 @@
   }
 
   .product-detail__nav-tabs {
-    max-width: 770px;  
+    max-width: 770px;
   }
 
   &__tab-nav-link {
@@ -336,6 +336,8 @@
     border-top-color: transparent;
     border-radius: 3px;
     padding: 25px;
+    font-family: inherit;
+    font-size: 16px;
   }
 
   .product-detail__tab-content {
