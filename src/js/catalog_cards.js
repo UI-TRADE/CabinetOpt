@@ -102,11 +102,9 @@ const updateProductCards = (element) => {
                         if (price.maxPrice) maxPriceField.innerHTML = `${decimalFormat(Math.ceil(price.maxPrice))} <i class="fa fa-rub" aria-hidden="true"></i>`;
                         discountField.textContent = `- ${decimalFormat(currentDiscount)} %`
                     };
-                    if (product['fields'].unit == '163' && weight) {
+                    if (weight) {
                         weightField.style.display = "inline-block"
                         weightField.textContent = `${decimalFormat(weight)} гр.`
-                    }else{
-                        weightField.style.display = "none"
                     }
                     if (inStok) stockField.textContent = `${inStok} шт`;
 

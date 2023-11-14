@@ -127,6 +127,8 @@
       }
       .product-item__weight{
         display: none;
+        font-size: 12px;
+
         &:after{
           content:"\00a0"
         }
