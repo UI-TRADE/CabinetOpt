@@ -101,7 +101,7 @@ const updateProductCards = (element) => {
                     if (currentDiscount>0) {
                         if (price.maxPrice) maxPriceField.innerHTML = `${decimalFormat(Math.ceil(price.maxPrice))} <i class="fa fa-rub" aria-hidden="true"></i>`;
                         discountField.textContent = `- ${decimalFormat(currentDiscount)} %`
-                    };
+                    }
                     if (weight) {
                         weightField.style.display = "inline-block"
                         weightField.textContent = `${decimalFormat(weight)} гр.`
@@ -131,6 +131,22 @@ const updateProductCards = (element) => {
         });
     }
 
+    const initProductCardsCarousel = () => {
+        const $carousels = $('.carousel');
+        for (const carousel of $carousels) {
+            const $carousel = $(carousel);
+            $carousel.carousel({
+                interval: 2000
+            }).carousel('pause');
+            $carousel.on('mouseenter', () => {
+                $carousel.carousel('cycle');
+            });
+            $carousel.on('mouseleave', () => {
+                $carousel.carousel(0).carousel('pause');
+            });
+        }
+    };
+
     const updateCarts = (cartElements) => {
         return new Promise((resolve, reject) => {
             try {
@@ -142,7 +158,9 @@ const updateProductCards = (element) => {
                                 const product = products[item.key.productId  + '_' + item.key.size]
                                 return waitUpdateCart(item.element, item.key, product)
                             })
-                        );
+                        ).then(() => {
+                            initProductCardsCarousel();
+                        });
                         resolve(result);
                     })
 

@@ -47,8 +47,7 @@
                                             {% endif %}
                                         </div>
 
-                                        <div id="product-carousel-{{ product.id }}" class="carousel slide"
-                                             data-ride="carousel">
+                                        <div id="product-carousel-{{ product.id }}" class="carousel slide" data-ride="carousel">
                                             <div class="carousel-inner">
                                                 {% for image in product.get_images|slice:":5" %}
                                                     <div class="carousel-item{% if forloop.first %} active{% endif %}">

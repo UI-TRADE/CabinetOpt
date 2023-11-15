@@ -1,7 +1,6 @@
 {% load catalog_tags %}
 {% with product_id="id"|addparam:product.id %}
-    <div class="product-item card position-relative "
-         data-json="{{ product_id|tojson }}">
+    <div class="product-item card position-relative" data-json="{{ product_id|tojson }}">
         <div class="card-body">
             <div class="row card-body__inner-row">
                 <div class="col col-8 product-item__brand">{{ product.brand }}</div>
@@ -22,23 +21,15 @@
                                 <div class="carousel-item{% if forloop.first %} active{% endif %}">
                                     <figure>
                                         <img
-                                                src="{{ image }}"
-                                                class="img-fluid rounded img-thumbnail thumbnail-210"
-                                                alt="{{ product.name }}"
-                                                style="border: none;"
+                                            src="{{ image }}"
+                                            class="img-fluid rounded img-thumbnail thumbnail-210"
+                                            alt="{{ product.name }}"
+                                            style="border: none;"
                                         >
                                     </figure>
                                 </div>
                             {% endfor %}
                         </div>
-                     <a class="carousel-control-prev" href="#product-carousel-{{ product.id }}" role="button" data-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="sr-only">Previous</span>
-                      </a>
-                      <a class="carousel-control-next" href="#product-carousel-{{ product.id }}" role="button" data-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="sr-only">Next</span>
-                      </a>
                     </div>
                 </div>
                 <div class="col col-12">
