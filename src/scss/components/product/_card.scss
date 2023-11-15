@@ -20,8 +20,10 @@
     }
   }
   .card-body{
+    height: 378px;
     padding:13px 10px;
     border:1px solid #A1A1A1;
+
     .card-body__inner-row{
       margin-left:0;
       margin-right:0;
@@ -42,6 +44,7 @@
     }
 
     .product-item__name{
+      height: 57px;
       padding-top:9px;
     }
 
