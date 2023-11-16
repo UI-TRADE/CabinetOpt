@@ -292,11 +292,15 @@ function updateProductCard() {
                             'price': currentPrice, 'discount': currentDiscount, 'maxPrice': maxPrice
                     });
 
-                    let sumOfStock = 0;  
+                    let sumOfStock = 0;
                     const inStokelement = document.querySelector('.good-block')?.querySelector('#in_stock');
+                    const tagField = document.querySelector('[name="product-status"]');
                     stock_and_cost.forEach(item => {
-                        sumOfStock += item['fields'].stock;    
+                        sumOfStock += item['fields'].stock;
                     })
+                    if (+inStok === 0) {
+                        tagField.setAttribute('data-json', '{ "status": "order" }');
+                    }
                     if (inStokelement) inStokelement.outerHTML =
                         `<span id="in_stock"> В наличии: ${sumOfStock} шт </span>`;
 
@@ -379,13 +383,17 @@ function updateProductCard() {
     }
 
     const updateProductsStatusStyle = () => {
-        const statusFields = document.querySelectorAll('p[name="product-status"]');
+        const statusFields = document.querySelectorAll('div[name="product-status"]');
         statusFields.forEach((statusField) => {
             const data = JSON.parse(statusField.getAttribute('data-json'));
-            if (!data) return;
-            if (data.status === "novelty") statusField.className = 'text-primary fs-3';
-            if (data.status === "order")   statusField.className = 'text-info-emphasis fs-3';
-            if (data.status === "hit")     statusField.className = 'text-warning fs-3';
+            if (!data) statusField.className += ' text-info';
+            if (data.status === "novelty") statusField.className += ' text-info';
+            if (data.status === "order") {
+                statusField.className += ` badge badge-secondary ${data.status}__status`;
+                $('b', statusField).text('на заказ')
+            }
+            if (data.status === "hit")     statusField.className += ' text-warning';
+            if (data.status === "sale")    statusField.className += ' text-danger';
         });
     }
 
@@ -545,8 +553,6 @@ function updateProductCard() {
         return
     }
 
-    updateProductsStatusStyle();
-
     productStocksAndCosts(productIds.toString())
         .then((data) => {
             return updateElements(data);
@@ -560,6 +566,7 @@ function updateProductCard() {
         })
         .then(() => {
             initAddToCartButton();
+            updateProductsStatusStyle();
             return updateProductAttributes(productIds.toString());
         })
         .catch((error) => {

@@ -96,6 +96,7 @@ const updateProductCards = (element) => {
                     const maxPriceField       = priceBlock.querySelector('.max-price');
                     const discountField       = priceBlock.querySelector('.discount');
                     const stockField          = inStockBlock.querySelector('.in_stock');
+                    const tagField          = elements[i].querySelector('[name="product-status"]');
                     if (currentPrice) pricePerweightField.innerHTML = `${decimalFormat(Math.ceil(currentPrice))} руб/гр.`;
                     if (price.clientPrice) priceField.innerHTML = `${decimalFormat(Math.ceil(price.clientPrice))} <i class="fa fa-rub" aria-hidden="true"></i>`;
                     if (currentDiscount>0) {
@@ -107,6 +108,9 @@ const updateProductCards = (element) => {
                         weightField.textContent = `${decimalFormat(weight)} гр.`
                     }
                     if (inStok) stockField.textContent = `${inStok} шт`;
+                    if (+inStok === 0) {
+                        tagField.setAttribute('data-json', '{ "status": "order" }');
+                    }
 
                     var inputFields = inStockBlock.getElementsByTagName('input');
                     for (let item of inputFields) {
@@ -185,9 +189,6 @@ const updateProductCards = (element) => {
         });
     }
 
-    updateProductsStatusStyle();
-
-
     const elements = $('.good-block, .product-item').toArray() || []
     const productIds = elements.map((element) => {
         const productId = JSON.parse(element.getAttribute('data-json')).id;
@@ -208,6 +209,7 @@ const updateProductCards = (element) => {
         .then(() => {
             cartEvents(productsData);
             element.style.visibility = 'visible';
+            updateProductsStatusStyle();
         })
         .catch((error) => {
             alert('Ошибка обновления каталога: ' + error);
