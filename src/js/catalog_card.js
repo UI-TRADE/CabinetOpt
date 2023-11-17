@@ -1,5 +1,5 @@
 import getPrice from './price'
-import {cartEvents, waitUpdateCart} from './cart';
+import {cartEvents, removeElementFromCart, sendElementToCart, waitUpdateCart} from './cart';
 import slick from "slick-carousel"
 import {decimalFormat} from "./utils/money_format";
 
@@ -18,6 +18,148 @@ const removeClass = (element, className, toggleClassName) => {
         }
     }
 }
+
+const initAddingToCartEvents = (productData, productId) => {
+    const $card = $('.product-cart-sizes-selection');
+    const $addToCartBtn = $card.find('.product-detail__add-cart-btn');
+    const $form = $(`#cartForm-${productId}`);
+    const $slider = $card.find('.slick-list');
+    const $totalCost = $card.find('.product-detail__price');
+    const $totalCount = $card.find('.product-detail__total-items-count-in-cart span');
+    const $totalWeight = $card.find('.product-detail__total-items-weight-in-cart span');
+    const $countInputWrappers = $card.find('.sizes-selection__quantity-input-wrapper');
+    const changedValues = {};
+    const inputValues = {};
+    const selectedIndexes = {};
+
+    const sendCartData = () => {
+        const keys = Object.keys(changedValues);
+        if (!keys.length) {
+            return;
+        }
+        const promises = [];
+
+        let i = 0;
+        const sendNext = () => {
+            if (i === keys.length) {
+                $.when(...promises).done(() => {
+                    return $(document).data("cart").getProducts();
+                });
+                return ;
+            }
+            const key = keys[i];
+            const data = productData.stockAndCosts[key];
+            if (!changedValues[key].newValue) {
+                if (!changedValues[key].prevValue) {
+                    i += 1;
+                    setTimeout(sendNext, 300);
+                }
+                promises.push(removeElementFromCart({
+                    productId: productData.stockAndCosts[key].fields.product[1],
+                    size: productData.stockAndCosts[key].fields.size[0]
+                }));
+            } else if (changedValues[key].prevValue && changedValues[key].newValue) {
+                const formData = new FormData();
+                formData.append('csrfmiddlewaretoken', $form.find('input[name="csrfmiddlewaretoken"]').val());
+                formData.append('quantity', changedValues[key].newValue - changedValues[key].prevValue);
+                formData.append('update', 'true');
+                formData.append('size', data.fields.size[0]);
+                promises.push(sendElementToCart(data.fields.product[1], formData));
+            } else {
+                const formData = new FormData();
+                formData.append('csrfmiddlewaretoken', $form.find('input[name="csrfmiddlewaretoken"]').val());
+                formData.append('quantity', changedValues[key].newValue);
+                formData.append('update', 'false');
+                formData.append('price', data.fields.cost);
+                formData.append('unit', productData.product.fields.unit);
+                formData.append('size', data.fields.size[0]);
+                formData.append('weight', data.fields.weight);
+                promises.push(sendElementToCart(data.fields.product[1], formData));
+            }
+            i += 1;
+            setTimeout(sendNext, 300);
+        }
+
+        sendNext();
+    };
+
+    const updateSizeBtnSelection = ($input) => {
+        const index = +$input.data('index');
+        const $sizeBtn = $slider.find(`.btn[data-index=${index}]`);
+        $sizeBtn.toggleClass('selected', !!(+$input.val()));
+        if ($sizeBtn.hasClass('selected')) {
+            selectedIndexes[index] = true;
+        } else {
+            delete selectedIndexes[index];
+        }
+    };
+
+    const updateTotalInfo = () => {
+        const { stockAndCosts } = productData;
+        let totalCost = 0;
+        let totalCount = 0;
+        let totalWeight = 0;
+        for (const key in selectedIndexes) {
+            if (+inputValues[key]) {
+                totalCost += +stockAndCosts[key].fields.cost * (+inputValues[key]);
+                totalCount += +inputValues[key];
+                totalWeight += +stockAndCosts[key].fields.weight * (+inputValues[key]);
+            }
+        }
+        $totalCost.html(totalCost.toLocaleString());
+        $totalCount.html(totalCount.toLocaleString());
+        $totalWeight.html(totalWeight.toLocaleString());
+    };
+
+    const validateInput = ($input, data, initialInputValue) => {
+        const index = +$input.data('index');
+        const value = $input.val();
+        $input.parent().toggleClass('error', !Number.isInteger(+value));
+        const { stock } = data.fields;
+        if (selectedIndexes[index]) {
+            $input.parent().toggleClass('error', +value > +stock);
+        }
+        const newValue = selectedIndexes[index] ? +value : null;
+        if (newValue !== +initialInputValue) {
+            if (newValue || (+initialInputValue))
+                changedValues[index] = {
+                    newValue,
+                    prevValue: +initialInputValue || null
+                }
+        } else {
+            delete changedValues[index];
+        }
+        inputValues[index] = value;
+        updateTotalInfo();
+    };
+
+    for (const key in productData.stockAndCosts) {
+        const data = productData.stockAndCosts[key];
+        const wrapper = $countInputWrappers[key];
+        const $incrementButton = $(wrapper).find('.sizes-selection__quantity-input-spin-btn.increment');
+        const $decrementButton = $(wrapper).find('.sizes-selection__quantity-input-spin-btn.decrement');
+        const $input = $(wrapper).find('input');
+        const initialInputValue = $input.val();
+        $input.on('change', () => {
+            if ($input.val() > 999) $input.val(999);
+            updateSizeBtnSelection($input);
+            validateInput($input, data, initialInputValue);
+        });
+        $incrementButton.click(() => {
+            $input.val((_,val) => +val + 1 < 1000 ? +val+1 : 999);
+            updateSizeBtnSelection($input);
+            validateInput($input, data, initialInputValue);
+        });
+        $decrementButton.click(() => {
+            $input.val((_,val) => +val - 1 > -1 ? +val-1 : 0);
+            updateSizeBtnSelection($input);
+            validateInput($input, data, initialInputValue);
+        });
+        updateSizeBtnSelection($input);
+        validateInput($input, data, initialInputValue);
+    }
+    $addToCartBtn.click(sendCartData);
+};
 
 const initAddToCartButton = () => {
     const btn = $('.product-detail__add-cart-btn');
@@ -150,7 +292,10 @@ const updatePriceInProductCard = (context) => {
         discountElements.forEach(item => {item.style.display = 'none'});
     }
     if (price.clientPrice && priceElement) priceElement.outerHTML =
-        `<p id="price-block">${decimalFormat(Math.ceil(price.clientPrice))} <span class="product-detail__price-rub" aria-hidden="true">руб</span></p>`;
+        `<p id="price-block">
+            <span class="product-detail__price">${decimalFormat(Math.ceil(price.clientPrice))}</span>
+            <span class="product-detail__price-rub" aria-hidden="true">руб</span>
+        </p>`;
     if (parseFloat(price.maxPrice) && maxPriceElement) {
         maxPriceElement.outerHTML = `<p id="max-price">${decimalFormat(Math.ceil(price.maxPrice))} <i class="fa fa-rub" aria-hidden="true"></i></p> `;
     } else {
@@ -259,6 +404,8 @@ function updateProductCard() {
                     const defaultSize = default_sizes.filter(
                         el => el['fields'].product[1] == currentId['id']
                     ).find(_ => true);
+                    productData.product = product;
+                    productData.stockAndCosts = stock_and_cost;
 
                     const firstStockAndCost = stock_and_cost.find(_ => true);
                     if (firstStockAndCost) {
@@ -413,7 +560,7 @@ function updateProductCard() {
             const itemFields = item['fields'];
             if (itemFields.size.length) {
                 const sizeId = itemFields.size[itemFields.size.length-1];
-                const sizeElement = addSizeElement(sizeId, itemFields.size.find(_ => true), itemFields.weight, item);
+                const sizeElement = addSizeElement(sizeId, itemFields.size.find(_ => true), itemFields.weight, item, idx);
                 sizes.push({ 'id': sizeId, 'element': sizeElement });
             }
         });
@@ -427,11 +574,11 @@ function updateProductCard() {
      * size - значение размера изделия.
      * weight - значение веса изделия.
      */
-    const addSizeElement = (idx, size, weight = '0', item) => `
-        <div id="size-${idx}" class="product__block__sizes" data-size="${size}" data-id="${idx}" data-json="${JSON.stringify(item)}">
+    const addSizeElement = (sizeId, size, weight = '0', item, idx) => `
+        <div id="size-${sizeId}" class="product__block__sizes" data-size="${size}" data-id="${sizeId}" data-json="${JSON.stringify(item)}">
             <div class="product__block__group">
                 <div class="sizes-selection__subtitle product__block__group-title"><span>размер, средний вес</span></div>
-                <span class="btn font-weight-bold sizes-selection__select-btn size-button">
+                <span class="btn font-weight-bold sizes-selection__select-btn size-button" data-index="${idx}">
                     ${size}
                 </span>
                 <div class="sizes-selection__select-btn-foot">
@@ -445,16 +592,17 @@ function updateProductCard() {
                         <div class="sizes-selection__quantity-input-wrapper">
                             <input
                                 class="form-control font-weight-bold sizes-selection__quantity-input"
+                                data-index="${idx}"
                                 min="0"
                                 max="999"
                                 name="cart-quantity"
                                 type="number"
                                 value="0"
                             >
-                            <button class="font-weight-bold sizes-selection__quantity-input-spin-btn increment addOneToCart">
+                            <button class="font-weight-bold sizes-selection__quantity-input-spin-btn increment">
                                 <span class="font-weight-bold sizes-selection__quantity-input-spin-btn-text">+</span>
                             </button>
-                            <button class="font-weight-bold sizes-selection__quantity-input-spin-btn decrement delOneFromCart">
+                            <button class="font-weight-bold sizes-selection__quantity-input-spin-btn decrement">
                                 <span class="font-weight-bold sizes-selection__quantity-input-spin-btn-text">-</span>
                             </button>
                         </div>
@@ -541,6 +689,7 @@ function updateProductCard() {
         return;
     }
 
+    const productData = {};
     const productIds = []
     const elements = document.querySelectorAll('.good-block');
     for (var j=0; j<elements.length; j++) {
@@ -566,9 +715,11 @@ function updateProductCard() {
             priceBlock.style.display     = 'flex';
         })
         .then(() => {
-            initAddToCartButton();
             updateProductsStatusStyle();
             return updateProductAttributes(productIds.toString());
+        })
+        .then(() => {
+            initAddingToCartEvents(productData, productIds[0]);
         })
         .catch((error) => {
             alert('Ошибка обновления карточки товара: ' + error);

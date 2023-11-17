@@ -81,7 +81,7 @@ const addSelectionSizesEvents = (productId, price, unit) => {
                     if (!selectedQuantity && selectedQuantity != incartQuantity) {
                         const removedSize = {};
                         removedSize['size'] = $(inputField).attr('data-size');
-                        removedSizes.push(removedSize);                
+                        removedSizes.push(removedSize);
                     }
                 });
                 if (selectedSizes) {
@@ -212,7 +212,7 @@ const sendElementsToCart = async (productId, formData) => {
 }
 
 
-const sendElementToCart = (productId, formData) => {
+export const sendElementToCart = (productId, formData) => {
     return new Promise((resolve, reject) => {
         $.ajax({
             url: `/cart/send/${productId}/`,
@@ -259,7 +259,7 @@ const removeElementsFromCart = async (productId, formData) => {
  *
  * cartKey         - ключ позиции товара в корзине.
  */
-const removeElementFromCart = (cartKey) => {
+export const removeElementFromCart = (cartKey) => {
     return new Promise((resolve, reject) => {
         $.ajax({
             url: `/cart/remove/${cartKey.productId}/${cartKey.size}/`,
@@ -272,7 +272,6 @@ const removeElementFromCart = (cartKey) => {
         });
     });
 }
-
 
 const updateCartElements = (element, cartData, params) => {
     let haveSizes = false;
@@ -453,7 +452,7 @@ export function cartEvents(productsData) {
         const elements = $(event.target).parents();
         for(var i=elements.length-1; i>=0; i--) {
             if ($(elements[i]).hasClass('product-item')) break;
-            
+
         }
         let haveSizes = false;
         let productItemData = {};
@@ -480,7 +479,7 @@ export function cartEvents(productsData) {
                         error: (xhr, status, error) => {
                             alert('Ошибка открытия формы: ' + error);
                         }
-                    });        
+                    });
                 }
                 $(`#sizes-selection-form-${productItemData.id}`).removeClass('hidden');
                 return;
