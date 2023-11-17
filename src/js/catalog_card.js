@@ -191,7 +191,6 @@ const changeMainImg = (element) => {
 }
 
 const updateCarts = (cartElements) => {
-    console.log(cartElements);
     return new Promise((resolve, reject) => {
         try {
             const cart = $(document).data("cart");
@@ -260,9 +259,6 @@ function updateProductCard() {
                     const defaultSize = default_sizes.filter(
                         el => el['fields'].product[1] == currentId['id']
                     ).find(_ => true);
-
-                    // console.log("stock_and_cost:");
-                    // console.log(stock_and_cost);
 
                     const firstStockAndCost = stock_and_cost.find(_ => true);
                     if (firstStockAndCost) {

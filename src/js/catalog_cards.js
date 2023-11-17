@@ -86,6 +86,11 @@ const updateProductCards = (element) => {
                         currentDiscount = discount_price['fields'].discount;
                     }
 
+                    if (stock_and_cost['fields'].size) {
+                        currentId['haveSizes'] = true;
+                        elements[i].setAttribute('data-json', JSON.stringify(currentId));
+                    }
+
                     const price = getPrice(currentPrice, maxPrice, currentDiscount, weight);
 
                     const priceBlock          = elements[i].querySelector('.price-block');

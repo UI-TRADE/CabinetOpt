@@ -333,11 +333,11 @@ const updateCartElements = (element, cartData, params) => {
     cartKeyElement.textContent     = JSON.stringify(params);
     cartElement.value              = cartData?.quantity || 0;
     // TODO удалить старый функционал
-    // if (cartData) {
-    //     cartButton.parentElement.style = "display: none";
-    //     cartElements.style             = "display: flex";
-    //     cartElement.value              = cartData['quantity'];
-    // }
+    if (cartData) {
+        cartButton.parentElement.style = "display: none";
+        cartElements.style             = "display: flex";
+        cartElement.value              = cartData['quantity'];
+    }
 }
 
 
@@ -493,7 +493,25 @@ export function cartEvents(productsData) {
         }
 
     $('input[name="add-to-cart"]').on('click', (event) => {
-        showSizesSelectionWindow(productsDataMap[event.currentTarget.id.replace('cartForm-', '')]);
+        const elements = $(event.target).parents();
+        for(var i=elements.length-1; i>=0; i--) {
+            if ($(elements[i]).hasClass('product-item')) break;
+            
+        }
+        let haveSizes = false;
+        let productItemData = {};
+        try {
+            productItemData = JSON.parse(elements[i].getAttribute('data-json'));
+            if ('haveSizes' in productItemData && productItemData.haveSizes) {
+                haveSizes = true;
+                showSizesSelectionWindow(productsDataMap[event.currentTarget.id.replace('cartForm-', '')]);
+            }
+        } catch (err) {
+            haveSizes = false;
+        }
+        if (!haveSizes) {
+            addToCart(`cartForm-${productItemData.id}`);
+        }
     });
 
     $('.addOneToCart').on('click', (event) => {
@@ -519,7 +537,6 @@ export function cartEvents(productsData) {
 var cart = undefined;
 $(document).ready(() => {
     cart = new Cart();
-    console.log(cart);
 })
 
 
