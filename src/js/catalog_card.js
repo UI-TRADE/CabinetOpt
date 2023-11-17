@@ -47,13 +47,14 @@ const showSizes = async (stock_and_cost) => {
 
     await updateCarts(stock_and_cost.map((item) => {
         return {
-            element: $('#size-' + item.fields.size[0], carouselSizes).get(0),
+            element: $('#size-' + item.fields.size[item.fields.size.length-1], carouselSizes).get(0),
             key: {
                 productId: item.fields.product[1],
                 size: item.fields.size[0]
             }
         }
     }));
+
     carouselSizes.removeClass('hidden')
     sizeBlock.append(carouselSizes);
     $('.slider', sizeBlock).slick({
@@ -190,6 +191,7 @@ const changeMainImg = (element) => {
 }
 
 const updateCarts = (cartElements) => {
+    console.log(cartElements);
     return new Promise((resolve, reject) => {
         try {
             const cart = $(document).data("cart");
@@ -413,8 +415,11 @@ function updateProductCard() {
             item.clientDiscount = discount;
             item.clientMaxPrice = maxPrice;
             const itemFields = item['fields'];
-            const sizeElement = addSizeElement(idx, itemFields.size.find(_ => true), itemFields.weight, item);
-            sizes.push({ 'id': idx, 'element': sizeElement });
+            if (itemFields.size.length) {
+                const sizeId = itemFields.size[itemFields.size.length-1];
+                const sizeElement = addSizeElement(sizeId, itemFields.size.find(_ => true), itemFields.weight, item);
+                sizes.push({ 'id': sizeId, 'element': sizeElement });
+            }
         });
         element.setAttribute('data-json', JSON.stringify(sizes));
     }
@@ -427,7 +432,7 @@ function updateProductCard() {
      * weight - значение веса изделия.
      */
     const addSizeElement = (idx, size, weight = '0', item) => `
-        <div id="size-${size}" class="product__block__sizes" data-size="${size}" data-id="${idx}" data-json="${JSON.stringify(item)}">
+        <div id="size-${idx}" class="product__block__sizes" data-size="${size}" data-id="${idx}" data-json="${JSON.stringify(item)}">
             <div class="product__block__group">
                 <div class="sizes-selection__subtitle product__block__group-title"><span>размер, средний вес</span></div>
                 <span class="btn font-weight-bold sizes-selection__select-btn size-button">
