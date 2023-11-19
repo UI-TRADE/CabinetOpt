@@ -79,6 +79,8 @@ def run_uploading_products(uploading_products):
 
                 if item.get('gem_sets'):
                     for gem_set in item['gem_sets']:
+                        if not gem_set['precious_stone']:
+                            raise PreciousStone.DoesNotExist
                         filter_kwargs = {'product': product}
                         filter_kwargs['size'] = update_or_create_size(gem_set['size_dop'])
                         precious_stone = update_or_create_precious_stone(gem_set['precious_stone'])
