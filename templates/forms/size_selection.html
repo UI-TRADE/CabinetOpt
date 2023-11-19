@@ -1,0 +1,74 @@
+{% load static %}
+{% load catalog_tags %}
+
+<div name="form">
+    {% csrf_token %}
+    <h5 class="sizes-selection__title">Выберите размер и количество</h5>
+    <p class="sizes-selection__subtitle">размер, средний вес</p>
+    <div type="button hidden" style="background-image: url('{% static "img/arrow.svg"%}')"></div>
+
+    <!-- Список размеров -->
+    <div class="d-flex sizes-selection__slider-1">
+        {% for item in stock_and_cost %}
+            <div class="d-flex flex-column align-items-center">
+                <button class="btn sizes-selection__select-btn font-weight-bold " data-index="{{ item.size.id }}">
+                    {{ item.size }}
+                </button>
+                <div class="sizes-selection__select-btn-foot" data-index="{{ item.size.id }}">
+                    {{ item.weight }}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <p class="sizes-selection__subtitle-2">заказ, в наличии</p>
+
+    <!-- Список элементов -->
+    <div class="d-flex sizes-selection__slider-2">
+        {% for item in stock_and_cost %}
+            <div name="input-block" class="d-flex flex-column align-items-center">
+                <div class="sizes-selection__quantity-input-wrapper">
+                    {% with incart=cart|size_incart:item.size %}
+                    <input 
+                        name="sizes-selection-quantity-input"
+                        class="form-control font-weight-bold sizes-selection__quantity-input"
+                        data-index="{{ item.size.id }}"
+                        data-size="{{ item.size }}"
+                        data-weight="{{ item.weight }}"
+                        data-incart="{{ incart }}"
+                        min="0"
+                        max="999"
+                        type="number"
+                        value="{{ incart }}"
+                    >
+                    {% endwith %}
+                    <button name="sizes-selection-quantity-increment" class="sizes-selection__quantity-input-spin-btn increment">
+                        <span class="font-weight-bold sizes-selection__quantity-input-spin-btn-text">+</span>
+                    </button>
+                    <button name="sizes-selection-quantity-decrement" class="font-weight-bold sizes-selection__quantity-input-spin-btn decrement">
+                        <span class="font-weight-bold sizes-selection__quantity-input-spin-btn-text">-</span>
+                    </button>
+                </div>
+                <div class="sizes-selection__select-btn-foot">
+                    {{ item.stock }}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="d-flex sizes-selection__bottom-row">
+        <div class="sizes-selection__sum font-weight-bold">0</div>
+        <div class="font-weight-bold sizes-selection__currency">руб</div>
+        <button name="sizes-selection-add-to-cart-button" class="btn btn-primary font-weight-bold sizes-selection__add-to-cart-button">в корзину</button>
+        <div class="sizes-selection__total-group">
+            <div class="font-weight-bold sizes-selection__total">
+                Всего: <span class="sizes-selection__total-count">0</span> шт
+            </div>
+            <div>
+                В наличии: <span class="sizes-selection__available-count">0</span> шт
+            </div>
+            <div><span class="sizes-selection__total-weight">0</span> гр</div>
+        </div>
+    </div>
+
+</div>
