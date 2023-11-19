@@ -26,7 +26,6 @@ class OrderItemInline(admin.TabularInline):
         'unit',
         'avg_weight',
         'price_per_weight',
-        'price_per_quantity',
         'total_weight',
     )
     fields = [
@@ -38,7 +37,6 @@ class OrderItemInline(admin.TabularInline):
         'unit',
         'total_weight',
         'price_per_weight',
-        'price_per_quantity',
         'sum',
         'discount',
     ]
