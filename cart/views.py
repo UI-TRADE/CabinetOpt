@@ -46,6 +46,22 @@ def send_to_cart(request, product_id=-1):
     return JsonResponse({'reply': 'error', 'message': form.errors})
 
 
+@require_POST
+def cart_add_sizes(request, product_id=-1):
+    cart = Cart(request)
+    product = get_object_or_404(Product, id=product_id)
+    raw_data = request.POST.get('sizes')
+    if raw_data:
+        sizes = json.loads(raw_data)
+        for added_size in sizes:
+            form = CartAddProductForm(added_size)
+            if form.is_valid():
+                selected_prod_params = form.cleaned_data
+                cart.add(product, **selected_prod_params)
+
+    return redirect('cart:cart_detail')
+
+
 def cart_info(request, product_id='', size=''):
     cart = Cart(request)
     return JsonResponse(cart.info(product_id, size=size), safe=False)
@@ -54,6 +70,18 @@ def cart_info(request, product_id='', size=''):
 def cart_remove(request, product_id, size):
     cart = Cart(request)
     cart.remove(product_id, size=size)
+
+    return redirect('cart:cart_detail')
+
+
+def cart_remove_sizes(request, product_id):
+    cart = Cart(request)
+    raw_data = request.POST.get('sizes')
+    if raw_data:
+        sizes = json.loads(raw_data)
+        for removed_size in sizes:
+            cart.remove(product_id, size=removed_size['size'])
+
     return redirect('cart:cart_detail')
 
 

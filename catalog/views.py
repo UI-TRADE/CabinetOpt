@@ -1,6 +1,7 @@
 import json
 import collections
 
+from django.shortcuts import render
 from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
@@ -17,6 +18,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from .forms import ProductFilterForm
 from .filters import FilterTree, ProductFilter
+from cart.cart import Cart
 from clients.login import Login
 from catalog.models import (
     Product, ProductImage, StockAndCost, Price,
@@ -206,6 +208,20 @@ class ProductCardView(DetailView):
             }
         )
         return dict(list(context.items()))
+
+
+def sizes_selection(request, prod_id):
+
+    if request.method != 'POST':
+        cart = list(Cart(request))
+        context = StockAndCost.objects.filter(product_id=prod_id)
+        return render(
+            request,
+            'forms/size_selection.html',
+            {
+                'stock_and_cost': context,
+                'cart': json.dumps([{**item, 'product': None} for item in cart if str(item['product']['id']) == prod_id])
+        })
 
 
 @api_view(['POST'])

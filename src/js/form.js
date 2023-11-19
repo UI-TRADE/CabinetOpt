@@ -85,11 +85,12 @@ const updateModalForm = (formId) => {
 
 const renderModalForm = (data, targetId, submitFormId) => {
     const reloadHtml = new DOMParser().parseFromString(data, 'text/html');
-    const currentForm = reloadHtml.querySelector('form');
+    let currentForm = reloadHtml.querySelector('form');
     const $modal = $(`#${targetId}`);
     currentForm.id = submitFormId;
     $modal.html(currentForm.outerHTML);
     applyShowPasswordButtons($modal);
+    return;
 }
 
 function showChangePassErrors() {
@@ -145,8 +146,10 @@ export function showAuthForm(submitFormId) {
     });
 }
 
+
 function showModalForm(formId, submitFormId) {
     $(document).on('show.bs.modal',`#${formId}`, (event) => {
+        console.log(event);
         $.ajax({
             url: event.relatedTarget.getAttribute('data-url'),
             success: (data) => {

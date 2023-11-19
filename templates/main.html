@@ -90,32 +90,35 @@
                 {% endblock %}
             {% endblock %}
         </div>
-        <div class="custom-card sizes-selection hidden">
-            <h5 class="sizes-selection__title">Выберите размер и количество</h5>
-            <p class="sizes-selection__subtitle">размер, средний вес</p>
-            <div type="button hidden" style="background-image: url('{% static "img/arrow.svg"%}')"></div>
-            <div class="d-flex sizes-selection__slider-1">
-            </div>
-            <p class="sizes-selection__subtitle-2">заказ, в наличии</p>
-            <div class="d-flex sizes-selection__slider-2"></div>
-            <div class="d-flex sizes-selection__bottom-row">
-                <div class="sizes-selection__sum font-weight-bold">0</div>
-                <div class="font-weight-bold sizes-selection__currency">руб</div>
-                <button class="btn btn-primary font-weight-bold sizes-selection__add-to-cart-button">в корзину</button>
-                <div class="sizes-selection__total-group">
-                    <div class="font-weight-bold sizes-selection__total">
-                        Всего: <span class="sizes-selection__total-count">0</span> шт
-                    </div>
-                    <div>
-                        В наличии: <span class="sizes-selection__available-count">0</span> шт
-                    </div>
-                    <div><span class="sizes-selection__total-weight">0</span> гр</div>
+
+    <!-- <div 
+        class="custom-card sizes-selection hidden">
+
+        <h5 class="sizes-selection__title">Выберите размер и количество</h5>
+        <p class="sizes-selection__subtitle">размер, средний вес</p>
+        <div type="button hidden" style="background-image: url('{% static "img/arrow.svg"%}')"></div>
+        <div class="d-flex sizes-selection__slider-1"></div>
+        <p class="sizes-selection__subtitle-2">заказ, в наличии</p>
+        <div class="d-flex sizes-selection__slider-2"></div>
+        <div class="d-flex sizes-selection__bottom-row">
+            <div class="sizes-selection__sum font-weight-bold">0</div>
+            <div class="font-weight-bold sizes-selection__currency">руб</div>
+            <button class="btn btn-primary font-weight-bold sizes-selection__add-to-cart-button">в корзину</button>
+            <div class="sizes-selection__total-group">
+                <div class="font-weight-bold sizes-selection__total">
+                    Всего: <span class="sizes-selection__total-count">0</span> шт
                 </div>
+                <div>
+                    В наличии: <span class="sizes-selection__available-count">0</span> шт
+                </div>
+                <div><span class="sizes-selection__total-weight">0</span> гр</div>
             </div>
         </div>
+
+    </div> -->
+
     {% endif %}
-    <div class="sign-in-form-layout" id="registration-form">
-    </div>
+    <div class="sign-in-form-layout" id="registration-form"></div>
     <div class="background-overlay hidden"></div>
 </body>
 </html>

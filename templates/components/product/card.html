@@ -94,5 +94,12 @@
                 <span class="product-item__price-per-gramm price-per-weight"></span>
             </div>
         </div>
+
+        <div 
+            class="custom-card sizes-selection hidden"
+            id="sizes-selection-form-{{ product.id }}"
+            data-url="{% url 'catalog:sizes_selection' product.id %}">
+        </div>
+
     </div>
 {% endwith %}

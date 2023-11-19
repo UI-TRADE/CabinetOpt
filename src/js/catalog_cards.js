@@ -1,12 +1,8 @@
 import getPrice from './price'
+import {extractContent} from './lib';
 import {updateFilters} from './catalog/filters';
 import {cartEvents, waitUpdateCart} from './cart';
 import {decimalFormat} from "./utils/money_format";
-
-const extractContent = (html, elementId) => {
-    const DOMModel = new DOMParser().parseFromString(html, 'text/html');
-    return DOMModel.getElementById(elementId)?.innerHTML;
-}
 
 
 /**
@@ -86,11 +82,6 @@ const updateProductCards = (element) => {
                         currentDiscount = discount_price['fields'].discount;
                     }
 
-                    if (stock_and_cost['fields'].size) {
-                        currentId['haveSizes'] = true;
-                        elements[i].setAttribute('data-json', JSON.stringify(currentId));
-                    }
-
                     const price = getPrice(currentPrice, maxPrice, currentDiscount, weight);
 
                     const priceBlock          = elements[i].querySelector('.price-block');
@@ -122,6 +113,14 @@ const updateProductCards = (element) => {
                         if (item.name === 'price' && price.clientPrice) item.value = price.clientPrice;
                         if (item.name === 'size' && size) item.value = size;
                         if (item.name === 'weight' && weight) item.value = weight;
+                    }
+
+                    // Данные для диалогового окна выбора размеров
+                    if (stock_and_cost['fields'].size) {
+                        currentId['haveSizes'] = true;
+                        currentId['unit'] = '163';
+                        currentId['price'] = price.clientPrice;
+                        elements[i].setAttribute('data-json', JSON.stringify(currentId));
                     }
 
                     elemsForUpdate.push(
@@ -242,5 +241,6 @@ function updateProducts(elementId, data) {
         }
     });
 }
+
 
 export default updateProducts;

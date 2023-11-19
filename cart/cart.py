@@ -1,9 +1,9 @@
 import uuid
+import simplejson as json
 
 from django.conf import settings
 from contextlib import suppress
 from itertools import chain
-import simplejson as json
 
 from catalog.models import Product
 

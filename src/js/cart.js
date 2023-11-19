@@ -1,248 +1,156 @@
 import 'tablesorter';
+import generateUUID, {extractContent} from './lib';
 import Cart from "./components/cart";
-import { sliderTemplateFn } from './catalog_card';
 import { decimalFormat } from "./utils/money_format";
 
-const showSizesSelectionWindow = (productsData) => {
+
+const closeAddToCartSettingsWindow = () => {
     const $card = $('.sizes-selection');
-    const $addToCartBtn = $card.find('.sizes-selection__add-to-cart-button');
-    const $form = $(`#cartForm-${productsData.stockAndCosts[0].fields.product[1]}`);
     const $overlay = $('.background-overlay');
-    const $sizesSlider = $card.find('.sizes-selection__slider-1');
-    const $availableCount = $card.find('.sizes-selection__available-count');
-    const $totalCost = $card.find('.sizes-selection__sum');
-    const $totalCount = $card.find('.sizes-selection__total-count');
+    $card.html('');
+    $card.addClass('hidden');
+    $overlay.addClass('hidden');
+    $overlay.off();
+};
+
+
+const updateTotalInfo = (productId, price, unit) => {
+    console.log('price', price);
+    const $card        = $(`#sizes-selection-form-${productId}`);
+    const $totalCost   = $card.find('.sizes-selection__sum');
+    const $totalCount  = $card.find('.sizes-selection__total-count');
     const $totalWeight = $card.find('.sizes-selection__total-weight');
-    const $quantitiesSlider = $card.find('.sizes-selection__slider-2');
-    let availableCount = 0;
-    $card.removeClass('hidden');
-    $overlay.removeClass('hidden');
-    const changedValues = {};
-    const inputValues = {};
-    const selectedIndexes = {};
-
-    const closeAddToCartSettingsWindow = () => {
-        if (productsData.stockAndCosts.length > 6) {
-            $sizesSlider.slick('unslick');
-            $quantitiesSlider.slick('unslick');
+    const $inputs      = $card.find('input[name="sizes-selection-quantity-input"]');
+    let totalCost = 0; let totalCount = 0; let totalWeight = 0;
+    $inputs.each(idx => {
+        const inputField = $inputs[idx];
+        const selectedQuantity = Number($(inputField).val());
+        if ( selectedQuantity ) {
+            totalCount += selectedQuantity;
+            totalWeight += (selectedQuantity * parseFloat($(inputField).attr('data-weight').replace(",", ".")));
+            totalCost += (selectedQuantity * price);
         }
-        $sizesSlider.html('');
-        $quantitiesSlider.html('');
-        $card.addClass('hidden');
-        $overlay.addClass('hidden');
-        $addToCartBtn.off();
-        $overlay.off();
-    };
+    });
+    $totalCost.html(totalCost.toLocaleString());
+    $totalCount.html(totalCount.toLocaleString());
+    $totalWeight.html(totalWeight.toLocaleString());
+};
 
-    const sendCartData = () => {
-        const keys = Object.keys(changedValues);
-        if (!keys.length) {
-            closeAddToCartSettingsWindow();
-            return;
-        }
-        const promises = [];
 
-        let i = 0;
-        const sendNext = () => {
-            if (i === keys.length) {
-                $.when(...promises).done(() => {
-                    closeAddToCartSettingsWindow();
-                    return $(document).data("cart").getProducts();
-                });
-                return ;
-            }
-            const key = keys[i];
-            const data = productsData.stockAndCosts[key];
-            if (!changedValues[key].newValue) {
-                if (!changedValues[key].prevValue) {
-                    i += 1;
-                    setTimeout(sendNext, 300);
-                }
-                promises.push(removeElementFromCart({
-                    productId: productsData.stockAndCosts[key].fields.product[1],
-                    size: productsData.stockAndCosts[key].fields.size[0]
-                }));
-            } else if (changedValues[key].prevValue && changedValues[key].newValue) {
-                const formData = new FormData();
-                formData.append('csrfmiddlewaretoken', $form.find('input[name="csrfmiddlewaretoken"]').val());
-                formData.append('quantity', changedValues[key].newValue - changedValues[key].prevValue);
-                formData.append('update', 'true');
-                formData.append('size', data.fields.size[0]);
-                promises.push(sendElementToCart(data.fields.product[1], formData));
-            } else {
-                const formData = new FormData();
-                formData.append('csrfmiddlewaretoken', $form.find('input[name="csrfmiddlewaretoken"]').val());
-                formData.append('quantity', changedValues[key].newValue);
-                formData.append('update', 'false');
-                formData.append('price', data.fields.cost);
-                formData.append('unit', productsData.product.fields.unit);
-                formData.append('size', data.fields.size[0]);
-                formData.append('weight', data.fields.weight);
-                promises.push(sendElementToCart(data.fields.product[1], formData));
-            }
-            i += 1;
-            setTimeout(sendNext, 300);
-        }
+const addSelectionSizesEvents = (productId, price, unit) => {
 
-        sendNext();
-    };
+    const get_stock = ($input) => {
+        const inputBlock = $input.parents('div[name="input-block"]');
+        const stockField = inputBlock.find('.sizes-selection__select-btn-foot');
+        return Number(stockField.text());
+    }
 
-    const syncSlidersArrows = () => {
-        const $nextSizesArrow = $sizesSlider.find('.sizes-selection__slider-1-next');
-        const $prevSizesArrow = $sizesSlider.find('.sizes-selection__slider-1-prev');
-        const $nextQuantitiesArrow = $quantitiesSlider.find('.sizes-selection__slider-2-next');
-        const $prevQuantitiesArrow = $quantitiesSlider.find('.sizes-selection__slider-2-prev');
-        $nextSizesArrow.click(() => $quantitiesSlider.slick('slickNext'));
-        $prevSizesArrow.click(() => $quantitiesSlider.slick('slickPrev'));
-        $nextQuantitiesArrow.click(() => $sizesSlider.slick('slickNext'));
-        $prevQuantitiesArrow.click(() => $sizesSlider.slick('slickPrev'));
-    };
-
-    const updateSizeBtnSelection = ($input) => {
-        const index = +$input.data('index');
-        const $sizeBtn = $sizesSlider.find(`.btn[data-index=${index}]`);
-        $sizeBtn.toggleClass('selected', !!(+$input.val()));
-        if ($sizeBtn.hasClass('selected')) {
-            selectedIndexes[index] = true;
-        } else {
-            delete selectedIndexes[index];
-        }
-    };
-
-    const updateTotalInfo = () => {
-        const { stockAndCosts } = productsData;
-        let totalCost = 0;
-        let totalCount = 0;
-        let totalWeight = 0;
-        for (const key in selectedIndexes) {
-            if (+inputValues[key]) {
-                totalCost += +stockAndCosts[key].fields.cost * (+inputValues[key]);
-                totalCount += +inputValues[key];
-                totalWeight += +stockAndCosts[key].fields.weight * (+inputValues[key]);
-            }
-        }
-        $totalCost.html(totalCost.toLocaleString());
-        $totalCount.html(totalCount.toLocaleString());
-        $totalWeight.html(totalWeight.toLocaleString());
-    };
-
-    const validateInput = ($input, data, initialInputValue) => {
-        const index = +$input.data('index');
+    const validateInput = ($input, productId, price, unit) => {
         const value = $input.val();
         $input.parent().toggleClass('error', !Number.isInteger(+value));
-        const { stock } = data.fields;
-        if (selectedIndexes[index]) {
-            $input.parent().toggleClass('error', +value > +stock);
-        }
-        const newValue = selectedIndexes[index] ? +value : null;
-        if (newValue !== +initialInputValue) {
-            if (newValue || (+initialInputValue))
-                changedValues[index] = {
-                    newValue,
-                    prevValue: +initialInputValue || null
-                }
-        } else {
-            delete changedValues[index];
-        }
-        inputValues[index] = value;
-        updateTotalInfo();
+        const stock = get_stock($input);
+        $input.parent().toggleClass('error', +value > +stock);
+        updateTotalInfo(productId, price, unit);
     };
 
-    for (const key in productsData.stockAndCosts) {
-        const data = productsData.stockAndCosts[key];
-        const productDataBySize =
-            cart.products[`${data.fields.product[1]}_${data.fields.size[0]}`];
-        const wrapper = document.createElement('div');
-        wrapper.classList.add('d-flex', 'flex-column', 'align-items-center');
-        wrapper.innerHTML = `
-            <button 
-                class="btn sizes-selection__select-btn font-weight-bold ${productDataBySize ? 'selected' : ''}"
-                data-index="${key}"
-            >
-                ${data.fields.size[0]}
-            </button>
-            <div class="sizes-selection__select-btn-foot">
-                ${data.fields.weight}
-            </div>
-        `;
-        $sizesSlider.append(wrapper);
-        if (productDataBySize) {
-            selectedIndexes[key] = true;
-        }
-        availableCount += productsData.stockAndCosts[key].fields.stock;
+    const prepareDataForCart = (curentCard, productId) => {
+        return new Promise((resolve, reject) => {
+            try {
+                const result = {};
+                const $form = $(curentCard)
+                    .parents(`#sizes-selection-form-${productId}`)
+                const $inputs = $form
+                    .find('input[name="sizes-selection-quantity-input"]');
+                const selectedSizes = [];
+                const removedSizes = [];
+                $inputs.each(idx => {
+                    const inputField = $inputs[idx];
+                    const selectedQuantity = Number($(inputField).val());
+                    const incartQuantity = Number($(inputField).attr('data-incart'));
+                    if (selectedQuantity && selectedQuantity != incartQuantity) {
+                        const selectedSize = {};
+                        selectedSize['size'] = $(inputField).attr('data-size');
+                        selectedSize['weight'] = parseFloat($(inputField).attr('data-weight').replace(",", "."));
+                        selectedSize['quantity'] = selectedQuantity-incartQuantity;
+                        selectedSize['unit'] = unit;
+                        selectedSize['price'] = price;
+                        if (incartQuantity == 0) selectedSize['update'] = 'false';
+                        else selectedSize['update'] = 'true';
+                        selectedSizes.push(selectedSize);
+                    }
+                    if (!selectedQuantity && selectedQuantity != incartQuantity) {
+                        const removedSize = {};
+                        removedSize['size'] = $(inputField).attr('data-size');
+                        removedSizes.push(removedSize);                
+                    }
+                });
+                if (selectedSizes) {
+                    const formData = new FormData();
+                    formData.append('csrfmiddlewaretoken', $form.find('input[name="csrfmiddlewaretoken"]').val());
+                    formData.append('sizes', JSON.stringify(selectedSizes));
+                    result['selectedSizes'] = formData;
+                }
+                if (removedSizes) {
+                    const formData = new FormData();
+                    formData.append('csrfmiddlewaretoken', $form.find('input[name="csrfmiddlewaretoken"]').val());
+                    formData.append('sizes', JSON.stringify(removedSizes));
+                    result['removedSizes'] = formData;
+                }
+                return resolve(result);
+            } catch {
+                return reject('Ошибка подготовки данных в корзину!');
+            }
+        });
     }
-    if (productsData.stockAndCosts.length > 6)
-        $sizesSlider.slick({
-            draggable: false,
-            infinite: false,
-            nextArrow: `<button class="slick-prev sizes-selection__slider-1-next" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
-            prevArrow: `<button class="slick-prev sizes-selection__slider-1-prev" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
-            respondTo: 'min',
-            slidesToShow: 7,
-            variableWidth: true,
-        });
-    for (const key in productsData.stockAndCosts) {
-        const data = productsData.stockAndCosts[key];
-        const wrapper = document.createElement('div');
-        const productDataBySize =
-            cart.products[`${data.fields.product[1]}_${data.fields.size[0]}`];
-        wrapper.classList.add('d-flex', 'flex-column', 'align-items-center');
-        wrapper.innerHTML = `
-            <div class="sizes-selection__quantity-input-wrapper">
-                <input
-                    class="form-control font-weight-bold sizes-selection__quantity-input"
-                    data-index="${key}"
-                    min="0"
-                    max="999"
-                    type="number"
-                    value="${productDataBySize?.quantity || 0}"
-                >
-                <button class="font-weight-bold sizes-selection__quantity-input-spin-btn increment">
-                    <span class="font-weight-bold sizes-selection__quantity-input-spin-btn-text">+</span>
-                </button>
-                <button class="font-weight-bold sizes-selection__quantity-input-spin-btn decrement">
-                    <span class="font-weight-bold sizes-selection__quantity-input-spin-btn-text">-</span>
-                </button>
-            </div>
-            <div class="sizes-selection__select-btn-foot">${data.fields.stock}</div>
-        `;
-        const $incrementButton = $(wrapper).find('.sizes-selection__quantity-input-spin-btn.increment');
-        const $decrementButton = $(wrapper).find('.sizes-selection__quantity-input-spin-btn.decrement');
-        const $input = $(wrapper).find('input');
-        const initialInputValue = $input.val();
-        $input.on('change', () => {
-            if ($input.val() > 999) $input.val(999);
-            updateSizeBtnSelection($input);
-            validateInput($input, data, initialInputValue);
-        });
-        $incrementButton.click(() => {
-            $input.val((_,val) => +val + 1 < 1000 ? +val+1 : 999);
-            updateSizeBtnSelection($input);
-            validateInput($input, data, initialInputValue);
-        });
-        $decrementButton.click(() => {
-            $input.val((_,val) => +val - 1 > -1 ? +val-1 : 0);
-            updateSizeBtnSelection($input);
-            validateInput($input, data, initialInputValue);
-        });
-        $quantitiesSlider.append(wrapper);
-        validateInput($input, data, initialInputValue);
-    }
-    if (productsData.stockAndCosts.length > 6)
-        $quantitiesSlider.slick({
-            draggable: false,
-            infinite: false,
-            nextArrow: `<button class="slick-prev sizes-selection__slider-2-next" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
-            prevArrow: `<button class="slick-prev sizes-selection__slider-2-prev" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
-            respondTo: 'min',
-            slidesToShow: 7,
-            variableWidth: true,
-        });
-    syncSlidersArrows();
-    $overlay.click(closeAddToCartSettingsWindow);
-    $addToCartBtn.click(sendCartData);
-    $availableCount.html(availableCount);
-};
+
+    $('input[name="sizes-selection-quantity-input"]').on('change', (event) => {
+        const $input = $(event.target);
+        if ($input.val() > 999) $input.val(999);
+        validateInput($input, productId, price, unit);
+    });
+    $('button[name="sizes-selection-quantity-increment"]').on('click', (event) => {
+        const $input = $(event.target)
+            .parents('.sizes-selection__quantity-input-wrapper')
+            .find('input[name="sizes-selection-quantity-input"]');
+        $input.val((_,val) => +val + 1 < 1000 ? +val+1 : 999);
+        validateInput($input, productId, price, unit);
+    });
+    $('button[name="sizes-selection-quantity-decrement"]').on('click', (event) => {
+        const $input = $(event.target)
+            .parents('.sizes-selection__quantity-input-wrapper')
+            .find('input[name="sizes-selection-quantity-input"]');
+        $input.val((_,val) => +val - 1 > -1 ? +val-1 : 0);
+        validateInput($input, productId, price, unit);
+    });
+    $('button[name="sizes-selection-add-to-cart-button"]').on('click', (event) => {
+        prepareDataForCart(event.target, productId)
+            .then((data) => {
+                return new Promise((resolve, reject) => {
+                    try {
+                        const result = Promise.all([
+                            sendElementsToCart(productId, data['selectedSizes']),
+                            removeElementsFromCart(productId, data['removedSizes'])
+                        ]);
+                        resolve(result);
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+            })
+            .then((data) => {
+                if (data) {
+                    closeAddToCartSettingsWindow();
+                    $('#cart-info').html(
+                        extractContent(data[data.length-1], 'cart-info')
+                    );
+                }
+            })
+            .catch((error) => {
+                alert('Ошибка обновления каталога: ' + error);
+            });
+    });
+}
+
 
 const addToCart = (formId) => {
 
@@ -285,6 +193,25 @@ export const delOneFromCart = (element) => {
 }
 
 
+const sendElementsToCart = async (productId, formData) => {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: `/cart/add/sizes/${productId}/`,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: (response) => {
+                resolve(response);
+            },
+            error: (error) => {
+                reject(error);
+            }
+        });
+    });
+}
+
+
 const sendElementToCart = (productId, formData) => {
     return new Promise((resolve, reject) => {
         $.ajax({
@@ -302,6 +229,30 @@ const sendElementToCart = (productId, formData) => {
         });
     });
 }
+
+/**
+ * Удаляет позиции товара из корзины.
+ *
+ * productId         - id товара в корзине.
+ */
+const removeElementsFromCart = async (productId, formData) => {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: `/cart/remove/${productId}/`,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: (response) => {
+                resolve(response);
+            },
+            error: (error) => {
+                reject(error);
+            }
+        });
+    });
+}
+
 
 /**
  * Удаляет позицию товара из корзины.
@@ -322,7 +273,14 @@ const removeElementFromCart = (cartKey) => {
     });
 }
 
+
 const updateCartElements = (element, cartData, params) => {
+    let haveSizes = false;
+    const productCard = $(element).parents('.product-item');
+    if (productCard && productCard.attr('data-json')) {
+        const productItemData = JSON.parse(productCard.attr('data-json'));
+        haveSizes = ('haveSizes' in productItemData && productItemData.haveSizes);
+    }
     const cartButton     = element.querySelector('input[name="add-to-cart"]');
     const cartElements   = element.querySelector('div[name="cart-row"]');
     if (!cartElements) return;
@@ -332,8 +290,7 @@ const updateCartElements = (element, cartData, params) => {
     cartElements.style             = "display: none";
     cartKeyElement.textContent     = JSON.stringify(params);
     cartElement.value              = cartData?.quantity || 0;
-    // TODO удалить старый функционал
-    if (cartData) {
+    if (!haveSizes && cartData) {
         cartButton.parentElement.style = "display: none";
         cartElements.style             = "display: flex";
         cartElement.value              = cartData['quantity'];
@@ -502,9 +459,31 @@ export function cartEvents(productsData) {
         let productItemData = {};
         try {
             productItemData = JSON.parse(elements[i].getAttribute('data-json'));
+            const { unit } = productItemData;
+            const { price } = productItemData;
             if ('haveSizes' in productItemData && productItemData.haveSizes) {
-                haveSizes = true;
-                showSizesSelectionWindow(productsDataMap[event.currentTarget.id.replace('cartForm-', '')]);
+                $('.background-overlay').removeClass('hidden');
+                const $modal = $(`#sizes-selection-form-${productItemData.id}`);
+                const currentUrl = $modal.attr('data-url');
+                if (currentUrl) {
+                    $.ajax({
+                        url: currentUrl,
+                        success: (data) => {
+                            const reloadHtml = new DOMParser().parseFromString(data, 'text/html');
+                            let currentForm = reloadHtml.querySelector('div[name="form"]');
+                            currentForm.id = generateUUID();
+                            $modal.html(currentForm.innerHTML);
+                            updateTotalInfo(productItemData.id, price, unit);
+                            addSelectionSizesEvents(productItemData.id, price, unit);
+                            $('.background-overlay').click(closeAddToCartSettingsWindow);
+                        },
+                        error: (xhr, status, error) => {
+                            alert('Ошибка открытия формы: ' + error);
+                        }
+                    });        
+                }
+                $(`#sizes-selection-form-${productItemData.id}`).removeClass('hidden');
+                return;
             }
         } catch (err) {
             haveSizes = false;
@@ -602,7 +581,8 @@ export function cartViewEvents() {
 
     $(document).on("cart.quantity-change", function(e, data){
         cart.updateItem(data);
-    })
+    });
+
 }
 
 

@@ -72,7 +72,7 @@ $(document).ready(() => {
     showChangePassForm();
 
     // file selection
-    showModalForm('fileSelectionForm');
+    // showModalForm('fileSelectionForm');
 
     // forms
     updateContactView('contactForm');
@@ -86,6 +86,7 @@ $(document).ready(() => {
 
     // events
     addEvents();
+
 })
 
 
