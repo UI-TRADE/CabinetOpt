@@ -116,7 +116,7 @@ const updateProductCards = (element) => {
                     }
 
                     // Данные для диалогового окна выбора размеров
-                    if (stock_and_cost['fields'].size) {
+                    if (stock_and_cost && stock_and_cost['fields'].size) {
                         currentId['haveSizes'] = true;
                         currentId['unit'] = '163';
                         currentId['price'] = price.clientPrice;
