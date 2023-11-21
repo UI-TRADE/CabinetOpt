@@ -161,13 +161,6 @@ const initAddingToCartEvents = (productData, productId) => {
     $addToCartBtn.click(sendCartData);
 };
 
-const initAddToCartButton = () => {
-    const btn = $('.product-detail__add-cart-btn');
-    btn.click(() => {
-        window.open('/cart', '_self');
-    });
-};
-
 // data-ride="carousel"
 const sliderTemplateFn = (items, name) => `
     <div id="${name}-carousel" class="slider">
@@ -210,11 +203,9 @@ const showSizes = async (stock_and_cost) => {
             <button class="slick-prev sizes-selection__slider-1-prev" type="button" style="background-image: url('/static/img/arrow.svg')"></button>
             <button class="slick-prev sizes-selection__slider-1-prev" type="button" style="background-image: url('/static/img/arrow.svg')"></button>
         `,
-        respondTo: 'min',
-        slidesToShow: 7,
+        slidesToShow: 3,
         variableWidth: true,
     })
-
 }
 
 /**
