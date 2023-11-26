@@ -27,4 +27,6 @@ snippets
 *.tar.gz
 *.db.json
 certbot
+*.json
 package-lock.json
+!package.json
