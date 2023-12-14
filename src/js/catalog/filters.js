@@ -18,7 +18,7 @@ class FilterBadges {
             "gem_quantity_max": (value) => `от ${value} шт.`
         }
 
-        this.ignore_filters = ['available_for_order', 'weight_min', 'weight_max', 'price_min', 'price_max', 'gem_quantity_min', 'gem_quantity_max']
+        this.ignore_filters = ['in_stock', 'weight_min', 'weight_max', 'price_min', 'price_max', 'gem_quantity_min', 'gem_quantity_max']
     }
 
     update(filters){
@@ -29,7 +29,7 @@ class FilterBadges {
             .filter(value => this.ignore_filters.indexOf(Object.keys(value)[0]) === -1)
             .filter((value =>
                 Object.values(value)
-                .filter(value =>  value !== null && typeof value !== "boolean").length)) // hide boolean(available_for_order) or null values
+                .filter(value =>  value !== null && typeof value !== "boolean").length)) // hide boolean(in_stock) or null values
             .map(filter =>
                 $("<span />")
                     .addClass('badge badge-secondary')
@@ -142,7 +142,12 @@ const updateMenuItems = () => {
     });
     $('.form-check-input').each((_, element) => {
         let foundObject = filters.filter(item => item[element.name]).find(_ => true);
-        if (foundObject) element.checked = foundObject[element.name];
+        if (foundObject) {
+            if (element.name == "in_stock") 
+                element.checked = !foundObject[element.name];
+            else 
+                element.checked = foundObject[element.name];
+        }
     });
 
     selectedFiltersBadges.update(filters)
@@ -216,10 +221,9 @@ export function filtersEvents() {
         if (parent.length) {
             $(parent).find('.filter-item-title-active').each((_, element) => {
                 selectMenuItem(element);
-
             });
         } else {
-            sessionStorage.setItem('filters', JSON.stringify([]));
+            sessionStorage.setItem('filters', JSON.stringify([{'in_stock': true}]));
             $('.filter-item-title-active').each((_, element) => {
                 $(element).removeClass('filter-item-title-active');
             });
@@ -232,17 +236,19 @@ export function filtersEvents() {
 
     $(document).on('click', '.form-check-input', event => {
         const filters = JSON.parse(sessionStorage.getItem('filters'));
-        for (var nameOfCeckedFilter of ['in_stock', 'available_for_order']) {
+        for (var nameOfCeckedFilter of ['in_stock',]) {
             let foundFilter = false;
             (filters ||[]).forEach(item => {
                 if (Object.keys(item).find(k => k == nameOfCeckedFilter)) {
                     foundFilter = true;
-                    item[nameOfCeckedFilter] = event.target.checked;
+                    // if the in_stock filter is unchecked, only products in stock are displayed, otherwise - all
+                    item[nameOfCeckedFilter] = !event.target.checked;
                 }
             });
             if (!foundFilter) {
                 let obj = {};
-                obj[`${nameOfCeckedFilter}`] = event.target.checked;
+                // if the in_stock filter is unchecked, only products in stock are displayed, otherwise - all
+                obj[`${nameOfCeckedFilter}`] = !event.target.checked;
                 filters.push(obj);
             }
         }
