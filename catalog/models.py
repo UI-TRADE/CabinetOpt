@@ -7,6 +7,29 @@ from django.utils import timezone
 
 from clients.models import Client
 
+
+class TrimCharField(models.CharField):
+    def __init__(self, *args, **kwargs):
+        # Добавляем свои дополнительные параметры, в данном случае
+        # strip для автоматического удаления пробелов
+        self.strip = kwargs.pop('strip', False)
+
+        # Вызываем конструктор родительского класса
+        super().__init__(*args, **kwargs)
+
+    def pre_save(self, model_instance, add):
+        # Логика обработки поля перед сохранением
+        if self.strip and hasattr(model_instance, self.attname):
+            value = getattr(model_instance, self.attname)
+
+            if isinstance(value, str):
+                # Удаляем пробелы, если параметр strip установлен в True
+                setattr(model_instance, self.attname, value.strip())
+
+        # Вызываем метод pre_save родительского класса
+        return super().pre_save(model_instance, add)
+
+
 class CollectionGroup(models.Model):
     name = models.CharField('Наименование', max_length=100, db_index=True)
 
@@ -178,8 +201,8 @@ class Product(models.Model):
             ('service', 'услуга'),
             ('gift_сertificate', 'подарочный сертификат')
     ))
-    metal = models.CharField('Металл', max_length=50, blank=True, db_index=True)
-    metal_content = models.CharField('Проба', max_length=30, blank=True, db_index=True)
+    metal = TrimCharField('Металл', max_length=50, blank=True, db_index=True, strip=True)
+    metal_content = TrimCharField('Проба', max_length=30, blank=True, db_index=True, strip=True)
     metal_finish = models.ManyToManyField(
         MetalFinish,
         verbose_name='Обработка металла',
