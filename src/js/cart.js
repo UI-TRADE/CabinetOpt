@@ -31,7 +31,7 @@ const updateTotalInfo = (productId, price, unit) => {
             totalCost += (selectedQuantity * price);
         }
     });
-    $totalCost.html(totalCost.toLocaleString());
+    $totalCost.html(decimalFormat(Math.ceil(totalCost)).toLocaleString());
     $totalCount.html(totalCount.toLocaleString());
     $totalWeight.html(totalWeight.toLocaleString());
 };
@@ -140,9 +140,7 @@ const addSelectionSizesEvents = (productId, price, unit) => {
             .then((data) => {
                 if (data) {
                     closeAddToCartSettingsWindow();
-                    $('#cart-info').html(
-                        extractContent(data[data.length-1], 'cart-info')
-                    );
+                    $(document).data("cart").getProducts()
                 }
             })
             .catch((error) => {
@@ -283,17 +281,18 @@ const updateCartElements = (element, cartData, params) => {
     }
     const cartButton     = element.querySelector('input[name="add-to-cart"]');
     const cartElements   = element.querySelector('div[name="cart-row"]');
-    if (!cartElements) return;
-    const cartElement    = cartElements.querySelector('input');
-    const cartKeyElement = cartElements.querySelector('[name="cart-key"]');
-    cartButton.parentElement.style = "display: block";
-    cartElements.style             = "display: none";
-    cartKeyElement.textContent     = JSON.stringify(params);
-    cartElement.value              = cartData?.quantity || 0;
-    if (!haveSizes && cartData) {
-        cartButton.parentElement.style = "display: none";
-        cartElements.style             = "display: flex";
-        cartElement.value              = cartData['quantity'];
+    if (cartElements) {
+        const cartElement    = cartElements.querySelector('input');
+        const cartKeyElement = cartElements.querySelector('[name="cart-key"]');
+        cartButton.parentElement.style = "display: block";
+        cartElements.style             = "display: none";
+        cartKeyElement.textContent     = JSON.stringify(params);
+        cartElement.value              = cartData?.quantity || 0;
+        if (!haveSizes && cartData) {
+            cartButton.parentElement.style = "display: none";
+            cartElements.style             = "display: flex";
+            cartElement.value              = cartData['quantity'];
+        }
     }
 }
 

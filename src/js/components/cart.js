@@ -47,6 +47,7 @@ class Cart {
     update(product){
         this.add(product);
     }
+
     updateItem(product){
         this.products[product.product_id + '_' + product.size] = product
         $(document).trigger("cart.updated", this.products)
@@ -63,6 +64,7 @@ class Cart {
             return this.products
         })
     }
+
     updateHtmlMiniCart(){
         this.totalWeight = 0;
         this.totalPrice = 0;
