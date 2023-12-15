@@ -36,12 +36,12 @@
                     <div style="width: 5px;"></div><span class="filter-item-title">Обработка металла</span><span class="reset">Сбросить</span>
                 </div>
                 <ul id="metal_finish">
-                    {% for item in filters.metal_finish.tree %}
-                        <li>
+                    {% for item in filters.metal_finish.tree %}                      
                         {% if item.metal_finish__name %}
+                        <li>
                             <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.metal_finish__name }}</span><a href="#">({{ item.count }})</a></div>
+                        </li>    
                         {% endif %}
-                        </li>
                     {% endfor %}
                 </ul>
             </li>
@@ -51,9 +51,11 @@
                 </div>
                 <ul id="collections">
                     {% for item in filters.brands.tree %}
+                        {% if item.brand__name %}
                         <li>
                             <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.brand__name }}</span><a href="#">({{ item.count }})</a></div>
                         </li>
+                        {% endif %}
                     {% endfor %}
                 </ul>
             </li>
@@ -182,11 +184,11 @@
                 </div>
                 <ul id="gem-colors">
                     {% for item in filters.colors.tree %}
+                        {% if item.color_filter %}
                         <li>
-                            {% if item.color_filter %}
-                                <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.color_filter }}</span><a href="#">({{ item.count }})</a></div>
-                            {% endif %}
+                            <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.color_filter }}</span><a href="#">({{ item.count }})</a></div>
                         </li>
+                        {% endif %}
                     {% endfor %}
                 </ul>
             </li>
@@ -195,16 +197,16 @@
                     <div style="width: 5px;"></div><span class="filter-item-title">Огранка</span><span class="reset">Сбросить</span>
                 </div>
                 <ul id="cuts">
-                    {% for item in filters.cuts.tree %}
+                    {% for item in filters.cuts.tree %}  
+                        {% if item.cut_type__name %}
                         <li>
-                            {% if item.cut_type__name %}
-                                <div class="d-xl-flex justify-content-xl-start row filter-node-item">
-                                    <img class="d-xl-flex" src="{{ MEDIA_URL }}{{ item.nodes|get_cut_type_image }}" style="padding: 0px; height: 30px;" alt="{{ item.cut_type__name }}">
-                                    <span class="filter-point filter-item-title filter-item-title-center" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.cut_type__name }}</span>
-                                    <a href="#" class="filter-item-title-center">({{ item.count }})</a>
-                                </div>
-                            {% endif %}
+                            <div class="d-xl-flex justify-content-xl-start row filter-node-item">
+                                <img class="d-xl-flex" src="{{ MEDIA_URL }}{{ item.nodes|get_cut_type_image }}" style="padding: 0px; height: 30px;" alt="{{ item.cut_type__name }}">
+                                <span class="filter-point filter-item-title filter-item-title-center" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.cut_type__name }}</span>
+                                <a href="#" class="filter-item-title-center">({{ item.count }})</a>
+                            </div>
                         </li>
+                        {% endif %}
                     {% endfor %}
                 </ul>
             </li>
