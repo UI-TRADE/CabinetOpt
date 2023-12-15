@@ -208,7 +208,7 @@ class Product(models.Model):
         verbose_name='Обработка металла',
         related_name='products_by_gender'
     )
-    color = models.CharField('Цвет', max_length=50, blank=True, db_index=True)
+    color = TrimCharField('Цвет', max_length=50, blank=True, db_index=True, strip=True)
     gender = models.ManyToManyField(
         Gender,
         verbose_name='Гендер',
@@ -240,7 +240,7 @@ class Product(models.Model):
         verbose_name='Дизайн',
         related_name='products_by_design'
     )
-    str_color = models.CharField('Цвет строкой', max_length=50, blank=True, db_index=True)
+    str_color = TrimCharField('Цвет строкой', max_length=50, blank=True, db_index=True, strip=True)
     lock_type_earings = models.CharField('Тип и размер замка серег', max_length=50, blank=True, db_index=True)
     lock_type_chain = models.CharField('Тип и размер замка цепей', max_length=50, blank=True, db_index=True)
     lock_type_bracelet = models.CharField('Тип и размер замка браслетов', max_length=50, blank=True, db_index=True)

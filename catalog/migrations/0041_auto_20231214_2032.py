@@ -7,12 +7,14 @@ def save_products(apps, schema_editor):
     for entry in Product.objects.all():
         entry.metal = entry.metal.strip()
         entry.metal_content = entry.metal_content.strip()
+        entry.color = entry.color.strip()
+        entry.str_color = entry.str_color.strip()
         entry.save()
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('catalog', '0038_alter_product_metal_alter_product_metal_content'),
+        ('catalog', '0040_alter_product_color_alter_product_str_color'),
     ]
 
     operations = [
