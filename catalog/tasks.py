@@ -14,6 +14,7 @@ from catalog.models import (
     CollectionGroup,
     Collection,
     Brand,
+    MetalFinish,
     StockAndCost,
     Size,
     GemSet,
@@ -60,6 +61,10 @@ def run_uploading_products(uploading_products):
                         'show_on_site'       : bool(item["show_on_site"]),
                         'identifier_1C'      : identifier_1C
                 })
+
+                processings = update_or_create_metal_finish(item["processing"])
+                for type_of_metal_finish in processings:
+                    product.metal_finish.add(type_of_metal_finish)
 
                 genders = update_or_create_gender(item["gender"])
                 for gender in genders:
@@ -176,6 +181,15 @@ def update_or_create_gender(genders):
     for gender in genders:
         gender_obj, _ = Gender.objects.update_or_create(name=gender)
         result.append(gender_obj)
+
+    return result
+
+
+def update_or_create_metal_finish(processings):
+    result = []
+    for type_of_metal_finish in processings:
+        metal_finish_obj, _ = MetalFinish.objects.update_or_create(name=type_of_metal_finish.strip())
+        result.append(metal_finish_obj)
 
     return result
 
