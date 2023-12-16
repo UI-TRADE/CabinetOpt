@@ -39,6 +39,7 @@ const updateProductCards = (element) => {
                 const actual_prices    = JSON.parse(data['actual_prices']);
                 const discount_prices  = JSON.parse(data['discount_prices']);
                 const default_sizes    = JSON.parse(data['default_sizes']);
+                const available_stocks = JSON.parse(data['available_stocks']);
                 productsData.products = products;
                 productsData.stockAndCosts = stocks_and_costs;
 
@@ -59,18 +60,21 @@ const updateProductCards = (element) => {
                     const defaultSize = default_sizes.filter(
                         el => el['fields'].product[1] == currentId['id']
                     ).find(_ => true);
+                    const available_stock = available_stocks.filter(
+                        el => el['product'] == currentId['id']
+                    ).find(_ => true);
 
                     if (stock_and_cost) {
                         maxPrice = stock_and_cost['fields'].cost;
                         weight = stock_and_cost['fields'].weight;
-                        inStok = stock_and_cost['fields'].stock;
+                        // inStok = stock_and_cost['fields'].stock;
                     }
 
                     if (defaultSize) {
                         maxPrice = defaultSize['fields'].cost;
                         weight = defaultSize['fields'].weight;
                         size = defaultSize['fields'].size.find(_ => true);
-                        inStok = defaultSize['fields'].stock;
+                        // inStok = defaultSize['fields'].stock;
                     }
                     if (actual_price) {
                         currentPrice = actual_price['fields'].price;
@@ -80,6 +84,10 @@ const updateProductCards = (element) => {
                     if (discount_price) {
                         maxPrice = discount_price['fields'].price;
                         currentDiscount = discount_price['fields'].discount;
+                    }
+
+                    if (available_stock && available_stock['total_stock'] > 0) {
+                        inStok = available_stock['total_stock'];    
                     }
 
                     const price = getPrice(currentPrice, maxPrice, currentDiscount, weight);
@@ -92,7 +100,7 @@ const updateProductCards = (element) => {
                     const maxPriceField       = priceBlock.querySelector('.max-price');
                     const discountField       = priceBlock.querySelector('.discount');
                     const stockField          = inStockBlock.querySelector('.in_stock');
-                    const tagField          = elements[i].querySelector('[name="product-status"]');
+                    const tagField            = elements[i].querySelector('[name="product-status"]');
                     if (currentPrice) pricePerweightField.innerHTML = `${decimalFormat(Math.ceil(currentPrice))} руб/гр.`;
                     if (price.clientPrice) priceField.innerHTML = `${decimalFormat(Math.ceil(price.clientPrice))} <i class="fa fa-rub" aria-hidden="true"></i>`;
                     if (currentDiscount>0) {
@@ -104,9 +112,10 @@ const updateProductCards = (element) => {
                         weightField.textContent = `${decimalFormat(weight)} гр.`
                     }
                     if (inStok) stockField.textContent = `${inStok} шт`;
-                    if (+inStok === 0) {
-                        tagField.setAttribute('data-json', '{ "status": "order" }');
-                    }
+
+                    // if (+inStok === 0) {
+                    //     tagField.setAttribute('data-json', '{ "status": "order" }');
+                    // }
 
                     var inputFields = inStockBlock.getElementsByTagName('input');
                     for (let item of inputFields) {
@@ -116,7 +125,7 @@ const updateProductCards = (element) => {
                     }
 
                     // Данные для диалогового окна выбора размеров
-                    if (stock_and_cost && stock_and_cost['fields'].size) {
+                    if (stock_and_cost && stock_and_cost['fields'].size.find(_ => true)) {
                         currentId['haveSizes'] = true;
                         currentId['unit'] = '163';
                         currentId['price'] = price.clientPrice;

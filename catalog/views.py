@@ -8,7 +8,7 @@ from django.core.paginator import PageNotAnInteger
 from django.views.generic import ListView, DetailView, TemplateView
 from django.conf import settings
 from django.http import JsonResponse
-from django.db.models import Value, FloatField, Count
+from django.db.models import Value, FloatField, Count, Sum
 from django.db.models.functions import Cast
 from django.core.serializers import serialize
 
@@ -306,6 +306,10 @@ def stocks_and_costs(request):
             products.values_list('pk', flat=True), size=size
         )
 
+        available_stocks = StockAndCost.objects.filter(
+            product_id__in = productIds.split(',')
+        ).values('product').annotate(total_stock=Sum('stock')).order_by()
+
         return JsonResponse(
             {
                 'replay'           : 'ok',
@@ -318,6 +322,7 @@ def stocks_and_costs(request):
                 'default_sizes'    : serialize(
                     "json", stocks_and_costs_with_default_size, use_natural_foreign_keys=True
                 ),
+                'available_stocks' : json.dumps([item for item in available_stocks])
             },
             status=200,
             safe=False
