@@ -49,7 +49,7 @@ class FiltersView(TemplateView):
             'prod_status' : self.get_filter(qs, 'count', 'status'),
             'collections' : self.get_filter(qs, 'count', 'collection__group__name', 'collection__name'),
             'genders'     : self.get_filter(qs.annotate(gender_count=Count('gender')), 'count', 'gender__name'),
-            'sizes'       : self.get_filter(StockAndCost.objects.filter(product__in=qs), 'sum', 'size__name'),
+            'sizes'       : self.get_filter(StockAndCost.objects.filter(product__in=qs), 'sum', 'product__collection__group__name', 'size__name'),
             'gems'        : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'precious_filter', 'precious_stone__name'),
             'colors'      : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'color_filter'),
             'cuts'        : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'cut_type__name', 'cut_type__image'),
@@ -367,7 +367,6 @@ def product_analogues(request):
         similar_products = SimilarProducts.objects.filter(product_id=product_id).values_list('similar_product', flat=True)
         for similar_product in similar_products:
             product_analogues_imgs.append(ProductImage.objects.filter(product_id=similar_product).first())
-        print(product_analogues_imgs)
         return JsonResponse(
             {
                 'replay'            : 'ok',

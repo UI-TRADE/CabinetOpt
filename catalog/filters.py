@@ -60,7 +60,7 @@ class FilterTree(object):
         roots = self.qs.values(root_field).annotate(sum=Sum('stock'))
         for root in roots:
             if node_fields:
-                nodes = self.qs.filter(Q((root_field, root[root_field]))).values(*node_fields).annotate(count=Count('id'))
+                nodes = self.qs.filter(Q((root_field, root[root_field]))).values(*node_fields).annotate(count=Count('id'), sum=Sum('stock'))
                 if nodes:
                     root['nodes'] = self.serialize_node(root[root_field], nodes, node_fields)
             self.tree.append(self.serialize_root(root, root_field))
@@ -71,22 +71,23 @@ class CharInFilter(BaseInFilter, CharFilter):
 
 
 class ProductFilter(django_filters.FilterSet):
-    # available_for_order     = BooleanFilter(field_name = 'available_for_order')
-    metal                   = CharInFilter(field_name = 'metal', lookup_expr='in')
-    metal_finish__name      = CharInFilter(field_name = 'metal_finish__name', lookup_expr='in')
-    str_color               = CharInFilter(field_name = 'str_color', lookup_expr='in')
-    metal_content           = CharInFilter(field_name = 'metal_content', lookup_expr='in')
-    brand__name             = CharInFilter(field_name = 'brand__name', lookup_expr='in')
-    status                  = CharInFilter(field_name = 'status', lookup_expr='in')
-    collection__group__name = CharInFilter(field_name = 'collection__group__name', lookup_expr='in')
-    collection__name        = CharInFilter(field_name = 'collection__name', lookup_expr='in')
-    gender__name            = CharInFilter(field_name = 'gender__name', lookup_expr='in')
+    # available_for_order            = BooleanFilter(field_name = 'available_for_order')
+    metal                            = CharInFilter(field_name = 'metal', lookup_expr='in')
+    metal_finish__name               = CharInFilter(field_name = 'metal_finish__name', lookup_expr='in')
+    str_color                        = CharInFilter(field_name = 'str_color', lookup_expr='in')
+    metal_content                    = CharInFilter(field_name = 'metal_content', lookup_expr='in')
+    brand__name                      = CharInFilter(field_name = 'brand__name', lookup_expr='in')
+    status                           = CharInFilter(field_name = 'status', lookup_expr='in')
+    collection__group__name          = CharInFilter(field_name = 'collection__group__name', lookup_expr='in')
+    collection__name                 = CharInFilter(field_name = 'collection__name', lookup_expr='in')
+    gender__name                     = CharInFilter(field_name = 'gender__name', lookup_expr='in')
 
-    in_stock                = BooleanFilter(method='in_stock_filter')    
-    size__name              = CharFilter(method='size_filter')
-    precious_stone__name    = CharFilter(method='gems_filter')
-    color_filter            = CharFilter(method='gems_filter')
-    cut_type__name          = CharFilter(method='gems_filter')
+    in_stock                         = BooleanFilter(method='in_stock_filter')
+    product__collection__group__name = CharFilter(method='size_filter')    
+    size__name                       = CharFilter(method='size_filter')
+    precious_stone__name             = CharFilter(method='gems_filter')
+    color_filter                     = CharFilter(method='gems_filter')
+    cut_type__name                   = CharFilter(method='gems_filter')
 
     weight = django_filters.NumericRangeFilter(
         field_name='weight',
@@ -138,7 +139,6 @@ class ProductFilter(django_filters.FilterSet):
                 **filters
             ).values_list('product_id', flat=True)
         )
-
 
     def size_filter(self, queryset, name, value):
         return queryset.filter(

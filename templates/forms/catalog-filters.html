@@ -30,7 +30,7 @@
                                 {% with root_params=item|filtertojson node_params=node|filtertojson %}
                                     <li>
                                         <div class="d-flex row filter-node-item">
-                                            <span class="filter-point filter-item-title filter-item-title-disable" name="{{node.ident}}" data-json="{{ node_params|updateparam:root_params }}">{{ node.str_color }}
+                                            <span class="filter-point filter-item-title filter-item-title-disable" name="{{node.ident}}" data-json="{{ root_params|updateparam:node_params }}">{{ node.str_color }}
                                                 <span class="count">(0)</span>
                                             </span>
                                         </div>
@@ -124,7 +124,7 @@
                                         {% with root_params=item|filtertojson node_params=node|filtertojson %}
                                             <li>
                                                 <div class="d-xl-flex row filter-node-item">
-                                                    <span class="filter-point filter-item-title filter-item-title-disable" name="{{node.ident}}" data-json="{{ node_params|updateparam:root_params }}">{{ node.collection__name }}
+                                                    <span class="filter-point filter-item-title filter-item-title-disable" name="{{node.ident}}" data-json="{{ root_params|updateparam:node_params }}">{{ node.collection__name }}
                                                         <span class="count">(0)</span>
                                                     </span>
                                                 </div>
@@ -144,17 +144,38 @@
                     <span class="filter-item-title">Размеры</span>
                     <span class="reset">Сбросить</span>
                 </div>
-                <div id="sizes" class="row">
-                    {% for item in filters.sizes.tree %}
-                        {% if item.size__name %}
-                            {% if item.sum > 0 %}
-                                <span class="size-item size-active filter-point filter-item-title filter-item-title-disable" name="{{item.ident}}" data-json="{{item|filtertojson}}">{{ item.size__name }}</span>
-                            {% else %}
-                                <span class="size-item filter-point filter-item-title filter-item-title-disable" name="{{item.ident}}" data-json="{{item|filtertojson}}">{{ item.size__name }}</span>
-                            {% endif %}
-                        {% endif %}
-                    {% endfor %}
-                </div>
+                <ul style="padding: 0px;">
+                {% for item in filters.sizes.tree %}
+                    <li>
+                        <div class="d-flex row filter-item slave-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;" width="12" height="17">
+                            <div style="width: 5px;"></div>
+                            <span 
+                                class="filter-point filter-item-title-unable"
+                                name="{{item.ident}}"
+                                data-json="{{item|filtertojson}}">
+                                {{ item.product__collection__group__name }}:
+                                <!-- <span class="count">(0)</span> -->
+                            </span>
+                        </div>
+                        <ul>
+                            <div id="sizes" class="row">
+                                {% for node in item.nodes %}
+                                    {% with root_params=item|filtertojson node_params=node|filtertojson %}
+                                        {% if node.size__name %}
+                                            <span 
+                                                class="size-item filter-point filter-item-title"
+                                                name="{{node.ident}}"
+                                                data-json="{{ root_params|updateparam:node_params }}">
+                                                {{ node.size__name }}
+                                            </span>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endfor %}
+                            </div>
+                        </ul>
+                    </li>
+                {% endfor %}
+                </ul>
             </li>
             <li>
                 <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
@@ -228,7 +249,7 @@
                                 {% with root_params=item|filtertojson node_params=node|filtertojson %}
                                     <li>
                                         <div class="d-flex row filter-node-item">
-                                            <span class="filter-point filter-item-title filter-item-title-disable" name="{{node.ident}}" data-json="{{ node_params|updateparam:root_params }}">{{ node.precious_stone__name }}
+                                            <span class="filter-point filter-item-title filter-item-title-disable" name="{{node.ident}}" data-json="{{ root_params|updateparam:node_params }}">{{ node.precious_stone__name }}
                                                 <span class="count">(0)</span>
                                             </span>
                                         </div>

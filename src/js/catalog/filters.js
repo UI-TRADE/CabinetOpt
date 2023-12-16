@@ -9,7 +9,7 @@ class FilterBadges {
 
         this.filterTemplates = {
             'default': (value) => `${value}`,
-            "size__name": (value) => `${value} б`,
+            "size__name": (value) => `${value}`,
             "weight_min": (value) => `от ${value} гр.`,
             "weight_max": (value) => `до ${value} гр.`,
             "price_min": (value) => `от ${value} р.`,
@@ -35,7 +35,7 @@ class FilterBadges {
                     .addClass('badge badge-secondary')
                     .text(
                         (this.filterTemplates[Object.keys(filter)[0]] || this.filterTemplates['default'])(
-                            Object.values(filter).filter(value => !!value).join(' ')
+                            Object.values(filter).filter(value => !!value)[0]
                         )
                     )
                     .append(
@@ -66,6 +66,7 @@ const isTopNode = (element) => {
     });
     return result;
 }
+
 
 const openMenuItems = (element) => {
     $(element).toggleClass('item-close');
@@ -112,13 +113,11 @@ const selectMenuItem = (element) => {
         else
             selectedFilters = [].concat(parsedData);
         selectedFilters.forEach(f => {
-            let foundObjects = filters.filter(item => {
-                if (Object.keys(item).length !== Object.keys(f).length)
-                    return false;
-                return Object.keys(f).every(key => item[key] === f[key])
-            });
+            let foundObjects = filters.filter(item => item['ident'] === f['ident']);
             if (!foundObjects.length && isActive) {
                 filters.push(f);
+                const currentElement = $(`.filter-item-title[name=${f['ident']}]`);
+                $.each(currentElement, (_, el) => $(el).addClass('filter-item-title-active'));
             }
             if (foundObjects.length && !isActive) {
                 foundObjects.forEach(el => {
@@ -133,20 +132,14 @@ const selectMenuItem = (element) => {
 
 
 const updateMenuItems = () => {
-    let dataJson;
     const filters = JSON.parse(sessionStorage.getItem('filters'));
     $('.filter-item-title').each((_, element) => {
-        dataJson = $(element).attr('data-json');
-        if (dataJson) {
-            const parsedData = JSON.parse(dataJson.replace(/'/g, '"'));
-            let foundObjects = filters.filter(item => {
-                if (Object.keys(item).length !== Object.keys(parsedData).length) return false;
-                return Object.keys(parsedData).every(key => item[key] === parsedData[key])
-            });
-            if (foundObjects.length) {
-                $(element).toggleClass('filter-item-title-active');
-            }
-        }
+        let currentFilter = [];
+        const elementName = $(element).attr('name');
+        if (elementName)
+            currentFilter = filters.filter(item => item['ident'] === elementName);
+        if (currentFilter.length)
+            $(element).toggleClass('filter-item-title-active');
     });
     $('.form-check-input').each((_, element) => {
         let foundObject = filters.filter(item => item[element.name]).find(_ => true);
@@ -158,7 +151,7 @@ const updateMenuItems = () => {
         }
     });
 
-    selectedFiltersBadges.update(filters)
+    selectedFiltersBadges.update(filters);
 }
 
 
@@ -169,12 +162,18 @@ const updateFilterElements = (elements) => {
             const countElement = $(foundElement['element']).children('span.count');
             if (countElement) countElement.text(`(${foundElement['count']})`);
             $(foundElement['element']).removeClass('filter-item-title-disable');
+            if (foundElement.hasOwnProperty('sum') && foundElement['sum'] > 0) {
+                $(foundElement['element']).addClass('size-active');
+            }   
             return;
         }
         if (!$(item).hasClass('filter-item-title-disable')) {
             const countElement = $(item).children('span.count');
             if (countElement) countElement.text('(0)');
-            if ($(item).is('.filter-point')) $(item).addClass('filter-item-title-disable');
+            if ($(item).is('.filter-point')) {
+                $(item).addClass('filter-item-title-disable');
+                $(item).removeClass('size-active');
+            }
         }
     });
 }
@@ -190,10 +189,9 @@ export function  updateFilters(html) {
                 filters[key].forEach(item => {
                     const elements = $(`[name='${item.ident}']`);
                     elements.each((_, element) => {
-                        activeFilters.push({'element': element, 'count': item['count']});
-                        // const dataJson = JSON.parse($(element).attr('data-json'));
-                        // if (item[item['name']] === dataJson[$(element).attr('name')])
-                        //     activeFilters.push({'element': element, 'count': item['count']});
+                        const activeFilter = {'element': element, 'count': item['count']};
+                        if (item.hasOwnProperty('sum')) Object.assign(activeFilter, {'sum': item['sum']});
+                        activeFilters.push(activeFilter);
                     });
                 });
             }
@@ -238,6 +236,7 @@ export function filtersEvents() {
             $('.form-check-input').each((_, element) => {
                 element.checked = false;
             });
+            selectedFiltersBadges.update([]);
         }
         showCatalog();
     });
