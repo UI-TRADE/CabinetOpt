@@ -86,7 +86,7 @@ class ProductView(FiltersView, ListView):
                     continue
                 if not isinstance(value, str):
                     range_filters = range_filters | {key: value}
-                    continue    
+                    continue
                 result[key].append(value)
         result = {key: ','.join(value) for key, value in result.items()}
         if range_filters:
@@ -124,7 +124,6 @@ class ProductView(FiltersView, ListView):
         except EmptyPage:
             products_page = paginator.page(paginator.num_pages)
 
-        # filters = self.get_filters(self.object_list)
         context['products']    = products_page
         context['filters']     = json.dumps({key: value.__json__() for key, value in self.get_filters(self.object_list).items()})
         context['MEDIA_URL']   = settings.MEDIA_URL

@@ -17,6 +17,14 @@ def addparam(key, param):
 
 
 @register.filter
+def updateparam(first_param, second_param):
+    result = []
+    result.append(json.loads(first_param))
+    result.append(json.loads(second_param))
+    return json.dumps(result)
+
+
+@register.filter
 def filtertojson(seq):
     return json.dumps({key: value for key, value in dict(seq).items() if not key in ['count', 'sum', 'nodes']})
 

@@ -1,3 +1,4 @@
+import re
 import django_filters
 from django_filters import BooleanFilter, CharFilter, BaseInFilter
 from django.db.models import Count, Sum, Q
@@ -23,12 +24,28 @@ class FilterTree(object):
                     } for node in item['nodes']
                 ])
         return result
+    
 
     def serialize_root(self, root, root_field):
-        return root | {'name': root_field}
+        def get_ident():
+            if root[root_field]:
+                return '%s_%s' % (root_field, re.sub(r'[^a-zA-Zа-яА-Я0-9]', '', root[root_field]).lower())
+            return root_field
+        
+        return root | {'name': root_field, 'ident': get_ident()}
 
-    def serialize_node(self, node, node_fields):
-        return [item | {'name': '_'.join(node_fields)} for item in node]
+    def serialize_node(self, parent, node, node_fields):
+        def get_ident(item):
+            result = ''
+            for node_field in node_fields:
+                result += '%s_%s_%s' % (
+                    node_field,
+                    re.sub(r'[^a-zA-Zа-яА-Я0-9]', '', parent).lower(),
+                    re.sub(r'[^a-zA-Zа-яА-Я0-9]', '', item[node_field]).lower()
+                )
+            return result
+        
+        return [item | {'name': '_'.join(node_fields), 'ident': get_ident(item)} for item in node]
 
     def count(self, root_field, *node_fields):
         roots = self.qs.values(root_field).annotate(count=Count('id'))
@@ -36,7 +53,7 @@ class FilterTree(object):
             if node_fields:
                 nodes = self.qs.filter(Q((root_field, root[root_field]))).values(*node_fields).annotate(count=Count('id'))
                 if nodes:
-                    root['nodes'] = self.serialize_node(nodes, node_fields)
+                    root['nodes'] = self.serialize_node(root[root_field], nodes, node_fields)
             self.tree.append(self.serialize_root(root, root_field))
 
     def sum(self, root_field, *node_fields):
@@ -45,7 +62,7 @@ class FilterTree(object):
             if node_fields:
                 nodes = self.qs.filter(Q((root_field, root[root_field]))).values(*node_fields).annotate(count=Count('id'))
                 if nodes:
-                    root['nodes'] = self.serialize_node(nodes, node_fields)
+                    root['nodes'] = self.serialize_node(root[root_field], nodes, node_fields)
             self.tree.append(self.serialize_root(root, root_field))
 
 
@@ -103,8 +120,6 @@ class ProductFilter(django_filters.FilterSet):
         ]
     
     def in_stock_filter(self, queryset, name, value):
-        print(name, value, sep=" ")
-        print(StockAndCost.objects.filter(stock__gte=0).values_list('product_id', flat=True))
         return queryset.filter(
             pk__in=StockAndCost.objects.filter(
                 stock__gte=0

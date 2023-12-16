@@ -12,34 +12,51 @@
         <ul style="padding: 0px;">
             <li>
                 <div class="d-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
-                    <div style="width: 5px;"></div><span class="filter-item-title">МЕТАЛЛ</span><span class="reset">Сбросить</span>
+                    <div style="width: 5px;"></div>
+                    <span class="filter-item-title">МЕТАЛЛ</span>
+                    <span class="reset">Сбросить</span>
                 </div>
                 <ul style="padding: 0px;">
                     {% for item in filters.metals.tree %}
                         <li>
                             <div class="d-flex row filter-item slave-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;" width="12" height="17">
-                                <div style="width: 5px;"></div><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}">{{ item.metal }}</span><a href="#">({{ item.count }})</a>
+                                <div style="width: 5px;"></div>
+                                <span class="filter-point filter-item-title filter-item-title-disable" name="{{item.ident}}" data-json="{{item|filtertojson}}">{{ item.metal }}
+                                    <span class="count">(0)</span>
+                                </span>
                             </div>
                             <ul>
                             {% for node in item.nodes %}
-                                <li>
-                                    <div class="d-flex row filter-node-item"><span class="filter-point filter-item-title" name="{{ node.name }}" data-json="{{node|filtertojson}}">{{ node.str_color }}</span><a href="#">({{ node.count }})</a></div>
-                                </li>
+                                {% with root_params=item|filtertojson node_params=node|filtertojson %}
+                                    <li>
+                                        <div class="d-flex row filter-node-item">
+                                            <span class="filter-point filter-item-title filter-item-title-disable" name="{{node.ident}}" data-json="{{ node_params|updateparam:root_params }}">{{ node.str_color }}
+                                                <span class="count">(0)</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                {% endwith %}
                             {% endfor %}
                             </ul>
-                        </li>   
+                        </li>
                     {% endfor %}
                 </ul>
             </li>
             <li>
                 <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
-                    <div style="width: 5px;"></div><span class="filter-item-title">Обработка металла</span><span class="reset">Сбросить</span>
+                    <div style="width: 5px;"></div>
+                    <span class="filter-item-title">Обработка металла</span>
+                    <span class="reset">Сбросить</span>
                 </div>
                 <ul id="metal_finish">
                     {% for item in filters.metal_finish.tree %}                      
                         {% if item.metal_finish__name %}
                         <li>
-                            <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.metal_finish__name }}</span><a href="#">({{ item.count }})</a></div>
+                            <div class="d-xl-flex justify-content-xl-start row filter-node-item">
+                                <span class="filter-point filter-item-title filter-item-title-disable" name="{{item.ident}}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.metal_finish__name }}
+                                    <span class="count">(0)</span>
+                                </span>
+                            </div>
                         </li>    
                         {% endif %}
                     {% endfor %}
@@ -47,13 +64,19 @@
             </li>
             <li>
                 <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
-                    <div style="width: 5px;"></div><span class="filter-item-title">Коллекции</span><span class="reset">Сбросить</span>
+                    <div style="width: 5px;"></div>
+                    <span class="filter-item-title">Коллекции</span>
+                    <span class="reset">Сбросить</span>
                 </div>
                 <ul id="collections">
                     {% for item in filters.brands.tree %}
                         {% if item.brand__name %}
                         <li>
-                            <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.brand__name }}</span><a href="#">({{ item.count }})</a></div>
+                            <div class="d-xl-flex justify-content-xl-start row filter-node-item">
+                                <span class="filter-point filter-item-title filter-item-title-disable" name="{{item.ident}}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.brand__name }}
+                                    <span class="count">(0)</span>
+                                </span>
+                            </div>
                         </li>
                         {% endif %}
                     {% endfor %}
@@ -61,52 +84,73 @@
             </li>
             <li>
                 <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
-                    <div style="width: 5px;"></div><span class="filter-item-title">Маркетинговый статус</span><span class="reset">Сбросить</span>
+                    <div style="width: 5px;"></div>
+                    <span class="filter-item-title">Маркетинговый статус</span>
+                    <span class="reset">Сбросить</span>
                 </div>
                 <ul id="prod_status">
                     {% for item in filters.prod_status.tree %}
                         <li>
-                            <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.status|get_status_repr }}</span><a href="#">({{ item.count }})</a></div>
+                            <div class="d-xl-flex justify-content-xl-start row filter-node-item">
+                                <span class="filter-point filter-item-title filter-item-title-disable" name="{{item.ident}}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.status|get_status_repr }}
+                                    <span class="count">(0)</span>
+                                </span>
+                            </div>
                         </li>
                     {% endfor %}
                 </ul>
             </li>
             <li>
                 <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
-                    <div style="width: 5px;"></div><span class="filter-item-title">Тип ювелирных изделий</span><span class="reset">Сбросить</span>
+                    <div style="width: 5px;"></div>
+                    <span class="filter-item-title">Тип ювелирных изделий</span>
+                    <span class="reset">Сбросить</span>
                 </div>
                 <ul style="padding: 0px;">
                     {% for item in filters.collections.tree %}
+                    
                         <li>
                             <div class="d-xl-flex row filter-item slave-node">
                                 <img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;" width="12" height="17">
-                                <div style="width: 5px;"></div><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}">{{ item.collection__group__name }}</span><a href="#">({{ item.count }})</a>
+                                <div style="width: 5px;"></div>
+                                <span class="filter-point filter-item-title filter-item-title-disable" name="{{item.ident}}" data-json="{{item|filtertojson}}">{{ item.collection__group__name }}
+                                    <span class="count">(0)</span>
+                                </span>
                             </div>
 
                             <div>
                                 <ul>
                                     {% for node in item.nodes %}
-                                        <li>
-                                            <div class="d-xl-flex row filter-node-item"><span class="filter-point filter-item-title" name="{{ node.name }}" data-json="{{node|filtertojson}}">{{ node.collection__name }}</span><a href="#">({{ node.count }})</a></div>
-                                        </li>
+                                        {% with root_params=item|filtertojson node_params=node|filtertojson %}
+                                            <li>
+                                                <div class="d-xl-flex row filter-node-item">
+                                                    <span class="filter-point filter-item-title filter-item-title-disable" name="{{node.ident}}" data-json="{{ node_params|updateparam:root_params }}">{{ node.collection__name }}
+                                                        <span class="count">(0)</span>
+                                                    </span>
+                                                </div>
+                                            </li>
+                                        {% endwith %}
                                     {% endfor %}
                                 </ul>
                             </div>
                         </li>
+                    
                     {% endfor %}
                 </ul>
             </li>
             <li>
                 <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
-                    <div style="width: 5px;"></div><span class="filter-item-title">Размеры</span><span class="reset">Сбросить</span>
+                    <div style="width: 5px;"></div>
+                    <span class="filter-item-title">Размеры</span>
+                    <span class="reset">Сбросить</span>
                 </div>
                 <div id="sizes" class="row">
                     {% for item in filters.sizes.tree %}
                         {% if item.size__name %}
                             {% if item.sum > 0 %}
-                                <span class="size-item size-active filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}">{{ item.size__name }}</span>
+                                <span class="size-item size-active filter-point filter-item-title filter-item-title-disable" name="{{item.ident}}" data-json="{{item|filtertojson}}">{{ item.size__name }}</span>
                             {% else %}
-                                <span class="size-item filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}">{{ item.size__name }}</span>
+                                <span class="size-item filter-point filter-item-title filter-item-title-disable" name="{{item.ident}}" data-json="{{item|filtertojson}}">{{ item.size__name }}</span>
                             {% endif %}
                         {% endif %}
                     {% endfor %}
@@ -114,7 +158,8 @@
             </li>
             <li>
                 <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
-                    <div style="width: 5px;"></div><span class="filter-item-title">Средний общий вес, гр</span>
+                    <div style="width: 5px;"></div>
+                    <span class="filter-item-title">Средний общий вес, гр</span>
                 </div>
                 <div name="slider" style="height: 20px;"></div>
                 <div id="weight-range" name="slider" style="position: relative;">
@@ -126,49 +171,72 @@
             </li>
             <li>
                 <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
-                    <div style="width: 5px;"></div><span class="filter-item-title">Для кого</span><span class="reset">Сбросить</span>
+                    <div style="width: 5px;"></div>
+                    <span class="filter-item-title">Для кого</span>
+                    <span class="reset">Сбросить</span>
                 </div>
                 <ul id="gender">
                     {% for item in filters.genders.tree %}
                         <li>
-                            <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.gender__name }}</span><a href="#">({{ item.count }})</a></div>
+                            <div class="d-xl-flex justify-content-xl-start row filter-node-item">
+                                <span class="filter-point filter-item-title filter-item-title-disable" name="{{item.ident}}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.gender__name }}
+                                    <span class="count">(0)</span>
+                                </span>
+                            </div>
                         </li>
                     {% endfor %}
                 </ul>
             </li>
             <li>
                 <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
-                    <div style="width: 5px;"></div><span class="filter-item-title">Повод для подарка</span><span class="reset">Сбросить</span>
+                    <div style="width: 5px;"></div>
+                    <span class="filter-item-title">Повод для подарка</span>
+                    <span class="reset">Сбросить</span>
                 </div>
             </li>
             <li>
                 <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
-                    <div style="width: 5px;"></div><span class="filter-item-title">Стиль</span><span class="reset">Сбросить</span>
+                    <div style="width: 5px;"></div>
+                    <span class="filter-item-title">Стиль</span>
+                    <span class="reset">Сбросить</span>
                 </div>
             </li>
             <li>
                 <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
-                    <div style="width: 5px;"></div><span class="filter-item-title">Дизайн</span><span class="reset">Сбросить</span>
+                    <div style="width: 5px;"></div>
+                    <span class="filter-item-title">Дизайн</span>
+                    <span class="reset">Сбросить</span>
                 </div>
             </li>
             <li>
                 <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
-                    <div style="width: 5px;"></div><span class="filter-item-title">Вставки</span><span class="reset">Сбросить</span>
+                    <div style="width: 5px;"></div>
+                    <span class="filter-item-title">Вставки</span>
+                    <span class="reset">Сбросить</span>
                 </div>
                 <ul style="padding: 0px;">
                     {% for item in filters.gems.tree %}
                         <li>
                             <div class="d-flex row filter-item slave-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;" width="12" height="17">
-                                <div style="width: 5px;"></div><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}">{{ item.precious_filter }}</span><a href="#">({{ item.count }})</a>
+                                <div style="width: 5px;"></div>
+                                <span class="filter-point filter-item-title filter-item-title-disable" name="{{item.ident}}" data-json="{{item|filtertojson}}">{{ item.precious_filter }}
+                                    <span class="count">(0)</span>
+                                </span>
                             </div>
                             <ul>
                             {% for node in item.nodes %}
-                                <li>
-                                    <div class="d-flex row filter-node-item"><span class="filter-point filter-item-title" name="{{ node.name }}" data-json="{{node|filtertojson}}">{{ node.precious_stone__name }}</span><a href="#">({{ node.count }})</a></div>
-                                </li>
+                                {% with root_params=item|filtertojson node_params=node|filtertojson %}
+                                    <li>
+                                        <div class="d-flex row filter-node-item">
+                                            <span class="filter-point filter-item-title filter-item-title-disable" name="{{node.ident}}" data-json="{{ node_params|updateparam:root_params }}">{{ node.precious_stone__name }}
+                                                <span class="count">(0)</span>
+                                            </span>
+                                        </div>
+                                    </li>
+                                {% endwith %}
                             {% endfor %}
                             </ul>
-                        </li>   
+                        </li> 
                     {% endfor %}
                 </ul>
                 <!-- <div class="gems">
@@ -180,13 +248,19 @@
             </li>
             <li>
                 <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
-                    <div style="width: 5px;"></div><span class="filter-item-title">Цвет вставки</span><span class="reset">Сбросить</span>
+                    <div style="width: 5px;"></div>
+                    <span class="filter-item-title">Цвет вставки</span>
+                    <span class="reset">Сбросить</span>
                 </div>
                 <ul id="gem-colors">
                     {% for item in filters.colors.tree %}
                         {% if item.color_filter %}
                         <li>
-                            <div class="d-xl-flex justify-content-xl-start row filter-node-item"><span class="filter-point filter-item-title" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.color_filter }}</span><a href="#">({{ item.count }})</a></div>
+                            <div class="d-xl-flex justify-content-xl-start row filter-node-item">
+                                <span class="filter-point filter-item-title filter-item-title-disable" name="{{item.ident}}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.color_filter }}
+                                    <span class="count">(0)</span>
+                                </span>
+                            </div>
                         </li>
                         {% endif %}
                     {% endfor %}
@@ -194,7 +268,9 @@
             </li>
             <li>
                 <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
-                    <div style="width: 5px;"></div><span class="filter-item-title">Огранка</span><span class="reset">Сбросить</span>
+                    <div style="width: 5px;"></div>
+                    <span class="filter-item-title">Огранка</span>
+                    <span class="reset">Сбросить</span>
                 </div>
                 <ul id="cuts">
                     {% for item in filters.cuts.tree %}  
@@ -202,8 +278,9 @@
                         <li>
                             <div class="d-xl-flex justify-content-xl-start row filter-node-item">
                                 <img class="d-xl-flex" src="{{ MEDIA_URL }}{{ item.nodes|get_cut_type_image }}" style="padding: 0px; height: 30px;" alt="{{ item.cut_type__name }}">
-                                <span class="filter-point filter-item-title filter-item-title-center" name="{{ item.name }}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.cut_type__name }}</span>
-                                <a href="#" class="filter-item-title-center">({{ item.count }})</a>
+                                <span class="filter-point filter-item-title filter-item-title-disable filter-item-title-center" name="{{item.ident}}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.cut_type__name }}
+                                    <span class="count filter-item-title-center">(0)</span>
+                                </span>
                             </div>
                         </li>
                         {% endif %}

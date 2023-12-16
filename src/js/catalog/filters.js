@@ -104,22 +104,30 @@ const selectMenuItem = (element) => {
     const isActive = $(element).hasClass('filter-item-title-active');
     const dataJson = $(element).attr('data-json');
     if (dataJson) {
+        let selectedFilters;
         const filters = JSON.parse(sessionStorage.getItem('filters'));
         const parsedData = JSON.parse(dataJson.replace(/'/g, '"'));
-        let foundObjects = filters.filter(item => {
-            if (Object.keys(item).length !== Object.keys(parsedData).length) return false;
-            return Object.keys(parsedData).every(key => item[key] === parsedData[key])
-        });
-        if (!foundObjects.length && isActive) {
-            filters.push(parsedData);
-        }
-        if (foundObjects.length && !isActive) {
-            foundObjects.forEach(el => {
-                filters.splice(filters.indexOf(el), 1);
+        if (Array.isArray(parsedData))
+            selectedFilters = parsedData;
+        else
+            selectedFilters = [].concat(parsedData);
+        selectedFilters.forEach(f => {
+            let foundObjects = filters.filter(item => {
+                if (Object.keys(item).length !== Object.keys(f).length)
+                    return false;
+                return Object.keys(f).every(key => item[key] === f[key])
             });
-        }
+            if (!foundObjects.length && isActive) {
+                filters.push(f);
+            }
+            if (foundObjects.length && !isActive) {
+                foundObjects.forEach(el => {
+                    filters.splice(filters.indexOf(el), 1);
+                });
+            }
+        });
         sessionStorage.setItem('filters', JSON.stringify(filters));
-        selectedFiltersBadges.update(filters)
+        selectedFiltersBadges.update(filters);
     }
 }
 
@@ -157,19 +165,18 @@ const updateMenuItems = () => {
 const updateFilterElements = (elements) => {
     $('.filter-item-title').each((_, item) => {
         const foundElement = elements.find(el => el['element'] == item);
-        if (!foundElement) {
-            const parentElement = $(item).parent();
-            const countElement = parentElement.find('a');
-            if (countElement) countElement.text('(0)');
-            if ($(item).is('.filter-point')) $(item).addClass('filter-item-title-disable');
-        } else {
-            const parentElement = $(foundElement['element']).parent();
-            const countElement = parentElement.find('a');
+        if (foundElement) {
+            const countElement = $(foundElement['element']).children('span.count');
             if (countElement) countElement.text(`(${foundElement['count']})`);
             $(foundElement['element']).removeClass('filter-item-title-disable');
+            return;
+        }
+        if (!$(item).hasClass('filter-item-title-disable')) {
+            const countElement = $(item).children('span.count');
+            if (countElement) countElement.text('(0)');
+            if ($(item).is('.filter-point')) $(item).addClass('filter-item-title-disable');
         }
     });
-
 }
 
 
@@ -181,11 +188,12 @@ export function  updateFilters(html) {
         for (var key in filters) {
             if (filters.hasOwnProperty(key)) {
                 filters[key].forEach(item => {
-                    const elements = $(`[name='${item['name']}']`);
+                    const elements = $(`[name='${item.ident}']`);
                     elements.each((_, element) => {
-                        const dataJson = JSON.parse($(element).attr('data-json'));
-                        if (item[item['name']] === dataJson[$(element).attr('name')])
-                            activeFilters.push({'element': element, 'count': item['count']});
+                        activeFilters.push({'element': element, 'count': item['count']});
+                        // const dataJson = JSON.parse($(element).attr('data-json'));
+                        // if (item[item['name']] === dataJson[$(element).attr('name')])
+                        //     activeFilters.push({'element': element, 'count': item['count']});
                     });
                 });
             }

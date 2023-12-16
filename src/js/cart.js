@@ -140,7 +140,7 @@ const addSelectionSizesEvents = (productId, price, unit) => {
             .then((data) => {
                 if (data) {
                     closeAddToCartSettingsWindow();
-                    $(document).data("cart").getProducts()
+                    $(document).data("cart").getProducts();
                 }
             })
             .catch((error) => {
