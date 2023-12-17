@@ -15,7 +15,7 @@
                     {{ item.size }}
                 </button>
                 <div class="sizes-selection__select-btn-foot" data-index="{{ item.size.id }}">
-                    {{ item.weight }}
+                    {{ item.weight|floatformat:2 }}
                 </div>
             </div>
         {% endfor %}
