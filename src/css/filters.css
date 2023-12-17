@@ -278,6 +278,20 @@
     top: -25px;
     left: 162.406px;
   }
+
+  #quantity-range .labels {
+    position: absolute;
+    top: -25px;
+    left: -5px;
+  }
+
+  #quantity-range .labels .label {
+    font-family: Open Sans;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+  }
   
   .ui-slider-horizontal .ui-slider-handle {
     top: -0.4em!important;

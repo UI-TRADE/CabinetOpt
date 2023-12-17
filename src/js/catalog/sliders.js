@@ -110,13 +110,45 @@ const renderSlider = (sliderId, min, max, step, default_min, default_max) => {
     });
 }
 
+const renderDiscreteSlider = (sliderId, steps) => {
+
+    $( `#${sliderId}` ).slider({
+        range: true,
+        min: 0,
+        max: steps.length - 1,
+        values: [0, steps.length - 1],
+        create: function(event, ui) {
+            const currentWidget = $(this).slider('widget');
+            console.log(currentWidget);
+            const handlers = currentWidget.find('.ui-slider-handle');
+            $(handlers[1]).css('left', '100%');
+            $(handlers[0]).css('display', 'none');
+        },
+        slide: function( event, ui ) {
+        },
+        change: function( _, ui ) {
+            const value = steps[ui.value];
+            const attributeName = getSliderAttr(sliderId);
+            const filters = JSON.parse(sessionStorage.getItem('filters'));
+            if (filters && attributeName) {
+                updateFilters(filters, `${attributeName}_min`, 0);
+            }
+            if (value && filters && attributeName) {
+                updateFilters(filters, `${attributeName}_max`, value);
+            }
+            sessionStorage.setItem('filters', JSON.stringify(filters));
+            showCatalog();
+        }
+    });
+}
+
 
 function showSliders() {
 
     renderSlider('weight-range', 0, 150, 0.1, 0, 150);
     renderSlider('price-range', 500, 150000, 1, 500, 150000);
-    renderSlider('quantity-range', 0, 200, 1, 0, 200);
-    renderSlider('instok-range', 0, 100, 1, 0, 100);
+    renderDiscreteSlider('quantity-range', [1, 4, 10, 40, 50, 100]);
+    renderSlider('instok-range', 0, 1000, 1, 0, 1000);
 
 }
 
