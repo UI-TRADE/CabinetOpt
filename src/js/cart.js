@@ -150,6 +150,78 @@ const addSelectionSizesEvents = (productId, price, unit) => {
 }
 
 
+const addSizeSlider = (sizeForm, maxSizeBlocks) => {
+
+    const showSizes = (sizeBlocks, infoBlocks, visibleIndexes) => {
+        $.each(sizeBlocks, (idx, el) => {
+            const foundIdx = visibleIndexes.find(item => item == idx);
+            if (foundIdx == undefined) {
+                $(el).attr("style", "display: none !important;");
+                const dataIndex = $(el).find('input[name="sizes-selection-quantity-input"]').attr('data-index');
+                $.each(infoBlocks, (_, iEl) => {
+                    const sizeId = $(iEl).find('button').attr('data-index');
+                    if (dataIndex === sizeId) $(iEl).attr("style", "display: none !important;");
+                });  
+            } else {
+                $(el).attr("style", "display: flex !important;");
+                const dataIndex = $(el).find('input[name="sizes-selection-quantity-input"]').attr('data-index');
+                $.each(infoBlocks, (_, iEl) => {
+                    const sizeId = $(iEl).find('button').attr('data-index');
+                    if (dataIndex === sizeId) $(iEl).attr("style", "display: flex !important;");
+                });
+            }
+        });
+    }
+
+    const updateNavs = (form, minRange, maxRange, visibleIndexes) => {
+        const backIcon = $(form).find('div[name="size-back"]');
+        const nextIcon = $(form).find('div[name="size-next"]');
+        backIcon.css('visibility', 'hidden');
+        if (minRange < visibleIndexes[0]) backIcon.css('visibility', 'visible');
+        nextIcon.css('visibility', 'hidden');
+        if (maxRange > visibleIndexes[visibleIndexes.length-1]) nextIcon.css('visibility', 'visible');
+    }
+
+    let addSlider = false; const visibleSizes = [];
+    const sizesSelectionSlider1 = sizeForm.find('.sizes-selection__slider-1');
+    const sizesSelectionSlider2 = sizeForm.find('.sizes-selection__slider-2');
+    const infoBlocks = sizesSelectionSlider1.find('div[name="info-block"]');
+    const sizeBlocks = sizesSelectionSlider2.find('div[name="input-block"]');
+    const backIcon = $(sizesSelectionSlider2).find('div[name="size-back"]');
+    const nextIcon = $(sizesSelectionSlider2).find('div[name="size-next"]');
+
+    for (var i=0; i<maxSizeBlocks; i++) {
+        visibleSizes.push(i);
+    }
+
+    if (sizeBlocks.length > maxSizeBlocks) addSlider = true;
+    if (addSlider) {
+        showSizes(sizeBlocks, infoBlocks, visibleSizes);
+        updateNavs(sizesSelectionSlider2, 0, sizeBlocks.length-1, visibleSizes);
+    }
+
+    backIcon.on('click', _ => {
+        if (visibleSizes[0] > 0) {
+            for (var i=0; i<visibleSizes.length; i++) {
+                visibleSizes[i]--;   
+            }
+        }
+        showSizes(sizeBlocks, infoBlocks, visibleSizes);
+        updateNavs(sizesSelectionSlider2, 0, sizeBlocks.length-1, visibleSizes);
+    });
+    nextIcon.on('click', _ => {
+        if (visibleSizes[visibleSizes.length-1] < sizeBlocks.length-1) {
+            for (var i=0; i<visibleSizes.length; i++) {
+                visibleSizes[i]++;   
+            }
+        }
+        showSizes(sizeBlocks, infoBlocks, visibleSizes);
+        updateNavs(sizesSelectionSlider2, 0, sizeBlocks.length-1, visibleSizes);
+    });
+
+}
+
+
 const addToCart = (formId) => {
 
     const productForm = document.getElementById(formId);
@@ -474,6 +546,7 @@ export function cartEvents(productsData) {
                             $modal.html(currentForm.innerHTML);
                             updateTotalInfo(productItemData.id, price, unit);
                             addSelectionSizesEvents(productItemData.id, price, unit);
+                            addSizeSlider($modal, 6);
                             $('.background-overlay').click(closeAddToCartSettingsWindow);
                         },
                         error: (xhr, status, error) => {
@@ -512,6 +585,7 @@ export function cartEvents(productsData) {
         delOneFromCart(event.currentTarget);
     });
 }
+
 var cart = undefined;
 $(document).ready(() => {
     cart = new Cart();
