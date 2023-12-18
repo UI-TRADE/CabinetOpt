@@ -213,7 +213,8 @@ def sizes_selection(request, prod_id):
 
     if request.method != 'POST':
         cart = list(Cart(request))
-        context = StockAndCost.objects.filter(product_id=prod_id)
+        context = StockAndCost.objects.filter(product_id=prod_id).order_by('size__size_from')
+        print(context.values())
         return render(
             request,
             'forms/size_selection.html',
