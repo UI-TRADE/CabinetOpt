@@ -1,5 +1,5 @@
 import 'tablesorter';
-import generateUUID, {extractContent} from './lib';
+import generateUUID from './lib';
 import Cart from "./components/cart";
 import { decimalFormat } from "./utils/money_format";
 
@@ -14,8 +14,7 @@ const closeAddToCartSettingsWindow = () => {
 };
 
 
-const updateTotalInfo = (productId, price, unit) => {
-    console.log('price', price);
+const updateTotalSizeInfo = (productId, price, unit) => {
     const $card        = $(`#sizes-selection-form-${productId}`);
     const $totalCost   = $card.find('.sizes-selection__sum');
     const $totalCount  = $card.find('.sizes-selection__total-count');
@@ -25,19 +24,42 @@ const updateTotalInfo = (productId, price, unit) => {
     $inputs.each(idx => {
         const inputField = $inputs[idx];
         const selectedQuantity = Number($(inputField).val());
+
         if ( selectedQuantity ) {
             totalCount += selectedQuantity;
             totalWeight += (selectedQuantity * parseFloat($(inputField).attr('data-weight').replace(",", ".")));
             totalCost += (selectedQuantity * price);
         }
     });
+
     $totalCost.html(decimalFormat(Math.ceil(totalCost)).toLocaleString());
     $totalCount.html(totalCount.toLocaleString());
     $totalWeight.html(totalWeight.toLocaleString());
 };
 
 
-const addSelectionSizesEvents = (productId, price, unit) => {
+const updateTotalInfo = (productId) => {
+    const $form = $(`#cartForm-${productId}`);
+    const weight = $form.find('input[name="weight"]').val();
+
+    const $card        = $(`#cart-form-${productId}`);
+    const $totalCount  = $card.find('.sizes-selection__total-count');
+    const $totalWeight = $card.find('.sizes-selection__total-weight');
+    const $input       = $card.find('input[name="selection-quantity-input"]');
+
+    const selectedQuantity = Number($input.val());
+    const totalWeight = selectedQuantity * Number(weight);
+
+    $totalCount.html(selectedQuantity.toLocaleString());
+    $totalWeight.html(totalWeight.toLocaleString());
+
+    // const price = $form.find('input[name="price"]').val();
+    // const $totalCost   = undefined;
+    // $totalCost.html(decimalFormat(Math.ceil(totalCost)).toLocaleString());
+};
+
+
+export function addSelectionSizesEvents(productId, price, unit) {
 
     const get_stock = ($input) => {
         const inputBlock = $input.parents('div[name="input-block"]');
@@ -50,7 +72,7 @@ const addSelectionSizesEvents = (productId, price, unit) => {
         $input.parent().toggleClass('error', !Number.isInteger(+value));
         const stock = get_stock($input);
         $input.parent().toggleClass('error', +value > +stock);
-        updateTotalInfo(productId, price, unit);
+        updateTotalSizeInfo(productId, price, unit);
     };
 
     const prepareDataForCart = (curentCard, productId) => {
@@ -140,7 +162,22 @@ const addSelectionSizesEvents = (productId, price, unit) => {
             .then((data) => {
                 if (data) {
                     closeAddToCartSettingsWindow();
-                    $(document).data("cart").getProducts();
+                    const productsInCart = $(document).data("cart").getProducts();
+                    productsInCart.then(cartData => {
+                        const $form = $(event.target).parents(`#sizes-selection-form-${productId}`);
+                        const $inputSizes = $form.find('input[name="sizes-selection-quantity-input"]');
+                        $.each($inputSizes, (_, el) => {
+                            $(el).attr('data-incart', 0);
+                            const dataSize = $(el).attr('data-size');
+                            for (var key in cartData) {
+                                if (cartData.hasOwnProperty(key)) {
+                                    if (+cartData[key].size == dataSize) {
+                                        $(el).attr('data-incart', cartData[key].quantity);
+                                    }
+                                }    
+                            }
+                        });
+                    })
                 }
             })
             .catch((error) => {
@@ -150,7 +187,7 @@ const addSelectionSizesEvents = (productId, price, unit) => {
 }
 
 
-const addSizeSlider = (sizeForm, maxSizeBlocks) => {
+export function addSizeSlider(sizeForm, maxSizeBlocks) {
 
     const showSizes = (sizeBlocks, infoBlocks, visibleIndexes) => {
         $.each(sizeBlocks, (idx, el) => {
@@ -239,6 +276,7 @@ const addToCart = (formId) => {
         })
         .then(_ => {
             $(document).data("cart").getProducts()
+            updateTotalInfo(productId);
         })
         .catch((error) => {
             alert('Ошибка обновления корзины покупок: ' + error);
@@ -345,11 +383,11 @@ const removeElementFromCart = (cartKey) => {
 
 
 const updateCartElements = (element, cartData, params) => {
-    let haveSizes = false;
+    let is_sized = false;
     const productCard = $(element).parents('.product-item');
     if (productCard && productCard.attr('data-json')) {
         const productItemData = JSON.parse(productCard.attr('data-json'));
-        haveSizes = ('haveSizes' in productItemData && productItemData.haveSizes);
+        is_sized = ('is_sized' in productItemData && productItemData.is_sized);
     }
     const cartButton     = element.querySelector('input[name="add-to-cart"]');
     const cartElements   = element.querySelector('div[name="cart-row"]');
@@ -360,7 +398,7 @@ const updateCartElements = (element, cartData, params) => {
         cartElements.style             = "display: none";
         cartKeyElement.textContent     = JSON.stringify(params);
         cartElement.value              = cartData?.quantity || 0;
-        if (!haveSizes && cartData) {
+        if (!is_sized && cartData) {
             cartButton.parentElement.style = "display: none";
             cartElements.style             = "display: flex";
             cartElement.value              = cartData['quantity'];
@@ -467,27 +505,9 @@ export const OnQuantityChange = (element, preventReload=false) => {
 
             })
             .then((response) => {
-                let totalQuantity = 0;
-                let totalWeight = 0;
-                let totalPrice = 0;
                 response.forEach(item => {
-                    const currentParam = params.filter(el => el.param.productId == item.pk).find(_ => true);
-                    const quantityField = currentParam.row.querySelector('input[name="cart-quantity"]');
-                    const priceField    = currentParam.row.querySelector('[name="cart-price"]');
-                    const sumField      = currentParam.row.querySelector('[name="cart-sum"]');
-
-                    if (quantityField) {
-                        quantityField.value = item.quantity;
-                        totalQuantity += item.quantity
-                    }
-                    if (priceField)    sumField.textContent = decimalFormat(item.price) + " р.";
-                    if (sumField){
-                        sumField.textContent = decimalFormat(Math.ceil(item.sum)) + " р.";
-                        totalPrice +=item.sum
-                    }
-                    totalWeight += item.weight;
-
                     $(document).data("cart").getProducts()
+                    updateTotalInfo(item.pk);
                 });
             })
             .catch((error) => {
@@ -501,6 +521,9 @@ export const OnQuantityChange = (element, preventReload=false) => {
 export function waitUpdateCart(element, params, product) {
     return new Promise((resolve) => {
         updateCartElements(element, product, params);
+        if (params && 'productId' in params && params.productId)
+            updateTotalInfo(params.productId);
+            updateTotalSizeInfo(params.productId, 0, '163');
         resolve(product);
     });
 };
@@ -526,13 +549,12 @@ export function cartEvents(productsData) {
             if ($(elements[i]).hasClass('product-item')) break;
             
         }
-        let haveSizes = false;
         let productItemData = {};
         try {
             productItemData = JSON.parse(elements[i].getAttribute('data-json'));
             const { unit } = productItemData;
             const { price } = productItemData;
-            if ('haveSizes' in productItemData && productItemData.haveSizes) {
+            if ('is_sized' in productItemData && productItemData.is_sized) {
                 $('.background-overlay').removeClass('hidden');
                 const $modal = $(`#sizes-selection-form-${productItemData.id}`);
                 const currentUrl = $modal.attr('data-url');
@@ -544,7 +566,7 @@ export function cartEvents(productsData) {
                             let currentForm = reloadHtml.querySelector('div[name="form"]');
                             currentForm.id = generateUUID();
                             $modal.html(currentForm.innerHTML);
-                            updateTotalInfo(productItemData.id, price, unit);
+                            updateTotalSizeInfo(productItemData.id, price, unit);
                             addSelectionSizesEvents(productItemData.id, price, unit);
                             addSizeSlider($modal, 6);
                             $('.background-overlay').click(closeAddToCartSettingsWindow);
@@ -556,12 +578,11 @@ export function cartEvents(productsData) {
                 }
                 $(`#sizes-selection-form-${productItemData.id}`).removeClass('hidden');
                 return;
+            } else {                
+                addToCart(`cartForm-${productItemData.id}`);
             }
         } catch (err) {
-            haveSizes = false;
-        }
-        if (!haveSizes) {
-            addToCart(`cartForm-${productItemData.id}`);
+            alert(err);
         }
     });
 

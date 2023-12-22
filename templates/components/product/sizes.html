@@ -1,0 +1,57 @@
+{% load static %}
+{% load catalog_tags %}
+
+<!-- Список размеров -->
+<div class="d-flex sizes-selection__slider-1">
+    {% for item in stock_and_cost %}
+        <div name="info-block" class="d-flex flex-column align-items-center">
+            <button class="btn sizes-selection__select-btn font-weight-bold " data-index="{{ item.size.id }}">
+                {{ item.size }}
+            </button>
+            <div class="sizes-selection__select-btn-foot" data-index="{{ item.size.id }}">
+                {{ item.weight|floatformat:2 }}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<p class="sizes-selection__subtitle-2">заказ, в наличии</p>
+
+<!-- Список элементов -->
+<div id="sizes-selection__area" class="d-flex sizes-selection__slider-2">
+    <div type="button" name="size-back" style="visibility: hidden;">
+        <img class="d-flex" src="{% static 'img/slider_left.svg' %}" style="position: relative; top: 13px">
+    </div>
+    {% for item in stock_and_cost %}
+        <div name="input-block" class="d-flex flex-column align-items-center">
+            <div class="sizes-selection__quantity-input-wrapper">
+                {% with incart=cart|size_incart:item.size %}
+                <input 
+                    name="sizes-selection-quantity-input"
+                    class="form-control font-weight-bold sizes-selection__quantity-input"
+                    data-index="{{ item.size.id }}"
+                    data-size="{{ item.size }}"
+                    data-weight="{{ item.weight }}"
+                    data-incart="{{ incart }}"
+                    min="0"
+                    max="999"
+                    type="number"
+                    value="{{ incart }}"
+                >
+                {% endwith %}
+                <button name="sizes-selection-quantity-increment" class="sizes-selection__quantity-input-spin-btn increment">
+                    <span class="font-weight-bold sizes-selection__quantity-input-spin-btn-text">+</span>
+                </button>
+                <button name="sizes-selection-quantity-decrement" class="font-weight-bold sizes-selection__quantity-input-spin-btn decrement">
+                    <span class="font-weight-bold sizes-selection__quantity-input-spin-btn-text">-</span>
+                </button>
+            </div>
+            <div class="sizes-selection__select-btn-foot">
+                {{ item.stock }}
+            </div>
+        </div>
+    {% endfor %}
+    <div type="button" name="size-next" style="visibility: hidden;">
+        <img class="d-flex" src="{% static 'img/slider_right.svg' %}" style="position: relative; top: 13px">
+    </div>
+</div>

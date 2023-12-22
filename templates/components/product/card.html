@@ -1,105 +1,115 @@
 {% load catalog_tags %}
-{% with product_id="id"|addparam:product.id %}
-    <div class="product-item card position-relative" data-json="{{ product_id|tojson }}">
-        <div class="card-body">
-            <div class="row card-body__inner-row">
-                <div class="col col-8 product-item__brand">{{ product.brand }}</div>
-                <div class="product-item__tags">
-                    {% if product.status %}
-                        {% with product_status="status"|addparam:product.status %}
-                            <div name="product-status" class="fs-3"
-                               data-json="{{ product_status|tojson }}">
-                                <b>{{ product.get_status_display }}</b>
-                            </div>
-                        {% endwith %}
-                    {% endif %}
-                </div>
-                <div class="col col-12">
-                    <div id="product-carousel-{{ product.id }}" class="carousel slide" data-ride="carousel">
-                        <div class="carousel-inner">
-                            {% for image in product.get_images|slice:":7" %}
-                                <div class="carousel-item{% if forloop.first %} active{% endif %}">
-                                    <figure>
-                                        <img
-                                            src="{{ image }}"
-                                            class="img-fluid rounded img-thumbnail thumbnail-210"
-                                            alt="{{ product.name }}"
-                                            style="border: none;"
-                                        >
-                                    </figure>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-                <div class="col col-12">
-                    <div class="product-item__name">{{ product.name }}</div>
-                </div>
-                <div class="col col-6 price-block">
-                    <div class="product__price-block--position">
-                        <div class="product__price-block__row--position">
-                            <div class="product__price-block__element--position text-warning discount"></div>
-                            <div class="product__price-block__element--position price"></div>
-                            <div class="product__price-block__element--position max-price"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col col-6 inStock-block">
-                    <div class="px-4 px-sm-0 text-center inStock-block__value" >
-                        В наличии: <span class="in_stock">-- шт.</span>
-                    </div>
-                    <div class="px-4 px-sm-0" style="text-align: center;">
-                        <form id="cartForm-{{ product.id }}" method="post"
-                              action="{% url 'cart:cart_add' product.id %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="quantity" value="1"/>
-                            <input type="hidden" name="update" value="False"/>
-                            <input type="hidden" name="price" value="0"/>
-                            <input type="hidden" name="unit" value="796"/>
-                            <input type="hidden" name="size" value=""/>
-                            <input type="hidden" name="weight" value=0 />
-                        </form>
-                        <div>
-                            <input
-                                    id="cartForm-{{ product.id }}"
-                                    name="add-to-cart"
-                                    type="button"
-                                    value="в корзину"
-                                    class="btn btn-primary add-to-cart__button"/>
-                        </div>
-                    </div>
-                    <div name="cart-row" class="px-4 px-sm-0 cart">
-                        <a class="cart-element delOneFromCart" href="#">-</a>
-                        <input
-                                type="text"
-                                class="form-control cart-element product__inStock-block__cart__input--position"
-                                readonly
-                        >
-                        <a class="cart-element addOneToCart" href="#">+</a>
-                        <div name="cart-key" style="display: none;"></div>
-                    </div>
-                </div>
 
-                <div class="row px-4 px-sm-0">
-                    <a href="{% url 'catalog:product' product.id %}" class="stretched-link"></a>
-                </div>
-
-            </div>
-        </div>
-
-        <div class="col col-12 product-item__additional-data hidden">
-            <div class="product-item__articul">{{ product.articul }}</div>
-            <div>
-                <span class="product-item__weight weight"></span>
-                <span class="product-item__price-per-gramm price-per-weight"></span>
-            </div>
-        </div>
-
-        <div 
-            class="custom-card sizes-selection hidden"
-            id="sizes-selection-form-{{ product.id }}"
-            data-url="{% url 'catalog:sizes_selection' product.id %}">
-        </div>
-
-    </div>
+{% if product.id|ifinlist:is_sized %}
+{% with params="id"|addparam:product.id sizes="is_sized"|addparam:1 %}
+<div class="product-item card position-relative" data-json="{{ params|addparams:sizes|tojson }}">
 {% endwith %}
+{% else %}
+{% with params="id"|addparam:product.id %}
+<div class="product-item card position-relative" data-json="{{ params|tojson }}">
+{% endwith %}
+{% endif %}
+
+    <div class="card-body">
+        <div class="row card-body__inner-row">
+            <div class="col col-8 product-item__brand">{{ product.brand }}</div>
+            <div class="product-item__tags">
+                {% if product.status %}
+                    {% with product_status="status"|addparam:product.status %}
+                        <div name="product-status" class="fs-3"
+                            data-json="{{ product_status|tojson }}">
+                            <b>{{ product.get_status_display }}</b>
+                        </div>
+                    {% endwith %}
+                {% endif %}
+            </div>
+            <div class="col col-12">
+                <div id="product-carousel-{{ product.id }}" class="carousel slide" data-ride="carousel">
+                    <div class="carousel-inner">
+                        {% for image in product.get_images|slice:":7" %}
+                            <div class="carousel-item{% if forloop.first %} active{% endif %}">
+                                <figure>
+                                    <img
+                                        src="{{ image }}"
+                                        class="img-fluid rounded img-thumbnail thumbnail-210"
+                                        alt="{{ product.name }}"
+                                        style="border: none;"
+                                    >
+                                </figure>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="col col-12">
+                <div class="product-item__name">{{ product.name }}</div>
+            </div>
+            <div class="col col-6 price-block">
+                <div class="product__price-block--position">
+                    <div class="product__price-block__row--position">
+                        <div class="product__price-block__element--position text-warning discount"></div>
+                        <div class="product__price-block__element--position price"></div>
+                        <div class="product__price-block__element--position max-price"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="cart-form-{{ product.id }}" class="col col-6 inStock-block">
+                <div class="px-4 px-sm-0 text-center inStock-block__value" >
+                    В наличии: <span class="in_stock">-- шт.</span>
+                </div>
+                <div class="px-4 px-sm-0" style="text-align: center;">
+                    <form id="cartForm-{{ product.id }}" method="post"
+                            action="{% url 'cart:cart_add' product.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="quantity" value="1"/>
+                        <input type="hidden" name="update" value="False"/>
+                        <input type="hidden" name="price" value="0"/>
+                        <input type="hidden" name="unit" value="796"/>
+                        <input type="hidden" name="size" value=""/>
+                        <input type="hidden" name="weight" value=0 />
+                    </form>
+                    <div>
+                        <input
+                                id="cartForm-{{ product.id }}"
+                                name="add-to-cart"
+                                type="button"
+                                value="в корзину"
+                                class="btn btn-primary add-to-cart__button"/>
+                    </div>
+                </div>
+                <div name="cart-row" class="px-4 px-sm-0 cart">
+                    <a class="cart-element delOneFromCart" href="#">-</a>
+                    <input
+                            type="text"
+                            name="selection-quantity-input"
+                            class="form-control cart-element product__inStock-block__cart__input--position"
+                            readonly
+                    >
+                    <a class="cart-element addOneToCart" href="#">+</a>
+                    <div name="cart-key" style="display: none;"></div>
+                </div>
+            </div>
+
+            <div class="row px-4 px-sm-0">
+                <a href="{% url 'catalog:product' product.id %}" class="stretched-link"></a>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="col col-12 product-item__additional-data hidden">
+        <div class="product-item__articul">{{ product.articul }}</div>
+        <div>
+            <span class="product-item__weight weight"></span>
+            <span class="product-item__price-per-gramm price-per-weight"></span>
+        </div>
+    </div>
+
+    <div 
+        class="custom-card sizes-selection hidden"
+        id="sizes-selection-form-{{ product.id }}"
+        data-url="{% url 'catalog:sizes_selection' product.id %}">
+    </div>
+
+</div>
+

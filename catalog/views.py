@@ -126,6 +126,7 @@ class ProductView(FiltersView, ListView):
 
         context['products']    = products_page
         context['filters']     = json.dumps({key: value.__json__() for key, value in self.get_filters(self.object_list).items()})
+        context['is_sized']    = StockAndCost.objects.filter(product__in=products_page, size__isnull=False).values_list('product_id', flat=True)
         context['MEDIA_URL']   = settings.MEDIA_URL
         return context
 
@@ -196,8 +197,20 @@ class ProductCardView(DetailView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         current_product = self.get_object()
-        context['prod_sets'] = ProductsSet.objects.filter(product=current_product)
-        context['gem_sets']  = GemSet.objects.filter(product=current_product)
+        context['prod_sets']      = ProductsSet.objects.filter(product=current_product)
+        context['gem_sets']       = GemSet.objects.filter(product=current_product)
+        context['cart']           = json.dumps([
+                {**item, 'product': None} 
+                for item 
+                in list(Cart(self.request)) 
+                if item['product']['id'] == current_product.id
+        ])
+        context['stock_and_cost'] = StockAndCost.objects.filter(
+            product=current_product
+        ).order_by('size__size_from')
+        context['is_sized'] = bool(StockAndCost.objects.filter(
+            product=current_product, size__isnull=False
+        ))
         context['MEDIA_URL'] = settings.MEDIA_URL
         context['filters']     = ProductFilterForm(
             ['articul', 'status'],
@@ -206,6 +219,7 @@ class ProductCardView(DetailView):
                 'status' : current_product.status
             }
         )
+
         return dict(list(context.items()))
 
 
@@ -214,7 +228,6 @@ def sizes_selection(request, prod_id):
     if request.method != 'POST':
         cart = list(Cart(request))
         context = StockAndCost.objects.filter(product_id=prod_id).order_by('size__size_from')
-        print(context.values())
         return render(
             request,
             'forms/size_selection.html',
@@ -294,7 +307,6 @@ def pickup_products(request):
 def stocks_and_costs(request):
     productIds = request.query_params.get('productIds')
     size = request.query_params.get('size')
-
     if productIds:
         _, products, stocks_and_costs, prices, discount_prices = \
             StockAndCost.objects.available_stocks_and_costs(

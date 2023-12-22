@@ -2,229 +2,33 @@
 {% load catalog_tags %}
 
 {% block page %}
-    {% block content %}
+	{% block content %}
 
-        <div style="display:none">
-            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <div style="display: none" id="filters" data-json="{{ filters }}"></div>
+
+        <div class="row">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'catalog:products' %}">Каталог</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+                </ol>
+            </nav>
         </div>
 
-        <main id="product">
+        <div class="row">
 
-            {% with product_id="id"|addparam:product.id %}
-                <div id="good-block-{{ product.id }}" class="good-block product__block--position product-detail card"
-                     data-json="{{ product_id|tojson }}" style="all: unset">
+            <div class="container col-xl-3 col-md-5 col-sm-6 col-xs-12">
+                <div id="filter-container"></div>
+            </div>
 
-                    <div class="row product-detail__path">
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{% url 'catalog:products' %}">Каталог</a>
-                                </li>
-                                <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
-                            </ol>
-                        </nav>
-                    </div>
-                    <div class="row product__block__row--nowrap">
-
-                        <div class="col-2 product__col--position product__col__filters">
-                            <div id="filter-container" class="product-detail__filter-container">
-                            </div>
-                        </div>
-                        <div class="product__col--position ">
-
-                            <div class="product-detail__main">
-
-                                <div class="row product__block__row--wrap ">
-                                    <div class="col product-detail__slider">
-
-                                        <div class="product-item__tags">
-                                            {% if product.status %}
-                                                {% with product_status="status"|addparam:product.status %}
-                                                    <div name="product-status" class="fs-3"
-                                                       data-json="{{ product_status|tojson }}">
-                                                        <b>{{ product.get_status_display }}</b>
-                                                    </div>
-                                                {% endwith %}
-                                            {% endif %}
-                                        </div>
-
-                                        <div id="product-carousel-{{ product.id }}" class="carousel slide" data-ride="carousel">
-                                            <div class="carousel-inner">
-                                                {% for image in product.get_images|slice:":5" %}
-                                                    <div class="carousel-item{% if forloop.first %} active{% endif %}">
-                                                        <a href="{{ image }}">
-                                                            <img src="{{ image }}" class="main-image" alt="{{ prod.name }}" />
-                                                        </a>
-                                                    </div>
-                                                {% empty %}
-                                                    <div class="carousel-item active">
-                                                        <img src="{{ MEDIA_URL }}/0.jpg" class="img-fluid rounded" alt="Пустое изображение" />
-                                                    </div>
-                                                {% endfor %}
-                                            </div>
-                                            <div class="carousel-navigation">
-                                                <ol class="carousel-indicators">
-                                                {% for image in product.get_images|slice:":7" %}
-                                                    <li data-target="#product-carousel-{{ product.id }}" data-slide-to="{{ forloop.counter0 }}" class="img-thumbnail{% if forloop.first %} active{% endif %}">
-                                                        <img
-                                                                    src="{{ image }}"
-                                                                    class="
-                                                        img-fluid
-                                                        product__thumbnail__block
-                                                        product__thumbnail__block--position"
-                                                                    alt="{{ product.name }}"
-                                                            />
-                                                    </li>
-                                                {% endfor %}
-                                                </ol>
-                                            </div>
-                                        </div>
-                                        <div class="row product-detail__similar-products">
-                                            <div class="product-detail__similar-products-list-wrapper">
-                                                <div class="product-detail__similar-products-title">Комплекты</div>
-                                                <div id="set-block"></div>
-                                            </div>
-
-                                            <div class="product-detail__similar-products-list-wrapper">
-                                                <div class="product-detail__similar-products-title">Аналоги</div>
-                                                <div id="analogues-block"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="product__col__info">
-                                        <div class="product-detail__header">
-                                            <div class="product-detail__articul">
-                                                {{ product.articul|default:"Артикул: --" }}
-                                            </div>
-                                            <div class="product-detail__title">{{ product.name }}</div>
-                                        </div>
-                                        <div class="product-detail_main-info">
-
-                                            <ul class="list-unstyled product-detail__list-unstyled">
-                                                {% if product.collection.group %}
-                                                    <li>{{ product.metal }}</li>
-                                                {% endif %}
-                                                {% if product.metal_content %}
-                                                    <li>{{ product.metal_content }}</li>
-                                                {% endif %}
-                                                {% if product.collection.group %}
-                                                    <li>{{ product.str_color|default:product.color }}</li>
-                                                {% endif %}
-                                                {% if product.collection.group %}
-                                                    <li>Коллекция - {{ product.collection.group|lower }}</li>
-                                                {% endif %}
-                                                {% if product.brand %}
-                                                    <li>Бренд: {{ product.brand|upper }}</li>
-                                                {% endif %}
-                                                {% if product.gender %}
-                                                    <li>{{ product.gender|get_gender_repr|lower }}</li>
-                                                {% endif %}
-                                                <li>
-                                            </ul>
-                                        </div>
-                                        <div class="d-flex align-items-center">
-                                            <div class="product-detail__sizes-container">
-                                                <div id="size-block" class="product__block__size-row--position">
-                                                </div>
-                                            </div>
-                                            <div class="product__col--position product__col__prices">
-                                                <div class="d-flex">
-                                                    <div class="font-weight-bold product__price-card__element product__price-card__element--price">
-                                                        <p id="price-block"></p>
-                                                    </div>
-                                                    <div class="product-detail__total-price-info">
-                                                        <div class="product__price-card__element product__price-card__element--instock">
-                                                            <span id="in_stock"></span>
-                                                        </div>
-                                                        <button class="btn btn-primary font-weight-bold product-detail__add-cart-btn">
-                                                            в корзину
-                                                        </button>
-                                                        <div class="font-weight-bold product-detail__total-items-count-in-cart">
-                                                            Всего: <span>0</span> шт
-                                                        </div>
-                                                        <div class="
-                                                                product__price-card__element
-                                                                product__price-card__element--discount
-                                                                text-warning
-                                                                discount
-                                                            "
-                                                            style="padding-top: 20px;"
-                                                        >
-                                                            <p id="discount-block"></p>
-                                                        </div>
-                                                        <div class="
-                                                                product__price-card__element
-                                                                product__price-card__element--max-price
-                                                                px-4 px-sm-0 max-price
-                                                                hidden
-                                                            "
-                                                        >
-                                                            <p id="max-price"></p>
-                                                        </div>
-                                                        <div class="product-detail__total-items-weight-in-cart">
-                                                            <span>0</span> гр
-                                                        </div>
-                                                        <div class="product__price-card__element product__price-card__element--price-per-weight">
-                                                            <p id="price-per-weight"></p>
-                                                        </div>
-                                                        <form id="cartForm-{{ product.id }}" method="post"
-                                                              action="{% url 'cart:cart_add' product.id %}">
-                                                            {% csrf_token %}
-                                                            <input type="hidden" name="quantity" value="1"/>
-                                                            <input type="hidden" name="update" value="False"/>
-                                                            <input type="hidden" name="price" value="0"/>
-                                                            <input type="hidden" name="unit" value="796"/>
-                                                            <input type="hidden" name="size" value=""/>
-                                                            <input type="hidden" name="weight" value=0 />
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <ul class="nav nav-tabs product-detail__nav-tabs" id="myTab" role="tablist">
-                                            <li class="nav-item" role="presentation">
-                                                <button class="nav-link product-detail__tab-nav-link active" id="home-tab" data-toggle="tab" data-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">вставки</button>
-                                            </li>
-                                            <li class="nav-item" role="presentation">
-                                                <button class="nav-link product-detail__tab-nav-link" id="profile-tab" data-toggle="tab" data-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">описание</button>
-                                            </li>
-                                            <li class="nav-item" role="presentation">
-                                                <button class="nav-link product-detail__tab-nav-link" id="messages-tab" data-toggle="tab" data-target="#messages" type="button" role="tab" aria-controls="messages" aria-selected="false">гарантии</button>
-                                            </li>
-                                        </ul>
-                                        <div class="tab-content product-detail__tab-content">
-                                            <div class="tab-pane active" id="home" role="tabpanel" aria-labelledby="home-tab">
-                                                {% if gem_sets|length > 0 %}
-                                                    <table class="table table-sm gems-table">
-                                                        <tbody>
-                                                        {% for gem in gem_sets %}
-                                                        <tr>
-                                                            <td>{{ gem.precious_stone }}</td>
-                                                            <td>{{ gem.gem_color }}</td>
-                                                            <td>{{ gem.cut_type }}</td>
-                                                            <td>{{ gem.gem_quantity }} шт</td>
-                                                            <td>{{ gem.gem_weight }} ct</td>
-                                                        </tr>
-                                                        {% endfor %}
-                                                        </tbody>
-                                                    </table>
-                                                {% endif %}
-                                            </div>
-                                            <div class="tab-pane" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-                                                <pre class="tab-pane-text">{{ product.mark_description }}</pre>
-                                            </div>
-                                            <div class="tab-pane" id="messages" role="tabpanel" aria-labelledby="messages-tab">
-                                                <pre class="tab-pane-text">Текст с гарантиями</pre>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
+            <main class="col-xl-9 col-md-7 col-sm-6 col-xs-12 product-detail" >
+                <div id="product">
+                    {% include "components/product/info.html" with product=product gem_sets=gem_sets stock_and_cost=stock_and_cost cart=cart %}
                 </div>
-            {% endwith %}
+            </main>
 
-        </main>
-    {% endblock %}
+        </div>
+
+	{% endblock %}
 {% endblock %}

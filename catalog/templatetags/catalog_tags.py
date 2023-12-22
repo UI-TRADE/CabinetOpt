@@ -1,6 +1,7 @@
 import simplejson as json
 from django import template
 from contextlib import suppress
+from catalog.models import Product
 
 
 register = template.Library()
@@ -14,6 +15,16 @@ def tojson(seq):
 @register.filter
 def addparam(key, param):
     return {key: param}
+
+
+@register.filter
+def addparams(param1, param2):
+    return dict(param1) | dict(param2)
+
+
+@register.filter
+def ifinlist(value, seq):
+    return value in seq
 
 
 @register.filter
@@ -35,6 +46,11 @@ def get_gender_repr(genders):
 
 
 @register.filter
+def get_status_repr(status):
+    return Product.objects.get_status_view(status)
+
+
+@register.filter
 def get_cut_type_image(cut_type_nodes):
     with suppress(IndexError, KeyError):
         return cut_type_nodes[0]['cut_type__image']
@@ -52,7 +68,6 @@ def size_selection(seq, size):
 @register.filter
 def size_incart(seq, size):
     quantity_in_cart = [item['quantity'] for item in json.loads(seq) if item['size'] == size.name]
-    print(quantity_in_cart)
     if quantity_in_cart:
         return quantity_in_cart[0]
     return 0

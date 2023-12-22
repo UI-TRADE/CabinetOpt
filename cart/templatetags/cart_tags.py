@@ -29,5 +29,7 @@ def get_unit_repr(unit):
 
 @register.simple_tag
 def total_weight(weight, quantity):
-    return weight * quantity
+    if weight:
+        return weight * quantity
+    return 0
 
