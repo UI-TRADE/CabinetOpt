@@ -38,6 +38,8 @@ class FilterTree(object):
         def get_ident(item):
             result = ''
             for node_field in node_fields:
+                if not item[node_field]:
+                    continue
                 result += '%s_%s_%s' % (
                     node_field,
                     re.sub(r'[^a-zA-Zа-яА-Я0-9]', '', parent).lower(),
@@ -131,13 +133,14 @@ class ProductFilter(django_filters.FilterSet):
     def stock_filter(self, queryset, name, value):
         filters = {}
         if value.start:
-            filters['stock__gte'] = value.start
+            filters['total_stock__gte'] = value.start
         if value.stop:
-            filters['stock__lte'] = value.stop 
+            filters['total_stock__lte'] = value.stop 
         return queryset.filter(
-            pk__in=StockAndCost.objects.filter(
-                **filters
-            ).values_list('product_id', flat=True)
+            pk__in=StockAndCost.objects.values('product')
+                .annotate(total_stock=Sum('stock'))
+                .filter(**filters)
+                .values('product')
         )
 
     def size_filter(self, queryset, name, value):
@@ -184,7 +187,7 @@ class ProductFilter(django_filters.FilterSet):
         if value.start:
             filters[f'{name}__gte'] = value.start
         if value.stop:
-            filters[f'{name}__lte'] = value.stop    
+            filters[f'{name}__lte'] = value.stop  
         return queryset.filter(
             pk__in=GemSet.objects.filter(
                 **filters
