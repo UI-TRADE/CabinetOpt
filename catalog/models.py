@@ -151,9 +151,24 @@ class ProductQuerySet(models.QuerySet):
             elif key == 'status':
                 result = result.filter(status=value)
         return result
+    
+    def get_status_view(self, status):
+        if status == Product.NOVELTY:
+            return 'NEW!'
+        elif status == Product.ORDER:
+            return 'ЗАКАЗ'
+        elif status == Product.HIT:
+            return 'ХИТ'
+        elif status == Product.SALE:
+            return 'ВЫГОДНО'
 
 
 class Product(models.Model):
+    NOVELTY = 'novelty'
+    ORDER   = 'order'
+    HIT     = 'hit'
+    SALE    = 'sale'
+
     name = models.CharField('Наименование', max_length=200, db_index=True)
     articul = models.CharField('Артикул', max_length=200, blank=True)
     collection = models.ForeignKey(
@@ -220,10 +235,10 @@ class Product(models.Model):
         blank=True,
         db_index=True,
         choices=(
-            ('novelty', 'NEW!'),
-            ('order'  , 'ЗАКАЗ'),
-            ('hit'    , 'ХИТ'),
-            ('sale'   , 'ВЫГОДНО'),
+            (NOVELTY, 'NEW!'),
+            (ORDER  , 'ЗАКАЗ'),
+            (HIT    , 'ХИТ'),
+            (SALE   , 'ВЫГОДНО'),
     ))
     gift = models.ManyToManyField(
         Gift,
