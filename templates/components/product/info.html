@@ -247,10 +247,14 @@
                         {% for gem in gem_sets %}
                         <tr>
                             <td>{{ gem.precious_stone }}</td>
-                            <td>{{ gem.gem_color }}</td>
+                            <td>{{ gem.color_filter }}</td>
                             <td>{{ gem.cut_type }}</td>
                             <td>{{ gem.gem_quantity }} шт</td>
-                            <td>{{ gem.gem_weight }} ct</td>
+                            {% if gem.precious_filter == "ДК" %}
+                                <td>{{ gem.gem_weight }} ct</td>
+                            {% else %}
+                                <td></td>
+                            {% endif %}
                         </tr>
                         {% endfor %}
                         </tbody>
