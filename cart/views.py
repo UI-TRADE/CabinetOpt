@@ -1,5 +1,6 @@
 import simplejson as json
 from django.http import JsonResponse
+from django.db.models import Sum
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.core.exceptions import ValidationError
@@ -104,14 +105,24 @@ def add_order(request):
 
         for item in cart:
             product_id = item['product']['id']
-            if item['size']: 
-                stocks = StockAndCost.objects.get_stocks([product_id], size=item['size'])
-            else:
-                stocks = StockAndCost.objects.get_stocks([product_id])
 
-            if not stocks or stocks.first().stock == 0:
+            qs = StockAndCost.objects.filter(product_id = product_id)
+            if item['size']: 
+                qs = qs.filter(size__name = item['size'])
+            stocks = qs.values('product', 'size').annotate(total_stock=Sum('stock')).first()
+
+            if not stocks:
                 cart_out_of_stock.append(item)
                 continue
+            elif stocks['total_stock'] < item['quantity']:
+                current_stock = stocks['total_stock']
+                item_out_of_stock = item.copy()
+                item_out_of_stock['quantity'] = current_stock
+                item_out_of_stock['total_price'] = current_stock * item_out_of_stock['price']
+                cart_out_of_stock.append(item_out_of_stock)
+
+                item['quantity'] = item['quantity'] - current_stock
+                item['total_price'] = item['quantity'] * item['price']
 
             cart_in_stock.append(item)
 

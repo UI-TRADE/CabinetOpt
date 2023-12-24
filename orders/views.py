@@ -44,14 +44,14 @@ class OrderView(ListView):
         login = Login(self.request)
         current_clients = login.get_clients()
         if not current_clients:
-            return super().get_queryset()
-        return Order.objects.filter(client__in=current_clients)
+            return super().get_queryset().order_by('-created_at')[:10]
+        return Order.objects.filter(client__in=current_clients).order_by('-created_at')[:10]
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['MEDIA_URL']   = settings.MEDIA_URL
         context['order_items'] = OrderItem.objects.filter(order__in=context['orders'])
-        return dict(list(context.items()))
+        return context
 
 
 class EditOrderView(UpdateView):
@@ -153,7 +153,8 @@ class UpdateOrderView(UpdateView):
                 order_items.save()
             
             schedule_send_order(form.instance, current_status)
-        return render(self.request, self.template_name, context)
+        # return render(self.request, self.template_name, context)
+        return redirect('orders:orders')
     
 
 class CreateOrderView(CreateView):

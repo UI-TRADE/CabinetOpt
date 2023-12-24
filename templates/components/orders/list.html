@@ -1,7 +1,8 @@
 <div class="order-list__title">Заказы:</div>
 <ul class="list-unstyled order-list__list-unstyled">
     {% for order in orders %}
-        <li class="order-item__links">
+        <li id="order-status-{{order.id}}" class="order-item__links">
+            
             <a href="{% url 'orders:edit' order.id %}" class="order-item__title">Заказ № {{ order.id }} </a>
             <span class="order-item__status">{{ order.get_status_display }}</span>
             {% if order.status == 'shipment' %}

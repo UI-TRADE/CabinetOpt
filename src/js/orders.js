@@ -22,12 +22,13 @@ function ordersEvents() {
         if(orderRequest){
             orderRequest.abort()
         }
+        const orderItemId = e.currentTarget.parentElement.id?.replace('order-status-', 'order-item-');
         orderRequest = loadOrder($(this).attr("href"))
-        orderRequest.then(function(html){
-                const DOMModel = new DOMParser().parseFromString(html, 'text/html');
-                $(DOMModel.querySelector("#order-item")).appendTo($("#order").empty())
-                initOrderInfo()
-            })
+        orderRequest.then(html => {
+            const DOMModel = new DOMParser().parseFromString(html, 'text/html');
+            $(DOMModel.querySelector(`#${orderItemId}`)).appendTo($("#order").empty())
+            initOrderInfo()
+        })
     }).first().trigger("click")
 
     function initOrderInfo(){

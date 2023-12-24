@@ -1,4 +1,4 @@
-import generateUUID from './lib';
+import generateUUID, {extractContent} from './lib';
 import getPrice from './price';
 
 
@@ -603,17 +603,29 @@ export function orderEvents() {
     });
 
     $(`#sendTalant`).on('click', (event) => {
-        const formData = new FormData($('#orderForm')[0]);
+        const $form = $('#orderForm');
+        const formData = new FormData($form[0]);
         formData.set('status', 'confirmed');
+        const orderId = event.target.getAttribute('data-id');
         $.ajax({
             type: 'POST',
-            url: event.target.action,
+            url: $form.attr('action'),
             data: formData,
             processData: false,
             contentType: false,
             success: (data) => {
-                const redirect_url = $('#sendTalant').attr("data-url");
-                document.location.href = redirect_url;
+                $(`#order-status-${orderId}`).html(
+                    extractContent(data, `order-status-${orderId}`)
+                );
+                const link = $(`#order-status-${orderId}`).find('a');
+                $.ajax({
+                    url: link.attr('href'),
+                    method: "get",
+                })
+                .then(html => {
+                    const DOMModel = new DOMParser().parseFromString(html, 'text/html');
+                    $(DOMModel.querySelector(`#order-item-${orderId}`)).appendTo($("#order").empty())
+                })
             },
             error: (error) => {
                 alert('Ошибка отправки заказа в Talant: ' + error);
