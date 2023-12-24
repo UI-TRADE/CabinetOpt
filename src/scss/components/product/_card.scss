@@ -9,7 +9,7 @@
   .product-item__tags{
     font-size: 1em;
     white-space: nowrap;
-    position:absolute; right:18px; top:12px; z-index: 11;
+    position:absolute; right:18px; top:12px; z-index: -1;
 
     .order__status{
       min-width:110px;
@@ -23,6 +23,7 @@
     height: 378px;
     padding:13px 10px;
     border:1px solid #A1A1A1;
+    opacity:90%;
 
     .card-body__inner-row{
       margin-left:0;
@@ -38,7 +39,7 @@
       max-height: 210px;
       line-height: 210px;
       vertical-align: middle;
-      z-index: 10;
+      z-index: -1;
 
       figure{
         margin:0;
