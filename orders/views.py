@@ -106,7 +106,6 @@ class EditOrderView(UpdateView):
                 order_items.save()
             
             schedule_send_order(form.instance, current_status)
-            return redirect('orders:orders')
 
         return render(self.request, self.template_name, context)
 
@@ -153,7 +152,6 @@ class UpdateOrderView(UpdateView):
                 order_items.save()
             
             schedule_send_order(form.instance, current_status)
-        # return render(self.request, self.template_name, context)
         return redirect('orders:orders')
     
 

@@ -35,14 +35,14 @@
                             {{ form }}
                         </div>
 
-                        <div class="order__order_header--position hidden">
+                        <!-- <div class="order__order_header--position hidden">
                             {% for field in fields %}
                                 <label for="{{ field.id }}">{{ field.label }}</label>
                                 <input type="text" id="{{ field.id }}" class="form-control" value="{{ field.value }}" disabled/>
                             {% endfor %}
-                        </div>
+                        </div> -->
 
-                        <div class="row order__toolbar--position hidden">
+                        <!-- <div class="row order__toolbar--position hidden">
                             <button
                                 name="add-item"
                                 type="button"
@@ -71,7 +71,7 @@
                             >
                                 <i class="fa fa-square-o" aria-hidden="true"></i>
                             </button>
-                        </div>
+                        </div> -->
 
                         <table id="order-items" class="table table__thead--border order-preview__table">
                             <thead>
@@ -254,7 +254,7 @@
                                                 {% endif %}
                                             </td>
                                             <td class="hidden">
-                                                <input type="checkbox" id="{{id}}" name="order-product-item-selection">
+                                                <input type="checkbox" name="order-product-item-selection">
                                                 {% for field in line %}
                                                 {% if field.name != "order" and field.name != "id" %}
                                                     {% if field|is_hidden_field %}

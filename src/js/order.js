@@ -540,11 +540,11 @@ export function updateOrder() {
 }
 
 function editOrder(){
-    const orderForm = $("#orderForm")
+    const $form = $('#orderForm');
     return $.ajax({
-        url: `/orders/order/update/${orderForm.data("order-id")}/`,
+        url: $form.attr('action').replace('update', 'edit'),
         method: "post",
-        data: orderForm.serialize(),
+        data: $form.serialize(),
         succes: (response) => {
             $(document).trigger("order.updated", response);
             return response;
@@ -639,19 +639,22 @@ export function orderEvents() {
     });
 
     $('.add-quantity', orderForm).on("click", function(){
+        const orderId = $('#order').children().attr('data-id');
         const element = $($(this).attr("href"))
         const newVal = parseInt(element.val()) + 1;
         element.val(parseInt(element.val()) + 1).trigger('change')
         $(`[name=items-${element.data("index")}-quantity]`).val(newVal).trigger('change')
         editOrder()
-            .then((response) => {
-                const DOMModel = new DOMParser().parseFromString(response, 'text/html');
-                $(DOMModel.querySelector("#order-item")).appendTo($("#order, #order-item").empty())
-                orderEvents()
+            .then((html) => {
+                const DOMModel = new DOMParser().parseFromString(html, 'text/html');
+                // $(DOMModel.querySelector("#order-item")).appendTo($("#order, #order-item").empty())
+                $(DOMModel.querySelector(`#order-item-${orderId}`)).appendTo($("#order").empty());
+                orderEvents();
                 $(document).trigger("order.updated")
             })
     })
     $('.remove-quantity', orderForm).on("click", function(){
+        const orderId = $('#order').children().attr('data-id');
         const element = $($(this).attr("href"))
         const currentValue = element.val()
         if(currentValue != 1){
@@ -660,14 +663,24 @@ export function orderEvents() {
 
             $(`[name=items-${element.data("index")}-quantity]`).val(newVal).trigger('change')
             editOrder()
-                .then((response) => {
-                    const DOMModel = new DOMParser().parseFromString(response, 'text/html');
-                    $(DOMModel.querySelector("#order-item")).appendTo($("#order, #order-item").empty())
+                .then((html) => {
+                    const DOMModel = new DOMParser().parseFromString(html, 'text/html');
+                    $(DOMModel.querySelector(`#order-item-${orderId}`)).appendTo($("#order").empty());
                     orderEvents()
                     $(document).trigger("order.updated")
                 })
         }
     })
+    // $(`#checkDuplicates`).on('click', (event) => {
+    //     $('[id]').each(function(){
+    //         var id = $('[id="'+this.id+'"]');
+    //         if(id.length>1 && id[0]==this) {
+    //           console.log('Duplicate id '+this.id);
+    //           console.log(this);
+    //           alert('duplicate found');
+    //         }
+    //     });
+    // })
 }
 
 
