@@ -330,10 +330,12 @@ class PreciousStoneAdmin(admin.ModelAdmin):
 class CutTypeAdmin(admin.ModelAdmin):
     search_fields = [
         'name',
+        'short_title',
     ]
     fields = [
         'name',
-        'image',
+        'short_title',
+        'cut_type_image',
     ]
 
 

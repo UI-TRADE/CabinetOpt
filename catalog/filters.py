@@ -89,7 +89,7 @@ class ProductFilter(django_filters.FilterSet):
     size__name                       = CharFilter(method='size_filter')
     precious_stone__name             = CharFilter(method='gems_filter')
     color_filter                     = CharFilter(method='gems_filter')
-    cut_type__name                   = CharFilter(method='gems_filter')
+    cut_type__cut_type_image__name   = CharFilter(method='cut_type_filter')
 
     weight = django_filters.NumericRangeFilter(
         field_name='weight',
@@ -151,6 +151,13 @@ class ProductFilter(django_filters.FilterSet):
         )
     
     def gems_filter(self, queryset, name, value):
+        return queryset.filter(
+            pk__in=GemSet.objects.filter(
+                Q((f'{name}__in', value.split(',')))
+            ).values_list('product_id', flat=True)
+        )
+    
+    def cut_type_filter(self, queryset, name, value):
         return queryset.filter(
             pk__in=GemSet.objects.filter(
                 Q((f'{name}__in', value.split(',')))

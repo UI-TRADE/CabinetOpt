@@ -578,9 +578,28 @@ class PreciousStone(models.Model):
         return self.short_title if self.short_title else self.name
 
 
-class CutType(models.Model):
+class CutTypeImage(models.Model):
     name = models.CharField('Наименование', max_length=100, db_index=True)
     image = models.ImageField('Изображение', upload_to='cut_type_images', blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'Изображение огранки'
+        verbose_name_plural = 'Изображения видов огранки'
+
+    def __str__(self):
+        return self.name
+
+
+class CutType(models.Model):
+    name = models.CharField('Наименование', max_length=100, db_index=True)
+    short_title = models.CharField('Краткое наименование', max_length=100, blank=True, db_index=True)
+    cut_type_image = models.ForeignKey(
+        CutTypeImage,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name='Изображение',
+        related_name='cut_type_images'
+    )
 
     class Meta:
         verbose_name = 'Огранка'

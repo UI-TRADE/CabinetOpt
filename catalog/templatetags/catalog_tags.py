@@ -53,7 +53,7 @@ def get_status_repr(status):
 @register.filter
 def get_cut_type_image(cut_type_nodes):
     with suppress(IndexError, KeyError):
-        return cut_type_nodes[0]['cut_type__image']
+        return cut_type_nodes[0]['cut_type__cut_type_image__image']
     return ''
 
 

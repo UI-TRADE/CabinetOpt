@@ -15,7 +15,8 @@ postgres-data
 *.env.stage
 *.env.prod
 static
-media
+media/*
+!media/cut_type_images
 mediafiles
 node_modules
 *.*.pyc
@@ -30,3 +31,4 @@ certbot
 *.json
 package-lock.json
 !package.json
+

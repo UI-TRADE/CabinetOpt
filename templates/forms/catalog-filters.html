@@ -294,18 +294,17 @@
                     <span class="reset">Сбросить</span>
                 </div>
                 <ul id="cuts">
-                    {% for item in filters.cuts.tree %}  
-                        {% if item.cut_type__name %}
-                        <li>
-                            <div class="d-xl-flex justify-content-xl-start row filter-node-item">
-                                <img class="d-xl-flex" src="{{ MEDIA_URL }}{{ item.nodes|get_cut_type_image }}" style="padding: 0px; height: 30px;" alt="{{ item.cut_type__name }}">
-                                <span class="filter-point filter-item-title filter-item-title-disable filter-item-title-center" name="{{item.ident}}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.cut_type__name }}
-                                    <span class="count filter-item-title-center">(0)</span>
-                                </span>
-                            </div>
-                        </li>
-                        {% endif %}
-                    {% endfor %}
+                    <li>
+                        <div class="d-xl-flex justify-content-xl-start row filter-node-item" style="margin-left: 5px!important">
+                            {% for item in filters.cuts.tree %}  
+                                {% if item.cut_type__cut_type_image__name %}
+                                <div class="filter-point filter-item-title filter-item-title-disable filter-item-title-center" name="{{item.ident}}" data-json="{{item|filtertojson}}">
+                                    <img class="d-xl-flex" src="{{ MEDIA_URL }}{{ item.nodes|get_cut_type_image }}" style="padding: 0px;" alt="{{ item.cut_type__cut_type_image__name }}">
+                                </div>
+                                {% endif %}
+                        {% endfor %}
+                        </div>
+                    </li>
                 </ul>
             </li>
             <li>

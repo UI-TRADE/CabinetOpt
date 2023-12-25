@@ -68,8 +68,9 @@
   }
 
   .filter-item-title-disable {
-    color: #ADADAA!important;
+    /* color: #ADADAA!important; */
     cursor: default!important;
+    opacity: 20%;
   }
 
   .filter-item-title-center {

@@ -208,12 +208,12 @@ export function  updateFilters(html) {
 export function filtersEvents() {
 
     $(document).on('click', '.filter-item-title', event => {
-        if (isTopNode(event.target)) {
-            const imgOfNode = $(event.target.closest('.top-node')).find('img');
+        if (isTopNode(event.currentTarget)) {
+            const imgOfNode = $(event.currentTarget.closest('.top-node')).find('img');
             if (imgOfNode) openMenuItems(imgOfNode);
         } else {
-            if ($(event.target).is('.filter-item-title-disable')) return;
-            selectMenuItem(event.target);
+            if ($(event.currentTarget).is('.filter-item-title-disable')) return;
+            selectMenuItem(event.currentTarget);
             showCatalog();
         }
     });

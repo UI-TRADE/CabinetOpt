@@ -52,7 +52,7 @@ class FiltersView(TemplateView):
             'sizes'       : self.get_filter(StockAndCost.objects.filter(product__in=qs), 'sum', 'product__collection__group__name', 'size__name'),
             'gems'        : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'precious_filter', 'precious_stone__name'),
             'colors'      : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'color_filter'),
-            'cuts'        : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'cut_type__name', 'cut_type__image'),
+            'cuts'        : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'cut_type__cut_type_image__name', 'cut_type__cut_type_image__image'),
         }
 
     def get_context_data(self, *, object_list=None, **kwargs):
