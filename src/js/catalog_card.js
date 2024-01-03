@@ -393,9 +393,10 @@ function updateProductCard() {
     </a>`
 
 
-    if(document.location.pathname.indexOf("/catalog/product/") === -1){
-        return;
-    }
+    // if(document.location.pathname.indexOf("/catalog/product/") === -1 || 
+    //     document.location.pathname.indexOf("/cart/") === -1){
+    //     return;
+    // }
 
     const productIds = []
     const elements = document.querySelectorAll('.good-block');
@@ -403,13 +404,9 @@ function updateProductCard() {
         const productId = JSON.parse(elements[j].getAttribute('data-json'));
         if (productId) productIds.push(productId['id']);
     }
+    if (productIds.length == 0) return;
 
     const priceBlock     = document.querySelector('.product__col__prices');
-
-    if (productIds.length == 0) {
-        return
-    }
-
     productStocksAndCosts(productIds.toString())
         .then((data) => {
             return updateElements(data);

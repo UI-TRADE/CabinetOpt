@@ -175,7 +175,7 @@ const updateProductCards = (element) => {
                                 return waitUpdateCart(item.element, item.key, product)
                             })
                         ).then(() => {
-                            initProductCardsCarousel();
+                            // initProductCardsCarousel();
                         });
                         resolve(result);
                     })

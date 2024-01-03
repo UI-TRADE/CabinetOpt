@@ -1,6 +1,7 @@
 import 'tablesorter';
 import generateUUID from './lib';
 import Cart from "./components/cart";
+import updateProductCard from './catalog_card';
 import { decimalFormat } from "./utils/money_format";
 
 
@@ -11,6 +12,17 @@ const closeAddToCartSettingsWindow = () => {
     $card.addClass('hidden');
     $overlay.addClass('hidden');
     $overlay.off();
+};
+
+
+const closeProductEditingWindow = () => {
+    const $card = $('.product-editing');
+    const $overlay = $('.background-overlay');
+    $card.html('');
+    $card.addClass('hidden');
+    $overlay.addClass('hidden');
+    $overlay.off();
+    location.reload();
 };
 
 
@@ -79,10 +91,8 @@ export function addSelectionSizesEvents(productId, price, unit) {
         return new Promise((resolve, reject) => {
             try {
                 const result = {};
-                const $form = $(curentCard)
-                    .parents(`#sizes-selection-form-${productId}`)
-                const $inputs = $form
-                    .find('input[name="sizes-selection-quantity-input"]');
+                const $form = $(`#sizes-selection-form-${productId}`)
+                const $inputs = $form.find('input[name="sizes-selection-quantity-input"]');
                 const selectedSizes = [];
                 const removedSizes = [];
                 $inputs.each(idx => {
@@ -130,22 +140,22 @@ export function addSelectionSizesEvents(productId, price, unit) {
         if ($input.val() > 999) $input.val(999);
         validateInput($input, productId, price, unit);
     });
-    $('button[name="sizes-selection-quantity-increment"]').on('click', (event) => {
+    $('button[name="sizes-selection-quantity-increment"]').off('click').on('click', (event) => {
         const $input = $(event.target)
             .parents('.sizes-selection__quantity-input-wrapper')
             .find('input[name="sizes-selection-quantity-input"]');
         $input.val((_,val) => +val + 1 < 1000 ? +val+1 : 999);
         validateInput($input, productId, price, unit);
     });
-    $('button[name="sizes-selection-quantity-decrement"]').on('click', (event) => {
+    $('button[name="sizes-selection-quantity-decrement"]').off('click').on('click', (event) => {
         const $input = $(event.target)
             .parents('.sizes-selection__quantity-input-wrapper')
             .find('input[name="sizes-selection-quantity-input"]');
         $input.val((_,val) => +val - 1 > -1 ? +val-1 : 0);
         validateInput($input, productId, price, unit);
     });
-    $('button[name="sizes-selection-add-to-cart-button"]').on('click', (event) => {
-        prepareDataForCart(event.target, productId)
+    $('button[name="sizes-selection-add-to-cart-button"]').off('click').on('click', (event) => {
+        prepareDataForCart(event.currentTarget, productId)
             .then((data) => {
                 return new Promise((resolve, reject) => {
                     try {
@@ -161,23 +171,27 @@ export function addSelectionSizesEvents(productId, price, unit) {
             })
             .then((data) => {
                 if (data) {
-                    closeAddToCartSettingsWindow();
-                    const productsInCart = $(document).data("cart").getProducts();
-                    productsInCart.then(cartData => {
-                        const $form = $(event.target).parents(`#sizes-selection-form-${productId}`);
-                        const $inputSizes = $form.find('input[name="sizes-selection-quantity-input"]');
-                        $.each($inputSizes, (_, el) => {
-                            $(el).attr('data-incart', 0);
-                            const dataSize = $(el).attr('data-size');
-                            for (var key in cartData) {
-                                if (cartData.hasOwnProperty(key)) {
-                                    if (+cartData[key].size == dataSize) {
-                                        $(el).attr('data-incart', cartData[key].quantity);
-                                    }
-                                }    
-                            }
+                    if($('.product-editing').length)
+                        closeProductEditingWindow();
+                    if($('.sizes-selection').length) {
+                        closeAddToCartSettingsWindow();
+                        const productsInCart = $(document).data("cart").getProducts();
+                        productsInCart.then(cartData => {
+                            const $form = $(event.target).parents(`#sizes-selection-form-${productId}`);
+                            const $inputSizes = $form.find('input[name="sizes-selection-quantity-input"]');
+                            $.each($inputSizes, (_, el) => {
+                                $(el).attr('data-incart', 0);
+                                const dataSize = $(el).attr('data-size');
+                                for (var key in cartData) {
+                                    if (cartData.hasOwnProperty(key)) {
+                                        if (+cartData[key].size == dataSize) {
+                                            $(el).attr('data-incart', cartData[key].quantity);
+                                        }
+                                    }    
+                                }
+                            });
                         });
-                    })
+                    }
                 }
             })
             .catch((error) => {
@@ -529,6 +543,13 @@ export function waitUpdateCart(element, params, product) {
 };
 
 
+var cart = undefined;
+$(document).ready(() => {
+    cart = new Cart();
+})
+
+
+// События номенклатуры связанные с корзиной
 export function cartEvents(productsData) {
     const productsDataMap = {};
     if (productsData)
@@ -605,14 +626,11 @@ export function cartEvents(productsData) {
         event.preventDefault()
         delOneFromCart(event.currentTarget);
     });
+
 }
 
-var cart = undefined;
-$(document).ready(() => {
-    cart = new Cart();
-})
 
-
+// События корзины
 export function cartViewEvents() {
     const cartViewElement = $('#cart-table');
     // Temp page fix
@@ -623,12 +641,17 @@ export function cartViewEvents() {
             let totalSum = 0;
 
             $('[name=cart-row]', cartViewElement).each(function (index, item) {
-                const rawData = JSON.parse($('[name="cart-key"]', item)[0].textContent)
-                const product = cart.products[rawData.productId + '_' + rawData.size];
-                $('td.total_weight', item).text(decimalFormat(product.weight * product.quantity))
-                totalCount += product.quantity;
-                totalWeight += product.weight * product.quantity
-                totalSum += product.sum;
+                const cartKey = $('[name="cart-key"]', item)[0].textContent;
+                const cartItemWeight = $('td.total_weight', item);
+                if (!cartKey) return;
+                const cartItemParams = JSON.parse(cartKey)
+                const product = cart.products[cartItemParams.productId + '_' + cartItemParams.size];
+                if (product) {
+                    cartItemWeight.text(decimalFormat(product.weight * product.quantity))
+                    totalCount += product.quantity;
+                    totalWeight += product.weight * product.quantity
+                    totalSum += product.sum;
+                }
             })
             $('.cart-result__total-count', cartViewElement).text(decimalFormat(totalCount) + " шт")
             $('.cart-result__total-weight', cartViewElement).text(decimalFormat(totalWeight) + " гр")
@@ -675,6 +698,38 @@ export function cartViewEvents() {
 
     $(document).on("cart.quantity-change", function(e, data){
         cart.updateItem(data);
+    });
+
+    $('a[name="edit"]').on('click', (event) => {
+        const item_params = $(event.currentTarget).parent().parent().parent().attr('data-json');
+        const parsed_params = JSON.parse(item_params);
+
+        const { unit } = parsed_params;
+        const { price } = parsed_params;
+        
+        $('.background-overlay').removeClass('hidden');
+        const $modal = $(`#product-editing-form-${parsed_params.id}`);
+        const currentUrl = $modal.attr('data-url');
+        if (currentUrl) {
+            $.ajax({
+                url: currentUrl,
+                success: (data) => {
+                    const reloadHtml = new DOMParser().parseFromString(data, 'text/html');
+                    let currentForm = reloadHtml.querySelector('main[name="main"]');
+                    $modal.html(currentForm.outerHTML);
+                    updateProductCard();
+                    updateTotalSizeInfo(parsed_params.id, price, unit);
+                    addSelectionSizesEvents(parsed_params.id, price, unit);
+                    addSizeSlider($modal, 6);
+                    $('.background-overlay').click(closeProductEditingWindow);
+                },
+                error: (xhr, status, error) => {
+                    alert('Ошибка открытия формы: ' + error);
+                }
+            });        
+        }
+        $(`#product-editing-form-${parsed_params.id}`).removeClass('hidden');
+        return;
     });
 
 }

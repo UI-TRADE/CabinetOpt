@@ -1,0 +1,9 @@
+{% load static %}
+{% load catalog_tags %}
+
+{% csrf_token %}
+<main name="main" class="col-12 product-popup">
+    <div id="product">
+        {% include "components/product/popup.html" with product=object stock_and_cost=stock_and_cost cart=cart is_sized=is_sized %}
+    </div>
+</main>

@@ -96,6 +96,22 @@ def cart_detail_with_errors(request):
     return render(request, 'pages/cart.html', {'cart': cart, 'MEDIA_URL': settings.MEDIA_URL})
 
 
+def edit_product(request, prod_id):
+
+    if request.method != 'POST':
+        cart = list(Cart(request))
+        context = Product.objects.filter(pk=prod_id)
+        return render(
+            request,
+            'forms/product_editing.html',
+            {
+                'object': context.first(),
+                'cart': json.dumps([{**item, 'product': None} for item in cart if str(item['product']['id']) == prod_id]),
+                'is_sized': bool(StockAndCost.objects.filter(product_id=prod_id, size__isnull=False)),
+                'stock_and_cost': StockAndCost.objects.filter(product_id=prod_id).order_by('size__size_from')
+        })
+
+
 @require_POST
 def add_order(request):
     

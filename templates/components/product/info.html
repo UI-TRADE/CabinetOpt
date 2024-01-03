@@ -41,10 +41,10 @@
                 {% for image in product.get_images|slice:":7" %}
                     <li data-target="#product-carousel-{{ product.id }}" data-slide-to="{{ forloop.counter0 }}" class="img-thumbnail{% if forloop.first %} active{% endif %}">
                         <img
-                                    src="{{ image }}"
-                                    class="img-fluid product__thumbnail__block product__thumbnail__block--position"
-                                    alt="{{ product.name }}"
-                            />
+                            src="{{ image }}"
+                            class="img-fluid product__thumbnail__block product__thumbnail__block--position"
+                            alt="{{ product.name }}"
+                        />
                     </li>
                 {% endfor %}
                 </ol>

@@ -1,10 +1,26 @@
 import uuid
 from django import template
 from more_itertools import first
+import simplejson as json
 
 from catalog.models import ProductImage
 
 register = template.Library()
+
+
+@register.filter
+def tojson(seq):
+    return json.dumps(seq)
+
+
+@register.filter
+def addparam(key, param):
+    return {key: param}
+
+
+@register.filter
+def addparams(param1, param2):
+    return dict(param1) | dict(param2)
 
 
 @register.simple_tag
