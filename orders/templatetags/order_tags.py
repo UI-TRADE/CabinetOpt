@@ -29,6 +29,7 @@ def in_words(numder):
         return num2words(numder, lang='ru')
     return ''
 
+
 @register.simple_tag
 def first_product_image(id):
     product_image = first(
@@ -36,3 +37,10 @@ def first_product_image(id):
         {'image': '0.jpg'}
     )
     return product_image['image']
+
+
+@register.simple_tag
+def do_split(items):
+    if items:
+        return any([item['in_stock'].value() for item in items])
+    return False

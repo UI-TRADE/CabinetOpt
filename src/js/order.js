@@ -625,6 +625,7 @@ export function orderEvents() {
                 .then(html => {
                     const DOMModel = new DOMParser().parseFromString(html, 'text/html');
                     $(DOMModel.querySelector(`#order-item-${orderId}`)).appendTo($("#order").empty())
+                    location.reload();
                 })
             },
             error: (error) => {

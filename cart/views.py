@@ -172,10 +172,10 @@ def add_order(request):
     clients = login.get_clients()
     managers = login.get_managers()
 
-    if request.POST['split_orders']:
+    if int(request.POST['split_orders']):
         cart_in_stock, cart_out_of_stock = split_products(cart)
     else:
-        cart_in_stock = [item for item in cart]
+        cart_in_stock, cart_out_of_stock = [item for item in cart], []
 
     try:
 

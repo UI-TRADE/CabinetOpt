@@ -1,6 +1,8 @@
 from django import forms
+from django.db.models import Sum
 from django.forms.models import BaseInlineFormSet, inlineformset_factory
-from catalog.models import Size
+from django.core.validators import MinValueValidator, MaxValueValidator
+from catalog.models import Size, StockAndCost
 from orders.models import Order, OrderItem
 
 
@@ -17,11 +19,16 @@ class OrderForm(forms.ModelForm):
             'status',
             'provision',
         ]
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['provision'].required = False
 
 
 class OrderItemForm(forms.ModelForm):
     nomenclature = forms.CharField(max_length=100, required = False)
     nomenclature_size = forms.ChoiceField(required = False)
+    in_stock = forms.BooleanField()
 
     class Meta:
         model = OrderItem
@@ -39,18 +46,36 @@ class OrderItemForm(forms.ModelForm):
             'price_type',
             'nomenclature',
             'nomenclature_size',
+            'in_stock',
         ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         self.fields['discount'].required = False
         self.fields['size'].required = False
         self.fields['unit'].required = False
+        self.fields['in_stock'].required = False
+
         self.fields['nomenclature_size'].choices = self.get_sizes()
+        self.fields['in_stock'].initial = self.get_in_stock(kwargs)
 
     def get_sizes(self):
         sizes = Size.objects.all().values_list('name', flat=True).distinct()
         return (('0', '--'),) + tuple((('%s' % item, '%s' % item) for item in sizes))
+    
+    def get_in_stock(self, kwargs):
+        instance = kwargs.get('instance')
+        if instance:
+            qs = StockAndCost.objects.filter(product = instance.product)
+            if instance.size and instance.size.size_from: 
+                qs = qs.filter(size = instance.size)
+            stocks = qs.values('product', 'size').annotate(total_stock=Sum('stock')).first()
+            if stocks and stocks.get('total_stock', 0) < instance.quantity:
+                return True
+
+        return False
+
 
 
 class OrderItemInlineForm(BaseInlineFormSet):

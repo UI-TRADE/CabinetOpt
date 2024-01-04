@@ -32,6 +32,7 @@ from .forms import (
     FileSelectionForm
 )
 from .utils import save_xlsx, read_xlsx
+from utils.exceptions import handle_errors
 
 
 class OrderView(ListView):
@@ -153,7 +154,71 @@ class UpdateOrderView(UpdateView):
             
             schedule_send_order(form.instance, current_status)
         return redirect('orders:orders')
+
+
+class SplitOrderView(TemplateView):
+    slug_url_kwarg, slug_field = 'order_id', 'pk'
+    template_name = 'pages/order.html'
+    success_url = reverse_lazy('orders')
+    fields = ['status', 'client', 'manager',]
+
+    def split_products(self, order_items):
+        _in_stock = []
+        _out_of_stock = []
+
+        for item in order_items:
+            product_id = item['product'].id
+
+            qs = StockAndCost.objects.filter(product_id = product_id)
+            if item['size'] and item['size'].size_from: 
+                qs = qs.filter(size__name = item['size'])
+            stocks = qs.values('product', 'size').annotate(total_stock=Sum('stock')).first()
+
+            if not stocks:
+                _out_of_stock.append(item)
+                continue
+            elif stocks['total_stock'] < item['quantity']:
+                current_stock = stocks['total_stock']
+                item_out_of_stock = item.copy()
+                item_out_of_stock['quantity'] = current_stock
+                item_out_of_stock['total_price'] = current_stock * item_out_of_stock['price']
+                _out_of_stock.append(item_out_of_stock)
+
+                item['quantity'] = item['quantity'] - current_stock
+                item['total_price'] = item['quantity'] * item['price']
+
+            _in_stock.append(item)
+
+        return _in_stock, _out_of_stock
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['object'] = Order.objects.get(pk=self.kwargs[self.slug_url_kwarg])
+        context['fields'] = {
+            "status": context['object'].status,
+            "client": context['object'].client,
+            "manager": context['object'].manager
+        }
+        
+        return context
     
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data()
+        form = OrderForm(self.request.POST)
+        order_items = OrderItemInline(self.request.POST, instance=context['object'])
+        if form.is_valid() and order_items.is_valid():
+            current_status = context['fields']['status']
+            _in_stock, _out_of_stock = self.split_products(order_items.cleaned_data)
+            update_order(context['object'], self.request.POST, _in_stock)
+            schedule_send_order(context['object'], current_status)
+
+            context['fields']['status'] = form.cleaned_data['status']
+            context['fields']['provision'] = 'З'
+            new_instance = save_order(context['fields'], _out_of_stock)
+            schedule_send_order(new_instance, current_status)
+
+        return redirect('orders:orders')
+
 
 class CreateOrderView(CreateView):
     model = Order
@@ -378,7 +443,10 @@ def import_xlsx(request):
     return redirect('orders:orders')
 
 
+@handle_errors()
 def schedule_send_order(order, status_before):
+    if not order:
+        return
     if not order.status == 'confirmed' and not status_before == 'introductory':
         return
     settings.REDIS_CONN.set(order.id, order.status)
@@ -390,16 +458,74 @@ def save_order(order_params, order_items):
 
     formset, errors = [], []
     try:
-
         with transaction.atomic():
-            for item in order_items:
-                formset.append(OrderItemForm(
-                    item | {
-                        'sum': item['total_price']
-                }))
+            if order_form.is_valid():
+                order_instance.save()
 
-                if order_form.is_valid():
-                    order_instance.save()  
+            for item in order_items:
+                if item.get('total_price'):
+                    formset.append(OrderItemForm(
+                        item | {
+                            'sum': item['total_price']
+                    }))
+                else:
+                    formset.append(OrderItemForm(item))
+
+                for form in formset:
+                    if not form.is_valid():
+                        errors.append({
+                            'product_id': item['product'].id,
+                            'size': item['size'],
+                            'error': form.errors.as_text()
+                        })
+                        continue
+                    item_instance = form.save(commit=False)
+                    item_instance.order = order_instance
+                    item_instance.save()
+
+            if not order_items:
+                transaction.rollback()
+                raise ValidationError(
+                    json.dumps([{
+                        'product_id':-1, 'size':-1, 'error': 'there are no order items'
+                }]))    
+
+            if errors:
+                transaction.rollback()
+                raise ValidationError(json.dumps(errors))
+    except:
+        raise
+    else:
+        if transaction.get_autocommit():
+            transaction.commit()
+        return order_instance
+
+
+def update_order(instance, order_params, order_items):
+
+    def delete_instances():
+        current_items = OrderItemInline(order_params, instance=instance)
+        for current_item in current_items:
+            current_item.instance.delete()
+
+    order_form = OrderForm(order_params, instance=instance)
+    order_instance = order_form.save(commit=False)
+
+    formset, errors = [], []
+    try:
+        with transaction.atomic():
+            delete_instances()
+            if order_form.is_valid():
+                order_instance.save()
+
+            for item in order_items:
+                if item.get('total_price'):
+                    formset.append(OrderItemForm(
+                        item | {
+                            'sum': item['total_price']
+                    }))
+                else:
+                    formset.append(OrderItemForm(item))
 
                 for form in formset:
                     if not form.is_valid():

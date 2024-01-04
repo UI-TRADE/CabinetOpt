@@ -12,21 +12,37 @@
             <div class="order-number__title">№ {{ object.id }}</div>
             <div class="order-item__wrapper">
                 <div class="order-item">
-                    {% if object.provision == "П" %}
-                        <div class="order-item__full-title">Ваш заказ № {{ object.id }}_{{ object.provision }}</div>
+                    {% if object.status == "introductory" %}
+                        <div class="order-item__full-title">Ваш заказ № {{ object.id }}</div>
+                        {% do_split order_items as split_orders %}
                     {% else %}
-                        <div class="d-flex">
-                            <div class="order-item__full-title">Ваш заказ на производство № {{ object.id }}_{{ object.provision }}</div>
-                            <div class="order-preview__cart-row-warning-logo" style="display: block!important; background-image: url('{% static "img/warning.svg"%}')"></div>
-                        </div>
+                        {% if object.provision == "П" %}
+                            <div class="order-item__full-title">Ваш заказ № {{ object.id }}_{{ object.provision }}</div>
+                        {% else %}
+                            <div class="d-flex">
+                                <div class="order-item__full-title">Ваш заказ на производство № {{ object.id }}_{{ object.provision }}</div>
+                                <div class="order-preview__cart-row-warning-logo" style="display: block!important; background-image: url('{% static "img/warning.svg"%}')"></div>
+                            </div>
+                        {% endif %}
+                        {% do_split None as split_orders %}
                     {% endif %}
 
+                    {% if split_orders %}
+                    <form 
+                        id="orderForm"
+                        method="post"
+                        autocomplete="off"
+                        action="{% url 'orders:split' order_id=object.id %}"
+                    >
+                    {% else %}
                     <form 
                         id="orderForm"
                         method="post"
                         autocomplete="off"
                         action="{% url 'orders:update' order_id=object.id %}"
                     >
+                    {% endif %}
+
                         <div id="empty-form" style="display: none;">{{ empty_items }}</div>
                         <div id="fields" style="display: none" data-json="{{ order_fields }}"></div>
 
@@ -35,47 +51,10 @@
                             {{ form }}
                         </div>
 
-                        <!-- <div class="order__order_header--position hidden">
-                            {% for field in fields %}
-                                <label for="{{ field.id }}">{{ field.label }}</label>
-                                <input type="text" id="{{ field.id }}" class="form-control" value="{{ field.value }}" disabled/>
-                            {% endfor %}
-                        </div> -->
-
-                        <!-- <div class="row order__toolbar--position hidden">
-                            <button
-                                name="add-item"
-                                type="button"
-                                class="btn btn-outline-secondary order__toolbar__btn order__toolbar__btn--position"
-                            >
-                                <i class="fa fa-plus-square-o" aria-hidden="true"></i>
-                            </button>
-                            <button
-                                name="delete-item"
-                                type="button"
-                                class="btn btn-outline-secondary order__toolbar__btn order__toolbar__btn--position"
-                            >
-                                <i class="fa fa-trash-o" aria-hidden="true"></i>
-                            </button>
-                            <button
-                                name="select-items"
-                                type="button"
-                                class="btn btn-outline-secondary order__toolbar__btn order__toolbar__btn--position"
-                            >
-                                <i class="fa fa-check-square-o" aria-hidden="true"></i>
-                            </button>
-                            <button
-                                name="unselect-items"
-                                type="button"
-                                class="btn btn-outline-secondary order__toolbar__btn order__toolbar__btn--position"
-                            >
-                                <i class="fa fa-square-o" aria-hidden="true"></i>
-                            </button>
-                        </div> -->
-
                         <table id="order-items" class="table table__thead--border order-preview__table">
                             <thead>
                                 <tr >
+                                    <th></th>
                                     <th scope="col" class="image"></th>
                                     <th scope="col" class="articul">
                                         <span>
@@ -161,6 +140,15 @@
                                     {% endfor %}
                                     <tr class="order-product-item" style="display: table-row">
                                         {% unique_id as id %}
+                                            <td style="border: none;">
+                                                {% if object.status == "introductory" and line.in_stock.value %}
+                                                    <div 
+                                                        class="order-preview__cart-row-warning-logo"
+                                                        style="display: block!important; background-image: url('{% static "img/warning.svg"%}')"
+                                                    >
+                                                    </div>
+                                                {% endif %}
+                                            </td>
                                             <td class="image">
                                                 {% first_product_image line.instance.product as image %}
                                                 <img
@@ -176,7 +164,7 @@
                                             </td>
                                             <td class="metal">{{ line.instance.product.metal }}</td>
                                             <td class="size">{% if line.instance.size %}<span>{{ line.instance.size }}</span>{% endif %}</td>
-                                            <td class="weight">{{ line.instance.weight|floatformat:"0" }}</td>
+                                            <td class="weight">{{ line.instance.weight|floatformat:"2" }}</td>
                                             <td class="price" name="cart-price">{{ line.instance.price|floatformat:"0" }} р.</td>
                                             {% if object.status == "introductory" %}
                                             <td class="quantity">
@@ -283,12 +271,14 @@
                             </div>
                         </div>
                         <div class="order-item__actions">
+                            {% if object.status == "introductory" %}
                             <a href="{% url 'orders:remove' order_id=object.id %}"
                                 name="delete-item"
                                 type="button"
                             >
                                 <div class="order-item__action-icon order-item__cross-icon" style="background-image: url('{% static "img/cross.svg"%}')"></div>
                             </a>
+                            {% endif %}
                             <a href="#"
                                name="cart-item"
                                type="button"

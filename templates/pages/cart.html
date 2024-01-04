@@ -30,7 +30,7 @@
 
                         <form id="createOrderFromTable" method="post" action="{% url 'cart:create' %}">
                             {% csrf_token %}
-                            <input type="hidden" name="split_orders" value="1"/>
+                            <input type="hidden" name="split_orders" value=0 />
                         </form>
                         <div class="text-right">
 
