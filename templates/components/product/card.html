@@ -12,7 +12,7 @@
 
     <div class="card-body">
         <div class="row card-body__inner-row">
-            <div class="col col-8 product-item__brand">{{ product.brand }}</div>
+            <div class="col col-8 product-item__brand">{{ product.brand|default:"" }}</div>
             <div class="product-item__tags">
                 {% if product.status %}
                     {% with product_status="status"|addparam:product.status %}
