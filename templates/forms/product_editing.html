@@ -4,6 +4,10 @@
 {% csrf_token %}
 <main name="main" class="col-12 product-popup">
     <div id="product">
-        {% include "components/product/popup.html" with product=object stock_and_cost=stock_and_cost cart=cart is_sized=is_sized %}
+        {% if items %}
+            {% include "components/product/order_popup.html" with product=object stock_and_cost=stock_and_cost is_sized=is_sized items=items %}
+        {% else %}
+            {% include "components/product/cart_popup.html" with product=object stock_and_cost=stock_and_cost is_sized=is_sized cart=cart %}
+        {% endif %}
     </div>
 </main>

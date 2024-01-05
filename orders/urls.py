@@ -31,4 +31,5 @@ urlpatterns = [
     path('order/export/xlsx/<slug:order_id>/', views.ExportXLSXView.as_view(), name='export-xlsx'),
     path('order/import/xlsx/', views.import_xlsx, name='import-xlsx'),
     path('order/update/number', views.update_order_number),
+    path('order/product/<str:order_id>/<str:prod_id>/', views.edit_product, name='product_editing'),
 ]

@@ -67,7 +67,20 @@ def size_selection(seq, size):
 
 @register.filter
 def size_incart(seq, size):
+    if len(seq) == 0:
+        return 0
+    print(seq)
     quantity_in_cart = [item['quantity'] for item in json.loads(seq) if item['size'] == size.name]
     if quantity_in_cart:
         return quantity_in_cart[0]
     return 0
+
+
+@register.filter
+def item_value(seq, name):
+    result = 0
+    with suppress(KeyError):
+        items = json.loads(seq)
+        for item in items:
+            result += item[name]
+    return result

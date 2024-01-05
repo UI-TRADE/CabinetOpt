@@ -57,8 +57,15 @@ class OrderItemForm(forms.ModelForm):
         self.fields['unit'].required = False
         self.fields['in_stock'].required = False
 
+        self.fields['nomenclature'].initial = self.current_product(kwargs)
         self.fields['nomenclature_size'].choices = self.get_sizes()
         self.fields['in_stock'].initial = self.get_in_stock(kwargs)
+
+    def current_product(self, kwargs):
+        instance = kwargs.get('instance')
+        if instance:
+            return instance.product.id
+        return ''
 
     def get_sizes(self):
         sizes = Size.objects.all().values_list('name', flat=True).distinct()
@@ -81,13 +88,13 @@ class OrderItemForm(forms.ModelForm):
 class OrderItemInlineForm(BaseInlineFormSet):
 
     def add_fields(self, form, index):
-        hidden_fields = ['DELETE', 'product', 'size']
+        # hidden_fields = ['DELETE', 'product', 'size']
         readonly_fields = ['uin', 'series', 'weight', 'unit', 'price', 'discount', 'sum']
         super().add_fields(form, index)
         for field in form.fields:
-            if field in hidden_fields:
-                form.fields[field].widget.attrs['style'] = 'display: none'
-                continue
+            # if field in hidden_fields:
+            #     form.fields[field].widget.attrs['style'] = 'display: none'
+            #     continue
             if field in readonly_fields:
                 form.fields[field].widget.attrs['class'] = 'order__field form-control'
                 form.fields[field].widget.attrs['readonly'] = True

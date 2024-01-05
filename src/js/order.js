@@ -1,5 +1,36 @@
 import generateUUID, {extractContent} from './lib';
+import autocomplete from './components/autocomplete';
+import updateProductCard from './catalog_card';
 import getPrice from './price';
+import {updateTotalSizeInfo, addSelectionSizesEvents, addSizeSlider} from './cart';
+
+
+const closeProductEditingWindow = () => {
+    const $card = $('.product-editing');
+    const $overlay = $('.background-overlay');
+    $card.html('');
+    $card.addClass('hidden');
+    $overlay.addClass('hidden');
+    $overlay.off();
+}
+
+
+const disableSizeSlider = (sizeForm) => {
+    const $inputs = $('input[name="sizes-selection-quantity-input"]', sizeForm);
+    $.each($inputs, (_, item) => {
+        $(item).prop('disabled', true);
+    });
+
+    const $incrementButtons = $('button[name="sizes-selection-quantity-increment"]', sizeForm);
+    $.each($incrementButtons, (_, item) => {
+        $(item).prop('disabled', true);
+    });
+
+    const $decrementButtons = $('button[name="sizes-selection-quantity-decrement"]', sizeForm);
+    $.each($decrementButtons, (_, item) => {
+        $(item).prop('disabled', true);
+    });
+}
 
 
 const updateOrderItem = (element) => {
@@ -312,119 +343,48 @@ const deleteOrderItems = () => {
 }
 
 
-const autocomplete = (element) => {
-    var currentFocus = 0;
-    const pickUpProducts = (searchString) => {
-        return new Promise((resolve, reject) => {
-            $.ajax({
-                url: '/catalog/pickup_products',
-                data: {searchString: searchString},
-                success: (response) => {
-                    resolve(response['data']);
-                },
-                error: (error) => {
-                    reject(error);
-                }
-            });
-        });
-    }    
+const updateOrderView = (url, url_get, orderComponent, status=undefined, reload=false) => {
+    const $form = $('#orderForm');
+    const formData = new FormData($form[0]);
+    const orderId = orderComponent.attr('data-id');
 
-    const addActive = (currentItems) => {
-        if (!currentItems) return false;
-        removeActive(currentItems);
-        if (currentFocus >= currentItems.length) currentFocus = 0;
-        if (currentFocus < 0) currentFocus = (currentItems.length - 1);
-        currentItems[currentFocus].classList.add('autocomplete-active');
-    }
+    if (status)
+        formData.set('status', status);
 
-    const removeActive = (currentItems) => {
-        for (var i = 0; i < currentItems.length; i++) {
-            currentItems[i].classList.remove('autocomplete-active');
-        }
-    }    
-
-    const closeAllLists = () => {
-        const autocompleteItems = document.getElementsByClassName('autocomplete-items');
-        for(var i=0; i<autocompleteItems.length; i++){
-            autocompleteItems[i].parentElement.removeChild(autocompleteItems[i]);
-        }
-    }
-
-    element.addEventListener('input', (event) => {
-        const currentTarget = event.target;
-
-        if (!currentTarget.value) {
-            closeAllLists();
-            return
-        }
-
-        let autocompleteElement = document.getElementById(currentTarget.id + '__autocomplete-list');
-        if (!autocompleteElement) {
-            autocompleteElement = document.createElement("div");
-            autocompleteElement.setAttribute("id", currentTarget.id + "__autocomplete-list");
-            autocompleteElement.classList.add("autocomplete-items");
-        }
-        else {
-            autocompleteElement.innerHTML = '';
-        }
-
-        pickUpProducts(currentTarget.value)
-            .then((data) => {
-                const foundData = JSON.parse(data);
-                foundData.forEach((el) => {
-                    const listItem = document.createElement("div");
-
-                    listItem.innerHTML =  `<p>${el['fields']['name']}</p>`;
-                    listItem.innerHTML += `<input type='hidden' value='${JSON.stringify(el)}'>`;
-                    listItem.addEventListener('click', (select) => {
-                        if (select.target.querySelector('input')) {
-                            currentTarget.value = JSON.parse(
-                                select.target.getElementsByTagName('input')[0].value
-                            )['fields']['name'];
-                        } else {
-                            currentTarget.value = JSON.parse(
-                                select.target.parentElement.getElementsByTagName('input')[0].value
-                            )['fields']['name'];    
-                        }
-                        currentTarget.setAttribute('data-json', JSON.stringify(el));
-                        const productField = document.querySelector(`#${currentTarget.id.replace('nomenclature', 'product')}`);
-                        productField.innerHTML = `<option value="${el['pk']}" selected>${el['fields']['name']}</option>`;
-                        updateOrderItem(productField);
-                        closeAllLists();
-                    });
-                    autocompleteElement.appendChild(listItem);
+    $.ajax({
+        type: 'POST',
+        url: (url) ? url : $form.attr('action'),
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: (data) => {
+            if (reload) 
+                location.reload();
+            else {
+                $.ajax({
+                    url: url_get,
+                    method: "get",
+                })
+                .then(html => {
+                    const DOMModel = new DOMParser().parseFromString(html, 'text/html');
+                    $(DOMModel.querySelector(`#order-item-${orderId}`)).appendTo($("#order").empty());
+                    orderEvents();
                 });
-                event.target.parentElement.appendChild(autocompleteElement);
-            })
-            .catch((error) => {
-                alert('Ошибка заполнения строки заказа: ' + error);
-            });
-    });
-
-    element.addEventListener('keydown', (event) => {
-        const currentTarget = event.target;
-        if (!currentTarget.value) {
-            closeAllLists();
-            return
-        }
-
-        let autocompleteElement = document.getElementById(currentTarget.id + '__autocomplete-list');
-        let autocompleteItems = [];
-
-        if (autocompleteElement) autocompleteItems = autocompleteElement.getElementsByTagName("div");
-        if (event.keyCode == 40) {
-            currentFocus++;
-            addActive(autocompleteItems);
-        } else if (event.keyCode == 38) {
-            currentFocus--;
-            addActive(autocompleteItems);
-        } else if (event.keyCode == 13) {
-            event.preventDefault();
-            if (currentFocus > -1) {
-                if (autocompleteItems) autocompleteItems[currentFocus].click();
             }
+        },
+        error: (error) => {
+            alert('Ошибка отправки заказа в Talant: ' + error);
         }
     });
+
+}
+
+
+const getItemID = (item) => {
+    const el = $('input[name$="-nomenclature"]', item);
+    if (!el) return -1;
+    const match = el.attr('name')?.match(/items-(\d+)-nomenclature/);
+    if (match) return match[1];
 }
 
 
@@ -539,6 +499,7 @@ export function updateOrder() {
 
 }
 
+
 function editOrder(){
     const $form = $('#orderForm');
     return $.ajax({
@@ -554,6 +515,7 @@ function editOrder(){
         }
     });
 }
+
 
 export function orderEvents() {
     const orderForm = $("#orderForm")
@@ -603,35 +565,9 @@ export function orderEvents() {
     });
 
     $(`#sendTalant`).on('click', (event) => {
-        const $form = $('#orderForm');
-        const formData = new FormData($form[0]);
-        formData.set('status', 'confirmed');
-        const orderId = event.target.getAttribute('data-id');
-        $.ajax({
-            type: 'POST',
-            url: $form.attr('action'),
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: (data) => {
-                $(`#order-status-${orderId}`).html(
-                    extractContent(data, `order-status-${orderId}`)
-                );
-                const link = $(`#order-status-${orderId}`).find('a');
-                $.ajax({
-                    url: link.attr('href'),
-                    method: "get",
-                })
-                .then(html => {
-                    const DOMModel = new DOMParser().parseFromString(html, 'text/html');
-                    $(DOMModel.querySelector(`#order-item-${orderId}`)).appendTo($("#order").empty())
-                    location.reload();
-                })
-            },
-            error: (error) => {
-                alert('Ошибка отправки заказа в Talant: ' + error);
-            }
-        });
+        const orderId = $(event.target).attr('data-id');
+        const link = $(`#order-status-${orderId}`).find('a');
+        updateOrderView('', link.attr('href'), $(event.target), 'confirmed', true);
     });
 
     $(`#closeOrder`).on('click', (event) => {
@@ -653,8 +589,9 @@ export function orderEvents() {
                 orderEvents();
                 $(document).trigger("order.updated")
             })
-    })
-    $('.remove-quantity', orderForm).on("click", function(){
+    });
+
+    $('.remove-quantity', orderForm).on('click', () => {
         const orderId = $('#order').children().attr('data-id');
         const element = $($(this).attr("href"))
         const currentValue = element.val()
@@ -671,7 +608,67 @@ export function orderEvents() {
                     $(document).trigger("order.updated")
                 })
         }
-    })
+    });
+
+    $('[name="delete-item"]', orderForm).on('click', event => {
+        event.preventDefault();
+        const link = $(event.currentTarget);
+        const item = link.parents('tr')?.find('input[name$="DELETE"]');
+        if (item)
+            item.prop('checked', true);
+
+        updateOrderView(
+            link.attr('href'),
+            link.attr('href'),
+            link.parents('div[id^="order-item-"]')
+        );
+    });
+
+    $("#orderForm").find('tr').each((_, item) => {
+        $('a[name="edit"]', item).on('click', (event) => {
+            event.preventDefault();
+            const itemID = getItemID(item);
+            const itemNum = $(item).attr('data-id');
+            const formData = $('#orderForm').serializeArray();
+            let product_id = 0; let unit = '163'; let price = 0;
+            if (itemID != -1) {
+                formData.forEach(el => {
+                    if (el['name'] == `items-${itemID}-product`)
+                        product_id = el['value'];
+                    if (el['name'] == `items-${itemID}-unit`)
+                        unit = el['value'];
+                    if (el['name'] == `items-${itemID}-price`)
+                        price = el['value'];
+                });
+            }
+
+            $('.background-overlay').removeClass('hidden');
+            const $modal = $(`#product-editing-form-${itemNum}`, '#orderForm');
+            const currentUrl = $modal.attr('data-url');
+            if (currentUrl) {
+                $.ajax({
+                    url: currentUrl,
+                    success: (data) => {
+                        const reloadHtml = new DOMParser().parseFromString(data, 'text/html');
+                        let currentForm = reloadHtml.querySelector('main[name="main"]');
+                        $modal.html(currentForm.outerHTML);
+                        updateProductCard();
+                        updateTotalSizeInfo(product_id, price, unit);
+                        addSelectionSizesEvents(product_id, price, unit);
+                        addSizeSlider($modal, 6);
+                        disableSizeSlider($modal);
+                        $('.background-overlay').click(closeProductEditingWindow);
+                    },
+                    error: (xhr, status, error) => {
+                        alert('Ошибка открытия формы: ' + error);
+                    }
+                });        
+            }
+            $modal.removeClass('hidden');
+            return;
+        });
+    });
+
     // $(`#checkDuplicates`).on('click', (event) => {
     //     $('[id]').each(function(){
     //         var id = $('[id="'+this.id+'"]');

@@ -14,7 +14,7 @@
             {{ product.articul|default:"--" }}
         </div>
         <div class="product-popup__brand">
-            {{ product.brand|upper|default:"" }}
+            {{ product.brand|default:""|upper }}
         </div>
     </div>
     <div class="row product-popup__header">

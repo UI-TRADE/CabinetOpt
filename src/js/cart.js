@@ -26,7 +26,8 @@ const closeProductEditingWindow = () => {
 };
 
 
-const updateTotalSizeInfo = (productId, price, unit) => {
+export function updateTotalSizeInfo(productId, price, unit) {
+
     const $card        = $(`#sizes-selection-form-${productId}`);
     const $totalCost   = $card.find('.sizes-selection__sum');
     const $totalCount  = $card.find('.sizes-selection__total-count');
@@ -403,8 +404,10 @@ const updateCartElements = (element, cartData, params) => {
         const productItemData = JSON.parse(productCard.attr('data-json'));
         is_sized = ('is_sized' in productItemData && productItemData.is_sized);
     }
-    const cartButton     = element.querySelector('input[name="add-to-cart"]');
-    const cartElements   = element.querySelector('div[name="cart-row"]');
+    let cartButton     = element.querySelector('input[name="add-to-order"]');
+    if (!cartButton)
+        cartButton     = element.querySelector('input[name="add-to-cart"]');
+    const cartElements = element.querySelector('div[name="cart-row"]');
     if (cartElements) {
         const cartElement    = cartElements.querySelector('input');
         const cartKeyElement = cartElements.querySelector('[name="cart-key"]');
@@ -531,6 +534,114 @@ export const OnQuantityChange = (element, preventReload=false) => {
 }
 
 
+const handleAddToCart = (event) => {
+    const elements = $(event.target).parents();
+    for(var i=elements.length-1; i>=0; i--) {
+        if ($(elements[i]).hasClass('product-item')) break;
+        
+    }
+    let productItemData = {};
+    try {
+        productItemData = JSON.parse(elements[i].getAttribute('data-json'));
+        const { unit } = productItemData;
+        const { price } = productItemData;
+        if ('is_sized' in productItemData && productItemData.is_sized) {
+            $('.background-overlay').removeClass('hidden');
+            const $modal = $(`#sizes-selection-form-${productItemData.id}`);
+            const currentUrl = $modal.attr('data-url');
+            if (currentUrl) {
+                $.ajax({
+                    url: currentUrl,
+                    success: (data) => {
+                        const reloadHtml = new DOMParser().parseFromString(data, 'text/html');
+                        let currentForm = reloadHtml.querySelector('div[name="form"]');
+                        currentForm.id = generateUUID();
+                        $modal.html(currentForm.innerHTML);
+                        updateTotalSizeInfo(productItemData.id, price, unit);
+                        addSelectionSizesEvents(productItemData.id, price, unit);
+                        addSizeSlider($modal, 6);
+                        $('.background-overlay').click(closeAddToCartSettingsWindow);
+                    },
+                    error: (xhr, status, error) => {
+                        alert('Ошибка открытия формы: ' + error);
+                    }
+                });        
+            }
+            $(`#sizes-selection-form-${productItemData.id}`).removeClass('hidden');
+            return;
+        } else {                
+            addToCart(`cartForm-${productItemData.id}`);
+        }
+    } catch (err) {
+        alert(err);
+    }
+}
+
+
+const handleAddOneToCart = (event) => {
+    const $cartRowElement = $(event.target).closest("[name='cart-row']");
+    const $cartKey = $("[name='cart-key']", $cartRowElement)
+    if($cartRowElement.length && $("input", $cartRowElement).val() == 0){
+        const $cartData = JSON.parse($cartKey.text())
+        const formElement = $(`#cartForm-${$cartData.productId }`)
+        $("input[name='size']", formElement).val($cartData.size)
+        $("input[name='cart-quantity']", $cartRowElement).val(1);
+        addToCart(`cartForm-${$cartData.productId }`);
+    }else{
+        addOneToCart(event.currentTarget);
+    }
+}
+
+
+const handleDeleteOneFromCart = (event) => {
+    delOneFromCart(event.currentTarget);
+}
+
+
+const handleAddToOrder = (event) => {
+    const elements = $(event.target).parents();
+    for(var i=elements.length-1; i>=0; i--) {
+        if ($(elements[i]).hasClass('product-item')) break;
+        
+    }
+    let productItemData = {};
+    try {
+        productItemData = JSON.parse(elements[i].getAttribute('data-json'));
+        const { unit } = productItemData;
+        const { price } = productItemData;
+        if ('is_sized' in productItemData && productItemData.is_sized) {
+            $('.background-overlay').removeClass('hidden');
+            const $modal = $(`#sizes-selection-form-${productItemData.id}`);
+            const currentUrl = $modal.attr('data-url');
+            if (currentUrl) {
+                $.ajax({
+                    url: currentUrl,
+                    success: (data) => {
+                        const reloadHtml = new DOMParser().parseFromString(data, 'text/html');
+                        let currentForm = reloadHtml.querySelector('div[name="form"]');
+                        currentForm.id = generateUUID();
+                        $modal.html(currentForm.innerHTML);
+                        updateTotalSizeInfo(productItemData.id, price, unit);
+                        addSelectionSizesEvents(productItemData.id, price, unit);
+                        addSizeSlider($modal, 6);
+                        $('.background-overlay').click(closeAddToCartSettingsWindow);
+                    },
+                    error: (xhr, status, error) => {
+                        alert('Ошибка открытия формы: ' + error);
+                    }
+                });        
+            }
+            $(`#sizes-selection-form-${productItemData.id}`).removeClass('hidden');
+            return;
+        } else {                
+            addToCart(`cartForm-${productItemData.id}`);
+        }
+    } catch (err) {
+        alert(err);
+    }
+}
+
+
 // need to refactor and remove this promise
 export function waitUpdateCart(element, params, product) {
     return new Promise((resolve) => {
@@ -565,66 +676,23 @@ export function cartEvents(productsData) {
         }
 
     $('input[name="add-to-cart"]').on('click', (event) => {
-        const elements = $(event.target).parents();
-        for(var i=elements.length-1; i>=0; i--) {
-            if ($(elements[i]).hasClass('product-item')) break;
-            
-        }
-        let productItemData = {};
-        try {
-            productItemData = JSON.parse(elements[i].getAttribute('data-json'));
-            const { unit } = productItemData;
-            const { price } = productItemData;
-            if ('is_sized' in productItemData && productItemData.is_sized) {
-                $('.background-overlay').removeClass('hidden');
-                const $modal = $(`#sizes-selection-form-${productItemData.id}`);
-                const currentUrl = $modal.attr('data-url');
-                if (currentUrl) {
-                    $.ajax({
-                        url: currentUrl,
-                        success: (data) => {
-                            const reloadHtml = new DOMParser().parseFromString(data, 'text/html');
-                            let currentForm = reloadHtml.querySelector('div[name="form"]');
-                            currentForm.id = generateUUID();
-                            $modal.html(currentForm.innerHTML);
-                            updateTotalSizeInfo(productItemData.id, price, unit);
-                            addSelectionSizesEvents(productItemData.id, price, unit);
-                            addSizeSlider($modal, 6);
-                            $('.background-overlay').click(closeAddToCartSettingsWindow);
-                        },
-                        error: (xhr, status, error) => {
-                            alert('Ошибка открытия формы: ' + error);
-                        }
-                    });        
-                }
-                $(`#sizes-selection-form-${productItemData.id}`).removeClass('hidden');
-                return;
-            } else {                
-                addToCart(`cartForm-${productItemData.id}`);
-            }
-        } catch (err) {
-            alert(err);
-        }
+        event.preventDefault();
+        handleAddToCart(event);
     });
 
     $('.addOneToCart').on('click', (event) => {
-        event.preventDefault()
-        const $cartRowElement = $(event.target).closest("[name='cart-row']");
-        const $cartKey = $("[name='cart-key']", $cartRowElement)
-        if($cartRowElement.length && $("input", $cartRowElement).val() == 0){
-            const $cartData = JSON.parse($cartKey.text())
-            const formElement = $(`#cartForm-${$cartData.productId }`)
-            $("input[name='size']", formElement).val($cartData.size)
-            $("input[name='cart-quantity']", $cartRowElement).val(1);
-            addToCart(`cartForm-${$cartData.productId }`);
-        }else{
-            addOneToCart(event.currentTarget);
-        }
+        event.preventDefault();
+        handleAddOneToCart(event);
     });
 
     $('.delOneFromCart').on('click', (event) => {
-        event.preventDefault()
-        delOneFromCart(event.currentTarget);
+        event.preventDefault();
+        handleDeleteOneFromCart(event);
+    });
+
+    $('input[name="add-to-order"]').on('click', (event) => {
+        event.preventDefault();
+        handleAddToOrder(event);
     });
 
 }

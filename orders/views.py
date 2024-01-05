@@ -1,4 +1,4 @@
-import json
+import simplejson as json
 
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
@@ -561,6 +561,43 @@ def remove_order(request, order_id):
     instance.delete()
 
     return redirect('orders:orders')
+
+
+def edit_product(request, order_id, prod_id):
+
+    def order_info(order_items):
+        result = []
+        for item in order_items:
+            result.append({
+                'product': Product.objects.filter(pk=item.product.id).values().first(),
+                'unit': item.unit,
+                'weight': item.weight,
+                'size': item.size.name,
+                'quantity': item.quantity,
+                'price': item.price,
+                'total_price': item.sum,
+            })
+        return result
+
+    if request.method != 'POST':
+        current_order = Order.objects.get(pk=order_id)
+        order_items = OrderItem.objects.filter(order_id=order_id)
+        current_item = OrderItem.objects.filter(order_id=order_id, product_id=prod_id).first()
+        context = Product.objects.filter(pk=prod_id)
+        return render(
+            request,
+            'forms/product_editing.html',
+            {
+                'object': context.first(),
+                'items': json.dumps([
+                    {**item, 'product': None} 
+                    for item 
+                    in order_info(order_items) 
+                    if str(item['product']['id']) == prod_id
+                ]),
+                'is_sized': bool(StockAndCost.objects.filter(product_id=prod_id, size__isnull=False)),
+                'stock_and_cost': StockAndCost.objects.filter(product_id=prod_id).order_by('size__size_from')
+        })
 
 
 @api_view(['GET'])
