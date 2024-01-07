@@ -149,7 +149,6 @@ export function showAuthForm(submitFormId) {
 
 function showModalForm(formId, submitFormId) {
     $(document).on('show.bs.modal',`#${formId}`, (event) => {
-        console.log(event);
         $.ajax({
             url: event.relatedTarget.getAttribute('data-url'),
             success: (data) => {

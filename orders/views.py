@@ -107,7 +107,6 @@ class EditOrderView(UpdateView):
                 order_items.save()
             
             schedule_send_order(form.instance, current_status)
-
         return render(self.request, self.template_name, context)
 
 
@@ -180,11 +179,11 @@ class SplitOrderView(TemplateView):
             elif stocks['total_stock'] < item['quantity']:
                 current_stock = stocks['total_stock']
                 item_out_of_stock = item.copy()
-                item_out_of_stock['quantity'] = current_stock
-                item_out_of_stock['total_price'] = current_stock * item_out_of_stock['price']
+                item_out_of_stock['quantity'] = item['quantity'] - current_stock
+                item_out_of_stock['total_price'] = item_out_of_stock['quantity'] * item_out_of_stock['price']
                 _out_of_stock.append(item_out_of_stock)
 
-                item['quantity'] = item['quantity'] - current_stock
+                item['quantity'] = current_stock
                 item['total_price'] = item['quantity'] * item['price']
 
             _in_stock.append(item)
@@ -210,11 +209,13 @@ class SplitOrderView(TemplateView):
             current_status = context['fields']['status']
             _in_stock, _out_of_stock = self.split_products(order_items.cleaned_data)
             update_order(context['object'], self.request.POST, _in_stock)
-            schedule_send_order(context['object'], current_status)
 
-            context['fields']['status'] = form.cleaned_data['status']
-            context['fields']['provision'] = 'З'
-            new_instance = save_order(context['fields'], _out_of_stock)
+            new_context = {key: value for key, value in context['fields'].items()}
+            new_context['status'] = form.cleaned_data['status']
+            new_context['provision'] = 'З'
+            new_instance = save_order(new_context, _out_of_stock)
+
+            schedule_send_order(context['object'], current_status)
             schedule_send_order(new_instance, current_status)
 
         return redirect('orders:orders')

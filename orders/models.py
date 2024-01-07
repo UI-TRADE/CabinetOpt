@@ -63,7 +63,7 @@ class Order(models.Model):
         return sum(item.sum for item in self.items.all())
     
     def get_total_weight(self):
-        return round(sum(item.weight for item in self.items.all()),3)
+        return round(sum(item.weight * item.quantity for item in self.items.all()),3)
     
     def get_total_quantity(self):
         return sum(item.quantity for item in self.items.all())

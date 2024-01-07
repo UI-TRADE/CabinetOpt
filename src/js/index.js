@@ -9,7 +9,8 @@ import { cartViewEvents } from './cart';
 import initProductFilters, { filtersEvents } from './catalog/filters';
 import updateProductCard from './catalog_card';
 import ordersEvents from './orders';
-import orderEvents, { updateOrder } from './order';
+import orderEvents from './order';
+import updateOrder from '../js/_old/order';
 
 
 require('jquery-ui');
@@ -81,8 +82,8 @@ $(document).ready(() => {
     initProductFilters();
     updateProductCard();
 
-    // orders
-    updateOrder()
+    // НЕ ИСПОЛЬЗУЕТСЯ
+    // updateOrder()
 
     // events
     addEvents();

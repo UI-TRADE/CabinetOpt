@@ -1,4 +1,5 @@
-import {decimalFormat} from "../utils/money_format";
+import { weightFormat } from "../utils/weight_format";
+import { decimalFormat } from "../utils/money_format";
 
 class Cart {
     constructor() {
@@ -72,9 +73,9 @@ class Cart {
         Object.values(this.products).forEach((item) => {
             this.totalPrice += item.sum // item.price * item.quntity
             this.totalWeight += item.quantity * item.weight
-        })
+        });
         $(".cart-total-sum", this.miniCartElement).html(`${decimalFormat(Math.ceil(this.totalPrice))}`)
-        $(".cart-total-weight", this.miniCartElement).html(`/ ${decimalFormat(this.totalWeight)} гр`)
+        $(".cart-total-weight", this.miniCartElement).html(`/ ${weightFormat(this.totalWeight, 2)} гр`)
 
     }
 

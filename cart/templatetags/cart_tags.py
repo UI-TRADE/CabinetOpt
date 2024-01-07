@@ -43,9 +43,9 @@ def get_unit_repr(unit):
         return 'грамм'
     return 'штук'
 
+
 @register.simple_tag
 def total_weight(weight, quantity):
     if weight:
         return weight * quantity
     return 0
-

@@ -132,6 +132,7 @@ OrderItemInline = inlineformset_factory(
         'sum',
         'product',
         'size',
+        'in_stock',
     ],
     extra=0,
     can_delete=True

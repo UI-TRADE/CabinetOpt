@@ -2,6 +2,7 @@ import 'tablesorter';
 import generateUUID from './lib';
 import Cart from "./components/cart";
 import updateProductCard from './catalog_card';
+import { weightFormat } from "./utils/weight_format";
 import { decimalFormat } from "./utils/money_format";
 
 
@@ -26,6 +27,7 @@ const closeProductEditingWindow = () => {
 };
 
 
+//Обновление данных о корзине в каталоге 
 export function updateTotalSizeInfo(productId, price, unit) {
 
     const $card        = $(`#sizes-selection-form-${productId}`);
@@ -51,6 +53,7 @@ export function updateTotalSizeInfo(productId, price, unit) {
 };
 
 
+//Обновление данных о корзине в каталоге
 const updateTotalInfo = (productId) => {
     const $form = $(`#cartForm-${productId}`);
     const weight = $form.find('input[name="weight"]').val();
@@ -711,19 +714,21 @@ export function cartViewEvents() {
             $('[name=cart-row]', cartViewElement).each(function (index, item) {
                 const cartKey = $('[name="cart-key"]', item)[0].textContent;
                 const cartItemWeight = $('td.total_weight', item);
+                const cartItemSum = $('td.total_price', item);
                 if (!cartKey) return;
                 const cartItemParams = JSON.parse(cartKey)
                 const product = cart.products[cartItemParams.productId + '_' + cartItemParams.size];
                 if (product) {
-                    cartItemWeight.text(decimalFormat(product.weight * product.quantity))
+                    cartItemWeight.text(weightFormat((product.weight * product.quantity), 2));
+                    cartItemSum.text(`${decimalFormat(Math.round(product.price * product.quantity))} р.`);
                     totalCount += product.quantity;
                     totalWeight += product.weight * product.quantity
                     totalSum += product.sum;
                 }
             })
             $('.cart-result__total-count', cartViewElement).text(decimalFormat(totalCount) + " шт")
-            $('.cart-result__total-weight', cartViewElement).text(decimalFormat(totalWeight) + " гр")
-            $('.cart-result__total-price', cartViewElement).text(decimalFormat(Math.ceil(totalSum)) + " р")
+            $('.cart-result__total-weight', cartViewElement).text(weightFormat(totalWeight, 2) + " гр")
+            $('.cart-result__total-price', cartViewElement).text(decimalFormat(Math.round(totalSum)) + " р")
         })
     }
 

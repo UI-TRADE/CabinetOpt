@@ -119,7 +119,6 @@ const renderDiscreteSlider = (sliderId, steps) => {
         values: [0, steps.length - 1],
         create: function(event, ui) {
             const currentWidget = $(this).slider('widget');
-            console.log(currentWidget);
             const handlers = currentWidget.find('.ui-slider-handle');
             $(handlers[1]).css('left', '100%');
             $(handlers[0]).css('display', 'none');

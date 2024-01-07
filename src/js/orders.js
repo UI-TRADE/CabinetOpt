@@ -1,4 +1,5 @@
-import orderEvents, {updateOrder} from "./order";
+import {loadOrder, initOrderInfo} from './order';
+
 
 function ordersEvents() {
     // $('.order-row').click((event) => {
@@ -6,50 +7,20 @@ function ordersEvents() {
     // });
 
     var orderRequest = undefined;
-    function loadOrder(orderLink){
-        return $.ajax({
-            url: orderLink,
-            method: "get",
-        })
-    }
-
-    const orderListElement = $('.order-list');
-    const $orderListLinks = $(".order-item__title, .order-item__edit-button a", orderListElement);
-    $orderListLinks.on("click", function (e){
-        e.preventDefault();
+    const $orderListLinks = $('.order-item__title, .order-item__edit-button a', $('.order-list'));
+    $orderListLinks.on('click', (event) => {
+        event.preventDefault();
         $orderListLinks.removeClass('active');
-        e.currentTarget.classList.add('active');
-        if(orderRequest){
-            orderRequest.abort()
-        }
-        const orderItemId = e.currentTarget.parentElement.id?.replace('order-status-', 'order-item-');
-        orderRequest = loadOrder($(this).attr("href"))
+        event.currentTarget.classList.add('active');
+        if(orderRequest) orderRequest.abort();
+        const orderItemId = event.currentTarget.parentElement.id?.replace('order-status-', 'order-item-');
+        orderRequest = loadOrder($(event.currentTarget).attr("href"));
         orderRequest.then(html => {
             const DOMModel = new DOMParser().parseFromString(html, 'text/html');
             $(DOMModel.querySelector(`#${orderItemId}`)).appendTo($("#order").empty())
             initOrderInfo()
         })
-    }).first().trigger("click")
-
-    function initOrderInfo(){
-        const orderTableItems = $('#order-items');
-
-        if(orderTableItems.length) {
-            orderTableItems.tablesorter({
-                textExtraction: {
-                    '.articul' : function(node, table, cellIndex) {
-                        return "#"  + $(node).text();
-                    },
-                    '.quantity' : function(node, table, cellIndex) {
-                        return $(node).find("input").val();
-                    }
-                }
-            })
-        }
-
-        orderEvents()
-        updateOrder()
-    }
+    }).first().trigger('click');
 
     const orderBoxToggler = document.getElementsByClassName('order-box');
     for (var i = 0; i < orderBoxToggler.length; i++) {

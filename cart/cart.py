@@ -102,7 +102,6 @@ class Cart(object):
             return self.cart[key] | {'sum': self.get_total_price(key)}
         
 
-
     def get_total_price(self, *keys):
         if keys:
             return round(
@@ -121,6 +120,7 @@ class Cart(object):
             2
         )
 
+
     def get_total_weight(self, *keys):
         if keys:
             return round(
@@ -138,6 +138,20 @@ class Cart(object):
             ),
             3
         )
+    
+
+    def get_total_quantity(self, *keys):
+        if keys:
+            return round(
+            sum(item['quantity'] for key, item in self.cart.items() if key in keys),
+            3
+        )
+
+        return round(
+            sum(item['quantity'] for item in self.cart.values()),
+            3
+        )
+
 
     def get_total_max_price(self):
         return round(

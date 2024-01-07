@@ -1,5 +1,6 @@
-{% load cart_tags %}
 {% load static %}
+{% load humanize %}
+{% load cart_tags %}
 
 <table id="cart-items" class="table order-preview__table">
     <thead>
@@ -129,11 +130,11 @@
                         <i class="fa fa-plus"></i>
                     </a>
                 </td>
-                <td class="total_weight" name="cart-total-weight">
+                <td class="total_weight" name="cart-weight">
                     {% total_weight item.weight item.quantity as total_weight %}
                     {{ total_weight|floatformat:"2" }}
                 </td>
-                <td class="total_price" name="cart-sum">{{ item.total_price|floatformat:"0" }} р.</td>
+                <td class="total_price" name="cart-sum">{{ item.total_price|floatformat:0|intcomma }} р.</td>
                 <td class="actions">
                     <div class="d-inline-flex align-items-center">
                         <a name="edit" class="order-preview__edit-btn" href="#">
