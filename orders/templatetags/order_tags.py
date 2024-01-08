@@ -2,6 +2,7 @@ import uuid
 from django import template
 from num2words import num2words
 from more_itertools import first
+from contextlib import suppress
 
 from catalog.models import ProductImage
 
@@ -44,3 +45,11 @@ def do_split(items):
     if items:
         return any([item['in_stock'].value() for item in items])
     return False
+
+
+@register.filter
+def index(seq, idx):
+    print(seq, idx, sep='\n')
+    with suppress(KeyError):
+        return seq[idx]
+    return ''

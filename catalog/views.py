@@ -90,7 +90,7 @@ class ProductView(FiltersView, ListView):
                 result[key].append(value)
         result = {key: ','.join(value) for key, value in result.items()}
         if range_filters:
-            result = result | range_filters    
+            result = result | range_filters
         return result
 
     def get_active_products(self):

@@ -141,7 +141,7 @@ export function orderEvents() {
         const formElementQuantity = currentLine?.find('input[name$="-quantity"]');
         const formElementSum = currentLine?.find('input[name$="-sum"]');
         const newVal = parseInt(viewElement.val());
-        const newSum = newVal * parseFloat(currentLine?.find('input[name$="-price"]').val());
+        const newSum = (newVal * parseFloat(currentLine?.find('input[name$="-price"]').val())).toFixed(2);
         formElementQuantity.val(newVal).trigger('change');
         formElementSum.val(newSum).trigger('change');
         editOrder()
@@ -164,7 +164,7 @@ export function orderEvents() {
         const formElementQuantity = currentLine?.find('input[name$="-quantity"]');
         const formElementSum = currentLine?.find('input[name$="-sum"]');
         const newVal = parseInt(viewElement.val()) + 1;
-        const newSum = newVal * parseFloat(currentLine?.find('input[name$="-price"]').val());
+        const newSum = (newVal * parseFloat(currentLine?.find('input[name$="-price"]').val())).toFixed(2);
         formElementQuantity.val(newVal).trigger('change');
         formElementSum.val(newSum).trigger('change');
         editOrder()
@@ -188,7 +188,7 @@ export function orderEvents() {
         const formElementSum = currentLine?.find('input[name$="-sum"]');
         const newVal = parseInt(viewElement.val()) - 1;
         if (newVal === 0) return;
-        const newSum = newVal * parseFloat(currentLine?.find('input[name$="-price"]').val());
+        const newSum = (newVal * parseFloat(currentLine?.find('input[name$="-price"]').val())).toFixed(2);
         formElementQuantity.val(newVal).trigger('change');
         formElementSum.val(newSum).trigger('change');
         editOrder()

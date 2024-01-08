@@ -105,8 +105,14 @@ class EditOrderView(UpdateView):
                 for order_item in order_items.deleted_forms:
                     order_item.instance.delete()
                 order_items.save()
+                schedule_send_order(form.instance, current_status)
+        else:
+            if form.errors:
+                context['order_errors'] = form.errors
+            if order_items.errors:
+                context['order_items_errors'] = order_items.errors
+            print(context)   
             
-            schedule_send_order(form.instance, current_status)
         return render(self.request, self.template_name, context)
 
 

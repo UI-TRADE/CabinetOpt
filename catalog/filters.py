@@ -25,7 +25,6 @@ class FilterTree(object):
                 ])
         return result
     
-
     def serialize_root(self, root, root_field):
         def get_ident():
             if root[root_field]:
@@ -69,7 +68,11 @@ class FilterTree(object):
 
 
 class CharInFilter(BaseInFilter, CharFilter):
-    pass
+    
+    # Оставлено пока для целей отладки фильтров
+    def filter(self, qs, value):
+        return super().filter(qs, value)
+
 
 
 class ProductFilter(django_filters.FilterSet):

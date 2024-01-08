@@ -198,6 +198,7 @@
                 </div>
                 <ul id="gender">
                     {% for item in filters.genders.tree %}
+                        {% if item.gender__name %}
                         <li>
                             <div class="d-xl-flex justify-content-xl-start row filter-node-item">
                                 <span class="filter-point filter-item-title filter-item-title-disable" name="{{item.ident}}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.gender__name }}
@@ -205,6 +206,7 @@
                                 </span>
                             </div>
                         </li>
+                        {% endif %}
                     {% endfor %}
                 </ul>
             </li>

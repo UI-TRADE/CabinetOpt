@@ -164,8 +164,8 @@ export function addSelectionSizesEvents(productId, price, unit) {
                 return new Promise((resolve, reject) => {
                     try {
                         const result = Promise.all([
-                            sendElementsToCart(productId, data['selectedSizes']),
-                            removeElementsFromCart(productId, data['removedSizes'])
+                            sendSizesToCart(productId, data['selectedSizes']),
+                            removeSizesFromCart(productId, data['removedSizes'])
                         ]);
                         resolve(result);
                     } catch (error) {
@@ -196,6 +196,7 @@ export function addSelectionSizesEvents(productId, price, unit) {
                             });
                         });
                     }
+                    $(document).data("cart").getProducts()
                 }
             })
             .catch((error) => {
@@ -283,7 +284,7 @@ const addToCart = (formId) => {
     const formData    = new FormData(productForm);
     const productId   = formId.replace('cartForm-', '');
 
-    sendElementToCart(productId, formData)
+    sendProductToCart(productId, formData)
         .then((response) => {
             if (response['replay'] == 'error') throw new Error(response['message']);
             return waitUpdateCart(
@@ -319,7 +320,7 @@ export const delOneFromCart = (element) => {
 }
 
 
-const sendElementsToCart = async (productId, formData) => {
+const sendSizesToCart = async (productId, formData) => {
     return new Promise((resolve, reject) => {
         $.ajax({
             url: `/cart/add/sizes/${productId}/`,
@@ -338,7 +339,7 @@ const sendElementsToCart = async (productId, formData) => {
 }
 
 
-const sendElementToCart = (productId, formData) => {
+const sendProductToCart = (productId, formData) => {
     return new Promise((resolve, reject) => {
         $.ajax({
             url: `/cart/send/${productId}/`,
@@ -361,7 +362,7 @@ const sendElementToCart = (productId, formData) => {
  *
  * productId         - id товара в корзине.
  */
-const removeElementsFromCart = async (productId, formData) => {
+const removeSizesFromCart = async (productId, formData) => {
     return new Promise((resolve, reject) => {
         $.ajax({
             url: `/cart/remove/${productId}/`,
@@ -385,7 +386,7 @@ const removeElementsFromCart = async (productId, formData) => {
  *
  * cartKey         - ключ позиции товара в корзине.
  */
-const removeElementFromCart = (cartKey) => {
+const removeFromCart = (cartKey) => {
     return new Promise((resolve, reject) => {
         $.ajax({
             url: `/cart/remove/${cartKey.productId}/${cartKey.size}/`,
@@ -468,7 +469,7 @@ export const OnQuantityChange = (element, preventReload=false) => {
     const quantity = parseInt(element.value);
     if (quantity == 0) {
         const cartKey = getCartKey(element, 0);
-        removeElementFromCart(cartKey)
+        removeFromCart(cartKey)
             .then((response) => {
                 if (response['replay'] == 'error') throw new Error(response['message']);
                 if (!preventReload) {
@@ -514,7 +515,7 @@ export const OnQuantityChange = (element, preventReload=false) => {
                                 formData.append('update'  , true);
                                 formData.append('size'    , item.param.size);
 
-                                return sendElementToCart(item.param.productId, formData);
+                                return sendProductToCart(item.param.productId, formData);
                             })
                         );
                         resolve(result);

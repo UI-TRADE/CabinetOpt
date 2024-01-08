@@ -12,9 +12,12 @@
 
       {% if page_obj.has_previous %}
         <div style="width: 15px;"></div>
-        <a class="page-link" href="?page={{ page_obj.previous_page_number }}" tabindex="-1">
+        <!-- <a class="page-link" href="?page={{ page_obj.previous_page_number }}" tabindex="-1">
           <i class="fa fa-angle-left" aria-hidden="true"></i>
-        </a>
+        </a> -->
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}" tabindex="-1">...</a>
+        </li>
       {% endif %}
 
       {% for page_number in paginator.page_range|slice:"1:" %}

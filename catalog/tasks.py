@@ -127,7 +127,7 @@ def update_or_create_collection_group(group):
     if not group:
         return
     
-    group_obj, _ = CollectionGroup.objects.update_or_create(name=group)
+    group_obj, _ = CollectionGroup.objects.update_or_create(name=group.strip())
     return group_obj
 
 
@@ -147,7 +147,7 @@ def update_or_create_brand(brand):
     brand_obj, _ = Brand.objects.update_or_create(
         identifier_1C=identifier_1C,
         defaults={
-            'name': brand['Наименование']
+            'name': brand['Наименование'].strip()
     })
 
     return brand_obj
@@ -169,7 +169,7 @@ def update_or_create_collection(collection, group):
     collection_obj, _ = Collection.objects.update_or_create(
         identifier_1C=identifier_1C,
         defaults={
-            'name': collection['Наименование'],
+            'name': collection['Наименование'].strip(),
             'group': update_or_create_collection_group(group)
     })
 
@@ -351,7 +351,7 @@ def update_or_create_size(size):
         if size['диапазон_до']:
             defaults['size_to'] = size['диапазон_до']
     size, _ = Size.objects.get_or_create(
-        name=size['Наименование'],
+        name=size['Наименование'].strip(),
         defaults=defaults
     )
     return size

@@ -236,10 +236,14 @@
                                             </div>
                                         </td>
                                         <td class="errors">
-                                            {% if item.errors %}
+                                            {% if order_items_errors|length %}
+                                                {% with error=order_items_errors|index:forloop.counter0  %}
+                                                {% if error %}
                                                 <div class="formset-field errors">
-                                                    {{ item.errors }}
+                                                    {{ error }}
                                                 </div>
+                                                {% endif %}
+                                                {% endwith %}
                                             {% endif %}
                                         </td>
                                         <td class="hidden">
