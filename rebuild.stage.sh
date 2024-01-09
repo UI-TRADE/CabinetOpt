@@ -24,4 +24,6 @@ if [[ $(git log HEAD..origin/stage --oneline) ]]; then
     fi
 else
     echo "Нет локальных изменений в репозитории."
+    docker-compose down --volumes --rmi all
+    DOCKER_BUILDKIT=0 docker-compose up -d --build
 fi
