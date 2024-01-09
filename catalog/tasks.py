@@ -365,6 +365,7 @@ def run_uploading_stock_and_costs(stock_and_costs):
                 identifier_1C = item['nomenclature']['Идентификатор']
                 product = Product.objects.get(identifier_1C=identifier_1C)
                 filter_kwargs = {'product': product}
+                filter_kwargs['size'] = None
                 if item.get('size'):
                     filter_kwargs['size'] = update_or_create_size(item['size'])
                 result, _ = StockAndCost.objects.update_or_create(
@@ -374,6 +375,9 @@ def run_uploading_stock_and_costs(stock_and_costs):
                         'stock' : item['stock']
                     }
                 )
+                if item['stock'] > 0:
+                    product.status = 'novelty'
+                    product.save()    
 
         except (KeyError, ValueError) as error:
             transaction.rollback()
