@@ -151,8 +151,11 @@
                                     {% for hidden in line.hidden_fields %}
                                         {{ hidden }}
                                     {% endfor %}
+                                    {% if line.DELETE.value %}
+                                    <tr class="order-product-item hidden" style="display: table-row" data-id="{{forloop.counter}}"></tr>
+                                    {% else %}
                                     <tr class="order-product-item" style="display: table-row" data-id="{{forloop.counter}}">
-                                        {% unique_id as id %}
+                                    {% endif %}
                                         <td style="border: none;">
                                             {% if object.status == "introductory" and line.in_stock.value %}
                                                 <div 
@@ -173,7 +176,7 @@
                                         <td class="articul">{{ line.instance.product.articul }}</td>
                                         <td class="metal">{{ line.instance.product.metal }}</td>
                                         <td class="size">{% if line.instance.size %}<span>{{ line.instance.size }}</span>{% endif %}</td>
-                                        <td class="weight">{{ line.instance.weight|floatformat:2 }}</td>
+                                        <td class="weight" name="cart-weight">{{ line.instance.weight|floatformat:2 }}</td>
                                         <td class="price" name="cart-price">{{ line.instance.price|floatformat:0|intcomma }} р.</td>
                                         {% if object.status == "introductory" %}
                                         <td class="quantity">
@@ -199,7 +202,7 @@
                                         {% else %}
                                         <td class="quantity">{{ line.instance.quantity }}</td>
                                         {% endif %}
-                                        <td class="total_weight">
+                                        <td class="total_weight" name="cart-mass">
                                             {% total_weight line.instance.weight line.instance.quantity as total_weight %}
                                             {{ total_weight|floatformat:"2" }}
                                         </td>
@@ -301,6 +304,7 @@
                             {% if object.status == "introductory" %}
                                 <!-- <button type="submit" class="btn btn-primary button-create">Отправить на рассмотрение</button> -->
                                 <input id="sendTalant" class="btn btn-primary" data-url="{% url 'orders:orders' %}" data-id="{{object.id}}" value="Отправить в Talant">
+                                <input id="saveOrder" class="btn btn-primary" data-url="{% url 'orders:orders' %}" data-id="{{object.id}}" value="Сохранить">
                             {% else %}
                                 <input id="closeOrder" class="btn btn-primary" data-url="{% url 'orders:orders' %}" data-id="{{object.id}}" value="Закрыть">
                             {% endif %}

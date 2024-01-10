@@ -1,5 +1,7 @@
 import updateProductCard from './catalog_card';
 import {updateTotalSizeInfo, addSelectionSizesEvents, addSizeSlider} from './cart';
+import { weightFormat } from "./utils/weight_format";
+import { decimalFormat } from "./utils/money_format";
 // import updateOrder from '../js/_old/order';
 
 
@@ -86,6 +88,45 @@ const updateOrderView = (url, url_get, orderComponent, status=undefined, reload=
 }
 
 
+const updateOrderItemForm = (itemElement, quantity, weight, sum) => {
+    const formElementQuantity = itemElement?.find('input[name$="-quantity"]');
+    const formElementSum = itemElement?.find('input[name$="-sum"]');
+    formElementQuantity.val(quantity).trigger('change');
+    formElementSum.val(sum).trigger('change');
+}
+
+
+const updateViewItemForm = (itemElement, quantity, weight, sum) => {
+    const elementOfWeight = itemElement?.find('td[name="cart-mass"]');
+    const elementOfSum = itemElement?.find('td[name="cart-sum"]');
+    elementOfWeight.text(weightFormat(weight, 2));
+    elementOfSum.text(`${Math.ceil(sum).toLocaleString()} р.`);
+}
+
+
+const updateTotalOrderData = () => {
+
+    let quantity = 0, weight = 0, sum = 0;
+
+    const totalQuantity = $('div[class="order-item-result__total-count"]', $('#orderForm'));
+    const totalWeight = $('div[class="order-item-result__total-weight"]', $('#orderForm'));
+    const totalPrice = $('div[class="order-item-result__total-price"]', $('#orderForm'));
+
+    const $lines = $('tr[class="order-product-item"]', $('#orderForm'));
+    $.each($lines, (_, line) => {
+        quantity += Number($('input[name$="-quantity"]', line).val());
+        weight += parseFloat($('input[name$="-weight"]', line).val()) 
+            * Number($('input[name$="-quantity"]', line).val());
+        sum += parseFloat($('input[name$="-sum"]', line).val());
+    });
+
+    totalQuantity.text(`${quantity} шт`);
+    totalWeight.text(`${weightFormat(weight, 2)} гр`);
+    totalPrice.text(`${Math.ceil(sum).toLocaleString()} р`);
+
+}
+
+
 const getItemID = (item) => {
     const el = $('input[name$="-nomenclature"]', item);
     if (!el) return -1;
@@ -121,12 +162,27 @@ export function loadOrder(orderLink){
 
 
 export function orderEvents() {
-    const orderForm = $("#orderForm")
+    const orderForm = $("#orderForm");
 
     $(`#sendTalant`).on('click', (event) => {
         const orderId = $(event.target).attr('data-id');
         const link = $(`#order-status-${orderId}`).find('a');
         updateOrderView('', link.attr('href'), $(event.target), 'confirmed', true);
+    });
+
+    $(`#saveOrder`).on('click', (event) => {
+        const orderId = $(event.target).attr('data-id');
+        editOrder()
+            .then((_) => {
+                const $url = $('#orderForm').attr('action').replace('update', 'edit').replace('split', 'edit');
+                const orderRequest = loadOrder($url);
+                orderRequest.then((html) => {
+                    const DOMModel = new DOMParser().parseFromString(html, 'text/html');
+                    $(DOMModel.querySelector(`#order-item-${orderId}`)).appendTo($("#order").empty());
+                    initOrderInfo();
+                    $(document).trigger("order.updated")
+                });
+            })
     });
 
     $(`#closeOrder`).on('click', (event) => {
@@ -135,87 +191,61 @@ export function orderEvents() {
     });
 
     $('input[name="quantity"]', orderForm).on('change', (event) => {
-        const orderId = $('#order').children().attr('data-id');
         const viewElement = $(event.currentTarget);
         const currentLine = viewElement.parents('tr');
-        const formElementQuantity = currentLine?.find('input[name$="-quantity"]');
-        const formElementSum = currentLine?.find('input[name$="-sum"]');
-        const newVal = parseInt(viewElement.val());
-        const newSum = (newVal * parseFloat(currentLine?.find('input[name$="-price"]').val())).toFixed(2);
-        formElementQuantity.val(newVal).trigger('change');
-        formElementSum.val(newSum).trigger('change');
-        editOrder()
-            .then((_) => {
-                const $url = $('#orderForm').attr('action').replace('update', 'edit').replace('split', 'edit');
-                const orderRequest = loadOrder($url);
-                orderRequest.then((html) => {
-                    const DOMModel = new DOMParser().parseFromString(html, 'text/html');
-                    $(DOMModel.querySelector(`#order-item-${orderId}`)).appendTo($("#order").empty());
-                    initOrderInfo();
-                    $(document).trigger("order.updated")
-                });
-            })
+        const quantity = parseInt(viewElement.val());
+        const weight = parseFloat(currentLine?.find('input[name$="-weight"]').val());
+        const price = parseFloat(currentLine?.find('input[name$="-price"]').val());
+        const currentWeight = (quantity * weight);
+        const currentSum = (quantity * price);
+        updateOrderItemForm(currentLine, quantity, currentWeight, currentSum);
+        updateViewItemForm(currentLine, quantity, currentWeight, currentSum);
+        updateTotalOrderData();
     });
 
     $('.add-quantity', orderForm).on('click', (event) => {
-        const orderId = $('#order').children().attr('data-id');
-        const viewElement = $($(event.currentTarget).attr("href"));
+        const currentId = $(event.currentTarget).attr("href");
+
+        const viewElement = $(currentId);
+        const quantity = parseInt(viewElement.val()) + 1;
+        viewElement.val(quantity);
+
         const currentLine = viewElement.parents('tr');
-        const formElementQuantity = currentLine?.find('input[name$="-quantity"]');
-        const formElementSum = currentLine?.find('input[name$="-sum"]');
-        const newVal = parseInt(viewElement.val()) + 1;
-        const newSum = (newVal * parseFloat(currentLine?.find('input[name$="-price"]').val())).toFixed(2);
-        formElementQuantity.val(newVal).trigger('change');
-        formElementSum.val(newSum).trigger('change');
-        editOrder()
-            .then((_) => {
-                const $url = $('#orderForm').attr('action').replace('update', 'edit').replace('split', 'edit');
-                const orderRequest = loadOrder($url);
-                orderRequest.then((html) => {
-                    const DOMModel = new DOMParser().parseFromString(html, 'text/html');
-                    $(DOMModel.querySelector(`#order-item-${orderId}`)).appendTo($("#order").empty());
-                    initOrderInfo();
-                    $(document).trigger("order.updated")
-                });
-            })
+        const weight = parseFloat(currentLine?.find('input[name$="-weight"]').val());
+        const price = parseFloat(currentLine?.find('input[name$="-price"]').val());
+        const currentWeight = (quantity * weight);
+        const currentSum = (quantity * price);
+
+        updateOrderItemForm(currentLine, quantity, currentWeight, currentSum);
+        updateViewItemForm(currentLine, quantity, currentWeight, currentSum);
+        updateTotalOrderData();
     });
 
     $('.remove-quantity', orderForm).on('click', (event) => {
-        const orderId = $('#order').children().attr('data-id');
-        const viewElement = $($(event.currentTarget).attr("href"));
+        const currentId = $(event.currentTarget).attr("href");
+
+        const viewElement = $(currentId);
+        const quantity = parseInt(viewElement.val()) - 1; if (quantity === 0) return;
+        viewElement.val(quantity);
+
         const currentLine = viewElement.parents('tr');
-        const formElementQuantity = currentLine?.find('input[name$="-quantity"]');
-        const formElementSum = currentLine?.find('input[name$="-sum"]');
-        const newVal = parseInt(viewElement.val()) - 1;
-        if (newVal === 0) return;
-        const newSum = (newVal * parseFloat(currentLine?.find('input[name$="-price"]').val())).toFixed(2);
-        formElementQuantity.val(newVal).trigger('change');
-        formElementSum.val(newSum).trigger('change');
-        editOrder()
-            .then((_) => {
-                const $url = $('#orderForm').attr('action').replace('update', 'edit').replace('split', 'edit');
-                const orderRequest = loadOrder($url);
-                orderRequest.then((html) => {
-                    const DOMModel = new DOMParser().parseFromString(html, 'text/html');
-                    $(DOMModel.querySelector(`#order-item-${orderId}`)).appendTo($("#order").empty());
-                    initOrderInfo();
-                    $(document).trigger("order.updated")
-                });
-            })
+        const weight = parseFloat(currentLine?.find('input[name$="-weight"]').val());
+        const price = parseFloat(currentLine?.find('input[name$="-price"]').val());
+        const currentWeight = (quantity * weight);
+        const currentSum = (quantity * price);
+
+        updateOrderItemForm(currentLine, quantity, currentWeight, currentSum);
+        updateViewItemForm(currentLine, quantity, currentWeight, currentSum);
+        updateTotalOrderData();
     });
 
     $('[name="remove-item"]', orderForm).on('click', event => {
         event.preventDefault();
-        const link = $(event.currentTarget);
-        const item = link.parents('tr')?.find('input[name$="DELETE"]');
+        const link = $(event.currentTarget).parents('tr');
+        const item = link?.find('input[name$="DELETE"]');
         if (item)
             item.prop('checked', true);
-
-        updateOrderView(
-            link.attr('href'),
-            link.attr('href'),
-            link.parents('div[id^="order-item-"]')
-        );
+            link.addClass('hidden');
     });
 
     $("#orderForm").find('tr').each((_, item) => {
