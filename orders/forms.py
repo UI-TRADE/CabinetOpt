@@ -1,8 +1,9 @@
+from contextlib import suppress
 from django import forms
 from django.db.models import Sum
 from django.forms.models import BaseInlineFormSet, inlineformset_factory
 from django.core.validators import MinValueValidator, MaxValueValidator
-from catalog.models import Size, StockAndCost
+from catalog.models import Size, StockAndCost, PriceType, Price
 from orders.models import Order, OrderItem
 
 
@@ -28,6 +29,7 @@ class OrderForm(forms.ModelForm):
 class OrderItemForm(forms.ModelForm):
     nomenclature = forms.CharField(max_length=100, required = False)
     nomenclature_size = forms.ChoiceField(required = False)
+    price_per_gr = forms.DecimalField(required = False, validators=[MinValueValidator(0)])
     in_stock = forms.BooleanField()
 
     class Meta:
@@ -47,6 +49,7 @@ class OrderItemForm(forms.ModelForm):
             'nomenclature',
             'nomenclature_size',
             'in_stock',
+            'price_per_gr',
         ]
 
     def __init__(self, *args, **kwargs):
@@ -56,10 +59,12 @@ class OrderItemForm(forms.ModelForm):
         self.fields['size'].required = False
         self.fields['unit'].required = False
         self.fields['in_stock'].required = False
+        self.fields['price_per_gr'].required = False
 
         self.fields['nomenclature'].initial = self.current_product(kwargs)
         self.fields['nomenclature_size'].choices = self.get_sizes()
         self.fields['in_stock'].initial = self.get_in_stock(kwargs)
+        self.fields['price_per_gr'].initial = self.get_price_per_gr(kwargs)
 
     def current_product(self, kwargs):
         instance = kwargs.get('instance')
@@ -82,6 +87,24 @@ class OrderItemForm(forms.ModelForm):
                 return True
 
         return False
+    
+    def get_price_per_gr(self, kwargs):
+        instance = kwargs.get('instance')
+        if instance:
+            prices = Price.objects.available_prices([instance.product.id])
+            with suppress(PriceType.DoesNotExist):
+                client_prices = Price.objects.available_prices(
+                    [instance.product.id], PriceType.objects.get(client = instance.order.client)
+                )
+                prices = prices.exclude(
+                    product_id__in = client_prices.values_list('product_id', flat=True)
+                ) | client_prices
+            
+            current_price = prices.first()
+            if current_price:
+                return current_price.price
+
+        return 0
 
 
 

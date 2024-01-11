@@ -110,8 +110,7 @@ class EditOrderView(UpdateView):
             if form.errors:
                 context['order_errors'] = form.errors
             if order_items.errors:
-                context['order_items_errors'] = order_items.errors
-            print(context)   
+                context['order_items_errors'] = order_items.errors  
             
         return render(self.request, self.template_name, context)
 
@@ -478,17 +477,18 @@ def save_order(order_params, order_items):
                 else:
                     formset.append(OrderItemForm(item))
 
-                for form in formset:
-                    if not form.is_valid():
-                        errors.append({
-                            'product_id': item['product'].id,
-                            'size': item['size'],
-                            'error': form.errors.as_text()
-                        })
-                        continue
-                    item_instance = form.save(commit=False)
-                    item_instance.order = order_instance
-                    item_instance.save()
+            for form in formset:
+                if not form.is_valid():
+                    print(form.errors.as_text())
+                    errors.append({
+                        'product_id': item['product'].id,
+                        'size': item['size'],
+                        'error': form.errors.as_text()
+                    })
+                    continue
+                item_instance = form.save(commit=False)
+                item_instance.order = order_instance
+                item_instance.save()
 
             if not order_items:
                 transaction.rollback()
@@ -534,17 +534,17 @@ def update_order(instance, order_params, order_items):
                 else:
                     formset.append(OrderItemForm(item))
 
-                for form in formset:
-                    if not form.is_valid():
-                        errors.append({
-                            'product_id': item['product'].id,
-                            'size': item['size'],
-                            'error': form.errors.as_text()
-                        })
-                        continue
-                    item_instance = form.save(commit=False)
-                    item_instance.order = order_instance
-                    item_instance.save()
+            for form in formset:
+                if not form.is_valid():
+                    errors.append({
+                        'product_id': item['product'].id,
+                        'size': item['size'],
+                        'error': form.errors.as_text()
+                    })
+                    continue
+                item_instance = form.save(commit=False)
+                item_instance.order = order_instance
+                item_instance.save()
 
             if not order_items:
                 transaction.rollback()

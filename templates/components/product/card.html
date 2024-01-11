@@ -47,9 +47,10 @@
             <div class="col col-6 price-block">
                 <div class="product__price-block--position">
                     <div class="product__price-block__row--position">
-                        <div class="product__price-block__element--position text-warning discount"></div>
+                        <!-- <div class="product__price-block__element--position text-warning discount"></div>
                         <div class="product__price-block__element--position price"></div>
-                        <div class="product__price-block__element--position max-price"></div>
+                        <div class="product__price-block__element--position max-price"></div> -->
+                        <div class="product__price-block__element--position price-per-weight"></div>
                     </div>
                 </div>
             </div>
@@ -58,8 +59,7 @@
                     В наличии: <span class="in_stock">-- шт.</span>
                 </div>
                 <div class="px-4 px-sm-0" style="text-align: center;">
-                    <form id="cartForm-{{ product.id }}" method="post"
-                            action="{% url 'cart:cart_add' product.id %}">
+                    <form id="cartForm-{{ product.id }}" method="post" action="{% url 'cart:cart_add' product.id %}">
                         {% csrf_token %}
                         <input type="hidden" name="quantity" value="1"/>
                         <input type="hidden" name="update" value="False"/>
@@ -101,7 +101,7 @@
         <div class="product-item__articul">{{ product.articul }}</div>
         <div>
             <span class="product-item__weight weight"></span>
-            <span class="product-item__price-per-gramm price-per-weight"></span>
+            <!-- <span class="product-item__price-per-gramm price-per-weight"></span> -->
         </div>
     </div>
 

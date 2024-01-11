@@ -43,7 +43,7 @@ export function updateTotalSizeInfo(productId, price, unit) {
         if ( selectedQuantity ) {
             totalCount += selectedQuantity;
             totalWeight += (selectedQuantity * parseFloat($(inputField).attr('data-weight').replace(",", ".")));
-            totalCost += (selectedQuantity * price);
+            totalCost += (selectedQuantity * (totalWeight * price).toFixed(2));
         }
     });
 
@@ -109,7 +109,7 @@ export function addSelectionSizesEvents(productId, price, unit) {
                         selectedSize['weight'] = parseFloat($(inputField).attr('data-weight').replace(",", "."));
                         selectedSize['quantity'] = selectedQuantity-incartQuantity;
                         selectedSize['unit'] = unit;
-                        selectedSize['price'] = price;
+                        selectedSize['price'] = (selectedSize['weight'] * price).toFixed(2);
                         if (incartQuantity == 0) selectedSize['update'] = 'false';
                         else selectedSize['update'] = 'true';
                         selectedSizes.push(selectedSize);
@@ -313,7 +313,7 @@ export const addOneToCart = (element) => {
 
 export const delOneFromCart = (element) => {
     const cartElement = $(element).closest("[name='cart-row']").get(0).querySelector('input');
-    if(cartElement.value != '0') {
+    if(Number(cartElement.value) > 0) {
         cartElement.value = parseInt(cartElement.value) - 1;
         OnQuantityChange(cartElement, true);
     }

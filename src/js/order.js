@@ -100,7 +100,7 @@ const updateViewItemForm = (itemElement, quantity, weight, sum) => {
     const elementOfWeight = itemElement?.find('td[name="cart-mass"]');
     const elementOfSum = itemElement?.find('td[name="cart-sum"]');
     elementOfWeight.text(weightFormat(weight, 2));
-    elementOfSum.text(`${Math.ceil(sum).toLocaleString()} р.`);
+    elementOfSum.text(`${Math.round(sum).toLocaleString()} р.`);
 }
 
 
@@ -195,9 +195,9 @@ export function orderEvents() {
         const currentLine = viewElement.parents('tr');
         const quantity = parseInt(viewElement.val());
         const weight = parseFloat(currentLine?.find('input[name$="-weight"]').val());
-        const price = parseFloat(currentLine?.find('input[name$="-price"]').val());
+        const price = parseFloat(currentLine?.find('input[name$="-price_per_gr"]').val());
         const currentWeight = (quantity * weight);
-        const currentSum = (quantity * price);
+        const currentSum = (quantity * (weight * price).toFixed());
         updateOrderItemForm(currentLine, quantity, currentWeight, currentSum);
         updateViewItemForm(currentLine, quantity, currentWeight, currentSum);
         updateTotalOrderData();
@@ -212,9 +212,9 @@ export function orderEvents() {
 
         const currentLine = viewElement.parents('tr');
         const weight = parseFloat(currentLine?.find('input[name$="-weight"]').val());
-        const price = parseFloat(currentLine?.find('input[name$="-price"]').val());
+        const price = parseFloat(currentLine?.find('input[name$="-price_per_gr"]').val());
         const currentWeight = (quantity * weight);
-        const currentSum = (quantity * price);
+        const currentSum = (quantity * (weight * price).toFixed(2));
 
         updateOrderItemForm(currentLine, quantity, currentWeight, currentSum);
         updateViewItemForm(currentLine, quantity, currentWeight, currentSum);
@@ -230,9 +230,9 @@ export function orderEvents() {
 
         const currentLine = viewElement.parents('tr');
         const weight = parseFloat(currentLine?.find('input[name$="-weight"]').val());
-        const price = parseFloat(currentLine?.find('input[name$="-price"]').val());
+        const price = parseFloat(currentLine?.find('input[name$="-price_per_gr"]').val());
         const currentWeight = (quantity * weight);
-        const currentSum = (quantity * price);
+        const currentSum = (quantity * (weight * price).toFixed(2));
 
         updateOrderItemForm(currentLine, quantity, currentWeight, currentSum);
         updateViewItemForm(currentLine, quantity, currentWeight, currentSum);
@@ -261,7 +261,7 @@ export function orderEvents() {
                         product_id = el['value'];
                     if (el['name'] == `items-${itemID}-unit`)
                         unit = el['value'];
-                    if (el['name'] == `items-${itemID}-price`)
+                    if (el['name'] == `items-${itemID}-price_per_gr`)
                         price = el['value'];
                 });
             }

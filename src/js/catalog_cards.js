@@ -2,7 +2,8 @@ import getPrice from './price'
 import {extractContent} from './lib';
 import {updateFilters} from './catalog/filters';
 import {cartEvents, waitUpdateCart} from './cart';
-import {decimalFormat} from "./utils/money_format";
+import { weightFormat } from "./utils/weight_format";
+import { decimalFormat } from "./utils/money_format";
 
 
 /**
@@ -92,31 +93,35 @@ const updateProductCards = (element) => {
 
                     const price = getPrice(currentPrice, maxPrice, currentDiscount, weight);
 
-                    const priceBlock          = elements[i].querySelector('.price-block');
+                    // const priceBlock          = elements[i].querySelector('.price-block');
                     const inStockBlock        = elements[i].querySelector('.inStock-block');
-                    const priceField          = priceBlock.querySelector('.price');
+                    // const priceField          = priceBlock.querySelector('.price');
                     const weightField         = elements[i].querySelector('.weight');
-                    const pricePerweightField =  elements[i].querySelector('.price-per-weight');
-                    const maxPriceField       = priceBlock.querySelector('.max-price');
-                    const discountField       = priceBlock.querySelector('.discount');
+                    const pricePerweightField = elements[i].querySelector('.price-per-weight');
+                    // const maxPriceField       = priceBlock.querySelector('.max-price');
+                    // const discountField       = priceBlock.querySelector('.discount');
                     const stockField          = inStockBlock.querySelector('.in_stock');
-                    const tagField            = elements[i].querySelector('[name="product-status"]');
-                    if (currentPrice) pricePerweightField.innerHTML = `${decimalFormat(Math.ceil(currentPrice))} руб/гр.`;
-                    if (price.clientPrice) priceField.innerHTML = `${decimalFormat(Math.ceil(price.clientPrice))} <i class="fa fa-rub" aria-hidden="true"></i>`;
-                    if (currentDiscount>0) {
-                        if (price.maxPrice) maxPriceField.innerHTML = `${decimalFormat(Math.ceil(price.maxPrice))} <i class="fa fa-rub" aria-hidden="true"></i>`;
-                        discountField.textContent = `- ${decimalFormat(currentDiscount)} %`
-                    }
-                    if (weight) {
+                    // const tagField            = elements[i].querySelector('[name="product-status"]');
+                    if (currentPrice && pricePerweightField) 
+                        pricePerweightField.innerHTML = `${decimalFormat(Math.ceil(currentPrice))} руб/гр.`;
+                    // if (price.clientPrice && priceField)
+                    //     priceField.innerHTML = `${decimalFormat(Math.ceil(price.clientPrice))} <i class="fa fa-rub" aria-hidden="true"></i>`;
+                    // if (currentDiscount>0) {
+                    //     if (price.maxPrice && maxPriceField) 
+                    //         maxPriceField.innerHTML = `${decimalFormat(Math.ceil(price.maxPrice))} <i class="fa fa-rub" aria-hidden="true"></i>`;
+                    //     discountField.textContent = `- ${decimalFormat(currentDiscount)} %`
+                    // }
+                    if (weight && weightField) {
                         weightField.style.display = "inline-block"
-                        weightField.textContent = `${decimalFormat(weight)} гр.`
+                        weightField.textContent = `${weightFormat(weight, 3)} гр.`
                     }
-                    if (inStok) stockField.textContent = `${inStok} шт`;
+                    if (inStok && stockField) stockField.textContent = `${inStok} шт`;
 
                     // if (+inStok === 0) {
                     //     tagField.setAttribute('data-json', '{ "status": "order" }');
                     // }
 
+                    // Заполняем поля формы добавления в корзину
                     var inputFields = inStockBlock.getElementsByTagName('input');
                     for (let item of inputFields) {
                         if (item.name === 'price' && price.clientPrice) item.value = price.clientPrice;
@@ -127,7 +132,7 @@ const updateProductCards = (element) => {
                     // Данные для диалогового окна выбора размеров
                     if (stock_and_cost && stock_and_cost['fields'].size?.find(_ => true)) {
                         currentId['unit'] = '163';
-                        currentId['price'] = price.clientPrice;
+                        currentId['price'] = currentPrice;
                         elements[i].setAttribute('data-json', JSON.stringify(currentId));
                     }
 
