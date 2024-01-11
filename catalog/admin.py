@@ -287,7 +287,8 @@ class PriceTypeAdmin(admin.ModelAdmin):
 @admin.register(Price)
 class PriceAdmin(admin.ModelAdmin):
     search_fields = [
-        'product',
+        'product__name',
+        'product__articul',
     ]
     list_display = [
         'type',
