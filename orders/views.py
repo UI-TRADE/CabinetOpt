@@ -191,7 +191,8 @@ class SplitOrderView(TemplateView):
                 item['quantity'] = current_stock
                 item['total_price'] = item['quantity'] * item['price']
 
-            _in_stock.append(item)
+            if item['quantity'] > 0:
+                _in_stock.append(item)
 
         return _in_stock, _out_of_stock
 
@@ -213,15 +214,22 @@ class SplitOrderView(TemplateView):
         if form.is_valid() and order_items.is_valid():
             current_status = context['fields']['status']
             _in_stock, _out_of_stock = self.split_products(order_items.cleaned_data)
-            update_order(context['object'], self.request.POST, _in_stock)
+            if _in_stock:
+                update_order(context['object'], self.request.POST, _in_stock)
 
-            new_context = {key: value for key, value in context['fields'].items()}
-            new_context['status'] = form.cleaned_data['status']
-            new_context['provision'] = 'З'
-            new_instance = save_order(new_context, _out_of_stock)
+                new_context = {key: value for key, value in context['fields'].items()}
+                new_context['status'] = form.cleaned_data['status']
+                new_context['provision'] = 'З'
+                new_instance = save_order(new_context, _out_of_stock)
 
-            schedule_send_order(context['object'], current_status)
-            schedule_send_order(new_instance, current_status)
+                schedule_send_order(context['object'], current_status)
+                schedule_send_order(new_instance, current_status)
+
+            else:
+                context['object'].provision = 'З'
+                update_order(context['object'], self.request.POST, _out_of_stock)
+                schedule_send_order(context['object'], current_status)
+
 
         return redirect('orders:orders')
 
