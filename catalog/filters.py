@@ -128,7 +128,7 @@ class ProductFilter(django_filters.FilterSet):
     def in_stock_filter(self, queryset, name, value):
         return queryset.filter(
             pk__in=StockAndCost.objects.filter(
-                stock__gte=0
+                stock__gte=1
             ).values_list('product_id', flat=True)
         )
         # return queryset
