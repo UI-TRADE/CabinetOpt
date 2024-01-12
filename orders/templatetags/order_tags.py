@@ -49,7 +49,6 @@ def do_split(items):
 
 @register.filter
 def index(seq, idx):
-    print(seq, idx, sep='\n')
     with suppress(KeyError):
         return seq[idx]
     return ''

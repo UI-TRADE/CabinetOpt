@@ -93,24 +93,13 @@ const updateProductCards = (element) => {
 
                     const price = getPrice(currentPrice, maxPrice, currentDiscount, weight);
 
-                    // const priceBlock          = elements[i].querySelector('.price-block');
                     const inStockBlock        = elements[i].querySelector('.inStock-block');
-                    // const priceField          = priceBlock.querySelector('.price');
                     const weightField         = elements[i].querySelector('.weight');
                     const pricePerweightField = elements[i].querySelector('.price-per-weight');
-                    // const maxPriceField       = priceBlock.querySelector('.max-price');
-                    // const discountField       = priceBlock.querySelector('.discount');
                     const stockField          = inStockBlock.querySelector('.in_stock');
-                    // const tagField            = elements[i].querySelector('[name="product-status"]');
                     if (currentPrice && pricePerweightField) 
                         pricePerweightField.innerHTML = `${decimalFormat(Math.ceil(currentPrice))} руб/гр.`;
-                    // if (price.clientPrice && priceField)
-                    //     priceField.innerHTML = `${decimalFormat(Math.ceil(price.clientPrice))} <i class="fa fa-rub" aria-hidden="true"></i>`;
-                    // if (currentDiscount>0) {
-                    //     if (price.maxPrice && maxPriceField) 
-                    //         maxPriceField.innerHTML = `${decimalFormat(Math.ceil(price.maxPrice))} <i class="fa fa-rub" aria-hidden="true"></i>`;
-                    //     discountField.textContent = `- ${decimalFormat(currentDiscount)} %`
-                    // }
+
                     if (weight && weightField) {
                         weightField.style.display = "inline-block"
                         weightField.textContent = `${weightFormat(weight, 3)} гр.`

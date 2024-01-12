@@ -77,35 +77,14 @@ const showAnalogues = () => {
  */
 const updatePriceInProductCard = (context, price) => {
     const element             = document.querySelector('.good-block');
-    // const weightElement       = element.querySelector('#weigth-block');
     const weightField         = element.querySelector('.weight');
-    // const discountElement     = element.querySelector('#discount-block');
-    // const priceElement        = element.querySelector('#price-block');
-    // const maxPriceElement     = element.querySelector('#max-price');
     const pricePerweightField = element.querySelector('#price-per-weight');
     const formElement         = element.querySelector('form');
 
-    // if (context.weight && weightElement) weightElement.outerHTML =
-    //     `<p id="weigth-block"> ${context.weight} </p>`;
     if (context.weight && weightField) {
         weightField.style.display = "inline-block"
         weightField.textContent = `${weightFormat(context.weight, 3)} гр.`
     }
-    // if (parseFloat(price.clientDiscount) && discountElement) {
-    //     discountElement.outerHTML = `<p id="discount-block"> ${price.clientDiscount} % </p>`;
-    //     const discountElements = element.querySelectorAll('.discount');
-    //     discountElements.forEach(item => {item.style.display = 'block'});
-    // } else {
-    //     const discountElements = element.querySelectorAll('.discount');
-    //     discountElements.forEach(item => {item.style.display = 'none'});
-    // }
-    // if (price.clientPrice && priceElement) priceElement.outerHTML =
-    //     `<p id="price-block">${decimalFormat(Math.ceil(price.clientPrice))} <span class="product-detail__price-rub" aria-hidden="true">руб</span></p>`;
-    // if (parseFloat(price.maxPrice) && maxPriceElement) {
-    //     maxPriceElement.outerHTML = `<p id="max-price">${decimalFormat(Math.ceil(price.maxPrice))} <i class="fa fa-rub" aria-hidden="true"></i></p> `;
-    // } else {
-    //     maxPriceElement.parentElement.style.display = 'none';
-    // }
     if (context.price && pricePerweightField) pricePerweightField.outerHTML =
         `<p id="price-per-weight">${decimalFormat(Math.ceil(context.price))} руб/гр.</p>`;
 
@@ -233,7 +212,6 @@ function updateProductCard() {
 
                     let sumOfStock = 0;
                     const inStokelement = document.querySelector('.good-block')?.querySelector('#in_stock');
-                    // const tagField = document.querySelector('[name="product-status"]');
                     stock_and_cost.forEach(item => {
                         sumOfStock += item['fields'].stock;
                     });
