@@ -24,6 +24,7 @@ from .models import (
     ContactDetail,
     Manager,
 )
+from orders.models import Order
 
 
 def login(request):
@@ -75,6 +76,8 @@ def logout(request):
 
 def change_password(request):
     if request.method != 'POST':
+        login = Login(request)
+        login.unauth()
         form = ChangePassForm()
         return render(request, 'pages/change-pass.html', {'form': form, 'errors': ''})
     
@@ -113,16 +116,15 @@ class ContactDetailView(ListView):
         contact_detail = context['object_list'].first()
     
         if contact_detail:
+            login = Login(self.request)
+            client = Client.objects.filter(pk=contact_detail.client_id).first()
+            orders = Order.objects.filter(client=client).order_by('-created_at')
             return {
-                'client': Client.objects.filter(
-                    pk=contact_detail.client_id
-                ).first(),
-                'manager': Manager.objects.filter(
-                    pk__in=Client.manager.through.objects.filter(
-                        client_id=contact_detail.client_id
-                    ).values_list('manager_id', flat=True)
-                ).first(),
+                'client' : client,
+                'manager': client.manager.first(),
                 'contact': contact_detail,
+                'login'  : login.login,
+                'orders' : orders,
             }
         return {'contact': {}}
 
