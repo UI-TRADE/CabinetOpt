@@ -68,3 +68,58 @@
 
   //
 }
+
+.orders-detail{
+  margin:0 auto;
+  min-width: 1100px;
+  max-width: 1440px;
+  width: 100%;
+
+  .orders__title{
+    color: #FFF;
+    font-size: 20px;
+    font-weight: 700;
+    border-radius: 7px 7px 0 0 ;
+    background: #E3A358;
+    padding:0 10px;
+    display:inline-block;
+    margin:0 27px;
+    min-width: 256px;
+    text-align:center;
+  }
+  .orders-detail__wrapper{
+    border-radius: 3px;
+    border: 1px solid #ADADAA;
+    padding:43px 0;
+  }
+
+  .orders-items{
+    margin: 0 auto;
+    max-width: 1000px;
+    overflow-y: scroll;
+    white-space: nowrap;
+    height: 500px;
+    display: block;
+  }
+
+  .order-item__full-title{
+    color: #010202;
+    font-size: 20px;
+    font-weight: 700;
+    margin-right: 15px;
+  }
+
+  table.orders-list{
+    margin: 0px !important;
+    border-spacing: 0 0px !important;
+    left: 0px !important;
+
+    tr{
+      td{
+        border: none;
+        font-size: 16px;
+      }
+    }
+  }
+
+}

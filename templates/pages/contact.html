@@ -1,89 +1,143 @@
 {% extends "main.html" %}
+{% load humanize %}
 
 {% block page %}
 	{% block content %}
 
-        <nav class="nav nav-pills nav-justified content-menu">
-            <div class="d-flex flex-column flex-md-row">
-                {% if client.id %}
-                    <a
-                    role="button"
-                    class="btn btn-primary mb-2 mr-sm-2"
-                    href="{% url 'clients:edit' client.id %}"
-                    >                    
-                        <span>
-                            <i class="fa fa-pencil" aria-hidden="true"></i>
-                            Редактировать контактную информацию
-                        </span>
-                    </a>
-                {% else %}
-                    <a
-                    role="button"
-                    class="btn btn-primary mb-2 mr-sm-2"
-                    href="{% url 'clients:edit' %}"
-                    >                    
-                        <span>
-                            <i class="fa fa-pencil" aria-hidden="true"></i>
-                            Добавить контактную информацию
-                        </span>
-                    </a>
-                {% endif %}
-            </div>
-            <button
-                id="settingButton"
-                type="button"
-                class="btn btn-success mb-2 mr-sm-2"
-            >                    
-                <span>
-                    <i class="fa fa-cog" aria-hidden="true"></i>
-                </span>
-            </button>
-        </nav>  
+    <div class="container-fluid order-list-wrapper">
+        <div class="order-list-wrapper__breadcrumb-wrapper">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'catalog:products' %}">Ювелирный интернет-магазин TALANT</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Аккаунт</li>
+                </ol>
+            </nav>
+        </div>
 
         <div class="row">
-            <div class="col-3 contact__item--head">ФИО менеджера:</div>
-            <div class="col-8">
-                {{ client.registration_order.name_of_manager }}
+            <div id="contact-container" class="container col-3 contact-detail">
+
+                <div class="font-weight-bold contact-detail__client">{{ client.name }}</div>
+                <div class="font-weight-bold contact-detail__client">{{ manager }}</div>
+                <div class="contact-detail__client__position"></div>
+                <div>
+                    <p class="font-weight-normal contact-detail__item-title">ИНН</p>
+                    <span class="font-weight-bold contact-detail__item">{{ client.inn }}</span>
+                    <div class="contact-detail__item__position"></div>
+                </div>
+                <div>
+                    <p class="font-weight-normal contact-detail__item-title">Логин</p>
+                    <span class="font-weight-bold contact-detail__item">Login {{ login.login }}</span>
+                    <div class="contact-detail__item__position"></div>
+                </div>
+
+                <a href="{% url 'clients:change_pass' %}" class="contact-detail__change_pass">Сменить пароль</a>
+                <div class="contact-detail__change_pass__position"></div>
+
+                <div class="font-weight-normal contact-detail__item">E-mail: {{ manager.email }}</div>
+                <div class="font-weight-normal contact-detail__item">телефон: {{ manager.phone }}</div>
+                <div class="contact-detail__item__position-x2"></div>
+
+                <div>
+                    <p>Ваш персональный менеджер:</p>
+
+                    <p class="font-weight-bold contact-detail__manager_talant">{{ client.manager_talant }}</p>
+                    <p class="font-weight-bold contact-detail__manager_talant">{{ client.manager_talant.email }}</p>
+                    <p class="font-weight-bold contact-detail__manager_talant">{{ client.manager_talant.phone }}</p>
+                </div>
+
             </div>
+
+            <div class="container col-9">
+                <div id="orders-container">
+
+                    <div class="orders-detail">
+                        <div class="orders__title">Заказы</div>
+                        <div class="orders-detail__wrapper">
+                            <div class="orders-items">
+                                <table id="orders-items" class="table table__thead--border order-preview__table orders-list">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" class="title">
+                                                <span>
+                                                    <i class="fa fa-sort-amount-desc"></i>
+                                                    <i class="fa fa-sort-amount-asc"></i>
+                                                    Заказ №
+                                                    <i class="fa fa-angle-down"></i>
+                                                    <i class="fa fa-angle-up"></i>
+                                                </span>
+                                            </th>
+                                            <th scope="col" class="title">
+                                                <span>
+                                                    <i class="fa fa-sort-amount-desc"></i>
+                                                    <i class="fa fa-sort-amount-asc"></i>
+                                                    Дата
+                                                    <i class="fa fa-angle-down"></i>
+                                                    <i class="fa fa-angle-up"></i>
+                                                </span>
+                                            </th>
+                                            <th scope="col" class="title">
+                                                <span>
+                                                    <i class="fa fa-sort-amount-desc"></i>
+                                                    <i class="fa fa-sort-amount-asc"></i>
+                                                    Сумма, руб.
+                                                    <i class="fa fa-angle-down"></i>
+                                                    <i class="fa fa-angle-up"></i>
+                                                </span>
+                                            </th>
+                                            <th scope="col" class="title">
+                                                <span>
+                                                    <i class="fa fa-sort-amount-desc"></i>
+                                                    <i class="fa fa-sort-amount-asc"></i>
+                                                    вес, гр.
+                                                    <i class="fa fa-angle-down"></i>
+                                                    <i class="fa fa-angle-up"></i>
+                                                </span>
+                                            </th>
+                                            <th scope="col" class="title">
+                                                <span>
+                                                    <i class="fa fa-sort-amount-desc"></i>
+                                                    <i class="fa fa-sort-amount-asc"></i>
+                                                    Кол-во, шт
+                                                    <i class="fa fa-angle-down"></i>
+                                                    <i class="fa fa-angle-up"></i>
+                                                </span>
+                                            </th>
+                                            <th scope="col" class="title">
+                                                <span>
+                                                    <i class="fa fa-sort-amount-desc"></i>
+                                                    <i class="fa fa-sort-amount-asc"></i>
+                                                    Статус
+                                                    <i class="fa fa-angle-down"></i>
+                                                    <i class="fa fa-angle-up"></i>
+                                                </span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for order in orders %}
+                                        <tr>
+                                            <td class="font-weight-bold">{{ order.id }}_{{ order.provision }}</td>
+                                            <td class="font-weight-bold">{{ order.created_at|date:'d-m-Y' }}</td>
+                                            <td class="font-weight-bold">{{ order.get_total_cost|floatformat:0|intcomma }}</td>
+                                            <td class="font-weight-bold">{{ order.get_total_weight|floatformat:3 }}</td>
+                                            <td class="font-weight-bold">{{ order.get_total_quantity|floatformat:0 }}</td>
+                                            <td class="font-weight-bold">{{ order.get_status_display }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+    
         </div>
-        <div class="row">
-            <div class="col-3 contact__item--head">Компания:</div>
-            <div class="col-8">{{ client.name }}</div>
-        </div>
-        <div class="row">
-            <div class="col-3 contact__item--head">ИНН:</div>
-            <div class="col-8">{{ client.inn }}</div>
-        </div>
-        <div class="row">
-            <div class="col-3 contact__item--head">Юридический адрес:</div>
-            <div class="col-8">{{ contact.legal_address }}</div>
-        </div>
-        <div class="row">
-            <div class="col-3 contact__item--head">Телефон, e-mail:</div>
-            <div class="col-4">{{ client.registration_order.phone }}</div>
-            <div class="col-4">{{ client.registration_order.email }}</div>
-        </div>
-        <div class="row">
-            <div class="col-3 contact__item--head">Город, адрес доставки:</div>
-            <div class="col-4">{{ contact.city }}</div>
-            <div class="col-4">{{ contact.shoping_address }}</div>
-        </div>
-        <div class="row">
-            <div class="col-3 contact__item--head">Менеджер ЮИ-Трейд:</div>
-            {% if manager %}
-                {% with managet_name=manager.last_name|add:' '|add:manager.first_name|add:' '|add:manager.surname %}
-                    <div class="col-4">{{ managet_name }}</div>
-                {% endwith %}
-            {% endif %}
-        </div>
-        <div class="row">
-            <div class="col-3 contact__item--head">Вид оплаты:</div>
-            <div class="col-4">{{ contact.get_payment_type_display }}</div>
-        </div>
-        <div class="row">
-            <div class="col-3 contact__item--head">Статус:</div>
-            <div class="col-4">{{ client.get_status_display }}</div>
-        </div>
+
+    </div>
 
 	{% endblock %}
 {% endblock %}

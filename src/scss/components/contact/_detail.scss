@@ -1,0 +1,46 @@
+.contact-detail {
+
+    padding-left: 70px;
+
+    .contact-detail__client{
+        font-size: 20px;
+
+        &__position {
+            margin-bottom: 40px;
+        }
+    }
+
+    .contact-detail__item-title{
+        font-size: 14px;
+        margin-bottom: 0px;
+    }
+
+    .contact-detail__item{
+        font-size: 14px;
+
+        &__position {
+            margin-bottom: 14px;
+        }
+
+        &__position-x2 {
+            margin-bottom: 28px;
+        }
+    }
+
+    .contact-detail__change_pass{
+        font-size: 14px;
+        color: black;
+        text-decoration: underline;
+
+        &__position {
+            margin-bottom: 14px;
+        }
+    }
+
+    .contact-detail__manager_talant{
+        font-size: 14px;
+        margin-bottom: 0px;
+
+    }
+
+}

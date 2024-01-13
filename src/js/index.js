@@ -4,7 +4,7 @@ import 'jquery-ui-dist/jquery-ui.css';
 import generateUUID from './lib';
 import mainMenuEvents from './main_menu';
 import showModalForm, {switchModalForm, showChangePassForm, showAuthForm} from './form';
-import updateContactView from './contact';
+import updateContactView, {contactEvents} from './contact';
 import { cartViewEvents } from './cart';
 import initProductFilters, { filtersEvents } from './catalog/filters';
 import updateProductCard from './catalog_card';
@@ -23,6 +23,7 @@ const addEvents = () => {
     cartViewEvents();
     ordersEvents();
     orderEvents();
+    contactEvents();
 
 }
 
