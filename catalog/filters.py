@@ -61,7 +61,7 @@ class FilterTree(object):
         roots = self.qs.values(root_field).annotate(sum=Sum('stock'))
         for root in roots:
             if node_fields:
-                nodes = self.qs.filter(Q((root_field, root[root_field]))).values(*node_fields).annotate(count=Count('id'), sum=Sum('stock'))
+                nodes = self.qs.filter(Q((root_field, root[root_field]))).values(*node_fields).annotate(count=Count('id'), sum=Sum('stock')).order_by('size__size_from')
                 if nodes:
                     root['nodes'] = self.serialize_node(root[root_field], nodes, node_fields)
             self.tree.append(self.serialize_root(root, root_field))

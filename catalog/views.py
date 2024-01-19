@@ -54,11 +54,21 @@ class FiltersView(TemplateView):
             'colors'      : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'color_filter'),
             'cuts'        : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'cut_type__cut_type_image__name', 'cut_type__cut_type_image__image'),
         }
+    
+    def get_active_products(self):
+        result = Product.objects.filter(product_type='product', show_on_site=True)
+        result = result.filter(
+            id__in=Price.objects.filter(type__name="Базовая", price__gt=0).values_list("product", flat=True)
+        )
+        result = result.filter(
+            id__in=ProductImage.objects.all().values_list("product", flat=True)
+        )
+        return result
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['MEDIA_URL']   = settings.MEDIA_URL
-        context['filters'] = self.get_filters(Product.objects.all())
+        context['filters'] = self.get_filters(self.get_active_products())
 
         return context
 
