@@ -111,9 +111,18 @@ def run_uploading_products(uploading_products):
                             }
                         )  
 
-        except (KeyError, ValueError, Collection.DoesNotExist, PreciousStone.DoesNotExist) as error:
+        # except (KeyError, ValueError, Collection.DoesNotExist, PreciousStone.DoesNotExist) as error:
+        #     transaction.rollback()
+        #     errors.append(item | {"error": str(error)})
+        #     continue
+
+        except Exception as er:
             transaction.rollback()
-            errors.append(item | {"error": str(error)})
+            errors.append({
+                'nomenclature': item['nomenclature']['Наименование'],
+                'uuid': item['nomenclature']['Идентификатор'],
+                "error": repr(er)
+            })
             continue
         
         finally:
@@ -298,22 +307,36 @@ def run_uploading_price(uploading_price):
                 Price.objects.update_or_create(**filter_kwargs, defaults=defaults)
 
  
-        except (
-            ValueError,
-            Client.DoesNotExist,
-            PriceType.DoesNotExist
-        ) as error:
-            transaction.rollback()
-            errors.append(item | {"error": str(error)})
+        # except (
+        #     ValueError,
+        #     Client.DoesNotExist,
+        #     PriceType.DoesNotExist
+        # ) as error:
+        #     transaction.rollback()
+        #     errors.append(item | {"error": str(error)})
+        #     continue
+
+        # except ValidationError as error:
+        #     transaction.rollback()
+        #     errors.append(item | {"error": error.message})
+        #     continue
+
+        except Product.DoesNotExist:
+            # transaction.rollback()
+            errors.append({
+                'nomenclature': item['nomenclature']['Наименование'],
+                'uuid': item['nomenclature']['Идентификатор'],
+                "error": f'Продукт с идентификатором {item["nomenclature"]["Идентификатор"]} не найден.'
+            })
             continue
 
-        except ValidationError as error:
+        except Exception as er:
             transaction.rollback()
-            errors.append(item | {"error": error.message})
-            continue
-
-        except Product.DoesNotExist as error:
-            transaction.rollback()
+            errors.append({
+                'nomenclature': item['nomenclature']['Наименование'],
+                'uuid': item['nomenclature']['Идентификатор'],
+                "error": repr(er)
+            })
             continue
         
         finally:
@@ -379,13 +402,27 @@ def run_uploading_stock_and_costs(stock_and_costs):
                     product.status = 'novelty'
                     product.save()    
 
-        except (KeyError, ValueError) as error:
-            transaction.rollback()
-            errors.append(item | {"error": str(error)})
-            continue
+        # except (KeyError, ValueError) as error:
+        #     transaction.rollback()
+        #     errors.append(item | {"error": str(error)})
+        #     continue
 
         except Product.DoesNotExist:
-            errors.append(item | {"error": f'Продукт с идентификатором {identifier_1C} не найден.'})
+            # errors.append(item | {"error": f'Продукт с идентификатором {identifier_1C} не найден.'})
+            errors.append({
+                'nomenclature': item['nomenclature']['Наименование'],
+                'uuid': item['nomenclature']['Идентификатор'],
+                "error": f'Продукт с идентификатором {identifier_1C} не найден.'
+            })
+            continue
+
+        except Exception as er:
+            transaction.rollback()
+            errors.append({
+                'nomenclature': item['nomenclature']['Наименование'],
+                'uuid': item['nomenclature']['Идентификатор'],
+                "error": repr(er)
+            })
             continue
         
         finally:
