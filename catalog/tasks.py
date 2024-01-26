@@ -34,6 +34,9 @@ def run_uploading_products(uploading_products):
         try:
             with transaction.atomic():
                 identifier_1C = item['nomenclature']['Идентификатор']
+                found_prod = Product.objects.filter(identifier_1C=identifier_1C).first()
+                if found_prod:
+                    raise ValueError('Продукт с данныи идентификатором уже создан в бд')
                 product, _ = Product.objects.update_or_create(
                     identifier_1C=identifier_1C,
                     defaults = {
