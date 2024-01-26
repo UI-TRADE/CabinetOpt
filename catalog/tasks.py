@@ -109,12 +109,7 @@ def run_uploading_products(uploading_products):
                                 'color_filter'    : gem_set['color_filter'],
                                 'precious_filter' : gem_set['precious_filter'],
                             }
-                        )  
-
-        # except (KeyError, ValueError, Collection.DoesNotExist, PreciousStone.DoesNotExist) as error:
-        #     transaction.rollback()
-        #     errors.append(item | {"error": str(error)})
-        #     continue
+                        )
 
         except Exception as er:
             transaction.rollback()
@@ -306,21 +301,6 @@ def run_uploading_price(uploading_price):
                      
                 Price.objects.update_or_create(**filter_kwargs, defaults=defaults)
 
- 
-        # except (
-        #     ValueError,
-        #     Client.DoesNotExist,
-        #     PriceType.DoesNotExist
-        # ) as error:
-        #     transaction.rollback()
-        #     errors.append(item | {"error": str(error)})
-        #     continue
-
-        # except ValidationError as error:
-        #     transaction.rollback()
-        #     errors.append(item | {"error": error.message})
-        #     continue
-
         except Product.DoesNotExist:
             # transaction.rollback()
             errors.append({
@@ -366,17 +346,21 @@ def update_or_create_price_type(client):
 
 def update_or_create_size(size):
     if not size:
-        return Size.objects.none()
+        return Size.objects.none().first()
+    if not size['диапазон_от']:
+        return Size.objects.none().first()
+
     defaults = {}
-    if size['диапазон_от']:
-        defaults['size_from'] = size['диапазон_от']
-        defaults['size_to']   = size['диапазон_от']
-        if size['диапазон_до']:
-            defaults['size_to'] = size['диапазон_до']
+    defaults['size_from'] = size['диапазон_от']
+    defaults['size_to']   = size['диапазон_от']
+    if size['диапазон_до']:
+        defaults['size_to'] = size['диапазон_до']
+
     size, _ = Size.objects.get_or_create(
         name=size['Наименование'].strip(),
         defaults=defaults
     )
+
     return size
 
 
@@ -402,13 +386,7 @@ def run_uploading_stock_and_costs(stock_and_costs):
                     product.status = 'novelty'
                     product.save()    
 
-        # except (KeyError, ValueError) as error:
-        #     transaction.rollback()
-        #     errors.append(item | {"error": str(error)})
-        #     continue
-
         except Product.DoesNotExist:
-            # errors.append(item | {"error": f'Продукт с идентификатором {identifier_1C} не найден.'})
             errors.append({
                 'nomenclature': item['nomenclature']['Наименование'],
                 'uuid': item['nomenclature']['Идентификатор'],
