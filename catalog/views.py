@@ -32,6 +32,35 @@ from .tasks import (
     run_uploading_stock_and_costs
 )
 
+
+def get_active_products():
+    result = Product.objects.filter(product_type='product', show_on_site=True)
+    result = result.filter(
+        id__in=Price.objects.filter(type__name="Базовая", price__gt=0).values_list("product", flat=True)
+    )
+    result = result.filter(
+        id__in=ProductImage.objects.all().values_list("product", flat=True)
+    )
+    return result
+
+
+def parse_filters(filters):
+    result = collections.defaultdict(list)
+    range_filters = {}
+    for item in filters:
+        for key, value in item.items():
+            if not value:
+                continue
+            if not isinstance(value, str):
+                range_filters = range_filters | {key: value}
+                continue
+            result[key].append(value)
+    result = {key: ','.join(value) for key, value in result.items()}
+    if range_filters:
+        result = result | range_filters
+    return result
+
+
 class FiltersView(TemplateView):
     template_name = 'forms/catalog-filters.html'
 
@@ -54,21 +83,11 @@ class FiltersView(TemplateView):
             'colors'      : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'color_filter'),
             'cuts'        : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'cut_type__cut_type_image__name', 'cut_type__cut_type_image__image'),
         }
-    
-    def get_active_products(self):
-        result = Product.objects.filter(product_type='product', show_on_site=True)
-        result = result.filter(
-            id__in=Price.objects.filter(type__name="Базовая", price__gt=0).values_list("product", flat=True)
-        )
-        result = result.filter(
-            id__in=ProductImage.objects.all().values_list("product", flat=True)
-        )
-        return result
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['MEDIA_URL']   = settings.MEDIA_URL
-        context['filters'] = self.get_filters(self.get_active_products())
+        context['filters'] = self.get_filters(get_active_products())
 
         return context
 
@@ -86,54 +105,28 @@ class ProductView(FiltersView, ListView):
         raw_filters = request.POST.dict()
         self.filters = json.loads(raw_filters.get('filters', '[]'))
         return self.get(request)
-    
-    def parse_filters(self):
-        result = collections.defaultdict(list)
-        range_filters = {}
-        for item in self.filters:
-            for key, value in item.items():
-                if not value:
-                    continue
-                if not isinstance(value, str):
-                    range_filters = range_filters | {key: value}
-                    continue
-                result[key].append(value)
-        result = {key: ','.join(value) for key, value in result.items()}
-        if range_filters:
-            result = result | range_filters
-        return result
-
-    def get_active_products(self):
-        result = Product.objects.filter(product_type='product', show_on_site=True)
-        result = result.filter(
-            id__in=Price.objects.filter(type__name="Базовая", price__gt=0).values_list("product", flat=True)
-        )
-        result = result.filter(
-            id__in=ProductImage.objects.all().values_list("product", flat=True)
-        )
-        return result
 
     def get_queryset(self):
-        products = self.get_active_products()
+        products = get_active_products()
         if self.filters:
-            parsed_filter = self.parse_filters()
+            parsed_filter = parse_filters(self.filters)
             filtered_products = ProductFilter(parsed_filter, queryset=products)
             products = filtered_products.qs.distinct()
         return products
 
     def get_context_data(self, *, object_list=None, **kwargs):
         self.object_list = self.get_queryset()
-        context = super().get_context_data(**kwargs)
         paginator = Paginator(self.object_list, self.paginate_by)
         page = self.request.GET.get('page')
 
-        try:
+        try: 
             products_page = paginator.page(page)
         except PageNotAnInteger:
             products_page = paginator.page(1)
         except EmptyPage:
             products_page = paginator.page(paginator.num_pages)
 
+        context = super().get_context_data(**kwargs)
         context['products']    = products_page
         context['filters']     = json.dumps({key: value.__json__() for key, value in self.get_filters(self.object_list).items()})
         context['is_sized']    = StockAndCost.objects.filter(product__in=products_page, size__isnull=False).values_list('product_id', flat=True)
@@ -403,3 +396,25 @@ def product_analogues(request):
         {'replay': 'error', 'message': 'Отсутствуют Продукты для получения данных'},
         status=200
     )
+
+
+@api_view(['POST'])
+def product_count(request):
+    products = get_active_products()
+    raw_filters = request.POST.dict()
+    filters = json.loads(raw_filters.get('filters', '[]'))
+    if filters:
+        parsed_filter = parse_filters(filters)
+        filtered_products = ProductFilter(parsed_filter, queryset=products)
+        products = filtered_products.qs.distinct()
+
+    paginator = Paginator(products, 72)
+    return JsonResponse(
+        {
+            'replay'        : 'ok',
+            'product_count' : paginator.num_pages
+        },
+        status=200,
+        safe=False
+    )
+

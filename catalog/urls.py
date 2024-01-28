@@ -19,4 +19,5 @@ urlpatterns = [
     path('product/accessories'           , views.product_accessories),
     path('product/analogues'             , views.product_analogues),
     path('product/sizes/<slug:prod_id>/' , views.sizes_selection, name='sizes_selection'),
+    path('products/count/'               , views.product_count),
 ]
