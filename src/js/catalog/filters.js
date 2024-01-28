@@ -1,5 +1,6 @@
 import showSliders from './sliders';
 import updateProducts from '../catalog_cards';
+import { handleError } from "../utils/exceptions";
 
 var selectedFiltersBadges;
 class FilterBadges {
@@ -199,7 +200,7 @@ export function  updateFilters(html) {
         updateFilterElements(activeFilters);
     }
     catch (error) {
-        console.warn(error);
+        handleError(error);
     }
 
 }
@@ -282,7 +283,7 @@ function initProductFilters() {
             showCatalog();
         },
         error: (error) => {
-            alert('Ошибка получения данных фильтров с сервера: ' + error);
+            handleError(error, 'Ошибка получения данных фильтров с сервера');
         }
     });
 

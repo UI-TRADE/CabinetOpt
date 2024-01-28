@@ -1,3 +1,5 @@
+import { handleError } from "./utils/exceptions";
+
 const applyShowPasswordButtons = ($modal) => {
     const $btnWrappers = $modal.find('.show-password-btn-wrapper');
     for (let i = 0; i < $btnWrappers.length; i+=1) {
@@ -76,7 +78,7 @@ const updateModalForm = (formId) => {
                 }
             },
             error: (error) => {
-                alert('Ошибка обновления формы: ' + error);
+                handleError(error, 'Ошибка обновления формы');
             }
         });
     });
@@ -125,7 +127,7 @@ export function switchModalForm(idFrom, idTo, submitFormId) {
                 updateModalForm((submitFormId) ? submitFormId : idTo);
             },
             error: (xhr, status, error) => {
-                alert('Ошибка переключения формы: ' + error);
+                handleError(error, 'Ошибка переключения формы');
             }
         });
     });
@@ -140,7 +142,7 @@ export function showAuthForm(submitFormId) {
                 updateModalForm(submitFormId);
             },
             error: (xhr, status, error) => {
-                alert('Ошибка открытия формы: ' + error);
+                handleError(error, 'Ошибка открытия формы');
             }
         });
     });
@@ -156,7 +158,7 @@ function showModalForm(formId, submitFormId) {
                 updateModalForm((submitFormId) ? submitFormId : formId);
             },
             error: (xhr, status, error) => {
-                alert('Ошибка открытия формы: ' + error);
+                handleError(error, 'Ошибка открытия формы');
             }
         });
     });

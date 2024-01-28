@@ -1,5 +1,6 @@
 import generateUUID from '../lib';
 import autocomplete, {updateOrderItem} from '../components/autocomplete';
+import { handleError } from "../utils/exceptions";
 
 
 export function updateOrder() {
@@ -108,7 +109,7 @@ export function updateOrder() {
 
         })
         .catch((error) => {
-            alert('Ошибка: ' + error);
+            handleError(error, 'Ошибка обновления заказа');
         });
 
 }
@@ -256,7 +257,7 @@ export const addOrderItem = () => {
             autocomplete(document.getElementById(`id_items-${__prefix__}-nomenclature`));
         })
         .catch((error) => {
-            alert('Ошибка: ' + error);
+            handleError(error, 'Ошибка добавления в заказ');
         });
 
 }

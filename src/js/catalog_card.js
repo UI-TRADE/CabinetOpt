@@ -8,6 +8,7 @@ import {
 // import slick from "slick-carousel"
 import { weightFormat } from "./utils/weight_format";
 import { decimalFormat } from "./utils/money_format";
+import { handleError } from "./utils/exceptions";
 
 
 // data-ride="carousel"
@@ -416,7 +417,7 @@ function updateProductCard() {
             }
         })
         .catch((error) => {
-            alert('Ошибка обновления карточки товара: ' + error);
+            handleError(error, 'Ошибка обновления карточки товара');
         });
 }
 

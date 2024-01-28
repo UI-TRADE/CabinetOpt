@@ -4,6 +4,7 @@ import Cart from "./components/cart";
 import updateProductCard from './catalog_card';
 import { weightFormat } from "./utils/weight_format";
 import { decimalFormat } from "./utils/money_format";
+import { handleError } from "./utils/exceptions";
 
 
 const closeAddToCartSettingsWindow = () => {
@@ -200,7 +201,7 @@ export function addSelectionSizesEvents(productId, price, unit) {
                 }
             })
             .catch((error) => {
-                alert('Ошибка обновления каталога: ' + error);
+                handleError(error, 'Ошибка обновления каталога');
             });
     });
 }
@@ -298,7 +299,7 @@ const addToCart = (formId) => {
             updateTotalInfo(productId);
         })
         .catch((error) => {
-            alert('Ошибка обновления корзины покупок: ' + error);
+            handleError(error, 'Ошибка обновления корзины покупок');
         });
 }
 
@@ -486,7 +487,7 @@ export const OnQuantityChange = (element, preventReload=false) => {
                 $(document).data("cart").getProducts()
             })
             .catch((error) => {
-                alert('Ошибка удаления позиции из корзины покупок: ' + error);
+                handleError(error, 'Ошибка удаления позиции из корзины покупок');
             });
     } else {
         const params = [];
@@ -532,7 +533,7 @@ export const OnQuantityChange = (element, preventReload=false) => {
                 });
             })
             .catch((error) => {
-                alert('Ошибка обновления количества товара в корзине: ' + error);
+                handleError(error, 'Ошибка обновления количества товара в корзине');
             });
     }
 }
@@ -567,7 +568,7 @@ const handleAddToCart = (event) => {
                         $('.background-overlay').click(closeAddToCartSettingsWindow);
                     },
                     error: (xhr, status, error) => {
-                        alert('Ошибка открытия формы: ' + error);
+                        handleError(error, 'Ошибка открытия формы');
                     }
                 });        
             }
@@ -576,8 +577,8 @@ const handleAddToCart = (event) => {
         } else {                
             addToCart(`cartForm-${productItemData.id}`);
         }
-    } catch (err) {
-        alert(err);
+    } catch (error) {
+        handleError(error, 'Ошибка добавления в корзину');
     }
 }
 
@@ -631,7 +632,7 @@ const handleAddToOrder = (event) => {
                         $('.background-overlay').click(closeAddToCartSettingsWindow);
                     },
                     error: (xhr, status, error) => {
-                        alert('Ошибка открытия формы: ' + error);
+                        handleError(error, 'Ошибка открытия формы');
                     }
                 });        
             }
@@ -640,8 +641,8 @@ const handleAddToOrder = (event) => {
         } else {                
             addToCart(`cartForm-${productItemData.id}`);
         }
-    } catch (err) {
-        alert(err);
+    } catch (error) {
+        handleError(error, 'Ошибка добавления в заказ');
     }
 }
 
@@ -798,7 +799,7 @@ export function cartViewEvents() {
                     $('.background-overlay').click(closeProductEditingWindow);
                 },
                 error: (xhr, status, error) => {
-                    alert('Ошибка открытия формы: ' + error);
+                    handleError(error, 'Ошибка открытия формы');
                 }
             });        
         }

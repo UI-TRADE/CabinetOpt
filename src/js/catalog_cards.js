@@ -4,6 +4,7 @@ import {updateFilters} from './catalog/filters';
 import {cartEvents, waitUpdateCart} from './cart';
 import { weightFormat } from "./utils/weight_format";
 import { decimalFormat } from "./utils/money_format";
+import { handleError } from "./utils/exceptions";
 
 
 /**
@@ -218,7 +219,7 @@ const updateProductCards = (element) => {
             updateProductsStatusStyle();
         })
         .catch((error) => {
-            alert('Ошибка обновления каталога: ' + error);
+            handleError(error, 'Ошибка обновления каталога');
         });
 }
 
@@ -239,7 +240,7 @@ function updateProducts(elementId, data) {
             updateProductCards(mainElement);
         },
         error: (error) => {
-            alert('Ошибка получения данных каталога с сервера: ' + error);
+            handleError(error, 'Ошибка получения данных каталога с сервера');
         }
     });
 }

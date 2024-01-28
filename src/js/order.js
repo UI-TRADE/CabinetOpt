@@ -2,6 +2,7 @@ import updateProductCard from './catalog_card';
 import {updateTotalSizeInfo, addSelectionSizesEvents, addSizeSlider} from './cart';
 import { weightFormat } from "./utils/weight_format";
 import { decimalFormat } from "./utils/money_format";
+import { handleError } from "./utils/exceptions";
 // import updateOrder from '../js/_old/order';
 
 
@@ -81,7 +82,7 @@ const updateOrderView = (url, url_get, orderComponent, status=undefined, reload=
             }
         },
         error: (error) => {
-            alert('Ошибка отправки заказа в Talant: ' + error);
+            handleError(error, 'Ошибка отправки заказа в Talant');
         }
     });
 
@@ -147,7 +148,7 @@ function editOrder(){
             return response;
         },
         error: (error) => {
-            alert(`Ошибка записи заказа ${error}`);
+            handleError(error, 'Ошибка записи заказа');
         }
     });
 }
@@ -284,7 +285,7 @@ export function orderEvents() {
                         $('.background-overlay').click(closeProductEditingWindow);
                     },
                     error: (xhr, status, error) => {
-                        alert('Ошибка открытия формы: ' + error);
+                        handleError(error, 'Ошибка открытия формы');
                     }
                 });        
             }

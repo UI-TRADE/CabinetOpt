@@ -1,4 +1,5 @@
 import getPrice from '../price';
+import { handleError } from "../utils/exceptions";
 
 export function updateOrderItem(element) {
 
@@ -133,7 +134,7 @@ export function updateOrderItem(element) {
                 sumField.value = (parseFloat(quantityField.value) * price.clientPrice).toFixed(2);
             })
             .catch((error) => {
-                alert('Ошибка заполнения номенклатуры в строке заказа: ' + error);
+                handleError(error, 'Ошибка заполнения номенклатуры в строке заказа');
             });
     }
     else if (['nomenclature_size', 'size'].indexOf(partsOfId[partsOfId.length - 1]) >= 0) {
@@ -154,7 +155,7 @@ export function updateOrderItem(element) {
                 }  
             })
             .catch((error) => {
-                alert('Ошибка заполнения размеров в строке заказа: ' + error);
+                handleError(error, 'Ошибка заполнения размеров в строке заказа');
             });
     }
     else if (partsOfId[partsOfId.length-1] === 'quantity') {
@@ -165,7 +166,7 @@ export function updateOrderItem(element) {
                 if (itemParams.weight) weightField.value = (itemParams.weight * quantityField.value).toFixed(2);                
             })
             .catch((error) => {
-                alert('Ошибка расчета веса в строке заказа: ' + error);
+                handleError(error, 'Ошибка расчета веса в строке заказа');
             });
     }
     else if (partsOfId[partsOfId.length-1] === 'price') {
@@ -265,7 +266,7 @@ export function autocomplete(element) {
                 event.target.parentElement.appendChild(autocompleteElement);
             })
             .catch((error) => {
-                alert('Ошибка заполнения строки заказа: ' + error);
+                handleError(error, 'Ошибка заполнения строки заказа');
             });
     });
 

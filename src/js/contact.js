@@ -1,3 +1,5 @@
+import { handleError } from "./utils/exceptions";
+
 const initAccountInfo = () => {
     const orderTableItems = $('#orders-items');
 
@@ -29,7 +31,7 @@ function updateContactView(formId) {
             $(`#${formId}`).html(data);
         },
         error: (xhr, status, error) => {
-            alert('Ошибка: ' + error);
+            handleError(error, 'Ошибка обновления контактных данных');
         }
     });
 }
