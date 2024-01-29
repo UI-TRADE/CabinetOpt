@@ -1,5 +1,5 @@
 import getPrice from './price'
-import {extractContent} from './lib';
+import { extractContent, createSpiner, removeSpiner} from './lib';
 import {updateFilters} from './catalog/filters';
 import {cartEvents, waitUpdateCart} from './cart';
 import { weightFormat } from "./utils/weight_format";
@@ -206,6 +206,7 @@ const updateProductCards = (element) => {
         return
     }
 
+    const currentSpin = createSpiner($('.main-content')[0]);
     productStocksAndCosts(productIds.toString())
         .then((data) => {
             return updateElements(data);
@@ -217,8 +218,10 @@ const updateProductCards = (element) => {
             cartEvents(productsData);
             element.style.visibility = 'visible';
             updateProductsStatusStyle();
+            removeSpiner(currentSpin);
         })
         .catch((error) => {
+            removeSpiner(currentSpin);
             handleError(error, 'Ошибка обновления каталога');
         });
 }

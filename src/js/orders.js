@@ -1,4 +1,5 @@
 import {loadOrder, initOrderInfo} from './order';
+import { createSpiner, removeSpiner } from './lib';
 
 
 function ordersEvents() {
@@ -14,12 +15,19 @@ function ordersEvents() {
         event.currentTarget.classList.add('active');
         if(orderRequest) orderRequest.abort();
         const orderItemId = event.currentTarget.parentElement.id?.replace('order-status-', 'order-item-');
+        const currentSpin = createSpiner($('.main-content')[0]);
         orderRequest = loadOrder($(event.currentTarget).attr("href"));
-        orderRequest.then(html => {
-            const DOMModel = new DOMParser().parseFromString(html, 'text/html');
-            $(DOMModel.querySelector(`#${orderItemId}`)).appendTo($("#order").empty())
-            initOrderInfo()
-        })
+        orderRequest
+            .then(html => {
+                const DOMModel = new DOMParser().parseFromString(html, 'text/html');
+                $(DOMModel.querySelector(`#${orderItemId}`)).appendTo($("#order").empty())
+                initOrderInfo();
+                removeSpiner(currentSpin);
+            })
+            .catch((error) => {
+                removeSpiner(currentSpin);
+                handleError(error, 'Ошибка чтения заказа');
+            });
     }).first().trigger('click');
 
     const orderBoxToggler = document.getElementsByClassName('order-box');

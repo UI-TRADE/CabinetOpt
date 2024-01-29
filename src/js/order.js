@@ -1,5 +1,6 @@
 import updateProductCard from './catalog_card';
 import {updateTotalSizeInfo, addSelectionSizesEvents, addSizeSlider} from './cart';
+import { createSpiner, removeSpiner } from './lib';
 import { weightFormat } from "./utils/weight_format";
 import { decimalFormat } from "./utils/money_format";
 import { handleError } from "./utils/exceptions";
@@ -63,6 +64,7 @@ const updateOrderView = (url, url_get, orderComponent, status=undefined, reload=
     if (status)
         formData.set('status', status);
 
+    const currentSpin = createSpiner($('.main-content')[0]);
     $.ajax({
         type: 'POST',
         url: (url) ? url : $form.attr('action'),
@@ -78,10 +80,12 @@ const updateOrderView = (url, url_get, orderComponent, status=undefined, reload=
                     $(DOMModel.querySelector(`#order-item-${orderId}`)).appendTo($("#order").empty());
                     initOrderInfo();
                     $(document).trigger("order.updated");
+                    removeSpiner(currentSpin);
                 });
             }
         },
         error: (error) => {
+            removeSpiner(currentSpin);
             handleError(error, 'Ошибка отправки заказа в Talant');
         }
     });
@@ -172,6 +176,7 @@ export function orderEvents() {
     });
 
     $(`#saveOrder`).on('click', (event) => {
+        const currentSpin = createSpiner($('.main-content')[0]);
         const orderId = $(event.target).attr('data-id');
         editOrder()
             .then((_) => {
@@ -181,9 +186,14 @@ export function orderEvents() {
                     const DOMModel = new DOMParser().parseFromString(html, 'text/html');
                     $(DOMModel.querySelector(`#order-item-${orderId}`)).appendTo($("#order").empty());
                     initOrderInfo();
-                    $(document).trigger("order.updated")
+                    $(document).trigger("order.updated");
+                    removeSpiner(currentSpin);
                 });
             })
+            .catch((error) => {
+                removeSpiner(currentSpin);
+                handleError(error, 'Ошибка записи заказа');
+            });
     });
 
     $(`#closeOrder`).on('click', (event) => {
