@@ -233,9 +233,7 @@ docker-compose up -d --build
 
 `DB_PORT` - порт на котором развернута база данных на хосте
 
-`LOG_LEVEL` - устанавливает желательный уровень логгирования сообщений
-
-`LOGTAIL_SOURCE_TOKEN` - токен сервиса [LogTail](https://logs.betterstack.com/), который используется в качестве внешнего инструмента сбора логов.
+`ROLLBAR_TOKEN` - токен сервиса [rollbar](https://app.rollbar.com/), который используется в качестве внешнего инструмента сбора логов.
 
 `EMAIL_HOST` - адрес smtp сервера.
 `EMAIL_PORT` - порт smtp сервера.
