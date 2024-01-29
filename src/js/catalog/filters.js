@@ -93,14 +93,22 @@ const showCatalog = () => {
     const filters = JSON.parse(sessionStorage.getItem('filters'));
     const token = document.querySelector('input[name="csrfmiddlewaretoken"]');
     if (filters && token) {
+        const url = new URL(window.location.href);
+        const pageValue = url.searchParams.get('page');
+
+        if (!pageValue) {
+            updateProducts('products', {
+                'csrfmiddlewaretoken' : token.value,
+                'filters': JSON.stringify(filters)
+            });
+            return;    
+        }
 
         $.ajax({
             url: 'count/',
             type: 'POST',
             data: {'filters': JSON.stringify(filters)},
             success: (data) => {
-                const url = new URL(window.location.href);
-                const pageValue = url.searchParams.get('page');
                 if (data['product_count'] < parseInt(pageValue)) {
                     url.searchParams.set('page', data['product_count']);
                     window.location.replace(url.toString());
