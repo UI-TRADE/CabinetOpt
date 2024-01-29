@@ -59,7 +59,7 @@
                                     class="custom-card product-editing hidden"
                                     id="product-editing-form-{{forloop.counter}}"
                                     data-url="{% url 'orders:product_editing' order_id=object.id prod_id=line.instance.product.id %}"
-                                    style="overflow-y: scroll; max-height:800px;">
+                                    style="overflow-y: scroll; max-height:800px; top: 35px; right: 10px;">
                                 </div>
                             {% endfor %}
                         </div>
