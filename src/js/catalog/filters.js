@@ -52,9 +52,17 @@ class FilterBadges {
     removeFilter(filter){
         return (e) => {
             e.preventDefault();
-            $(".filter-item-title-active", this.filterContainer).filter((index, element) =>
-                JSON.stringify($(element).data("json")) === JSON.stringify(filter)
-            ).trigger("click")
+            const foundFilters = $(".filter-item-title-active", this.filterContainer).filter((index, element) => {
+                const filterInfo = $(element).data("json");
+                if (Array.isArray(filterInfo)) {
+                    for(var i=0;i<filterInfo.length;i++) {
+                        if (filterInfo[i]['ident'] === filter['ident']) return true;
+                    }
+                } else {
+                    return $(element).data("json")['ident'] === filter['ident'];
+                }
+            });
+            $(foundFilters[0]).trigger("click");
         }
     }
 }
@@ -105,12 +113,12 @@ const showCatalog = () => {
         }
 
         $.ajax({
-            url: 'count/',
+            url: 'pages/count/',
             type: 'POST',
             data: {'filters': JSON.stringify(filters)},
             success: (data) => {
-                if (data['product_count'] < parseInt(pageValue)) {
-                    url.searchParams.set('page', data['product_count']);
+                if (data['pages_count'] < parseInt(pageValue)) {
+                    url.searchParams.set('page', data['pages_count']);
                     window.location.replace(url.toString());
                     return;  
                 }
@@ -129,34 +137,63 @@ const showCatalog = () => {
 }
 
 
-const selectMenuItem = (element) => {
+const canRemoveFilterItem = (currnetIdent) => {
+    const selectedSizes = $('.size-item.filter-item-title-active');
+    for(var i=0; i<selectedSizes.length; i++) {
+        if ($(selectedSizes[i]).data('json').find(f => f['ident'] === currnetIdent)) {
+            return false;
+        }    
+    }
+    return true;
+}
+
+
+const selectMenuItem = (element, filters) => {
     $(element).toggleClass('filter-item-title-active');
     const isActive = $(element).hasClass('filter-item-title-active');
-    const dataJson = $(element).attr('data-json');
-    if (dataJson) {
-        let selectedFilters;
-        const filters = JSON.parse(sessionStorage.getItem('filters'));
-        const parsedData = JSON.parse(dataJson.replace(/'/g, '"'));
-        if (Array.isArray(parsedData))
-            selectedFilters = parsedData;
-        else
-            selectedFilters = [].concat(parsedData);
-        selectedFilters.forEach(f => {
+    let dataJson = $(element).data('json');
+    if (!Array.isArray(dataJson)) dataJson = [].concat(dataJson);
+    if (isActive && dataJson) {
+        dataJson.forEach(f => {
             let foundObjects = filters.filter(item => item['ident'] === f['ident']);
-            if (!foundObjects.length && isActive) {
+            if (!foundObjects.length) {
                 filters.push(f);
                 const currentElement = $(`.filter-item-title[name=${f['ident']}]`);
-                $.each(currentElement, (_, el) => $(el).addClass('filter-item-title-active'));
-            }
-            if (foundObjects.length && !isActive) {
-                foundObjects.forEach(el => {
-                    filters.splice(filters.indexOf(el), 1);
-                });
-            }
+                $.each(currentElement, (_, el) => $(el).addClass('filter-item-title-active'));   
+            }   
         });
-        sessionStorage.setItem('filters', JSON.stringify(filters));
-        selectedFiltersBadges.update(filters);
     }
+    if (!isActive && dataJson) {
+        if ($(element).hasClass('size-item')) {
+            dataJson.forEach(f => {
+                let foundObjects = filters.filter(item => item['ident'] === f['ident']);
+                foundObjects.forEach(el => {
+                    if (canRemoveFilterItem(el['ident'])) filters.splice(filters.indexOf(el), 1);
+                }); 
+            });
+        } else {
+            let foundObjects = filters.filter(item => item['ident'] === $(element).attr('name'));
+            foundObjects.forEach(el => {
+                filters.splice(filters.indexOf(el), 1);
+            });
+            if (dataJson.length === 1) {
+                const activeMenuItems = $(element).closest('li').find('.filter-item-title-active');
+                $.each(activeMenuItems, (_, activeMenuItem) => selectMenuItem(activeMenuItem, filters));
+            }
+        }
+    }
+    sessionStorage.setItem('filters', JSON.stringify(filters));
+    selectedFiltersBadges.update(filters);
+}
+
+
+const deselectMenuItems = () => {
+    $('.filter-item-title-active').each((_, element) => {
+        $(element).removeClass('filter-item-title-active');
+    });
+    $('#inStockFilter').each((_, element) => {
+        element.checked = false;
+    });
 }
 
 
@@ -170,62 +207,45 @@ const updateMenuItems = () => {
         if (currentFilter.length)
             $(element).toggleClass('filter-item-title-active');
     });
-    $('.form-check-input').each((_, element) => {
-        let foundObject = filters.filter(item => item[element.name]).find(_ => true);
-        if (foundObject) {
-            if (element.name == "in_stock") 
-                element.checked = !foundObject[element.name];
-            else 
-                element.checked = foundObject[element.name];
+    $('#inStockFilter').each((_, element) => {
+        element.checked = true;
+        const inStockItem = filters.find(item => 'in_stock' in item);
+        if (inStockItem)
+            if (inStockItem['in_stock']) element.checked = false;
+        else {
+            //set default value in_stock
+            filters.push({'in_stock': true});
+            sessionStorage.setItem('filters', JSON.stringify(filters));
         }
     });
 
     selectedFiltersBadges.update(filters);
 }
 
-
-const updateFilterElements = (elements) => {
-    $('.filter-item-title').each((_, item) => {
-        const foundElement = elements.find(el => el['element'] == item);
-        if (foundElement) {
-            const countElement = $(foundElement['element']).children('span.count');
-            if (countElement) countElement.text(`(${foundElement['count']})`);
-            $(foundElement['element']).removeClass('filter-item-title-disable');
-            if (foundElement.hasOwnProperty('sum') && foundElement['sum'] > 0) {
-                $(foundElement['element']).addClass('size-active');
-            }   
-            return;
-        }
-        if (!$(item).hasClass('filter-item-title-disable')) {
-            const countElement = $(item).children('span.count');
-            if (countElement) countElement.text('(0)');
-            if ($(item).is('.filter-point')) {
-                $(item).addClass('filter-item-title-disable');
-                $(item).removeClass('size-active');
-            }
-        }
-    });
-}
-
-
-export function  updateFilters(html) {
+// Получаем массив соответствий элементов фильтра и количества и сумм
+export function  updateFilterQuantitiesAndSums(html) {
     try {
+        $('span.count').each((_, element) => {
+            $(element).text('');
+        });
         const DOMModel = new DOMParser().parseFromString(html, 'text/html');
-        const filters = JSON.parse(DOMModel.getElementById('filters')?.getAttribute('data-json'))
-        const activeFilters = new Array;
+        const filters = JSON.parse(DOMModel.getElementById('filters')?.getAttribute('data-json'));
         for (var key in filters) {
             if (filters.hasOwnProperty(key)) {
                 filters[key].forEach(item => {
-                    const elements = $(`[name='${item.ident}']`);
-                    elements.each((_, element) => {
-                        const activeFilter = {'element': element, 'count': item['count']};
-                        if (item.hasOwnProperty('sum')) Object.assign(activeFilter, {'sum': item['sum']});
-                        activeFilters.push(activeFilter);
+                    $(`[name='${item.ident}']`).each((_, element) => {
+                        const countElement = $(element).children('span.count');
+                        if (countElement)
+                            countElement.text(`(${item['count']})`);
+                        if (item['count'])
+                            $(element).closest('li[class="filter-item-title-hidden"]').removeClass('filter-item-title-hidden');
+                        if ($(element).hasClass('size-item'))
+                            $(element).removeClass('filter-item-title-hidden');
+                        $(element).removeClass('filter-item-title-disable');
                     });
                 });
             }
         }
-        updateFilterElements(activeFilters);
     }
     catch (error) {
         handleError(error);
@@ -242,7 +262,8 @@ export function filtersEvents() {
             if (imgOfNode) openMenuItems(imgOfNode);
         } else {
             if ($(event.currentTarget).is('.filter-item-title-disable')) return;
-            selectMenuItem(event.currentTarget);
+            const filters = JSON.parse(sessionStorage.getItem('filters'));
+            selectMenuItem(event.currentTarget, filters);
             showCatalog();
         }
     });
@@ -255,22 +276,18 @@ export function filtersEvents() {
         const parent = $(event.target).closest('li');
         if (parent.length) {
             $(parent).find('.filter-item-title-active').each((_, element) => {
-                selectMenuItem(element);
+                const filters = JSON.parse(sessionStorage.getItem('filters'));
+                selectMenuItem(element, filters);
             });
         } else {
             sessionStorage.setItem('filters', JSON.stringify([{'in_stock': true}]));
-            $('.filter-item-title-active').each((_, element) => {
-                $(element).removeClass('filter-item-title-active');
-            });
-            $('.form-check-input').each((_, element) => {
-                element.checked = false;
-            });
+            deselectMenuItems();
             selectedFiltersBadges.update([]);
         }
         showCatalog();
     });
 
-    $(document).on('click', '.form-check-input', event => {
+    $(document).on('click', '#inStockFilter', event => {
         const filters = JSON.parse(sessionStorage.getItem('filters'));
         for (var nameOfCeckedFilter of ['in_stock',]) {
             let foundFilter = false;

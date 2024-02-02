@@ -487,7 +487,6 @@ def save_order(order_params, order_items):
 
             for form in formset:
                 if not form.is_valid():
-                    print(form.errors.as_text())
                     errors.append({
                         'product_id': item['product'].id,
                         'size': item['size'],

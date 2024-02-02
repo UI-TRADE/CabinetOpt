@@ -34,7 +34,7 @@
   
   .filter-item-title {
     color: #000;
-    text-align: center;
+    /* text-align: center; */
     font-family: Open Sans;
     font-size: 12px;
     font-style: normal;
@@ -45,7 +45,7 @@
 
   .filter-item-title-unable {
     color: #000;
-    text-align: center;
+    /* text-align: center; */
     font-family: Open Sans;
     font-size: 12px;
     font-style: normal;
@@ -73,6 +73,10 @@
     opacity: 20%;
   }
 
+  .filter-item-title-hidden {
+    display: none;
+  }
+
   .filter-item-title-center {
     display: inline-flex;
     align-items: center !important;
@@ -88,6 +92,10 @@
     font-weight: 400;
     line-height: normal;
     text-decoration-line: underline;
+  }
+
+  .filter-item .reset:hover {
+    cursor: pointer;
   }
 
   .filter-item.top-node {

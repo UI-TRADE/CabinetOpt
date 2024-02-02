@@ -33,7 +33,7 @@ from .tasks import (
 )
 
 
-def get_active_products():
+def get_active_products(in_stock=True):
     result = Product.objects.filter(product_type='product', show_on_site=True)
     result = result.filter(
         id__in=Price.objects.filter(type__name="Базовая", price__gt=0).values_list("product", flat=True)
@@ -41,6 +41,12 @@ def get_active_products():
     result = result.filter(
         id__in=ProductImage.objects.all().values_list("product", flat=True)
     )
+    if in_stock:
+        result = result.filter(
+            pk__in=StockAndCost.objects.filter(
+                stock__gte=1
+            ).values_list('product_id', flat=True)
+        )
     return result
 
 
@@ -86,7 +92,7 @@ class FiltersView(TemplateView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['MEDIA_URL']   = settings.MEDIA_URL
+        context['MEDIA_URL'] = settings.MEDIA_URL
         context['filters'] = self.get_filters(get_active_products())
 
         return context
@@ -107,15 +113,22 @@ class ProductView(FiltersView, ListView):
         return self.get(request)
 
     def get_queryset(self):
-        products = get_active_products()
         if self.filters:
             parsed_filter = parse_filters(self.filters)
+            products = get_active_products(parsed_filter.get('in_stock', False))
+            filters = self.get_filters(products)
+
             filtered_products = ProductFilter(parsed_filter, queryset=products)
             products = filtered_products.qs.distinct()
-        return products
+
+        else:
+            products = get_active_products()
+            filters = self.get_filters(products)
+
+        return products, json.dumps({key: value.__json__() for key, value in filters.items()})
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        self.object_list = self.get_queryset()
+        self.object_list, filters = self.get_queryset()
         paginator = Paginator(self.object_list, self.paginate_by)
         page = self.request.GET.get('page')
 
@@ -128,7 +141,7 @@ class ProductView(FiltersView, ListView):
 
         context = super().get_context_data(**kwargs)
         context['products']    = products_page
-        context['filters']     = json.dumps({key: value.__json__() for key, value in self.get_filters(self.object_list).items()})
+        context['filters']     = filters
         context['is_sized']    = StockAndCost.objects.filter(product__in=products_page, size__isnull=False).values_list('product_id', flat=True)
         context['MEDIA_URL']   = settings.MEDIA_URL
         return context
@@ -399,20 +412,22 @@ def product_analogues(request):
 
 
 @api_view(['POST'])
-def product_count(request):
-    products = get_active_products()
+def catalog_pages_count(request):
     raw_filters = request.POST.dict()
     filters = json.loads(raw_filters.get('filters', '[]'))
     if filters:
         parsed_filter = parse_filters(filters)
+        products = get_active_products(parsed_filter.get('in_stock', False))
         filtered_products = ProductFilter(parsed_filter, queryset=products)
         products = filtered_products.qs.distinct()
+    else:
+        products = get_active_products()
 
     paginator = Paginator(products, 72)
     return JsonResponse(
         {
-            'replay'        : 'ok',
-            'product_count' : paginator.num_pages
+            'replay'      : 'ok',
+            'pages_count' : paginator.num_pages
         },
         status=200,
         safe=False

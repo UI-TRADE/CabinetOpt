@@ -21,8 +21,8 @@
                         <li>
                             <div class="d-flex row filter-item slave-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;" width="12" height="17">
                                 <div style="width: 5px;"></div>
-                                <span class="filter-point filter-item-title filter-item-title-disable" name="{{item.ident}}" data-json="{{item|filtertojson}}">{{ item.metal }}
-                                    <span class="count">(0)</span>
+                                <span class="filter-point filter-item-title" name="{{item.ident}}" data-json="{{item|filtertojson}}">{{ item.metal }}
+                                    <span class="count"></span>
                                 </span>
                             </div>
                             <ul>
@@ -30,8 +30,8 @@
                                 {% with root_params=item|filtertojson node_params=node|filtertojson %}
                                     <li>
                                         <div class="d-flex row filter-node-item">
-                                            <span class="filter-point filter-item-title filter-item-title-disable" name="{{node.ident}}" data-json="{{ root_params|updateparam:node_params }}">{{ node.str_color }}
-                                                <span class="count">(0)</span>
+                                            <span class="filter-point filter-item-title" name="{{node.ident}}" data-json="{{ root_params|updateparam:node_params }}">{{ node.str_color }}
+                                                <span class="count"></span>
                                             </span>
                                         </div>
                                     </li>
@@ -53,8 +53,8 @@
                         {% if item.metal_finish__name %}
                         <li>
                             <div class="d-xl-flex justify-content-xl-start row filter-node-item">
-                                <span class="filter-point filter-item-title filter-item-title-disable" name="{{item.ident}}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.metal_finish__name }}
-                                    <span class="count">(0)</span>
+                                <span class="filter-point filter-item-title" name="{{item.ident}}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.metal_finish__name }}
+                                    <span class="count"></span>
                                 </span>
                             </div>
                         </li>    
@@ -73,8 +73,8 @@
                         {% if item.brand__name %}
                         <li>
                             <div class="d-xl-flex justify-content-xl-start row filter-node-item">
-                                <span class="filter-point filter-item-title filter-item-title-disable" name="{{item.ident}}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.brand__name }}
-                                    <span class="count">(0)</span>
+                                <span class="filter-point filter-item-title" name="{{item.ident}}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.brand__name }}
+                                    <span class="count"></span>
                                 </span>
                             </div>
                         </li>
@@ -92,8 +92,8 @@
                     {% for item in filters.prod_status.tree %}
                         <li>
                             <div class="d-xl-flex justify-content-xl-start row filter-node-item">
-                                <span class="filter-point filter-item-title filter-item-title-disable" name="{{item.ident}}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.status|get_status_repr }}
-                                    <span class="count">(0)</span>
+                                <span class="filter-point filter-item-title" name="{{item.ident}}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.status|get_status_repr }}
+                                    <span class="count"></span>
                                 </span>
                             </div>
                         </li>
@@ -108,13 +108,12 @@
                 </div>
                 <ul style="padding: 0px;">
                     {% for item in filters.collections.tree %}
-                    
                         <li>
                             <div class="d-xl-flex row filter-item slave-node">
                                 <img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;" width="12" height="17">
                                 <div style="width: 5px;"></div>
-                                <span class="filter-point filter-item-title filter-item-title-disable" name="{{item.ident}}" data-json="{{item|filtertojson}}">{{ item.collection__group__name }}
-                                    <span class="count">(0)</span>
+                                <span class="filter-point filter-item-title" name="{{item.ident}}" data-json="{{item|filtertojson}}">{{ item.collection__group__name }}
+                                    <span class="count"></span>
                                 </span>
                             </div>
 
@@ -124,8 +123,8 @@
                                         {% with root_params=item|filtertojson node_params=node|filtertojson %}
                                             <li>
                                                 <div class="d-xl-flex row filter-node-item">
-                                                    <span class="filter-point filter-item-title filter-item-title-disable" name="{{node.ident}}" data-json="{{ root_params|updateparam:node_params }}">{{ node.collection__name }}
-                                                        <span class="count">(0)</span>
+                                                    <span class="filter-point filter-item-title" name="{{node.ident}}" data-json="{{ root_params|updateparam:node_params }}">{{ node.collection__name }}
+                                                        <span class="count"></span>
                                                     </span>
                                                 </div>
                                             </li>
@@ -154,7 +153,6 @@
                                 name="{{item.ident}}"
                                 data-json="{{item|filtertojson}}">
                                 {{ item.product__collection__group__name }}:
-                                <!-- <span class="count">(0)</span> -->
                             </span>
                         </div>
                         <ul>
@@ -199,10 +197,10 @@
                 <ul id="gender">
                     {% for item in filters.genders.tree %}
                         {% if item.gender__name %}
-                        <li>
+                        <li class="filter-item-title-hidden">
                             <div class="d-xl-flex justify-content-xl-start row filter-node-item">
-                                <span class="filter-point filter-item-title filter-item-title-disable" name="{{item.ident}}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.gender__name }}
-                                    <span class="count">(0)</span>
+                                <span class="filter-point filter-item-title" name="{{item.ident}}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.gender__name }}
+                                    <span class="count"></span>
                                 </span>
                             </div>
                         </li>
@@ -242,8 +240,8 @@
                         <li>
                             <div class="d-flex row filter-item slave-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;" width="12" height="17">
                                 <div style="width: 5px;"></div>
-                                <span class="filter-point filter-item-title filter-item-title-disable" name="{{item.ident}}" data-json="{{item|filtertojson}}">{{ item.precious_filter }}
-                                    <span class="count">(0)</span>
+                                <span class="filter-point filter-item-title" name="{{item.ident}}" data-json="{{item|filtertojson}}">{{ item.precious_filter }}
+                                    <span class="count"></span>
                                 </span>
                             </div>
                             <ul>
@@ -251,8 +249,8 @@
                                 {% with root_params=item|filtertojson node_params=node|filtertojson %}
                                     <li>
                                         <div class="d-flex row filter-node-item">
-                                            <span class="filter-point filter-item-title filter-item-title-disable" name="{{node.ident}}" data-json="{{ root_params|updateparam:node_params }}">{{ node.precious_stone__name }}
-                                                <span class="count">(0)</span>
+                                            <span class="filter-point filter-item-title" name="{{node.ident}}" data-json="{{ root_params|updateparam:node_params }}">{{ node.precious_stone__name }}
+                                                <span class="count"></span>
                                             </span>
                                         </div>
                                     </li>
@@ -278,10 +276,10 @@
                 <ul id="gem-colors">
                     {% for item in filters.colors.tree %}
                         {% if item.color_filter %}
-                        <li>
+                        <li class="filter-item-title-hidden">
                             <div class="d-xl-flex justify-content-xl-start row filter-node-item">
-                                <span class="filter-point filter-item-title filter-item-title-disable" name="{{item.ident}}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.color_filter }}
-                                    <span class="count">(0)</span>
+                                <span class="filter-point filter-item-title" name="{{item.ident}}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.color_filter }}
+                                    <span class="count"></span>
                                 </span>
                             </div>
                         </li>
@@ -300,7 +298,7 @@
                         <div class="d-xl-flex justify-content-xl-start row filter-node-item" style="margin-left: 5px!important">
                             {% for item in filters.cuts.tree %}  
                                 {% if item.cut_type__cut_type_image__name %}
-                                <div class="filter-point filter-item-title filter-item-title-disable filter-item-title-center" name="{{item.ident}}" data-json="{{item|filtertojson}}">
+                                <div class="filter-point filter-item-title filter-item-title-center" name="{{item.ident}}" data-json="{{item|filtertojson}}">
                                     <img class="d-xl-flex" src="{{ MEDIA_URL }}{{ item.nodes|get_cut_type_image }}" style="padding: 0px;" alt="{{ item.cut_type__cut_type_image__name }}">
                                 </div>
                                 {% endif %}

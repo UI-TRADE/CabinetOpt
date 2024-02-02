@@ -46,11 +46,13 @@ class FilterTree(object):
                 )
             return result
         
-        return [item | {'name': '_'.join(node_fields), 'ident': get_ident(item)} for item in node]
+        return [element for element in [item | {'name': '_'.join(node_fields), 'ident': get_ident(item)} for item in node] if element['ident']]
 
     def count(self, root_field, *node_fields):
         roots = self.qs.values(root_field).annotate(count=Count('id'))
         for root in roots:
+            if not root[root_field]:
+                continue
             if node_fields:
                 nodes = self.qs.filter(Q((root_field, root[root_field]))).values(*node_fields).annotate(count=Count('id'))
                 if nodes:
@@ -60,10 +62,15 @@ class FilterTree(object):
     def sum(self, root_field, *node_fields):
         roots = self.qs.values(root_field).annotate(sum=Sum('stock'))
         for root in roots:
+            if not root[root_field]:
+                continue
             if node_fields:
                 nodes = self.qs.filter(Q((root_field, root[root_field]))).values(*node_fields).annotate(count=Count('id'), sum=Sum('stock')).order_by('size__size_from')
                 if nodes:
                     root['nodes'] = self.serialize_node(root[root_field], nodes, node_fields)
+                    root['count'] = len(root['nodes'])
+                else:
+                    root['count'] = 0    
             self.tree.append(self.serialize_root(root, root_field))
 
 

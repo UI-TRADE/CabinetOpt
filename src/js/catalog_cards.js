@@ -1,7 +1,7 @@
 import getPrice from './price'
-import { extractContent, createSpiner, removeSpiner} from './lib';
-import {updateFilters} from './catalog/filters';
-import {cartEvents, waitUpdateCart} from './cart';
+import { extractContent, createSpiner, removeSpiner } from './lib';
+import { updateFilterQuantitiesAndSums } from './catalog/filters';
+import { cartEvents, waitUpdateCart } from './cart';
 import { weightFormat } from "./utils/weight_format";
 import { decimalFormat } from "./utils/money_format";
 import { handleError } from "./utils/exceptions";
@@ -239,7 +239,7 @@ function updateProducts(elementId, data) {
             $(`#${elementId}`).html(
                 extractContent(data, elementId)
             );
-            updateFilters(data);
+            updateFilterQuantitiesAndSums(data);
             updateProductCards(mainElement);
         },
         error: (error) => {
