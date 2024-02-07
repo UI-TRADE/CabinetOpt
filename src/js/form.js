@@ -146,6 +146,18 @@ export function showAuthForm(submitFormId) {
             }
         });
     });
+    $('#login-form-switch').click((event) => {
+        $.ajax({
+            url: event.currentTarget.getAttribute('data-url'),
+            success: (data) => {
+                renderModalForm(data, 'registration-form', submitFormId);
+                updateModalForm(submitFormId);
+            },
+            error: (xhr, status, error) => {
+                handleError(error, 'Ошибка открытия формы');
+            }
+        });
+    });
 }
 
 

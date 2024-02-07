@@ -50,8 +50,9 @@ html {
 }
 
 .main-content {
-    height: calc(100% - 64px);
+    // height: calc(100% - 64px);
     margin-top: 64px;
+    margin-bottom: 20px;
 }
 
 .file-selection-control {

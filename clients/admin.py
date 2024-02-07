@@ -12,6 +12,7 @@ from django.template.loader import render_to_string
 from django.conf import settings
 
 from .models import (
+    Organization,
     RegistrationOrder,
     Client,
     Manager,
@@ -68,6 +69,30 @@ class ContactDetailInLine(admin.TabularInline):
     extra = 0
     verbose_name = "Контактная информация"
     verbose_name_plural = "Контактная информация"
+
+
+@admin.register(Organization)
+class OrganizationAdmin(admin.ModelAdmin):
+    search_fields = [
+        'name',
+        'address',
+        'phone',
+        'email',
+    ]
+    list_display = [
+        'name',
+        'address',
+        'phone',
+        'email',
+    ]
+    fields = [
+        'name',
+        'address',
+        ('phone', 'email'),
+    ]
+    list_filter = [
+        'name',
+    ]
 
 
 @admin.register(RegistrationOrder)

@@ -3,6 +3,21 @@ from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from django.conf import settings
 
+
+class Organization(models.Model):
+    name = models.CharField('Имя', max_length=150)
+    address = models.CharField('Адерс', max_length=250, blank=True, default='')
+    phone = PhoneNumberField('Телефон', db_index=True)
+    email = models.EmailField('email', db_index=True)
+
+    class Meta:
+        verbose_name = 'Наша организация'
+        verbose_name_plural = 'Наша организация'
+    
+    def __str__(self):
+        return self.name
+
+
 class RegistrationOrder(models.Model):
     name = models.CharField('Имя', max_length=150)
     organization = models.CharField('Организация', max_length=150, db_index=True, default='')

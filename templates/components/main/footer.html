@@ -1,0 +1,58 @@
+{% load static %}
+
+<nav class="navbar navbar-dark" style="background: #242A35;">
+    <div class="container footer">
+        <div class="row">
+            <img class="navbar-custom__logo" src="{% static 'img/logo-white.svg' %}" alt="Лого">
+        </div>
+        <div class="row">
+            <div class="col"></div>
+            <div class="col-5">
+                <p>КОНТАКТЫ</p>
+                <p style="max-height: 30px;"></p>
+                <p style="margin-bottom: 30px; max-width: 400px;">{{ organization.address }}</p>
+                <p style="margin-bottom: 1px;">{{ organization.phone }}</p>
+                <p>{{ organization.email }}</p>
+            </div>
+            <div class="col-3">
+                {% if not request.session.login %}
+                    <p>КАТАЛОГ</p>
+                    <p>КОРЗИНА</p>
+                    <p>ЗАКАЗЫ</p>
+                    <p>ЛИЧНЫЙ КАБИНЕТ</p>
+                    <p>
+                        <a class="text-nowrap text-white"
+                        id="login-form-switch"
+                        data-url="{% url 'clients:login' %}"
+                        href="#">
+                            ВХОД
+                        </a>
+                    </p>
+                {% else %}
+                    <p><a href="{% url 'catalog:products' %}">КАТАЛОГ</a></p>
+                    <p><a href="{% url 'cart:cart_detail' %}">КОРЗИНА</a></p>
+                    <p><a href="{% url 'orders:orders' %}">ЗАКАЗЫ</a></p>
+                    <p><a href="{% url 'clients:contact' %}">ЛИЧНЫЙ КАБИНЕТ</a></p>
+                    <p><a href="{% url 'clients:logout' %}">ВЫХОД</a></p>
+                {% endif %}
+            </div>
+            <div class="col-3">
+                <p><a href="#">Гарантия и возврат</a></p>
+                <p><a href="#">Политика обработки персональных данных</a></p>
+                <p><a href="#">Доставка</a></p>
+                <p><a href="#">О заводах TALANT</a></p> 
+            </div>
+        </div>
+        <div class="row-social">
+            <a href="https://vk.com/talant_jewelry
+            " target="_blank">
+                <img class="" src="{% static 'img/vk.png' %}" alt="ВКонтакте">
+            </a>
+            <a href="https://t.me/talant_jewelry
+            " target="_blank">
+                <img class="" src="{% static 'img/telegram.png' %}" alt="Телеграмм">
+            </a>
+            <img class="" src="{% static 'img/phone.png' %}" alt="Телефон">
+        </div>
+    </div>
+</nav>
