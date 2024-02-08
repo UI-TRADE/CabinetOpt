@@ -50,7 +50,9 @@ INSTALLED_APPS = [
     'catalog',
     'orders',
     'cart',
+    'settings_and_conditions',
     'debug_toolbar',
+    'django_summernote',
 ]
 
 MIDDLEWARE = [
@@ -198,3 +200,7 @@ REDIS_PORT = env.int('REDIS_PORT', 6379)
 REDIS_CONN = redis.StrictRedis(
     host=REDIS_HOST, port=REDIS_PORT, db=0
 )
+
+# Summernote settings
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+SUMMERNOTE_THEME = 'bs4'

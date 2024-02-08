@@ -28,6 +28,8 @@ urlpatterns = [
     path('catalog/', include('catalog.urls')),
     path('orders/', include('orders.urls')),
     path('cart/', include('cart.urls')),
+    path('summernote/', include('django_summernote.urls')),
+    path('condition/', include('settings_and_conditions.urls')),
     path('__debug__/', include('debug_toolbar.urls')),
 ]
 
