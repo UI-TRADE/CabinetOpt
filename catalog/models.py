@@ -161,6 +161,23 @@ class ProductQuerySet(models.QuerySet):
             return 'ХИТ'
         elif status == Product.SALE:
             return 'ВЫГОДНО'
+        
+    def get_active_products(self, in_stock=True):
+        result = self.distinct()
+        result = result.filter(product_type='product', show_on_site=True)
+        result = result.filter(
+            id__in=Price.objects.filter(type__name="Базовая", price__gt=0).values_list("product", flat=True)
+        )
+        result = result.filter(
+            id__in=ProductImage.objects.all().values_list("product", flat=True)
+        )
+        if in_stock:
+            result = result.filter(
+                pk__in=StockAndCost.objects.filter(
+                    stock__gte=1
+                ).values_list('product_id', flat=True)
+            )
+        return result
 
 
 class Product(models.Model):

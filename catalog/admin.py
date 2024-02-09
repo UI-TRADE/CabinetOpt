@@ -169,6 +169,24 @@ class CollectionAdmin(admin.ModelAdmin):
     ]
 
 
+class ProductActiveFilter(admin.SimpleListFilter):
+    title = ('Доступен на сайте')
+    parameter_name = 'product_active_filter'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('Активный', ('Активный')),
+            ('Не активный', ('Не активный')),
+        )
+
+    def queryset(self, request, queryset):
+        active_products = Product.objects.get_active_products()
+        if self.value() == 'Активный':
+            return active_products
+        if self.value() == 'Не активный':
+            return queryset.exclude(pk__in=active_products.values_list('id', flat=True))
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     search_fields = [
@@ -211,8 +229,8 @@ class ProductAdmin(admin.ModelAdmin):
         'metal',
         'metal_content',
         'color',
-        'show_on_site',
         'available_for_order',
+        ProductActiveFilter,
     ]
     readonly_fields = [
         'created_at'
@@ -236,7 +254,9 @@ class ProductAdmin(admin.ModelAdmin):
 
     def avg_weight(self, obj):
         result = StockAndCost.objects.filter(product_id=obj.id).aggregate(Avg('weight'))
-        return result['weight__avg']
+        if not result['weight__avg']:
+            return 0
+        return round(result['weight__avg'], 3)
     avg_weight.short_description = 'Ср.вес, гр'
 
     def stock(self, obj):
@@ -253,19 +273,14 @@ class ProductAdmin(admin.ModelAdmin):
 
     def active(self, obj):
         result = 'Активный'
-        product_stock = StockAndCost.objects.filter(product_id=obj.id).aggregate(Sum('stock'))
         if not obj.show_on_site:
-            result = 'Не активный'    
-        if not product_stock['stock__sum']:
             result = 'Не активный'
-        product_prices = Price.objects.available_prices([obj.id])
-        if not product_prices:
+        if not Price.objects.filter(type__name="Базовая", product_id=obj.id, price__gt=0):
             result = 'Не активный'
-        product_images = ProductImage.objects.filter(product_id=obj.id)  
-        if not product_images:
+        if not ProductImage.objects.filter(product_id=obj.id):
             result = 'Не активный'
         return result
-    active.short_description = ''
+    active.short_description = 'Доступен на сайте'
 
 
 @admin.register(PriceType)

@@ -33,23 +33,6 @@ from .tasks import (
 )
 
 
-def get_active_products(in_stock=True):
-    result = Product.objects.filter(product_type='product', show_on_site=True)
-    result = result.filter(
-        id__in=Price.objects.filter(type__name="Базовая", price__gt=0).values_list("product", flat=True)
-    )
-    result = result.filter(
-        id__in=ProductImage.objects.all().values_list("product", flat=True)
-    )
-    if in_stock:
-        result = result.filter(
-            pk__in=StockAndCost.objects.filter(
-                stock__gte=1
-            ).values_list('product_id', flat=True)
-        )
-    return result
-
-
 def parse_filters(filters):
     result = collections.defaultdict(list)
     range_filters = {}
@@ -93,7 +76,7 @@ class FiltersView(TemplateView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['MEDIA_URL'] = settings.MEDIA_URL
-        context['filters'] = self.get_filters(get_active_products())
+        context['filters'] = self.get_filters(Product.objects.get_active_products())
 
         return context
 
@@ -115,14 +98,14 @@ class ProductView(FiltersView, ListView):
     def get_queryset(self):
         if self.filters:
             parsed_filter = parse_filters(self.filters)
-            products = get_active_products(parsed_filter.get('in_stock', False))
+            products = Product.objects.get_active_products(parsed_filter.get('in_stock', False))
             filters = self.get_filters(products)
 
             filtered_products = ProductFilter(parsed_filter, queryset=products)
             products = filtered_products.qs.distinct()
 
         else:
-            products = get_active_products()
+            products = Product.objects.get_active_products()
             filters = self.get_filters(products)
 
         return products, json.dumps({key: value.__json__() for key, value in filters.items()})
@@ -417,11 +400,11 @@ def catalog_pages_count(request):
     filters = json.loads(raw_filters.get('filters', '[]'))
     if filters:
         parsed_filter = parse_filters(filters)
-        products = get_active_products(parsed_filter.get('in_stock', False))
+        products = Product.objects.get_active_products(parsed_filter.get('in_stock', False))
         filtered_products = ProductFilter(parsed_filter, queryset=products)
         products = filtered_products.qs.distinct()
     else:
-        products = get_active_products()
+        products = Product.objects.get_active_products()
 
     paginator = Paginator(products, 72)
     return JsonResponse(
