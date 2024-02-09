@@ -463,7 +463,16 @@ def schedule_send_order(order, status_before):
         return
     if not order.status == 'confirmed' and not status_before == 'introductory':
         return
-    settings.REDIS_CONN.set(order.id, order.status)
+    settings.REDIS_CONN.hmset(
+        f'order_{order.id}',
+        {
+            'notification_type': 'confirm_order',
+            'id': order.id,
+            'form': 'forms/approve.html',
+            'url': '',
+            'subject': 'отправка заказа менеджеру talant',
+            'message': 'отправка заказа менеджеру talant'
+    })
 
 
 def save_order(order_params, order_items):

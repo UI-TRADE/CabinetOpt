@@ -1,14 +1,8 @@
-
-import os
-import base64
-
 from django.contrib import admin
 from django.db import transaction
 from django.urls import reverse
-from django.core.mail import send_mail
 from django.core.exceptions import ValidationError
 from django.contrib.admin import SimpleListFilter
-from django.template.loader import render_to_string
 from django.conf import settings
 
 from .models import (
@@ -192,39 +186,17 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
             if created:
                 client.manager.add(personal_manager)
 
-                context = {
-                    'url'     : request.build_absolute_uri(reverse('clients:change_pass')),
-                    'login'   : personal_manager.login,
-                    'password': personal_manager.password
-                } | self.get_images(['logo.png', 'confirm.jpg'])
-
-                recipient_list = [
-                    obj.email,
-                    'opt@talant-gold.ru',
-                    'Chikunova.Anastasiya@talant-gold.ru',
-                ]
-
-                self.send_email(context, recipient_list)
-
+            settings.REDIS_CONN.hmset(
+                f'registration_order_{obj.id}',
+                {
+                    'notification_type': 'confirm_registration',
+                    'id': obj.id,
+                    'form': 'forms/confirm.html',
+                    'url': request.build_absolute_uri(reverse('clients:change_pass')),
+                    'subject': 'доступ к личному кабинету на сайте opt.talantgold.ru',
+                    'message': 'доступ к личному кабинету на сайте opt.talantgold.ru'
+            })
             return super().save_model(request, obj, form, change)
-    
-    def get_images(self, images):
-        result = {}
-        static_dir = os.path.join(settings.BASE_DIR, 'static')
-        for img_name in images:
-            image_path = os.path.join(static_dir, 'img', img_name)
-            with open(image_path, 'rb') as image_file:
-                image_data = image_file.read()
-            base64_image = base64.b64encode(image_data).decode()
-            result[img_name.split('.')[0]] = base64_image
-        return result
-
-    def send_email(self, context, recipient_list):
-        html_content = render_to_string('forms/confirm.html', context)
-        subject = 'доступ к личному кабинету на сайте opt.talantgold.ru'
-        from_email = settings.EMAIL_HOST_USER
-        message = 'доступ к личному кабинету на сайте opt.talantgold.ru'
-        send_mail(subject, message, from_email, recipient_list, html_message=html_content)
 
 
 @admin.register(Manager)

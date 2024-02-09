@@ -78,3 +78,27 @@ class About(models.Model):
     
     def __str__(self):
         return f'О заводах {self.organization}'
+    
+
+class Notification(models.Model):
+    CONFIM_REG = 'confirm_registration'
+    CONFIM_ORDER = 'confirm_order'
+
+    email = models.EmailField('email', db_index=True)
+    use_up = models.BooleanField('использовать', default=True, db_index=True)
+    notification_type = models.CharField(
+        'тип уведомления',
+        max_length=50,
+        blank=True,
+        db_index=True,
+        choices=(
+            (CONFIM_REG, 'Подтверждение регистрации на сайте'),
+            (CONFIM_ORDER  , 'Подтверждение заказа клиента')
+    ))
+
+    class Meta:
+        verbose_name = 'Настройка уведомления'
+        verbose_name_plural = 'Найстройка уведомлений'
+    
+    def __str__(self):
+        return self.email
