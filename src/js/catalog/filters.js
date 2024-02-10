@@ -208,13 +208,13 @@ const updateMenuItems = () => {
             $(element).toggleClass('filter-item-title-active');
     });
     $('#inStockFilter').each((_, element) => {
-        element.checked = true;
         const inStockItem = filters.find(item => 'in_stock' in item);
         if (inStockItem)
-            if (inStockItem['in_stock']) element.checked = false;
+            element.checked = !inStockItem['in_stock'];
         else {
             //set default value in_stock
-            filters.push({'in_stock': true});
+            element.checked = false;
+            filters.push({'in_stock': !element.checked});
             sessionStorage.setItem('filters', JSON.stringify(filters));
         }
     });
