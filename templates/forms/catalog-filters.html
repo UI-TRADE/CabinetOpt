@@ -145,6 +145,7 @@
                 </div>
                 <ul style="padding: 0px;">
                 {% for item in filters.sizes.tree %}
+                    {% if item.nodes|length %}
                     <li>
                         <div class="d-flex row filter-item slave-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;" width="12" height="17">
                             <div style="width: 5px;"></div>
@@ -172,6 +173,7 @@
                             </div>
                         </ul>
                     </li>
+                    {% endif %}
                 {% endfor %}
                 </ul>
             </li>
