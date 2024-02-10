@@ -209,6 +209,7 @@ class ProductAdmin(admin.ModelAdmin):
         'collection',
     ]
     fields = [
+        'image_tag',
         'product_type',
         'status',
         ('name', 'articul', 'unit'),
@@ -233,7 +234,8 @@ class ProductAdmin(admin.ModelAdmin):
         ProductActiveFilter,
     ]
     readonly_fields = [
-        'created_at'
+        'image_tag',
+        'created_at',
     ]
     inlines = [
         GenderInLine,
@@ -281,6 +283,13 @@ class ProductAdmin(admin.ModelAdmin):
             result = 'Не активный'
         return result
     active.short_description = 'Доступен на сайте'
+
+    def image_tag(self, obj):
+        img = ProductImage.objects.filter(product_id=obj.id).first()
+        return format_html(
+            '<img src="{0}" width="150" height="150" />'.format(img.image.url)
+        )
+    image_tag.short_description = 'Изображение'
 
 
 @admin.register(PriceType)
