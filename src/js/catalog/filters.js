@@ -31,6 +31,7 @@ class FilterBadges {
             .filter((value =>
                 Object.values(value)
                 .filter(value =>  value !== null && typeof value !== "boolean").length)) // hide boolean(in_stock) or null values
+            .filter(value => value['search_values'] == undefined)
             .map(filter =>
                 $("<span />")
                     .addClass('badge badge-secondary')
@@ -218,8 +219,21 @@ const updateMenuItems = () => {
             sessionStorage.setItem('filters', JSON.stringify(filters));
         }
     });
+    $('.product-find').each((_, element) => {
+        const searchFilter = filters.find(item => item['search_values'] != undefined);
+        if (searchFilter) {
+            $(element).val(searchFilter['search_values']);
+        }
+    });
 
     selectedFiltersBadges.update(filters);
+}
+
+
+const updateSearchValues = () => {
+    const searchValues = JSON.parse(sessionStorage.getItem('search_values'));
+    $('.product-find').val(searchValues);
+
 }
 
 // Получаем массив соответствий элементов фильтра и количества и сумм
@@ -308,6 +322,29 @@ export function filtersEvents() {
         sessionStorage.setItem('filters', JSON.stringify(filters));
         showCatalog();
     });
+
+    $(document).on("submit", (event) => {
+        const currentTarget = event.target
+        if (currentTarget.id == 'form-product-find') {
+            event.preventDefault();
+            let searchValues = [];
+            const inputFindField = $(currentTarget).children('input');
+            const searchString = inputFindField.val();
+
+            if (searchString)
+                searchValues = searchString.split(';');
+            const filters = JSON.parse(sessionStorage.getItem('filters'));
+            const searchFilter = filters.find(item => item['search_values'] != undefined);
+            
+            if (searchFilter)
+                filters.splice(filters.indexOf(searchFilter), 1);
+            if (searchValues.length)
+                filters.push({'search_values': searchValues});
+            
+            sessionStorage.setItem('filters', JSON.stringify(filters));
+            showCatalog();
+        }
+    })
 }
 
 

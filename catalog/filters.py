@@ -1,4 +1,5 @@
 import re
+import ast
 import django_filters
 from django_filters import BooleanFilter, CharFilter, BaseInFilter
 from django.db.models import Count, Sum, Q
@@ -123,6 +124,8 @@ class ProductFilter(django_filters.FilterSet):
         method='stock_filter'
     )
 
+    search_values   = CharFilter(method='search_filter')
+
     class Meta:
         model = Product
         fields = [
@@ -210,3 +213,15 @@ class ProductFilter(django_filters.FilterSet):
                 **filters
             ).values_list('product_id', flat=True)
         )
+    
+
+    def search_filter(self, queryset, name, value):
+        result = []
+        fields = ['name__icontains', 'articul__icontains']
+        converted_value = ast.literal_eval(value)
+        for item in converted_value:
+            for field in fields:
+                selected_ids = list(queryset.filter(Q((field, item))).values_list('id', flat=True))
+                result = [*result, *selected_ids]
+        return queryset.filter(id__in=result)
+
