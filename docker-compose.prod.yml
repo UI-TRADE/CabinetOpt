@@ -58,7 +58,7 @@ services:
     volumes:
       - ./certbot/conf:/etc/letsencrypt:rw
       - ./certbot/www:/var/www/certbot:rw
-    command: certonly --webroot --webroot-path=/var/www/certbot/ --email admin@cabinet-opt.ru --agree-tos --no-eff-email -d cabinet-opt.ru
+    command: certonly --webroot --webroot-path=/var/www/certbot/ --email admin@talantgold.ru --agree-tos --no-eff-email -d opt.talantgold.ru
     depends_on:
       - nginx
 
