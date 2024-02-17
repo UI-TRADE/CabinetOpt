@@ -1,5 +1,6 @@
 import {loadOrder, initOrderInfo} from './order';
 import { createSpiner, removeSpiner } from './lib';
+import { handleError } from "./utils/exceptions";
 
 
 function ordersEvents() {

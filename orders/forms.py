@@ -68,8 +68,9 @@ class OrderItemForm(forms.ModelForm):
 
     def current_product(self, kwargs):
         instance = kwargs.get('instance')
-        if instance:
-            return instance.product.id
+        with suppress(AttributeError):
+            if instance:
+                return instance.product.id
         return ''
 
     def get_sizes(self):
