@@ -595,7 +595,7 @@ def edit_product(request, order_id, prod_id):
                 'product': Product.objects.filter(pk=item.product.id).values().first(),
                 'unit': item.unit,
                 'weight': item.weight,
-                'size': item.size.name,
+                'size': item.size.name if item.size else '',
                 'quantity': item.quantity,
                 'price': item.price,
                 'total_price': item.sum,
