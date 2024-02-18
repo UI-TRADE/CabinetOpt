@@ -91,19 +91,20 @@ class OrderItemForm(forms.ModelForm):
     
     def get_price_per_gr(self, kwargs):
         instance = kwargs.get('instance')
-        if instance:
-            prices = Price.objects.available_prices([instance.product.id])
-            with suppress(PriceType.DoesNotExist):
-                client_prices = Price.objects.available_prices(
-                    [instance.product.id], PriceType.objects.get(client = instance.order.client)
-                )
-                prices = prices.exclude(
-                    product_id__in = client_prices.values_list('product_id', flat=True)
-                ) | client_prices
-            
-            current_price = prices.first()
-            if current_price:
-                return current_price.price
+        with suppress(AttributeError):
+            if instance:
+                prices = Price.objects.available_prices([instance.product.id])
+                with suppress(PriceType.DoesNotExist):
+                    client_prices = Price.objects.available_prices(
+                        [instance.product.id], PriceType.objects.get(client = instance.order.client)
+                    )
+                    prices = prices.exclude(
+                        product_id__in = client_prices.values_list('product_id', flat=True)
+                    ) | client_prices
+                
+                current_price = prices.first()
+                if current_price:
+                    return current_price.price
 
         return 0
 
