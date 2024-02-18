@@ -6,7 +6,7 @@ services:
       context: ./
       dockerfile: Dockerfile.prod
     container_name: CabinetOpt
-    command: gunicorn CabinetOpt.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn CabinetOpt.wsgi:application --bind 0.0.0.0:8000 --timeout 3600
     volumes:
       - static_volume:/home/app/web/staticfiles
       - media_volume:/home/app/web/mediafiles
