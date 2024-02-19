@@ -1,4 +1,5 @@
 {% extends "main.html" %}
+{% load static %}
 {% load catalog_tags %}
 
 {% block page %}
@@ -28,18 +29,18 @@
 
                     {% if forloop.counter == 12 %}
                         <div class="col-12 banner">
-                            <div class="jumbotron jumbotron-fluid">
-                              <div class="container">
-                                <h1 class="display-4">Banner 1</h1>
-                              </div>
+                            <div class="jumbotron jumbotron-fluid" style="background-image: url('/static/img/banners/0001.jpg'); background-size: cover; height: 100%;">
+                              <!-- <div class="container">
+                                <img src="{% static 'img/banners/0001.jpg' %}" alt="Banner 1">
+                              </div> -->
                             </div>
                         </div>
                     {% elif forloop.counter == 24 %}
                         <div class="col-12 banner">
-                            <div class="jumbotron jumbotron-fluid">
-                              <div class="container">
-                                <h1 class="display-4">Banner 1</h1>
-                              </div>
+                            <div class="jumbotron jumbotron-fluid" style="background-image: url('/static/img/banners/0002.jpg'); background-size: cover; height: 100%;">
+                              <!-- <div class="container">
+                                <img src="{% static 'img/banners/0002.jpg' %}" alt="Banner 2">
+                              </div> -->
                             </div>
                         </div>
                     {% endif %}
