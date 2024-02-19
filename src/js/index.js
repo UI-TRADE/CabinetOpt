@@ -10,7 +10,7 @@ import initProductFilters, { filtersEvents } from './catalog/filters';
 import updateProductCard from './catalog_card';
 import ordersEvents from './orders';
 import orderEvents from './order';
-import updateOrder from '../js/_old/order';
+// import updateOrder from '../js/_old/order';
 
 
 require('jquery-ui');

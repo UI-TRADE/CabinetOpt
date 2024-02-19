@@ -30,8 +30,8 @@
                             <div class="carousel-item{% if forloop.first %} active{% endif %}">
                                 <figure>
                                     <img
-                                        src="{{ image }}"
-                                        class="img-fluid rounded img-thumbnail thumbnail-210"
+                                        data-src="{{ image }}"
+                                        class="lazy img-fluid rounded img-thumbnail thumbnail-210"
                                         alt="{{ product.name }}"
                                         style="border: none;"
                                     >

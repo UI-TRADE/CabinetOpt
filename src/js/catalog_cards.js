@@ -5,6 +5,7 @@ import { cartEvents, waitUpdateCart } from './cart';
 import { weightFormat } from "./utils/weight_format";
 import { decimalFormat } from "./utils/money_format";
 import { handleError } from "./utils/exceptions";
+import lazyLoads from './components/lazyload';
 
 
 /**
@@ -219,6 +220,7 @@ const updateProductCards = (element) => {
             element.style.visibility = 'visible';
             updateProductsStatusStyle();
             removeSpiner(currentSpin);
+            lazyLoads();
         })
         .catch((error) => {
             removeSpiner(currentSpin);
