@@ -121,7 +121,7 @@ const showCatalog = () => {
                 if (data['pages_count'] < parseInt(pageValue)) {
                     url.searchParams.set('page', data['pages_count']);
                     window.location.replace(url.toString());
-                    return;  
+                    return;
                 }
 
                 updateProducts('products', {
