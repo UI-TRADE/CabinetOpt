@@ -215,6 +215,7 @@ export function orderEvents() {
     });
 
     $('.add-quantity', orderForm).on('click', (event) => {
+        event.preventDefault();
         const currentId = $(event.currentTarget).attr("href");
 
         const viewElement = $(currentId);
@@ -233,6 +234,7 @@ export function orderEvents() {
     });
 
     $('.remove-quantity', orderForm).on('click', (event) => {
+        event.preventDefault();
         const currentId = $(event.currentTarget).attr("href");
 
         const viewElement = $(currentId);
