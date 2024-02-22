@@ -254,15 +254,6 @@
                                             {% for field in line %}
                                                 {% if field.name != "order" and field.name != "id" %}
                                                     {{ field }}
-                                                    <!-- {% if field|is_hidden_field %}
-                                                        {{ field }}
-                                                    {% else %}
-                                                        <div> {{ field }} </div>
-                                                        <div>{{ field.name }}
-                                                        <div class="formset-field{% if field.errors %} errors{% endif %}">
-                                                            {{ field.errors }}
-                                                        </div>
-                                                    {% endif %} -->
                                                 {% endif %}
                                             {% endfor %}
                                         </td>
@@ -302,13 +293,11 @@
                                 <div class="order-item__action-icon order-item__download-icon" style="background-image: url('{% static "img/download.svg"%}')"></div>
                             </a>
                             {% if object.status == "introductory" %}
-                                <!-- <button type="submit" class="btn btn-primary button-create">Отправить на рассмотрение</button> -->
                                 <input id="sendTalant" class="btn btn-primary" data-url="{% url 'orders:orders' %}" data-id="{{object.id}}" value="Отправить в Talant">
                                 <input id="saveOrder" class="btn btn-primary" data-url="{% url 'orders:orders' %}" data-id="{{object.id}}" value="Сохранить">
                             {% else %}
                                 <input id="closeOrder" class="btn btn-primary" data-url="{% url 'orders:orders' %}" data-id="{{object.id}}" value="Закрыть">
                             {% endif %}
-                            <!--<button type="submit" class="btn btn-primary">Отправить на рассмотрение</button>-->
                         </div>
                     </form>
                 </div>

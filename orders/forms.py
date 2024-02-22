@@ -36,8 +36,6 @@ class OrderItemForm(forms.ModelForm):
         model = OrderItem
         fields = [
             'product',
-            # 'series',
-            # 'uin',
             'weight',
             'size',
             'quantity',
@@ -113,13 +111,9 @@ class OrderItemForm(forms.ModelForm):
 class OrderItemInlineForm(BaseInlineFormSet):
 
     def add_fields(self, form, index):
-        # hidden_fields = ['DELETE', 'product', 'size']
         readonly_fields = ['uin', 'series', 'weight', 'unit', 'price', 'discount', 'sum']
         super().add_fields(form, index)
         for field in form.fields:
-            # if field in hidden_fields:
-            #     form.fields[field].widget.attrs['style'] = 'display: none'
-            #     continue
             if field in readonly_fields:
                 form.fields[field].widget.attrs['class'] = 'order__field form-control'
                 form.fields[field].widget.attrs['readonly'] = True
@@ -131,7 +125,12 @@ class OrderItemInlineForm(BaseInlineFormSet):
                 form.fields[field].widget.attrs['class'] = 'order__field__nomenclature_size form-control'
                 continue
             if field == 'product':
+                form.fields[field].widget = forms.TextInput()
                 form.fields[field].widget.attrs['class'] = 'order__field__product form-control'
+                continue
+            if field == 'size':
+                form.fields[field].widget = forms.TextInput()
+                form.fields[field].widget.attrs['class'] = 'order__field form-control'
                 continue
             form.fields[field].widget.attrs['class'] = 'order__field form-control'
 
@@ -146,8 +145,6 @@ OrderItemInline = inlineformset_factory(
     formset=OrderItemInlineForm,
     fields = [
         'nomenclature',
-        # 'series',
-        # 'uin',
         'weight',
         'nomenclature_size',
         'quantity',
