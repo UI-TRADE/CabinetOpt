@@ -51,9 +51,9 @@ html {
 }
 
 .main-content {
-    // height: calc(100% - 64px);
     margin-top: 64px;
     margin-bottom: 20px;
+    min-height: calc(100vh - 400px);
 }
 
 .file-selection-control {
