@@ -10,6 +10,7 @@ from django.core.management import BaseCommand
 from django.core.exceptions import ValidationError
 from django.template.loader import render_to_string
 from django.urls import reverse
+from redis.exceptions import ResponseError
 
 from settings_and_conditions.models import Notification
 from settings_and_conditions.notify_rollbar import notify_rollbar
@@ -23,7 +24,7 @@ class Command(BaseCommand):
         while True:
             try:
                 with notify_rollbar():
-                    schedule.every(1).minutes.do(launch_mailing)
+                    schedule.every(1).hours.do(launch_mailing)
                     while True:
                         time.sleep(60)
                         schedule.run_pending()
@@ -40,7 +41,7 @@ def launch_mailing():
     for key in tasks:
         with suppress(
                 Order.DoesNotExist, RegistrationOrder.DoesNotExist, Manager.DoesNotExist,
-                ValidationError, ValueError, AttributeError
+                ValidationError, ValueError, AttributeError, ResponseError
             ):
             notification_type = redis_storage.hmget(key, 'notification_type')[0].decode()
             obj_id            = redis_storage.hmget(key, 'id')[0].decode()
