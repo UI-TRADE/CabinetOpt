@@ -29,19 +29,14 @@
 
                     {% if forloop.counter == 12 %}
                         <div class="col-12 banner">
-                            <div class="jumbotron jumbotron-fluid banner-jumbotron" style="background-image: url('/static/img/banners/0001.jpg');">
-                              <!-- <div class="container">
-                                <img src="{% static 'img/banners/0001.jpg' %}" alt="Banner 1">
-                              </div> -->
-                            </div>
+                          <img src="{% static 'img/banners/0001.jpg' %}" class="img-fluid" alt="Banner 1">
+                          <!-- <div class="jumbotron jumbotron-fluid banner-jumbotron" style="background-image: url('/static/img/banners/0001.jpg');">
+                              <img src="{% static 'img/banners/0001.jpg' %}" alt="Banner 1">
+                          </div> -->
                         </div>
                     {% elif forloop.counter == 24 %}
                         <div class="col-12 banner">
-                            <div class="jumbotron jumbotron-fluid banner-jumbotron" style="background-image: url('/static/img/banners/0002.jpg');">
-                              <!-- <div class="container">
-                                <img src="{% static 'img/banners/0002.jpg' %}" alt="Banner 2">
-                              </div> -->
-                            </div>
+                          <img src="{% static 'img/banners/0002.jpg' %}" class="img-fluid" alt="Banner 1">
                         </div>
                     {% endif %}
                   {% endfor %}
