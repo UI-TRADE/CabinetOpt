@@ -241,9 +241,16 @@
                     <span class="filter-item-title">Вставки</span>
                     <span class="reset">Сбросить</span>
                 </div>
-                <ul style="padding: 0px;">
+                <ul id="gems">
                     {% for item in filters.gems.tree %}
                         <li>
+                            <div class="d-xl-flex justify-content-xl-start row filter-node-item">
+                                <span class="filter-point filter-item-title" name="{{item.ident}}" data-json="{{item|filtertojson}}" style="font-weight: normal !important;">{{ item.precious_filter }}
+                                    <span class="count"></span>
+                                </span>
+                            </div>
+                        </li>
+                        <!-- <li>
                             <div class="d-flex row filter-item slave-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;" width="12" height="17">
                                 <div style="width: 5px;"></div>
                                 <span class="filter-point filter-item-title" name="{{item.ident}}" data-json="{{item|filtertojson}}">{{ item.precious_filter }}
@@ -263,7 +270,7 @@
                                 {% endwith %}
                             {% endfor %}
                             </ul>
-                        </li> 
+                        </li>  -->
                     {% endfor %}
                 </ul>
                 <!-- <div class="gems">

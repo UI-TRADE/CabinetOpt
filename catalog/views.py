@@ -65,11 +65,11 @@ class FiltersView(TemplateView):
             'brands'      : self.get_filter(qs, 'count', 'brand__name'),
             'prod_status' : self.get_filter(qs, 'count', 'status'),
             'collections' : self.get_filter(qs, 'count', 'collection__group__name', 'collection__name'),
-            'genders'     : self.get_filter(qs.annotate(gender_count=Count('gender')), 'count', 'gender__name'),
+            # 'genders'     : self.get_filter(qs.annotate(gender_count=Count('gender')), 'count', 'gender__name'),
             'sizes'       : self.get_filter(StockAndCost.objects.filter(product__in=qs), 'sum', 'product__collection__group__name', 'size__name'),
-            'gems'        : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'precious_filter', 'precious_stone__name'),
-            'colors'      : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'color_filter'),
-            'cuts'        : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'cut_type__cut_type_image__name', 'cut_type__cut_type_image__image'),
+            'gems'        : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'precious_filter'),
+            # 'colors'      : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'color_filter'),
+            # 'cuts'        : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'cut_type__cut_type_image__name', 'cut_type__cut_type_image__image'),
         }
 
     def get_context_data(self, *, object_list=None, **kwargs):

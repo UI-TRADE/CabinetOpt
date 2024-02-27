@@ -50,7 +50,11 @@ class FilterTree(object):
         return [element for element in [item | {'name': '_'.join(node_fields), 'ident': get_ident(item)} for item in node] if element['ident']]
 
     def count(self, root_field, *node_fields):
-        roots = self.qs.values(root_field).annotate(count=Count('id'))
+        def calc_products_by_precious_gems(precious_filter):
+            result = self.qs.filter(precious_filter=precious_filter).values('precious_filter', 'product_id').distinct().count()
+            return result
+        
+        roots = [dict(item) for item in self.qs.values(root_field).annotate(count=Count('id'))]
         for root in roots:
             if not root[root_field]:
                 continue
@@ -58,6 +62,9 @@ class FilterTree(object):
                 nodes = self.qs.filter(Q((root_field, root[root_field]))).values(*node_fields).annotate(count=Count('id'))
                 if nodes:
                     root['nodes'] = self.serialize_node(root[root_field], nodes, node_fields)
+            
+            if root_field == 'precious_filter':
+                root['count'] = calc_products_by_precious_gems(root[root_field])    
             self.tree.append(self.serialize_root(root, root_field))
 
     def sum(self, root_field, *node_fields):
@@ -98,7 +105,8 @@ class ProductFilter(django_filters.FilterSet):
     in_stock                         = BooleanFilter(method='in_stock_filter')
     product__collection__group__name = CharFilter(method='size_filter')    
     size__name                       = CharFilter(method='size_filter')
-    precious_stone__name             = CharFilter(method='gems_filter')
+    # precious_stone__name             = CharFilter(method='gems_filter')
+    precious_filter                  = CharFilter(method='gems_filter')
     color_filter                     = CharFilter(method='gems_filter')
     cut_type__cut_type_image__name   = CharFilter(method='cut_type_filter')
 
