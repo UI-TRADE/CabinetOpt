@@ -72,21 +72,16 @@
         <div class="product-detail_main-info">
 
             <ul class="list-unstyled product-detail__list-unstyled">
-                {% if product.collection.group %}
-                    <li>{{ product.metal }}</li>
+                {% if product.brand %}
+                    <li>{{ product.brand|upper }}</li>
                 {% endif %}
-                {% if product.metal_content %}
-                    <li>{{ product.metal_content }}</li>
+                {% if product.collection.group %}
+                    <li>{{ product.collection.group|lower|title }} {{ product.collection|lower }}</li>
                 {% endif %}
                 {% if product.collection.group %}
                     <li>{{ product.str_color|default:product.color }}</li>
                 {% endif %}
-                {% if product.collection.group %}
-                    <li>Коллекция - {{ product.collection.group|lower }}</li>
-                {% endif %}
-                {% if product.brand %}
-                    <li>Бренд: {{ product.brand|upper }}</li>
-                {% endif %}
+                <li>  </li>
                 {% if product.gender %}
                     <li>{{ product.gender|get_gender_repr|lower }}</li>
                 {% endif %}
