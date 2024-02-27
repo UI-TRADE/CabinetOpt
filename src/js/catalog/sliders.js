@@ -145,7 +145,7 @@ const renderDiscreteSlider = (sliderId, steps) => {
 function showSliders() {
 
     renderSlider('weight-range', 0, 150, 0.1, 0, 150);
-    renderSlider('price-range', 500, 150000, 1, 500, 150000);
+    // renderSlider('price-range', 500, 150000, 1, 500, 150000);
     renderDiscreteSlider('quantity-range', [1, 4, 10, 40, 50, 100]);
     renderSlider('instok-range', 0, 1000, 1, 0, 1000);
 
