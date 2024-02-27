@@ -15,6 +15,31 @@
       height: 100%;
 
     }
+
+    @media (min-width: 1900px) {
+      img{
+        width:1320px;
+      }
+    }
+
+    @media (min-width: 2247px) {
+      img{
+        width:100%;
+      }
+    }
+
+    @media (min-width: 2248px) {
+      img{
+        width:1656px;
+      }
+    }
+
+    @media (min-width: 2696px) {
+      img{
+        width:100%;
+      }
+    }
+
   }
 
   @media (max-width: 1300px) {
@@ -42,8 +67,6 @@
     .product-item__col.col-xl-4{
       max-width:337px;
     }
-    // .banner{
-    //   max-width: 1348px;
-    // }
   }
+
 }
