@@ -198,11 +198,12 @@ Webpack будет следить за файлами в каталоге `src`.
 
 `REDIS_HOST` - адрес сервера redis
 `REDIS_PORT` - порт сервера redis
+`REDIS_PWD` - пароль сервера redis
 
 Запустите развертывание сайта в Docker:
 
 ```sh
-docker-compose up -d --build
+docker-compose --env-file .env.stage up -d --build
 ```
 
 ## Как развернуть prod-версию сайта
@@ -240,12 +241,16 @@ docker-compose up -d --build
 `EMAIL_HOST_USER` - имя пользователя от которого отправляется почта.
 `EMAIL_HOST_PASSWORD` - пароль почты.
 `EMAIL_USE_TLS` - TLS (по умолчанию не используется)
-`EMAIL_USE_SSL` - SSL (по умолчанию включено) 
+`EMAIL_USE_SSL` - SSL (по умолчанию включено)
+
+`REDIS_HOST` - адрес сервера redis
+`REDIS_PORT` - порт сервера redis
+`REDIS_PWD` - пароль сервера redis
 
 Запустите развертывание сайта в Docker:
 
 ```sh
-docker-compose -f docker-compose.prod.yml up -d --build
+docker-compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
 ```
 
 Выполните миргации:
@@ -288,7 +293,7 @@ sudo nano nginx/nginx.conf
 Запустите заново сборку контейнеров
 
 ```sh
-docker-compose -f docker-compose.prod.yml up -d --build
+docker-compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
 ```
 
 Запустите отправку заявок на почту по расписанию

@@ -198,7 +198,8 @@ REDIS_HOST = env('REDIS_HOST', '127.0.0.1')
 REDIS_PORT = env.int('REDIS_PORT', 6379)
 
 REDIS_CONN = redis.StrictRedis(
-    host=REDIS_HOST, port=REDIS_PORT, db=0
+    host=REDIS_HOST, port=REDIS_PORT,
+    db=0, password=env('REDIS_PWD', '')
 )
 
 # Summernote settings
