@@ -110,6 +110,19 @@ class ProductView(FiltersView, ListView):
         return products, json.dumps({key: value.__json__() for key, value in filters.items()})
 
     def get_context_data(self, *, object_list=None, **kwargs):
+        self.object_list = Product.objects.none()
+        context = {
+            'products': self.object_list,
+            'filters': {}, 'is_sized': False,
+            'MEDIA_URL': settings.MEDIA_URL
+        }
+        ''' 
+        Для get запроса возвращаем пустой набор,
+        ибо получение данных реализованно только на POST
+        '''
+        if self.request.method == 'GET':
+            return context
+    
         self.object_list, filters = self.get_queryset()
         paginator = Paginator(self.object_list, self.paginate_by)
         page = self.request.GET.get('page')
@@ -121,11 +134,10 @@ class ProductView(FiltersView, ListView):
         except EmptyPage:
             products_page = paginator.page(paginator.num_pages)
 
-        context = super().get_context_data(**kwargs)
+        # context = super().get_context_data(**kwargs)
         context['products']    = products_page
         context['filters']     = filters
         context['is_sized']    = StockAndCost.objects.filter(product__in=products_page, size__isnull=False).values_list('product_id', flat=True)
-        context['MEDIA_URL']   = settings.MEDIA_URL
         return context
 
 
