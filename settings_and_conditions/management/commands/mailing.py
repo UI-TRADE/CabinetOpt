@@ -1,5 +1,6 @@
 import os
 import base64
+import sys
 import schedule
 import time
 
@@ -20,18 +21,30 @@ from clients.utils import parse_of_name
 
 
 class Command(BaseCommand):
+    def add_arguments(self, parser):
+        parser.add_argument('--timeout', nargs='+', type=int, default=0, help='Run a command on a schedule with a specified timeout in minutes.')
+
     def handle(self, *args, **options):
-        while True:
+        if options['timeout']:
+            timeout, = options['timeout']
+            while True:
+                try:
+                    with notify_rollbar():
+                        schedule.every(timeout).minutes.do(launch_mailing)
+                        while True:
+                            time.sleep(60)
+                            schedule.run_pending()
+                            if not schedule.jobs:
+                                break
+                except Exception:
+                    continue
+        else:
             try:
                 with notify_rollbar():
-                    schedule.every(1).hours.do(launch_mailing)
-                    while True:
-                        time.sleep(60)
-                        schedule.run_pending()
-                        if not schedule.jobs:
-                            break
-            except Exception:
-                continue
+                    launch_mailing()
+            finally:
+                sys.exit(1)
+
 
 
 def launch_mailing():
