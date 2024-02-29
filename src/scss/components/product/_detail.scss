@@ -44,6 +44,10 @@
     // margin-right: 10px;
 
     .carousel{
+      .carousel-container{
+        display: flex;
+        justify-content: flex-start;
+      }
       .carousel-item{
         min-height:270px;
         line-height: 270px;
