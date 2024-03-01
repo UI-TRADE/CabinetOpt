@@ -134,10 +134,11 @@ class ProductView(FiltersView, ListView):
         except EmptyPage:
             products_page = paginator.page(paginator.num_pages)
 
-        # context = super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context['products']    = products_page
         context['filters']     = filters
         context['is_sized']    = StockAndCost.objects.filter(product__in=products_page, size__isnull=False).values_list('product_id', flat=True)
+        context['MEDIA_URL']   = settings.MEDIA_URL
         return context
 
 
