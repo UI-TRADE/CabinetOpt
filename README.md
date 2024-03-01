@@ -298,8 +298,18 @@ docker-compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
 
 Запустите отправку заявок на почту по расписанию
 
+без параметров запускается один раз
 ```sh
 docker-compose -f docker-compose.prod.yml exec web python manage.py mailing
+```
+можно добавить комманду в расписание crontab:
+```sh
+crontab -e
+```
+
+с параметрами запускается в бесконечном цикле с указанным таймаутом в минутах
+```sh
+docker-compose -f docker-compose.prod.yml exec web python manage.py mailing --timeout 10
 ```
 
 ## Как получить токен пользователя и выполнить обмен с 1С
