@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'jquery-ui-dist/jquery-ui.css';
 import generateUUID from './lib';
 import mainMenuEvents from './main_menu';
-import showModalForm, {switchModalForm, showChangePassForm, showAuthForm} from './form';
+import showModalForm, {modalFormEvents, switchModalForm, showChangePassForm, showAuthForm} from './form';
 import updateContactView, {contactEvents} from './contact';
 import { cartViewEvents } from './cart';
 import initProductFilters, { filtersEvents } from './catalog/filters';
@@ -18,6 +18,7 @@ require('jquery-ui');
 
 const addEvents = () => {
 
+    modalFormEvents();
     mainMenuEvents();
     filtersEvents();
     cartViewEvents();
@@ -64,11 +65,17 @@ $(window).on("load", () => {
 
 $(document).ready(() => {
 
-    // login
-    const mainAuthForm = 'registration-form';
-    showAuthForm(generateUUID());
-    switchModalForm('entry', mainAuthForm, generateUUID());
-    switchModalForm('register', mainAuthForm, generateUUID());
+    if (window.location.pathname == '/') {
+        // login
+        const mainAuthForm = 'registration-form';
+        const auth = sessionStorage.getItem('auth') || 'reg_request';
+        console.log(sessionStorage);
+        showAuthForm(generateUUID(), auth);
+        switchModalForm('entry', mainAuthForm, generateUUID());
+        switchModalForm('register', mainAuthForm, generateUUID());
+        sessionStorage.removeItem('auth');
+        console.log(sessionStorage);
+    }
 
     // change pass
     showChangePassForm();

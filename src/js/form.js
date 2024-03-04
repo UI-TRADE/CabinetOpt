@@ -133,7 +133,21 @@ export function switchModalForm(idFrom, idTo, submitFormId) {
     });
 }
 
-export function showAuthForm(submitFormId) {
+
+export function showAuthForm(submitFormId, auth='login') {
+    $.ajax({
+        url: `clients/${auth}`,
+        success: (data) => {
+            renderModalForm(data, 'registration-form', submitFormId);
+            updateModalForm(submitFormId);
+        },
+        error: (xhr, status, error) => {
+            handleError(error, 'Ошибка открытия формы');
+        }
+    });
+}
+
+export function modalFormEvents() {
     $('#registration-form-switch').click((event) => {
         $.ajax({
             url: event.currentTarget.getAttribute('data-url'),
@@ -146,19 +160,25 @@ export function showAuthForm(submitFormId) {
             }
         });
     });
-    $('#login-form-switch').click((event) => {
-        $.ajax({
-            url: event.currentTarget.getAttribute('data-url'),
-            success: (data) => {
-                renderModalForm(data, 'registration-form', submitFormId);
-                updateModalForm(submitFormId);
-            },
-            error: (xhr, status, error) => {
-                handleError(error, 'Ошибка открытия формы');
-            }
-        });
+    $('a[name="login"]').click((event) => {
+        sessionStorage.setItem('auth', 'login');
+        window.location.replace(event.currentTarget.getAttribute('data-url'));
+    //     $.ajax({
+    //         url: 'clients/login',
+    //         success: (data) => {
+    //             renderModalForm(data, 'registration-form', submitFormId);
+    //             updateModalForm(submitFormId);
+    //         },
+    //         error: (xhr, status, error) => {
+    //             handleError(error, 'Ошибка открытия формы');
+    //         }
+    //     });
     });
-}
+    $('a[name="logout"]').click((event) => {
+        sessionStorage.setItem('auth', 'login');
+        window.location.replace(event.currentTarget.getAttribute('data-url'));
+    });
+} 
 
 
 function showModalForm(formId, submitFormId) {

@@ -20,20 +20,27 @@
                     <p>КОРЗИНА</p>
                     <p>ЗАКАЗЫ</p>
                     <p>ЛИЧНЫЙ КАБИНЕТ</p>
-                    <p>
+                    <!-- <p>
                         <a class="text-nowrap text-white"
-                        id="login-form-switch"
-                        data-url="{% url 'clients:login' %}"
-                        href="#">
+                        name="login"
+                        data-url="{% url 'start_page' %}"
+                        href="javascript:void(0);">
                             ВХОД
                         </a>
-                    </p>
+                    </p> -->
                 {% else %}
                     <p><a href="{% url 'catalog:products' %}">КАТАЛОГ</a></p>
                     <p><a href="{% url 'cart:cart_detail' %}">КОРЗИНА</a></p>
                     <p><a href="{% url 'orders:orders' %}">ЗАКАЗЫ</a></p>
                     <p><a href="{% url 'clients:contact' %}">ЛИЧНЫЙ КАБИНЕТ</a></p>
-                    <p><a href="{% url 'clients:logout' %}">ВЫХОД</a></p>
+                    <p>
+                        <a 
+                            name="logout"
+                            data-url="{% url 'clients:logout' %}"
+                            href="javascript:void(0);">
+                            ВЫХОД
+                        </a>
+                    </p>
                 {% endif %}
             </div>
             <div class="col-3">
