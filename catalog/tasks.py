@@ -62,24 +62,39 @@ def run_uploading_products(uploading_products):
                         'identifier_1C'      : identifier_1C
                 })
 
+                product.metal_finish.clear()
                 processings = update_or_create_metal_finish(item["processing"])
                 for type_of_metal_finish in processings:
+                    if not type_of_metal_finish:
+                        continue
                     product.metal_finish.add(type_of_metal_finish)
 
+                product.gender.clear()
                 genders = update_or_create_gender(item["gender"])
                 for gender in genders:
+                    if not gender:
+                        continue
                     product.gender.add(gender)
 
+                product.gift.clear()
                 gifts = update_or_create_gift(item["gift"])
                 for gift in gifts:
+                    if not gift:
+                        continue
                     product.gift.add(gift)
 
+                product.style.clear()
                 styles = update_or_create_style(item["style"])
                 for style in styles:
+                    if not style:
+                        continue
                     product.style.add(style)
 
+                product.design.clear()
                 designs = update_or_create_design(item["design"])
                 for design in designs:
+                    if not design:
+                        continue
                     product.design.add(design)
 
                 if item.get('gem_sets'):
