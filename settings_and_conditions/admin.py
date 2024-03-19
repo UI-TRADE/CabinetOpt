@@ -7,6 +7,7 @@ from .models import (
     Delivery,
     About,
     Notification,
+    CatalogFilter,
 )
 
 class GuaranteeAdmin(SummernoteModelAdmin): 
@@ -45,9 +46,53 @@ class NotificationAdmin(admin.ModelAdmin):
         return form
 
 
+class CatalogFilterAdmin(admin.ModelAdmin):
+    list_display = (
+        'metals',
+        'metal_finish',
+        'brands',
+        'prod_status',
+        'collections',
+        'genders',
+        'sizes',
+        'gems',
+        'colors',
+        'cuts',
+        'quantity_range',
+        'instok_range',
+        'price_range',
+        'weight_range',
+    )
+    fieldsets = (
+        (None, {
+            'fields': (
+                'metals',
+                'metal_finish',
+                'brands',
+                'prod_status',
+                'collections',
+                'genders',
+                'sizes',
+                'gems',
+                'colors',
+                'cuts',
+                'quantity_range',
+                'instok_range',
+                'price_range',
+                'weight_range',
+            )
+        }),
+        ('Advanced options', {
+            'classes': ('collapse',),
+            'fields': ('hide_count_of_products',),
+        }),
+    )
+
+
 admin.site.register(Guarantee, GuaranteeAdmin)
 admin.site.register(Policy, PolicyAdmin)
 admin.site.register(Delivery, DeliveryAdmin)
 admin.site.register(About, AboutAdmin)
 
 admin.site.register(Notification, NotificationAdmin)
+admin.site.register(CatalogFilter, CatalogFilterAdmin)

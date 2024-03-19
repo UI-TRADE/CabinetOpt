@@ -2,6 +2,7 @@ import simplejson as json
 from django import template
 from contextlib import suppress
 from catalog.models import Product
+from functools import reduce
 
 
 register = template.Library()
@@ -23,11 +24,6 @@ def addparams(param1, param2):
 
 
 @register.filter
-def ifinlist(value, seq):
-    return value in seq
-
-
-@register.filter
 def updateparam(first_param, second_param):
     result = []
     result.append(json.loads(first_param))
@@ -41,20 +37,14 @@ def filtertojson(seq):
 
 
 @register.filter
-def get_gender_repr(genders):
-    return ", ".join(list(genders.values_list("name", flat=True)))
+def join_qs(qs, key):
+    return ", ".join(list(qs.values_list(key, flat=True)))
 
 
 @register.filter
 def get_status_repr(status):
+    print(status, type(status), sep=" - ")
     return Product.objects.get_status_view(status)
-
-
-@register.filter
-def get_cut_type_image(cut_type_nodes):
-    with suppress(IndexError, KeyError):
-        return cut_type_nodes[0]['cut_type__cut_type_image__image']
-    return ''
 
 
 @register.filter
@@ -67,20 +57,15 @@ def size_selection(seq, size):
 
 @register.filter
 def size_incart(seq, size):
-    if len(seq) == 0:
-        return 0
-    with suppress(AttributeError):
-        quantity_in_cart = [item['quantity'] for item in json.loads(seq) if item['size'] == size.name]
-        if quantity_in_cart:
-            return quantity_in_cart[0]
+    with suppress(AttributeError, IndexError, KeyError, json.errors.JSONDecodeError):
+        items = json.loads(seq)
+        return [item['quantity'] for item in items if item['size'] == size.name][0]
     return 0
 
 
 @register.filter
-def item_value(seq, name):
-    result = 0
-    with suppress(KeyError):
+def accumulate(seq, key):
+    with suppress(KeyError, json.errors.JSONDecodeError):
         items = json.loads(seq)
-        for item in items:
-            result += item[name]
-    return result
+        return reduce(lambda a, b: a+b, [item[key] for item in items if key in item])
+    return 0

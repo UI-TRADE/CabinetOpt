@@ -81,9 +81,6 @@
                 {% if product.collection.group %}
                     <li>{{ product.str_color|default:product.color }}</li>
                 {% endif %}
-                <!-- {% if product.gender %}
-                    <li>{{ product.gender|get_gender_repr|lower }}</li>
-                {% endif %} -->
             </ul>
         </div>
         {% if is_sized %}

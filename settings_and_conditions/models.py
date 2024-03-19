@@ -4,6 +4,46 @@ from django.conf import settings
 from clients.models import Organization
 
 
+class SingletonModel(models.Model):
+    """Singleton Django Model
+
+    Ensures there's always only one entry in the database, and can fix the
+    table (by deleting extra entries) even if added via another mechanism.
+
+    Also has a static load() method which always returns the object - from
+    the database if possible, or a new empty (default) instance if the
+    database is still empty. If your instance has sane defaults (recommended),
+    you can use it immediately without worrying if it was saved to the
+    database or not.
+
+    Useful for things like system-wide user-editable settings.
+    """
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        """
+        Save object to the database. Removes all other entries if there
+        are any.
+        """
+        self.__class__.objects.exclude(id=self.id).delete()
+        super(SingletonModel, self).save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        """
+        Load object from the database. Failing that, create a new empty
+        (default) instance of the object and return it (without saving it
+        to the database).
+        """
+
+        try:
+            return cls.objects.get()
+        except cls.DoesNotExist:
+            return cls()
+
+
 class Guarantee(models.Model):
     organization = models.OneToOneField(
         Organization,
@@ -102,3 +142,30 @@ class Notification(models.Model):
     
     def __str__(self):
         return self.email
+
+
+class CatalogFilter(SingletonModel):
+    metals = models.BooleanField('металл', default=True)
+    metal_finish = models.BooleanField('обработка металлов', default=False)
+    brands = models.BooleanField('бренд', default=False)
+    prod_status = models.BooleanField('маркетинговый статус', default=False)
+    collections = models.BooleanField('коллекции', default=True)
+    genders = models.BooleanField('для кого', default=False)
+    sizes = models.BooleanField('размеры', default=True)
+    gems = models.BooleanField('вставки', default=True)
+    colors = models.BooleanField('цвета вставок', default=True)
+    cuts = models.BooleanField('огранка', default=False)
+
+    quantity_range = models.BooleanField('количество вставок', default=False)
+    instok_range = models.BooleanField('остатки', default=False)
+    price_range = models.BooleanField('базовые цены', default=False)
+    weight_range = models.BooleanField('вес изделий', default=False)
+
+    hide_count_of_products = models.BooleanField('скрывать количество изделий в фильтрах', default=True)
+
+    class Meta:
+        verbose_name = 'Настройка фильтров каталога'
+        verbose_name_plural = 'Настройка фильтров каталога'
+
+    def __str__(self):
+        return 'Настройка фильтров каталога'

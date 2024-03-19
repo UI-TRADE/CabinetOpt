@@ -9,24 +9,11 @@ from .models import Product, StockAndCost, GemSet, PriceType, Price
 
 class FilterTree(object):
 
-    def __init__(self, qs):
+    def __init__(self, qs=None):
         self.tree = []
         self.qs = qs
-
-    def __json__(self):
-        result = []
-        for item in self.tree:
-            result.append({key: value for key, value in item.items() if key != 'nodes'})
-
-            if item.get('nodes'):
-                result.extend([
-                    {
-                        key: value for key, value in node.items()
-                    } for node in item['nodes']
-                ])
-        return result
     
-    def serialize_root(self, root, root_field):
+    def __serialize_root(self, root, root_field):
         def get_ident():
             if root[root_field]:
                 return '%s_%s' % (root_field, re.sub(r'[^a-zA-Zа-яА-Я0-9]', '', root[root_field]).lower())
@@ -34,7 +21,7 @@ class FilterTree(object):
         
         return root | {'name': root_field, 'ident': get_ident()}
 
-    def serialize_node(self, parent, node, node_fields):
+    def __serialize_node(self, parent, node, node_fields):
         def get_ident(item):
             result = ''
             for node_field in node_fields:
@@ -49,37 +36,85 @@ class FilterTree(object):
         
         return [element for element in [item | {'name': '_'.join(node_fields), 'ident': get_ident(item)} for item in node] if element['ident']]
 
+    def to_json(self):
+        result = []
+        for item in self.tree:
+            result.append({key: value for key, value in item.items() if key != 'nodes'})
+
+            if item.get('nodes'):
+                result.extend([
+                    {
+                        key: value for key, value in node.items()
+                    } for node in item['nodes']
+                ])
+        return result
+
     def count(self, root_field, *node_fields):
         def calc_products_by_precious_gems(precious_filter):
             result = self.qs.filter(precious_filter=precious_filter).values('precious_filter', 'product_id').distinct().count()
             return result
         
-        roots = [dict(item) for item in self.qs.values(root_field).annotate(count=Count('id'))]
-        for root in roots:
-            if not root[root_field]:
-                continue
-            if node_fields:
-                nodes = self.qs.filter(Q((root_field, root[root_field]))).values(*node_fields).annotate(count=Count('id'))
-                if nodes:
-                    root['nodes'] = self.serialize_node(root[root_field], nodes, node_fields)
-            
-            if root_field == 'precious_filter':
-                root['count'] = calc_products_by_precious_gems(root[root_field])    
-            self.tree.append(self.serialize_root(root, root_field))
+        if self.qs:
+            roots = [dict(item) for item in self.qs.values(root_field).annotate(count=Count('id'))]
+            for root in roots:
+                if not root[root_field]:
+                    continue
+                if node_fields:
+                    nodes = self.qs.filter(Q((root_field, root[root_field]))).values(*node_fields).annotate(count=Count('id'))
+                    if nodes:
+                        root['nodes'] = self.__serialize_node(root[root_field], nodes, node_fields)
+                
+                if root_field == 'precious_filter':
+                    root['count'] = calc_products_by_precious_gems(root[root_field])    
+                self.tree.append(self.__serialize_root(root, root_field))
 
+    
+
+class SizeFilterTree(FilterTree):
+
+    def __init__(self, qs=None):
+        self.annotate_field = 'stock'
+        super().__init__(qs)
+
+    def __serialize_root(self, root, root_field):
+        def get_ident():
+            if root[root_field]:
+                return '%s_%s' % (root_field, re.sub(r'[^a-zA-Zа-яА-Я0-9]', '', root[root_field]).lower())
+            return root_field
+        
+        return root | {'name': root_field, 'ident': get_ident()}
+
+    def __serialize_node(self, parent, node, node_fields):
+        def get_ident(item):
+            result = ''
+            for node_field in node_fields:
+                if not item[node_field]:
+                    continue
+                result += '%s_%s_%s' % (
+                    node_field,
+                    re.sub(r'[^a-zA-Zа-яА-Я0-9]', '', parent).lower(),
+                    re.sub(r'[^a-zA-Zа-яА-Я0-9]', '', item[node_field]).lower()
+                )
+            return result
+        
+        return [element for element in [item | {'name': '_'.join(node_fields), 'ident': get_ident(item)} for item in node] if element['ident']]
+    
     def sum(self, root_field, *node_fields):
-        roots = self.qs.values(root_field).annotate(sum=Sum('stock'))
-        for root in roots:
-            if not root[root_field]:
-                continue
-            if node_fields:
-                nodes = self.qs.filter(Q((root_field, root[root_field]))).values(*node_fields).annotate(count=Count('id'), sum=Sum('stock')).order_by('size__size_from')
-                if nodes:
-                    root['nodes'] = self.serialize_node(root[root_field], nodes, node_fields)
-                    root['count'] = len(root['nodes'])
-                else:
-                    root['count'] = 0    
-            self.tree.append(self.serialize_root(root, root_field))
+        if self.qs:
+            roots = self.qs.values(root_field).annotate(sum=Sum(self.annotate_field))
+            for root in roots:
+                if not root[root_field]:
+                    continue
+                if node_fields:
+                    nodes = self.qs.filter(Q((root_field, root[root_field]))).values(*node_fields).annotate(count=Count('id'), sum=Sum('stock')).order_by('size__size_from')
+                    if nodes:
+                        root['nodes'] = self.__serialize_node(root[root_field], nodes, node_fields)
+                        root['count'] = len(root['nodes'])
+                    else:
+                        root['count'] = 0    
+                root['collection__group__name'] = root.pop('product__collection__group__name')
+                print(root)
+                self.tree.append(self.__serialize_root(root, 'collection__group__name'))
 
 
 class CharInFilter(BaseInFilter, CharFilter):

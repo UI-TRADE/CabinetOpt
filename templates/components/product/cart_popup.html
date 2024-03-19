@@ -90,7 +90,7 @@
                                     <li>Бренд: {{ product.brand|upper }}</li>
                                 {% endif %}
                                 {% if product.gender %}
-                                    <li>{{ product.gender|get_gender_repr|lower }}</li>
+                                    <li>{{ product.gender|join_qs:"name"|lower }}</li>
                                 {% endif %}
                                 <li>
                             </ul>

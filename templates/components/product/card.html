@@ -1,6 +1,6 @@
 {% load catalog_tags %}
 
-{% if product.id|ifinlist:is_sized %}
+{% if product.id in is_sized %}
 {% with params="id"|addparam:product.id sizes="is_sized"|addparam:1 %}
 <div class="product-item card position-relative" data-json="{{ params|addparams:sizes|tojson }}">
 {% endwith %}

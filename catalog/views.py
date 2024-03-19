@@ -1,6 +1,7 @@
 import json
 import collections
 
+from contextlib import suppress
 from django.shortcuts import render
 from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
@@ -17,13 +18,15 @@ from rest_framework.permissions import IsAuthenticated
 
 
 from .forms import ProductFilterForm
-from .filters import FilterTree, ProductFilter
+from .filters import FilterTree, SizeFilterTree, ProductFilter
 from cart.cart import Cart
 from clients.login import Login
 from catalog.models import (
     Product, ProductImage, StockAndCost, Price,
     ProductsSet, GemSet, SimilarProducts
 )
+
+from settings_and_conditions.models import CatalogFilter
 
 from .tasks import (
     run_uploading_products,
@@ -52,30 +55,76 @@ def parse_filters(filters):
 class FiltersView(TemplateView):
     template_name = 'forms/catalog-filters.html'
 
-    def get_filter(self, qs, func, field, *groups):
-        filter_tree = FilterTree(qs)
-        method = getattr(filter_tree, func)
-        method(field, *groups)
-        return filter_tree
+    def get_filter(self, qs=None, func='', field='', *groups):
+        if qs:
+            if 'size__name' in groups:
+                filter_tree = SizeFilterTree(qs)
+            else:   
+                filter_tree = FilterTree(qs)
+            method = getattr(filter_tree, func)
+            method(field, *groups)
+            return filter_tree
+        return FilterTree()
     
     def get_filters(self, qs):
-        return {
-            'metals'      : self.get_filter(qs, 'count', 'metal', 'str_color'),
-            'metal_finish': self.get_filter(qs.annotate(metal_finish_count=Count('metal_finish')), 'count', 'metal_finish__name'),
-            'brands'      : self.get_filter(qs, 'count', 'brand__name'),
-            'prod_status' : self.get_filter(qs, 'count', 'status'),
-            'collections' : self.get_filter(qs, 'count', 'collection__group__name', 'collection__name'),
-            # 'genders'     : self.get_filter(qs.annotate(gender_count=Count('gender')), 'count', 'gender__name'),
-            'sizes'       : self.get_filter(StockAndCost.objects.filter(product__in=qs), 'sum', 'product__collection__group__name', 'size__name'),
-            'gems'        : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'precious_filter'),
-            # 'colors'      : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'color_filter'),
-            # 'cuts'        : self.get_filter(GemSet.objects.filter(product__in=qs), 'count', 'cut_type__cut_type_image__name', 'cut_type__cut_type_image__image'),
-        }
+        filters, hide_count_of_products = dict(), False
+        with suppress(CatalogFilter.DoesNotExist):
+            filter_settings = CatalogFilter.objects.get()
+            if filter_settings.metals:
+                filters['metals'] = self.get_filter(qs, 'count', 'metal', 'str_color')
+            if filter_settings.metal_finish:
+                filters['metal_finish'] = self.get_filter(
+                    qs.annotate(metal_finish_count=Count('metal_finish')),
+                    'count', 'metal_finish__name'
+                )
+            if filter_settings.brands:
+                filters['brands'] = self.get_filter(qs, 'count', 'brand__name')
+            if filter_settings.prod_status:
+                filters['prod_status'] = self.get_filter(qs, 'count', 'status')
+            if filter_settings.collections:
+                filters['collections'] = self.get_filter(
+                    qs, 'count', 'collection__group__name', 'collection__name'
+                )
+            if filter_settings.genders:
+                filters['genders'] = self.get_filter(
+                    qs.annotate(gender_count=Count('gender')), 'count', 'gender__name'
+                )
+            if filter_settings.sizes:
+                filters['sizes'] = self.get_filter(
+                    StockAndCost.objects.filter(product__in=qs),
+                    'sum', 'product__collection__group__name', 'size__name'
+                )
+            if filter_settings.gems:
+                filters['gems'] = self.get_filter(
+                    GemSet.objects.filter(product__in=qs), 'count', 'precious_filter'
+                )
+            if filter_settings.colors:
+                filters['colors'] = self.get_filter(
+                    GemSet.objects.filter(product__in=qs), 'count', 'color_filter'
+                )
+            if filter_settings.cuts:
+                filters['cuts'] = self.get_filter(
+                    GemSet.objects.filter(product__in=qs),
+                    'count', 'cut_type__cut_type_image__name', 'cut_type__cut_type_image__image'
+                )
+            if filter_settings.weight_range:
+                filters['weight-range'] = self.get_filter()
+            if filter_settings.quantity_range:
+                filters['quantity-range'] = self.get_filter()
+            if filter_settings.instok_range:
+                filters['instok-range'] = self.get_filter()
+            if filter_settings.price_range:
+                filters['price-range'] = self.get_filter()
+
+            hide_count_of_products = filter_settings.hide_count_of_products
+
+        return filters, hide_count_of_products
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['MEDIA_URL'] = settings.MEDIA_URL
-        context['filters'] = self.get_filters(Product.objects.get_active_products(False))
+        context['filters'], context['hide_count_of_products'] = \
+            self.get_filters(Product.objects.get_active_products(False))
 
         return context
 
@@ -98,16 +147,16 @@ class ProductView(FiltersView, ListView):
         if self.filters:
             parsed_filter = parse_filters(self.filters)
             products = Product.objects.get_active_products(parsed_filter.get('in_stock', False))
-            filters = self.get_filters(products)
+            filters, _ = self.get_filters(products)
 
             filtered_products = ProductFilter(parsed_filter, queryset=products)
             products = filtered_products.qs.distinct()
 
         else:
             products = Product.objects.get_active_products()
-            filters = self.get_filters(products)
+            filters, _ = self.get_filters(products)
 
-        return products, json.dumps({key: value.__json__() for key, value in filters.items()})
+        return products, json.dumps({key: value.to_json() for key, value in filters.items()})
 
     def get_context_data(self, *, object_list=None, **kwargs):
         self.object_list = Product.objects.none()

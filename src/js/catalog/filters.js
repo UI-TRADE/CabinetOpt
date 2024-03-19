@@ -167,10 +167,14 @@ const selectMenuItem = (element, filters) => {
     if (!isActive && dataJson) {
         if ($(element).hasClass('size-item')) {
             dataJson.forEach(f => {
-                let foundObjects = filters.filter(item => item['ident'] === f['ident']);
-                foundObjects.forEach(el => {
-                    if (canRemoveFilterItem(el['ident'])) filters.splice(filters.indexOf(el), 1);
-                }); 
+                if (f['name'] === 'size__name') {
+                    let foundObjects = filters.filter(item => item['ident'] === f['ident']);
+                    let foundObject = foundObjects[foundObjects.length-1];
+                    filters.splice(filters.indexOf(foundObject), 1);
+                    // console.log(foundObject);
+                    // if (canRemoveFilterItem(foundObject['ident']))
+                    //     filters.splice(filters.indexOf(foundObject), 1);
+                }
             });
         } else {
             let foundObjects = filters.filter(item => item['ident'] === $(element).attr('name'));
@@ -178,7 +182,9 @@ const selectMenuItem = (element, filters) => {
                 filters.splice(filters.indexOf(el), 1);
             });
             if (dataJson.length === 1) {
-                const activeMenuItems = $(element).closest('li').find('.filter-item-title-active');
+                const parent_items = $(element).parents('li');
+                const parent_item = parent_items[parent_items.length - 1];
+                const activeMenuItems = $(parent_item).find('.filter-item-title-active');
                 $.each(activeMenuItems, (_, activeMenuItem) => selectMenuItem(activeMenuItem, filters));
             }
         }
