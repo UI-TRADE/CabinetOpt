@@ -79,6 +79,8 @@
 .filter-item-disable {
   visibility: hidden;
   height: 0px!important;
+  margin-bottom: 0px!important;
+  padding: 0px!important;
 }
 
 .filter-item-title-active {
@@ -124,13 +126,9 @@
   margin-left: 29px;
 }
 
-#collections div {
-  margin-left: 8px;
-}
-
 #sizes {
   background-color: rgb(247, 247, 247);
-  margin-left: 24px;
+  margin-left: 54px;
   margin-bottom: 10px;
   padding: 10px;
 }

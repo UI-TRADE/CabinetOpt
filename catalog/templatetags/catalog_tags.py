@@ -43,7 +43,6 @@ def join_qs(qs, key):
 
 @register.filter
 def get_status_repr(status):
-    print(status, type(status), sep=" - ")
     return Product.objects.get_status_view(status)
 
 

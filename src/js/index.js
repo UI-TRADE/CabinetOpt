@@ -69,12 +69,10 @@ $(document).ready(() => {
         // login
         const mainAuthForm = 'registration-form';
         const auth = sessionStorage.getItem('auth') || 'reg_request';
-        console.log(sessionStorage);
         showAuthForm(generateUUID(), auth);
         switchModalForm('entry', mainAuthForm, generateUUID());
         switchModalForm('register', mainAuthForm, generateUUID());
         sessionStorage.removeItem('auth');
-        console.log(sessionStorage);
     }
 
     // change pass

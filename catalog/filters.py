@@ -113,7 +113,6 @@ class SizeFilterTree(FilterTree):
                     else:
                         root['count'] = 0    
                 root['collection__group__name'] = root.pop('product__collection__group__name')
-                print(root)
                 self.tree.append(self.__serialize_root(root, 'collection__group__name'))
 
 

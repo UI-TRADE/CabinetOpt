@@ -171,7 +171,6 @@ const selectMenuItem = (element, filters) => {
                     let foundObjects = filters.filter(item => item['ident'] === f['ident']);
                     let foundObject = foundObjects[foundObjects.length-1];
                     filters.splice(filters.indexOf(foundObject), 1);
-                    // console.log(foundObject);
                     // if (canRemoveFilterItem(foundObject['ident']))
                     //     filters.splice(filters.indexOf(foundObject), 1);
                 }
@@ -255,13 +254,12 @@ export function  updateFilterQuantitiesAndSums(html) {
                 filters[key].forEach(item => {
                     $(`[name='${item.ident}']`).each((_, element) => {
                         const countElement = $(element).children('span.count');
-                        if (countElement)
+                        if (countElement && key !== 'sizes')
                             countElement.text(`(${item['count']})`);
                         if (item['count'])
                             $(element).closest('li[class="filter-item-title-hidden"]').removeClass('filter-item-title-hidden');
                         if ($(element).hasClass('size-item'))
                             $(element).removeClass('filter-item-title-hidden');
-                        $(element).removeClass('filter-item-title-disable');
                     });
                 });
             }
@@ -326,7 +324,8 @@ export function filtersEvents() {
             }
         }
         sessionStorage.setItem('filters', JSON.stringify(filters));
-        showCatalog();
+        location.reload();
+        // showCatalog();
     });
 
     $(document).on("submit", (event) => {
