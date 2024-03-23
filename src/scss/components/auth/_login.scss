@@ -6,6 +6,14 @@
     padding: 15px 30px 23px;
 }
 
+.login-recovery-form {
+    width: 440px;
+    flex-shrink: 0;
+    border-radius: 15px;
+    background: #FFF;
+    padding: 15px 30px 23px;
+}
+
 .sign-in-form-item {
     margin-bottom: 17px;
     position: relative;
@@ -56,11 +64,17 @@
 .auth-form-btn {
     @extend .registration-form-btn;
     margin-top: 0;
-    margin-bottom: 29px;
+    // margin-bottom: 29px;
 
     .btn {
         width: 137px;
     }
+}
+
+.recovery-form-btn {
+    @extend .registration-form-btn;
+    margin-top: 0;
+
 }
 
 .change-pass-form-btn {

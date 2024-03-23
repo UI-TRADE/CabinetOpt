@@ -3,17 +3,36 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'jquery-ui-dist/jquery-ui.css';
 import generateUUID from './lib';
 import mainMenuEvents from './main_menu';
-import showModalForm, {modalFormEvents, switchModalForm, showChangePassForm, showAuthForm} from './form';
 import updateContactView, {contactEvents} from './contact';
 import { cartViewEvents } from './cart';
 import initProductFilters, { filtersEvents } from './catalog/filters';
 import updateProductCard from './catalog_card';
 import ordersEvents from './orders';
 import orderEvents from './order';
+import showModalForm, {
+    modalFormEvents,
+    switchModalForm,
+    showChangePassForm,
+    showAuthForm,
+    updateModalForm,
+    applyShowPasswordButtons,
+    bindEventToCaptcha
+} from './form';
+
 // import updateOrder from '../js/_old/order';
 
 
 require('jquery-ui');
+
+
+const initStorages = () => {
+    if (localStorage.getItem('cartView') === null)
+        localStorage.setItem('cartView', false);
+    if (sessionStorage.getItem('filters') === null)
+        sessionStorage.setItem('filters', JSON.stringify([]));
+    if (localStorage.getItem('login_attempts') === null)
+        localStorage.setItem('login_attempts', 5);
+}
 
 
 const addEvents = () => {
@@ -30,10 +49,8 @@ const addEvents = () => {
 
 
 $(window).on("load", () => {
-    if (localStorage.getItem('cartView') === null)
-        localStorage.setItem('cartView', false);
-    if (sessionStorage.getItem('filters') === null)
-        sessionStorage.setItem('filters', JSON.stringify([]));
+
+    initStorages();
 
     const selectedURI = sessionStorage.getItem('selectedURI');
     if (selectedURI) {
@@ -65,34 +82,97 @@ $(window).on("load", () => {
 
 $(document).ready(() => {
 
-    if (window.location.pathname == '/') {
-        // login
-        const mainAuthForm = 'registration-form';
-        const auth = sessionStorage.getItem('auth') || 'reg_request';
-        showAuthForm(generateUUID(), auth);
-        switchModalForm('entry', mainAuthForm, generateUUID());
-        switchModalForm('register', mainAuthForm, generateUUID());
-        sessionStorage.removeItem('auth');
+    if (window.location.pathname.indexOf('clients/recovery_pass') !== -1) {
+        const $modal = $('#change-pass-form');
+        applyShowPasswordButtons($modal);
+        bindEventToCaptcha('change-pass-form');
+        updateModalForm('change-password-form');
+        document.getElementsByTagName("html")[0].style.visibility = "visible";
+        return;
     }
 
+    if (window.location.pathname.indexOf('clients/change_pass') !== -1) {
+        const $modal = $('#change-pass-form');
+        applyShowPasswordButtons($modal);
+        bindEventToCaptcha('change-pass-form');
+        updateModalForm('change-password-form');
+        document.getElementsByTagName("html")[0].style.visibility = "visible";
+        return;
+    }
+
+    if (window.location.pathname.indexOf('clients/request_pass') !== -1) {
+        document.getElementsByTagName("html")[0].style.visibility = "visible";
+        return;
+    }
+
+    $.ajax({
+        url: '/clients/check_login',
+        success: (response) => {
+
+            if (response.replay === 'fail') {
+                if (window.location.pathname !== '/') {
+                    window.location.replace('/');
+                    return
+                }
+
+                // login
+                const mainAuthForm = 'registration-form';
+                const auth = sessionStorage.getItem('auth') || 'reg_request';
+                showAuthForm(generateUUID(), auth);
+                switchModalForm('entry', mainAuthForm, generateUUID());
+                switchModalForm('register', mainAuthForm, generateUUID());
+                sessionStorage.removeItem('auth');
+            }
+
+            if (response.replay === 'ok') {
+                if (window.location.pathname === '/') {
+                    window.location.replace('/catalog/products/');
+                    return
+                }
+                localStorage.setItem('login_attempts', 5);
+            }
+
+            showChangePassForm();
+            updateContactView('contactForm');
+            initProductFilters();
+            updateProductCard();
+            addEvents();
+            document.getElementsByTagName("html")[0].style.visibility = "visible";
+
+        },
+        error: (xhr, status, error) => {
+            handleError(error, 'Ошибка получения данных аутентификации с сервера.');
+        }
+    });
+
+    // if (window.location.pathname == '/') {
+    //     // login
+    //     const mainAuthForm = 'registration-form';
+    //     const auth = sessionStorage.getItem('auth') || 'reg_request';
+    //     showAuthForm(generateUUID(), auth);
+    //     switchModalForm('entry', mainAuthForm, generateUUID());
+    //     switchModalForm('register', mainAuthForm, generateUUID());
+    //     sessionStorage.removeItem('auth');
+    // }
+
     // change pass
-    showChangePassForm();
+    // showChangePassForm();
 
     // file selection
     // showModalForm('fileSelectionForm');
 
     // forms
-    updateContactView('contactForm');
+    // updateContactView('contactForm');
 
     // products
-    initProductFilters();
-    updateProductCard();
+    // initProductFilters();
+    // updateProductCard();
 
     // НЕ ИСПОЛЬЗУЕТСЯ
     // updateOrder()
 
     // events
-    addEvents();
+    // addEvents();
 
 })
 

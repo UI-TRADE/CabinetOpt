@@ -1,11 +1,14 @@
+import re
 from typing import Any
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from captcha.fields import CaptchaField
 from contextlib import suppress
 
 from .utils import parse_of_name
 from .models import (
     RegistrationOrder,
+    Client,
     Manager,
     ContactDetail
 )
@@ -52,9 +55,10 @@ class CustomRegOrderForm(forms.ModelForm):
 
 class RegForm(forms.ModelForm):
 
+    captcha = CaptchaField(error_messages={'required': 'Неверный код'})
     class Meta:
         model = RegistrationOrder
-        fields = ('name', 'organization', 'identification_number', 'phone', 'email')
+        fields = ('name', 'organization', 'identification_number', 'phone', 'email', 'captcha',)
         labels = {
             'name'                  : 'Ваше имя',
             'organization'          : 'Организация',
@@ -66,6 +70,9 @@ class RegForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields:
+            if field == 'captcha':
+                self.fields[field].widget.attrs['class'] = 'form-control'
+                continue
             self.fields[field].widget.attrs['class'] = 'form-control default-input reg-field-layout'
 
     def clean_identification_number(self):
@@ -147,8 +154,8 @@ class LoginForm(forms.Form):
 class ChangePassForm(forms.Form):
     login = forms.CharField(
         label='ИНН',
-        widget=forms.TextInput(
-            attrs={'class': 'form-control default-input reg-field-layout', 'placeholder': 'ИНН'}
+        widget=forms.HiddenInput(
+            attrs={'class': 'form-control default-input reg-field-layout'}
         )
     )
     old_pass = forms.CharField(
@@ -169,14 +176,84 @@ class ChangePassForm(forms.Form):
             attrs={'class': 'form-control default-input reg-field-layout', 'placeholder': ''}
         )
     )
-    fields = ['login', 'old_pass', 'new_pass', 'repeat_pass']
+    captcha = CaptchaField(error_messages={'required': 'Неверный код'})
+    fields = ['login', 'old_pass', 'new_pass', 'repeat_pass', 'captcha']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['captcha'].widget.attrs['class'] = 'form-control'
 
     def clean_login(self):
-        value = self.cleaned_data['login']  
-        if not RegistrationOrder.objects.filter(identification_number=value).exists():
+        login = self.cleaned_data['login']  
+        if not RegistrationOrder.objects.filter(identification_number=login).exists():
             raise ValidationError('Клиент с таким ИНН не существует')
-        return value
+        return login
     
+    def clean_old_pass(self):
+        def is_email(email):
+            regex = re.compile(
+                r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+'
+            )
+            return re.fullmatch(regex, email)
+        
+        login    = self.cleaned_data['login']
+        old_pass = self.cleaned_data['old_pass']
+        if is_email(login):
+            obj = Manager.objects.get(email=login)
+            if obj.password != old_pass:
+                raise ValidationError('Неверный пароль')
+        else:
+            obj = Client.objects.get(inn=login)
+            manager = obj.manager.first()
+            if manager.password != old_pass:
+                raise ValidationError('Неверный пароль')
+        
+        return old_pass
+    
+    def clean_repeat_pass(self):
+        new_pass = self.cleaned_data['new_pass']
+        repeat_pass = self.cleaned_data['repeat_pass']
+        if not new_pass == repeat_pass:
+            raise ValidationError('Пароли не совпадают')
+        return repeat_pass
+
+
+class LoginFormRecovery(forms.Form):
+    login = forms.CharField(
+        label='ИНН',
+        widget=forms.TextInput(
+            attrs={'class': 'form-control default-input reg-field-layout'}
+        )
+    )
+    fields = ['login']
+
+
+class RecoveryPassForm(forms.Form):
+    login = forms.CharField(
+        label='Логин',
+        widget=forms.HiddenInput(
+            attrs={'class': 'form-control default-input reg-field-layout'}
+        )
+    )
+    new_pass = forms.CharField(
+        label='Новый пароль',
+        widget=forms.PasswordInput(
+            attrs={'class': 'form-control default-input reg-field-layout', 'placeholder': ''}
+        )
+    )
+    repeat_pass = forms.CharField(
+        label='Повторите пароль еще раз',
+        widget=forms.PasswordInput(
+            attrs={'class': 'form-control default-input reg-field-layout', 'placeholder': ''}
+        )
+    )
+    captcha = CaptchaField(error_messages={'required': 'Неверный код'})
+    fields = ['login', 'new_pass', 'repeat_pass', 'captcha']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['captcha'].widget.attrs['class'] = 'form-control'
+
     def clean_repeat_pass(self):
         new_pass = self.cleaned_data['new_pass']
         repeat_pass = self.cleaned_data['repeat_pass']

@@ -76,14 +76,15 @@ class OrderItemForm(forms.ModelForm):
         return (('0', '--'),) + tuple((('%s' % item, '%s' % item) for item in sizes))
     
     def get_in_stock(self, kwargs):
-        instance = kwargs.get('instance')
-        if instance:
-            qs = StockAndCost.objects.filter(product = instance.product)
-            if instance.size and instance.size.size_from: 
-                qs = qs.filter(size = instance.size)
-            stocks = qs.values('product', 'size').annotate(total_stock=Sum('stock')).first()
-            if stocks and stocks.get('total_stock', 0) < instance.quantity:
-                return True
+        with suppress(IndexError):
+            instance = kwargs.get('instance')
+            if instance:
+                qs = StockAndCost.objects.filter(product = instance.product)
+                if instance.size and instance.size.size_from: 
+                    qs = qs.filter(size = instance.size)
+                stocks = qs.values('product', 'size').annotate(total_stock=Sum('stock'))[0]
+                if stocks and stocks.get('total_stock', 0) < instance.quantity:
+                    return True
 
         return False
     

@@ -1,3 +1,6 @@
+import hashlib
+import uuid
+
 from django.contrib import admin
 from django.db import transaction
 from django.urls import reverse
@@ -186,13 +189,15 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
             if created:
                 client.manager.add(personal_manager)
 
+            hash_id = hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest()
+            hash_inn = hashlib.sha256(registration_order['identification_number'].encode()).hexdigest()
             settings.REDIS_CONN.hmset(
                 f'registration_order_{obj.id}',
                 {
                     'notification_type': 'confirm_registration',
                     'id': obj.id,
                     'form': 'forms/confirm.html',
-                    'url': request.build_absolute_uri(reverse('clients:change_pass')),
+                    'url': request.build_absolute_uri(f'{reverse("clients:change_pass", kwargs={"id": hash_id})}?usr={hash_inn}'),
                     'subject': 'доступ к личному кабинету на сайте opt.talantgold.ru',
                     'message': 'доступ к личному кабинету на сайте opt.talantgold.ru'
             })

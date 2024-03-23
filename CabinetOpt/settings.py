@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'settings_and_conditions',
     'debug_toolbar',
     'django_summernote',
+    'captcha',
 ]
 
 MIDDLEWARE = [
@@ -205,3 +206,6 @@ REDIS_CONN = redis.StrictRedis(
 # Summernote settings
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 SUMMERNOTE_THEME = 'bs4'
+
+#Captcha settings
+CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.random_char_challenge'

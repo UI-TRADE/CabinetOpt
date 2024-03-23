@@ -114,7 +114,16 @@ def get_context(notification_type, id, url=''):
             'login'   : personal_manager.login,
             'password': personal_manager.password
         } | get_images(['logo.png', 'confirm.jpg'])
-    
+
+    if notification_type == 'recovery_password':
+        obj = RegistrationOrder.objects.get(identification_number=id)
+        email = obj.email
+        if not email:
+            raise ValidationError('Не указан email менеджера клиента', code='')
+        result = email, {
+            'url'     : url,
+        } | get_images(['logo.png', 'confirm.jpg'])
+
     return result
 
 

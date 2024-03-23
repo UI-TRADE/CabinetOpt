@@ -1,0 +1,58 @@
+{% extends "main.html" %}
+{% load static %}
+
+{% block form %}
+    <div class="sign-in-form-layout" id="change-pass-form" tabindex="-1" data-backdrop="false" role="dialog" style="width: 440px;">
+        <form id="change-password-form" class="justify-content-xl-center registration-form custom-card" method="post" action="{% url 'clients:recovery_pass' hash_inn %}">
+            {% csrf_token %}
+            <div class="d-flex flex-column flex-nowrap">
+                <div class="d-sm-flex flex-row sign-in-form-item auth-form-title">
+                    <p id="title-part-1">ВОССТАНОВЛЕНИЕ ПАРОЛЯ</p>
+                </div>
+                <div>
+                    <p class="auth-form-errors"></p>
+                </div>
+                <div>
+                    {% for field in form %}
+                        {% if field.label != "Captcha" %}
+                            <div class="sign-in-form-item" data-type="{{ field.name }}">
+                                {% if field.name == 'new_pass' or field.name == 'repeat_pass' %}
+                                    <div class="show-password-btn-wrapper sign-in-form-item__show-password-btn-wrapper">
+                                        <div
+                                                class="show-password-btn-wrapper__eye-icon hidden"
+                                                style="background-image: url('{% static "img/eye.svg"%}')"
+                                        ></div>
+                                        <div
+                                                class="show-password-btn-wrapper__eye-icon crossed"
+                                                style="background-image: url('{% static "img/eye-crossed.svg"%}')"
+                                        ></div>
+                                        <button class="show-password-btn-wrapper__btn" type="button"></button>
+                                    </div>
+                                {% endif %}
+                                <label class="default-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {% if field.name == 'login' %}
+                                    <div class="form-control default-input reg-field-layout" style="background-color: none">{{ field.value }}</div>
+                                {% endif %}
+                                {{ field }}
+                            </div>
+                        {% else %}
+                            <div class="registration-form-captcha">
+                                {{ field }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="text-center registration-form-btn">
+                    <button class="btn btn-primary btn-sign-in font-weight-bold" type="submit">ВОЙТИ</button>
+                </div>
+                <a
+                    class="d-sm-flex justify-content-sm-center registration-text-sm registration-form-item"
+                    id="registration-confidential-text"
+                    href="#"
+                >
+                    <u>Политика конфиденциальности</u>
+                </a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

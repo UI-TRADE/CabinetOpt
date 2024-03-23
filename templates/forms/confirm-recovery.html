@@ -1,0 +1,25 @@
+{% load static %}
+
+<form class="justify-content-xl-center custom-card confirm-form" action="{% url 'clients:request_pass' %}">
+    {% csrf_token %}
+    <h1 class="confirm-form__title">
+        ВОССТАНОВЛЕНИЕ ПАРОЛЯ
+    </h1>
+    <p>На Ваш адрес электронной почты отправлено письмо со ссылкой на восстановление доступа.</p>
+    <div class="text-center registration-form-btn confirm-form__confirm-btn-wrapper">
+        <button class="btn btn-primary btn-sign-in confirm-form__confirm-btn" type="submit">Ок</button>
+    </div>
+    <div class="confirm-form__close-btn-wrapper">
+        <svg class="confirm-form__close-btn-icon" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g opacity="0.5" clip-path="url(#clip0_1002_939)">
+                <path d="M10.0551 9.00517L17.771 1.28931C18.0688 1.0017 18.077 0.527154 17.7894 0.229355C17.5018 -0.0684449 17.0273 -0.0767024 16.7295 0.210907C16.7232 0.216924 16.7171 0.223074 16.711 0.229355L8.99509 7.94522L1.27921 0.229311C0.981409 -0.0582986 0.506862 -0.050041 0.219252 0.247759C-0.0613305 0.538267 -0.0613305 0.998802 0.219252 1.28931L7.93513 9.00517L0.219252 16.721C-0.0734094 17.0137 -0.0734094 17.4883 0.219252 17.781C0.511957 18.0736 0.986504 18.0736 1.27921 17.781L8.99509 10.0651L16.711 17.781C17.0088 18.0686 17.4833 18.0603 17.7709 17.7625C18.0515 17.472 18.0515 17.0115 17.7709 16.721L10.0551 9.00517Z" fill="#242A35"/>
+            </g>
+            <defs>
+                <clipPath id="clip0_1002_939">
+                    <rect width="18" height="18" fill="white"/>
+                </clipPath>
+            </defs>
+        </svg>
+        <button class="confirm-form__close-btn" type="submit"></button>
+    </div>
+</form>

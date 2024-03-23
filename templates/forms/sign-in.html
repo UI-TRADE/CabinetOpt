@@ -10,10 +10,16 @@
         </div>
         {% for field in form %}
             {% if not field.is_hidden %}
+                {% if field.label != "Captcha" %}
                 <div class="registration-form-item">
                     <label class="default-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
                 </div>
+                {% else %}
+                <div class="registration-form-captcha">
+                    {{ field }}
+                </div>
+                {% endif %}
             {% endif %}
         {% endfor %}
         <div class="text-center registration-form-btn">

@@ -3,7 +3,7 @@
 
 {% block form %}
     <div class="sign-in-form-layout" id="change-pass-form" tabindex="-1" data-backdrop="false" role="dialog" style="width: 440px;">
-        <form class="justify-content-xl-center change-pass-form" method="post" action="{% url 'clients:change_pass' %}">
+        <form id="change-password-form" class="justify-content-xl-center registration-form custom-card" method="post" action="{% url 'clients:change_pass' hash_inn %}">
             {% csrf_token %}
             <div id="change-pass-errors"  style="display: none;" data-error="{{ errors }}"></div>
             <div class="d-flex flex-column flex-nowrap">
@@ -11,6 +11,7 @@
                     <p id="title-part-1">СМЕНА ПАРОЛЯ</p>
                 </div>
                 {% for field in form %}
+                {% if field.label != "Captcha" %}
                     <div class="sign-in-form-item" data-type="{{ field.name }}">
                         {% if field.name == 'old_pass' or field.name == 'new_pass' or field.name == 'repeat_pass' %}
                             <div class="show-password-btn-wrapper sign-in-form-item__show-password-btn-wrapper">
@@ -26,10 +27,18 @@
                             </div>
                         {% endif %}
                         <label class="default-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {% if field.name == 'login' %}
+                            <div class="form-control default-input reg-field-layout" style="background-color: none">{{ field.value }}</div>
+                        {% endif %}
                         {{ field }}
                     </div>
+                {% else %}
+                    <div class="registration-form-captcha">
+                        {{ field }}
+                    </div>
+                {% endif %}
                 {% endfor %}
-                <div class="text-center change-pass-form-btn">
+                <div class="text-center registration-form-btn">
                     <button class="btn btn-primary btn-sign-in font-weight-bold" type="submit">ВОЙТИ</button>
                 </div>
                 <a

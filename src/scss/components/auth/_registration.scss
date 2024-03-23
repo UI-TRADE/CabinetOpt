@@ -6,11 +6,27 @@
 }
 
 .registration-form-item {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
 }
 
 .registration-form-item:last-child {
     margin-bottom: 0px;
+}
+
+.registration-form-captcha {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0px;
+    
+    img {
+        margin-right: 5px;
+    }
+
+    input {
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        background-color: #FBFBFB;
+    }
 }
 
 .default-label {

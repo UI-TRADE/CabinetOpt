@@ -32,7 +32,9 @@
                     <div class="contact-detail__item__position"></div>
                 </div>
 
-                <a href="{% url 'clients:change_pass' %}" class="contact-detail__change_pass">Сменить пароль</a>
+                {% if hash_inn %}
+                <a href="{% url 'clients:change_pass' hash_id %}?usr={{ hash_inn }}" class="contact-detail__change_pass" target="_blank">Сменить пароль</a>
+                {% endif %}
                 <div class="contact-detail__change_pass__position"></div>
 
                 <div class="font-weight-normal contact-detail__item">E-mail: {{ manager.email }}</div>

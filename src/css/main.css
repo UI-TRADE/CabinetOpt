@@ -144,13 +144,13 @@ body {
     margin-bottom: 13px;
 }
 
+.registration-form-item:last-child {
+    margin-bottom: 0px;
+}
+
 .sign-in-form-item {
     margin-bottom: 7px;
     position: relative;
-}
-
-.registration-form-item:last-child {
-    margin-bottom: 0px;
 }
 
 .sign-in-form-item:last-child {

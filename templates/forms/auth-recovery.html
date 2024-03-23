@@ -1,6 +1,6 @@
 {% load static %}
 
-<form class="justify-content-xl-center login-form custom-card" method="post" action="{% url 'clients:login' %}">
+<form class="justify-content-xl-center login-recovery-form custom-card" method="post" action="{% url 'clients:request_pass' %}">
     <div class="d-flex flex-column flex-nowrap container">
         {% csrf_token %}
         <div class="d-sm-flex flex-row sign-in-form-item auth-form-title">
@@ -16,26 +16,13 @@
         <div>
             {% for field in form %}
                 <div class="sign-in-form-item">
-                    {% if field.name == 'password' %}
-                    <div class="show-password-btn-wrapper sign-in-form-item__show-password-btn-wrapper">
-                        <div
-                            class="show-password-btn-wrapper__eye-icon hidden"
-                            style="background-image: url('{% static "img/eye.svg" %}')"
-                        ></div>
-                        <div
-                            class="show-password-btn-wrapper__eye-icon crossed"
-                            style="background-image: url('{% static "img/eye-crossed.svg" %}')"
-                        ></div>
-                        <button class="show-password-btn-wrapper__btn" type="button"></button>
-                    </div>
-                    {% endif %}
                     <label class="default-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
                 </div>
             {% endfor %}
         </div>
-        <div class="text-center auth-form-btn">
-            <button class="btn btn-primary btn-sign-in font-weight-bold" type="submit">ВОЙТИ</button>
+        <div class="text-center recovery-form-btn">
+            <button class="btn-link" type="submit" style="border:none; background:none;">Восстановить пароль</button>
         </div>
         <a
             class="d-sm-flex justify-content-sm-center registration-text-sm registration-form-item"

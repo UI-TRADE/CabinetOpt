@@ -1,4 +1,7 @@
 import json
+import hashlib
+import secrets
+import uuid
 
 from django.db import transaction
 from django.http import JsonResponse
@@ -7,14 +10,20 @@ from django.shortcuts import (
 )
 from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, UpdateView, CreateView
+from django.conf import settings
 from contextlib import suppress
+
+from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
 
 from .login import Login, AuthenticationError
 
 from .forms import (
     RegForm,
     LoginForm,
+    LoginFormRecovery,
     ChangePassForm,
+    RecoveryPassForm,
     ContactDetailForm,
     ManagerForm
 )
@@ -29,9 +38,19 @@ from orders.models import Order
 
 def login(request):
     if request.method != 'POST':
+        login_attempts = request.GET.get('login_attempts')
+        template = 'forms/auth.html'
         form = LoginForm()
-        return render(request, 'forms/auth.html', {'form': form})
+        if int(login_attempts) <= 0:
+            template = 'forms/auth-recovery.html'
+            form = LoginFormRecovery()
+        return render(request, template, {'form': form})
     
+    if int(request.POST['login_attempts']) <= 0:
+        template = 'forms/auth-recovery.html'
+        form = LoginFormRecovery()
+        return render(request, template, {'form': form})
+ 
     login = Login(request)
     form = LoginForm(request.POST)
     if not form.is_valid():
@@ -56,12 +75,12 @@ def register(request):
     form = RegForm(request.POST)
     if not form.is_valid():
         return JsonResponse({'errors': form.errors.as_json()})
-        
+   
     RegistrationOrder.objects.get_or_create(
         identification_number=form.cleaned_data['identification_number'],
-        defaults=form.cleaned_data,
+        defaults={key: value for key, value in form.cleaned_data.items() if key != 'captcha'},
     )
-    return render(request, 'forms/confirm-form.html', {})
+    return render(request, 'forms/confirm-registration.html', {})
 
 
 def register_confirm(request):
@@ -74,29 +93,121 @@ def logout(request):
     return redirect("start_page")
 
 
-def change_password(request):
+def change_password(request, id):
     if request.method != 'POST':
+        hash_login = request.GET.get('usr')
         login = Login(request)
         login.unauth()
-        form = ChangePassForm()
-        return render(request, 'pages/change-pass.html', {'form': form, 'errors': ''})
+
+        if hash_login:
+            inn, hash_inn = '', ''
+            registration_orders = RegistrationOrder.objects.all()
+            for registration_order in registration_orders:
+                hash_inn = hashlib.sha256(registration_order.identification_number.encode()).hexdigest()
+                if secrets.compare_digest(hash_login, hash_inn):
+                    inn = registration_order.identification_number
+                    break
+            if inn:
+                form = ChangePassForm(initial={'login': inn})
+                return render(
+                    request,
+                    'pages/change-pass.html',
+                    {'form': form, 'hash_inn': hash_inn, 'errors': ''}
+                )
+    
+        return redirect("start_page")
     
     login = Login(request)
     form = ChangePassForm(request.POST)
     if not form.is_valid():
-        errors = json.dumps(form.errors)
-        return render(request, 'pages/change-pass.html', {'form': form, 'errors': errors})
+        return JsonResponse({'errors': form.errors.as_json()})
     
     with suppress(AuthenticationError):
         data = form.cleaned_data
         login.cahnge_pass_and_auth(data['login'], data['old_pass'], data['new_pass'])
-        return redirect('catalog:products')
+        return JsonResponse({'redirect_url': reverse('catalog:products')})
 
     return JsonResponse(
         {'errors': json.dumps(
             {'login': [{'message': 'Неверный логин или пароль'},]}
         )}
     )
+
+
+def request_password(request):
+    if request.method != 'POST':
+        return redirect("start_page")
+    
+    form = LoginFormRecovery(request.POST)
+    if not form.is_valid():
+        return JsonResponse({'errors': form.errors.as_json()})
+
+    with suppress(RegistrationOrder.DoesNotExist):
+        inn = form.cleaned_data['login']
+        # obj = RegistrationOrder.objects.get(identification_number=inn)
+        hash_id = hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest()
+        hash_inn = hashlib.sha256(inn.encode()).hexdigest()
+        settings.REDIS_CONN.hmset(
+            f'recovery_password_{inn}',
+            {
+                'notification_type': 'recovery_password',
+                'id': inn,
+                'form': 'forms/recovery.html',
+                'url': request.build_absolute_uri(f'{reverse("clients:recovery_pass", kwargs={"id": hash_id})}?usr={hash_inn}'),
+                'subject': 'восстановление доступа на сайте opt.talantgold.ru',
+                'message': 'восстановление доступа на сайте opt.talantgold.ru'
+        })
+        return render(request, 'forms/confirm-recovery.html', {})
+    return JsonResponse({'errors': json.dumps([[{'message': 'Не найдена регистрация клиента.', 'code': ''}],])})
+
+
+def recovery_password(request, id):
+    if request.method != 'POST':
+        hash_login = request.GET.get('usr')
+        login = Login(request)
+        login.unauth()
+        if hash_login:
+            inn, hash_inn = '', ''
+            registration_orders = RegistrationOrder.objects.all()
+            for registration_order in registration_orders:
+                hash_inn = hashlib.sha256(registration_order.identification_number.encode()).hexdigest()
+                if secrets.compare_digest(hash_login, hash_inn):
+                    inn = registration_order.identification_number
+                    break
+            if inn:
+                form = RecoveryPassForm(initial={'login': inn})
+                return render(
+                    request,
+                    'pages/recovery-pass.html',
+                    {'form': form, 'hash_inn': hash_inn, 'errors': ''}
+                )
+    
+        return redirect("start_page")
+    
+    login = Login(request)
+    form = RecoveryPassForm(request.POST)
+    if not form.is_valid():
+        return JsonResponse({'errors': form.errors.as_json()})
+    
+    
+    with suppress(AuthenticationError):
+        data = form.cleaned_data
+        login.set_pass_and_auth(data['login'], data['new_pass'])
+        return JsonResponse({'redirect_url': reverse('catalog:products')})
+
+    return JsonResponse(
+        {'errors': json.dumps(
+            {'login': [{'message': 'Неверный логин или пароль'},]}
+        )}
+    )
+
+
+@api_view(['GET'])
+def check_login(request):
+    login = Login(request)
+    if login.login:
+        return JsonResponse({'replay': 'ok'}, status=200)
+    return JsonResponse({'replay': 'fail'}, status=200)
 
 
 class ContactDetailView(ListView):
@@ -119,14 +230,18 @@ class ContactDetailView(ListView):
             login = Login(self.request)
             client = Client.objects.filter(pk=contact_detail.client_id).first()
             orders = Order.objects.filter(client=client).order_by('-created_at')
+            hash_id = hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest()
+            hash_inn = hashlib.sha256(client.inn.encode()).hexdigest()
             return {
-                'client' : client,
-                'manager': client.manager.first(),
-                'contact': contact_detail,
-                'login'  : login.login,
-                'orders' : orders,
+                'client'  : client,
+                'manager' : client.manager.first(),
+                'contact' : contact_detail,
+                'login'   : login.login,
+                'orders'  : orders,
+                'hash_id' : hash_id,
+                'hash_inn': hash_inn,
             }
-        return {'contact': {}}
+        return {'contact': {}, 'hash_inn': '',}
 
 
 class ContactDetailCreateView(CreateView):
