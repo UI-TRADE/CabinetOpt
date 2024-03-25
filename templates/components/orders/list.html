@@ -3,7 +3,12 @@
     {% for order in orders %}
         <li id="order-status-{{order.id}}" class="order-item__links">
             
-            <a href="{% url 'orders:edit' order.id %}" class="order-item__title">Заказ № {{ order.id }} </a>
+            {% if order.status == "introductory" %}
+                <a href="{% url 'orders:edit' order.id %}" class="order-item__title">Заказ № {{ order.id }} </a>
+            {% else %}
+                <a href="{% url 'orders:edit' order.id %}" class="order-item__title">Заказ № {{ order.id }}_{{ order.provision }} </a>
+            {% endif %}
+
             <span class="order-item__status">{{ order.get_status_display }}</span>
             {% if order.status == 'shipment' %}
                 {{ order.created_at }}
