@@ -17,7 +17,6 @@ from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 
 from .login import Login, AuthenticationError
-
 from .forms import (
     RegForm,
     LoginForm,
@@ -34,6 +33,7 @@ from .models import (
     Manager,
 )
 from orders.models import Order
+from utils.requests import set_default_http_protocol
 
 
 def login(request):
@@ -147,13 +147,15 @@ def request_password(request):
         # obj = RegistrationOrder.objects.get(identification_number=inn)
         hash_id = hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest()
         hash_inn = hashlib.sha256(inn.encode()).hexdigest()
+        uri = set_default_http_protocol(
+            request,
+            request.build_absolute_uri(f'{reverse("clients:recovery_pass", kwargs={"id": hash_id})}?usr={hash_inn}')
+        )
         settings.REDIS_CONN.hmset(
             f'recovery_password_{inn}',
             {
                 'notification_type': 'recovery_password',
-                'id': inn,
-                'form': 'forms/recovery.html',
-                'url': request.build_absolute_uri(f'{reverse("clients:recovery_pass", kwargs={"id": hash_id})}?usr={hash_inn}'),
+                'id': inn, 'form': 'forms/recovery.html', 'url': uri,
                 'subject': 'восстановление доступа на сайте opt.talantgold.ru',
                 'message': 'восстановление доступа на сайте opt.talantgold.ru'
         })

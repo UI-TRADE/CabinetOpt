@@ -4,6 +4,7 @@ from django.test import TestCase
 from django.conf import settings
 
 from .models import RegistrationOrder
+from utils.requests import set_default_http_protocol
 
 
 # Create your tests here.
