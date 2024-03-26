@@ -209,3 +209,6 @@ SUMMERNOTE_THEME = 'bs4'
 
 #Captcha settings
 CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.random_char_challenge'
+
+# SSL
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
