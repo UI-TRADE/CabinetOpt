@@ -4,8 +4,6 @@ from django.test import TestCase
 from django.conf import settings
 
 from .models import RegistrationOrder
-from utils.requests import set_default_http_protocol
-
 
 # Create your tests here.
 class RegistrationOrderTest(TestCase):
@@ -37,13 +35,14 @@ class RegistrationOrderTest(TestCase):
             )
             obj.save()
 
+            uri = reverse('clients:change_pass')
             settings.REDIS_CONN.hmset(
                 f'registration_order_{obj.id}',
                 {
                     'notification_type': 'confirm_registration',
                     'id': obj.id,
                     'form': 'forms/confirm.html',
-                    'url': reverse('clients:change_pass'),
+                    'url': uri.rstrip('/'),
                     'subject': 'доступ к личному кабинету на сайте opt.talantgold.ru',
                     'message': 'доступ к личному кабинету на сайте opt.talantgold.ru'
             })

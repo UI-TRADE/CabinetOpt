@@ -33,7 +33,7 @@ from .models import (
     Manager,
 )
 from orders.models import Order
-from utils.requests import set_default_http_protocol
+from utils.requests import get_uri
 
 
 def login(request):
@@ -147,15 +147,13 @@ def request_password(request):
         # obj = RegistrationOrder.objects.get(identification_number=inn)
         hash_id = hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest()
         hash_inn = hashlib.sha256(inn.encode()).hexdigest()
-        uri = set_default_http_protocol(
-            request,
-            request.build_absolute_uri(f'{reverse("clients:recovery_pass", kwargs={"id": hash_id})}?usr={hash_inn}')
-        )
+        uri = get_uri(request, 'clients:recovery_pass', id=hash_id)
         settings.REDIS_CONN.hmset(
             f'recovery_password_{inn}',
             {
                 'notification_type': 'recovery_password',
-                'id': inn, 'form': 'forms/recovery.html', 'url': uri,
+                'id': inn, 'form': 'forms/recovery.html', 
+                'url': f'{uri}?usr={hash_inn}',
                 'subject': 'восстановление доступа на сайте opt.talantgold.ru',
                 'message': 'восстановление доступа на сайте opt.talantgold.ru'
         })

@@ -1,4 +1,6 @@
-def set_default_http_protocol(request, uri):
-    if request.is_secure():
-        return uri.replace('http://', 'https://')
-    return uri
+from django.urls import reverse
+
+
+def get_uri(request, url, **kwargs):
+    uri = request.build_absolute_uri(f'{reverse(url, kwargs=kwargs)}')
+    return uri.rstrip('/')

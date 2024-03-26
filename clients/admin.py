@@ -18,7 +18,7 @@ from .models import (
 from orders.models import Order
 from .forms import CustomRegOrderForm
 from .utils import parse_of_name
-from utils.requests import set_default_http_protocol
+from utils.requests import get_uri
 
 
 class OrderInLine(admin.TabularInline):
@@ -192,15 +192,13 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
 
             hash_id = hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest()
             hash_inn = hashlib.sha256(registration_order['identification_number'].encode()).hexdigest()
-            uri = set_default_http_protocol(
-                request,
-                request.build_absolute_uri(f'{reverse("clients:change_pass", kwargs={"id": hash_id})}?usr={hash_inn}')
-            )
+            uri = get_uri(request, 'clients:change_pass', id=hash_id)
             settings.REDIS_CONN.hmset(
                 f'registration_order_{obj.id}',
                 {
                     'notification_type': 'confirm_registration',
-                    'id': obj.id, 'form': 'forms/confirm.html', 'url': uri,
+                    'id': obj.id, 'form': 'forms/confirm.html',
+                    'url': f'{uri}?usr={hash_inn}',
                     'subject': 'доступ к личному кабинету на сайте opt.talantgold.ru',
                     'message': 'доступ к личному кабинету на сайте opt.talantgold.ru'
             })
