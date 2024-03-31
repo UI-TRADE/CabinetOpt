@@ -24,14 +24,13 @@ import showModalForm, {
 
 require('jquery-ui');
 
-
 const initStorages = () => {
     if (localStorage.getItem('cartView') === null)
         localStorage.setItem('cartView', false);
     if (sessionStorage.getItem('filters') === null)
         sessionStorage.setItem('filters', JSON.stringify([]));
-    if (localStorage.getItem('login_attempts') === null)
-        localStorage.setItem('login_attempts', 5);
+    if (localStorage.getItem('client_id') === null)
+        localStorage.setItem('client_id', generateUUID());
 }
 
 
@@ -129,7 +128,6 @@ $(document).ready(() => {
                     window.location.replace('/catalog/products/');
                     return
                 }
-                localStorage.setItem('login_attempts', 5);
             }
 
             showChangePassForm();

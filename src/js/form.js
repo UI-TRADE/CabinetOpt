@@ -2,12 +2,12 @@ import generateUUID from './lib';
 import { handleError } from "./utils/exceptions";
 
 
-const updateLoginAttempts = () => {
-    let login_attempts = localStorage.getItem('login_attempts');
-    login_attempts -= 1;
-    localStorage.setItem('login_attempts', login_attempts);
-    return login_attempts;
-}
+// const updateLoginAttempts = () => {
+//     let login_attempts = localStorage.getItem('login_attempts');
+//     login_attempts -= 1;
+//     localStorage.setItem('login_attempts', login_attempts);
+//     return login_attempts;
+// }
 
 
 export const applyShowPasswordButtons = ($modal) => {
@@ -31,19 +31,19 @@ export const applyShowPasswordButtons = ($modal) => {
 }
 
 
-const showRecoveryPass = ($modal) => {
-    const authButton = $($modal).find('.auth-form-btn');
-    if (!authButton.length) return;
-    const login_attempts = sessionStorage.getItem('login_attempts');
-    if (login_attempts < 0) {
-        authButton.toggleClass('hidden');
-        $($modal).find('.recovery-form-btn').toggleClass('hidden');
-        const signinItems = $($modal).find('.sign-in-form-item');
-        const signinItem = signinItems[signinItems.length-1];
-        $(signinItem).toggleClass('hidden');
-        $(signinItem).removeAttr('required')
-    }
-}
+// const showRecoveryPass = ($modal) => {
+//     const authButton = $($modal).find('.auth-form-btn');
+//     if (!authButton.length) return;
+//     const login_attempts = sessionStorage.getItem('login_attempts');
+//     if (login_attempts < 0) {
+//         authButton.toggleClass('hidden');
+//         $($modal).find('.recovery-form-btn').toggleClass('hidden');
+//         const signinItems = $($modal).find('.sign-in-form-item');
+//         const signinItem = signinItems[signinItems.length-1];
+//         $(signinItem).toggleClass('hidden');
+//         $(signinItem).removeAttr('required')
+//     }
+// }
 
 
 const updateCaptcha = () => {
@@ -99,10 +99,12 @@ export const updateModalForm = (formId) => {
     $(`#${formId}`).on('submit', (event) => {
         event.preventDefault();
         const formData = new FormData(event.target);
-        formData.append('login_attempts', localStorage.getItem('login_attempts'));
         $.ajax({
-            type: 'POST',
             url: event.target.action,
+            type: 'POST',
+            headers: {
+                'X-Client-Id': localStorage.getItem('client_id')
+            },
             data: formData,
             processData: false,
             contentType: false,
@@ -111,9 +113,9 @@ export const updateModalForm = (formId) => {
                     showErrors(formId, data['errors']);
                     data['errors'] = {}
                     updateCaptcha();
-                    if (event.target.action.indexOf('clients/login') !== -1) {
-                        updateLoginAttempts();
-                    }
+                    // if (event.target.action.indexOf('clients/login') !== -1) {
+                    //     updateLoginAttempts();
+                    // }
                 } else if(data['redirect_url']) {
                     // if (event.target.action.indexOf('clients/login') !== -1)
                     location.replace(data['redirect_url']);
@@ -192,7 +194,9 @@ export function switchModalForm(idFrom, idTo, submitFormId) {
     $(document).on('click', `#${idFrom}` , event =>{
         $.ajax({
             url: event.currentTarget.getAttribute('data-url'),
-            data: {'login_attempts': localStorage.getItem('login_attempts')},
+            headers: {
+                'X-Client-Id': localStorage.getItem('client_id')
+            },
             success: (response) => {
                 renderModalForm(response, idTo, submitFormId);
                 updateModalForm((submitFormId) ? submitFormId : idTo);
@@ -208,7 +212,9 @@ export function switchModalForm(idFrom, idTo, submitFormId) {
 export function showAuthForm(submitFormId, auth='login') {
     $.ajax({
         url: `/clients/${auth}`,
-        data: {'login_attempts': localStorage.getItem('login_attempts')},
+        headers: {
+            'X-Client-Id': localStorage.getItem('client_id')
+        },
         success: (response) => {
             renderModalForm(response, 'registration-form', submitFormId);
             updateModalForm(submitFormId);
@@ -223,7 +229,9 @@ export function modalFormEvents() {
     $('#registration-form-switch').click((event) => {
         $.ajax({
             url: event.currentTarget.getAttribute('data-url'),
-            data: {'login_attempts': localStorage.getItem('login_attempts')},
+            headers: {
+                'X-Client-Id': localStorage.getItem('client_id')
+            },
             success: (response) => {
                 renderModalForm(response, 'registration-form', submitFormId);
                 updateModalForm(submitFormId);
@@ -248,7 +256,9 @@ function showModalForm(formId, submitFormId) {
     $(document).on('show.bs.modal',`#${formId}`, (event) => {
         $.ajax({
             url: event.relatedTarget.getAttribute('data-url'),
-            data: {'login_attempts': localStorage.getItem('login_attempts')},
+            headers: {
+                'X-Client-Id': localStorage.getItem('client_id')
+            },
             success: (response) => {
                 renderModalForm(response, formId, submitFormId);
                 updateModalForm((submitFormId) ? submitFormId : formId);

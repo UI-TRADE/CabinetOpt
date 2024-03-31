@@ -171,8 +171,8 @@ STATICFILES_FINDERS = [
 ]
 DATA_UPLOAD_MAX_MEMORY_SIZE = 20971520
 
-SESSION_LOGIN = 'login'
-CART_SESSION_ID = 'cart'
+SESSION_LOGIN     = 'login'
+CART_SESSION_ID   = 'cart'
 CART_SESSION_KEYS = 'cart_keys'
 
 if DEBUG:
@@ -212,3 +212,7 @@ CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.random_char_challenge'
 
 # SSL
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+
+# Filed login attempts
+MAX_FAILED_LOGIN_ATTEMPTS = 5

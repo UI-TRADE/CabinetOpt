@@ -1,7 +1,8 @@
 import re
 from django.conf import settings
+from contextlib import suppress
 
-from clients.models import Manager, Client
+from clients.models import Manager, Client, AuthorizationAttempt
 
 
 class AuthenticationError(Exception):
@@ -17,17 +18,39 @@ class Login(object):
         if not session_login:
             session_login = self.session[settings.SESSION_LOGIN] = {}
         self.login = session_login
+        self.x_client_id = request.META.get('HTTP_X_CLIENT_ID')
 
+
+    def _add_failed_attempt(func):
+        def wrapper(*args, **kwargs):
+            self = args[0]
+            try:
+                func(*args, **kwargs)
+            except AuthenticationError:
+                if self.x_client_id:
+                    obj, _ = AuthorizationAttempt.objects.get_or_create(client_id=self.x_client_id)
+                    obj.attempts = min(obj.attempts + 1, settings.MAX_FAILED_LOGIN_ATTEMPTS)
+                    obj.save()
+                raise
+            else:
+                AuthorizationAttempt.objects.filter(client_id=self.x_client_id).delete()
+        return wrapper
+
+
+    def is_email(self, email):
+        regex = re.compile(
+            r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+'
+        )
+        return re.fullmatch(regex, email)
+
+
+    @_add_failed_attempt
     def auth(self, login='', password=''):
-        def is_email(email):
-            regex = re.compile(
-                r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+'
-            )
-            return re.fullmatch(regex, email)
+        if not login:
+            raise AuthenticationError('Не заполнен логин')
 
         try:
-
-            if is_email(login):
+            if self.is_email(login):
                 obj = Manager.objects.get(email=login)
                 if obj.password != password:
                     raise AuthenticationError
@@ -44,15 +67,10 @@ class Login(object):
             raise AuthenticationError
 
 
+    @_add_failed_attempt
     def cahnge_pass_and_auth(self, login='', password='', new_password=''):
-        def is_email(email):
-            regex = re.compile(
-                r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+'
-            )
-            return re.fullmatch(regex, email)
-
         try:
-            if is_email(login):
+            if self.is_email(login):
                 obj = Manager.objects.get(email=login)
                 if obj.password != password:
                     raise AuthenticationError
@@ -66,15 +84,11 @@ class Login(object):
         except (Manager.DoesNotExist, Client.DoesNotExist):
             raise AuthenticationError
 
-    def set_pass_and_auth(self, login='', new_password=''):
-        def is_email(email):
-            regex = re.compile(
-                r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+'
-            )
-            return re.fullmatch(regex, email)
 
+    @_add_failed_attempt
+    def set_pass_and_auth(self, login='', new_password=''):
         try:
-            if is_email(login):
+            if self.is_email(login):
                 obj = Manager.objects.get(email=login).update(password=new_password)
                 self.login['manager'] = obj.id
             else:
@@ -86,11 +100,12 @@ class Login(object):
         except (Manager.DoesNotExist, Client.DoesNotExist):
             raise AuthenticationError
 
+
     def unauth(self):
         del self.session[settings.SESSION_LOGIN]
         self.session.modified = True
 
-
+    
     def get_clients(self):
         client_id = self.login.get('client')
         if client_id:
@@ -113,3 +128,60 @@ class Login(object):
                     client_id=client_id
                 ).values_list('manager_id', flat=True)
             )
+
+
+class RawLogin(Login):
+
+    def __init__(self, request):
+        super().__init__(request)
+        if request.method == 'POST':
+            self.raw_login = request.POST.get('login')
+
+
+    def is_login_exist(self):
+        if not self.raw_login:
+            return False
+        
+        with suppress(Manager.DoesNotExist, Client.DoesNotExist):
+            if self.is_email(self.raw_login):
+                Manager.objects.get(email=self.raw_login)
+            else:
+                Client.objects.get(inn=self.raw_login)
+            return True
+    
+        return False
+    
+
+    def check_password(self, password):
+        if self.raw_login and password:
+            with suppress(
+                AuthenticationError, Manager.DoesNotExist,
+                Client.DoesNotExist, IndexError
+            ):
+                if self.is_email(self.raw_login):
+                    obj = Manager.objects.get(email=self.raw_login)
+                    if obj.password != password:
+                        raise AuthenticationError
+                else:
+                    obj = Client.objects.get(inn=self.raw_login)
+                    manager = obj.manager.first()
+                    if manager.password != password:
+                        raise AuthenticationError
+                return True
+        return False
+
+
+    def get_clients(self):
+        if self.raw_login:
+            with suppress(Manager.DoesNotExist, Client.DoesNotExist):
+                if self.is_email(self.raw_login):
+                    manager = Manager.objects.get(email=self.raw_login)
+                    clients = Client.objects.filter(manager__pk=manager.id)
+
+                else:
+                    clients = Client.objects.filter(inn=self.raw_login)
+                
+                return clients
+        
+        return Client.objects.filter(pk=-1)
+

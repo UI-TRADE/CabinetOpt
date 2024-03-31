@@ -1,24 +1,18 @@
-import hashlib
-import uuid
-
 from django.contrib import admin
-from django.db import transaction
-from django.urls import reverse
-from django.core.exceptions import ValidationError
 from django.contrib.admin import SimpleListFilter
-from django.conf import settings
 
 from .models import (
     Organization,
     RegistrationOrder,
     Client,
     Manager,
-    ContactDetail
+    ContactDetail,
+    AuthorizationAttempt
 )
-from orders.models import Order
 from .forms import CustomRegOrderForm
-from .utils import parse_of_name
-from utils.requests import get_uri
+from orders.models import Order
+from settings_and_conditions.models import NotificationType
+from settings_and_conditions.utils import notification_scheduling
 
 
 class OrderInLine(admin.TabularInline):
@@ -117,18 +111,22 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
     list_filter = [
         'status',
     ]
-    fields = [
-        'status',
-        'name',
-        ('organization', 'identification_number'),
-        (
+    fieldsets = (
+        (None, {'fields': (
+            'status',
+            ('organization', 'identification_number'),
+            'manager_talant',   
+        )}),
+        ('Менеджер клиента:', {'fields': (
             'name_of_manager',
             'email',
             'phone',
-        ),
-        'manager_talant',
-        ('login', 'password'),
-    ]
+        )}),
+        ('Данные аутентификации:', {'fields': (
+            'login',
+            'password',
+        )})
+    )
     list_filter = (RegistrationOrderFilter,)
 
     def check_registration(self, obj):
@@ -144,15 +142,7 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
     def get_fieldsets(self, request, obj=None):
         fieldsets = super().get_fieldsets(request, obj)
         if self.check_registration(obj):
-            for fieldset in fieldsets:
-                _, field_struct = fieldset
-                if ('login', 'password') in field_struct['fields']:
-                    field_struct['fields'].remove(('login', 'password'))
-        else:
-            for fieldset in fieldsets:
-                _, field_struct = fieldset
-                if not ('login', 'password') in field_struct['fields']:
-                    field_struct['fields'].append(('login', 'password'))
+            return tuple(fieldset for fieldset in fieldsets if fieldset[0] != 'Данные аутентификации:')
    
         return fieldsets
 
@@ -160,64 +150,21 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
         form = super().get_form(request, obj, **kwargs)
         return form
 
-    def save_model(self, request, obj, form, change):
-
-        registration_order = form.cleaned_data
-        if not registration_order.get('status') or registration_order.get('status') != 'registered':
-            return super().save_model(request, obj, form, change)
-        
-        parsed_manager_name = parse_of_name(registration_order.get('name_of_manager'))
-        if not parsed_manager_name:
-            raise ValidationError('Не указано ФИО персонального менеджера', code='')
-
-        with transaction.atomic():
-            personal_manager, _ = Manager.objects.get_or_create(
-                last_name = parsed_manager_name['last_name'],
-                first_name = parsed_manager_name['first_name'],
-                defaults = {
-                    key: value for key, value  in registration_order.items() if \
-                        key in ['email', 'phone', 'login', 'password']
-                } | parsed_manager_name
-            )
-            client, created = Client.objects.update_or_create(
-                inn=registration_order['identification_number'],
-                defaults = {
-                    'name'              : registration_order['organization'],
-                    'registration_order': obj,
-                    'approved_by'       : request.user,
-                    'manager_talant'    : registration_order['manager_talant'],
-            })
-            if created:
-                client.manager.add(personal_manager)
-
-            hash_id = hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest()
-            hash_inn = hashlib.sha256(registration_order['identification_number'].encode()).hexdigest()
-            uri = get_uri(request, 'clients:change_pass', id=hash_id)
-            settings.REDIS_CONN.hmset(
-                f'registration_order_{obj.id}',
-                {
-                    'notification_type': 'confirm_registration',
-                    'id': obj.id, 'form': 'forms/confirm.html',
-                    'url': f'{uri}?usr={hash_inn}',
-                    'subject': 'доступ к личному кабинету на сайте opt.talantgold.ru',
-                    'message': 'доступ к личному кабинету на сайте opt.talantgold.ru'
-            })
-            return super().save_model(request, obj, form, change)
+    @notification_scheduling(NotificationType.CONFIM_REG)
+    @notification_scheduling(NotificationType.CANCEL_REG)
+    def save_model(self, request, obj, form, change):        
+        return super().save_model(request, obj, form, change)
 
 
 @admin.register(Manager)
 class ManagerAdmin(admin.ModelAdmin):
     search_fields = [
-        'first_name',
-        'last_name',
-        'surname',
+        'name',
     ]
     list_display = [
-        'first_name',
-        'last_name',
-        'surname',
+        'name',
     ]
-    list_display_links = ('first_name', 'last_name', 'surname')
+    list_display_links = ('name',)
 
 
 @admin.register(ContactDetail)
@@ -273,3 +220,17 @@ class ClientAdmin(admin.ModelAdmin):
         'status',
     ]
     inlines = [ManagerInLine, ContactDetailInLine, OrderInLine]
+
+    @notification_scheduling(NotificationType.LOCKED_CLIENT)
+    def save_model(self, request, obj, form, change):
+        return super().save_model(request, obj, form, change)
+
+
+@admin.register(AuthorizationAttempt)
+class AuthorizationAttemptAdmin(admin.ModelAdmin):
+    def get_model_perms(self, request):
+        return {
+            'add': False,
+            'change': False,
+            'delete': False,
+        }

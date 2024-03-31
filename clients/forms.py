@@ -1,14 +1,11 @@
-import re
-from typing import Any
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from captcha.fields import CaptchaField
 from contextlib import suppress
 
-from .utils import parse_of_name
+from .login import RawLogin, AuthenticationError
 from .models import (
     RegistrationOrder,
-    Client,
     Manager,
     ContactDetail
 )
@@ -35,22 +32,17 @@ class CustomRegOrderForm(forms.ModelForm):
         if not registration_order.get('status') or registration_order.get('status') != 'registered':
             return
         
-        parsed_name = parse_of_name(registration_order.get('name_of_manager'))
-        if not parsed_name:
-            raise ValidationError('Не указано ФИО персонального менеджера', code='')
-
-        with suppress(ObjectDoesNotExist):
-
-            Manager.objects.get(
-                **{key: value for key, value in parsed_name.items() if key != 'surname'}
-            )
-            return
-                   
         if not self.cleaned_data.get('login'):
             self.add_error('login', 'Не указан логин персонального менеджера')
         
         if not self.cleaned_data.get('password'):
             self.add_error('password', 'Не указан пароль персонального менеджера')
+        
+        if not registration_order.get('name_of_manager'):
+            raise ValidationError('Не указано ФИО персонального менеджера', code='')
+
+        with suppress(ObjectDoesNotExist):
+            Manager.objects.get(login=self.cleaned_data['login'])
 
 
 class RegForm(forms.ModelForm):
@@ -135,7 +127,7 @@ class RegForm(forms.ModelForm):
             return False
 
 
-class LoginForm(forms.Form):
+class LoginForm(forms.Form, RawLogin):
     login = forms.CharField(
         label='ИНН',
         widget=forms.TextInput(
@@ -150,8 +142,28 @@ class LoginForm(forms.Form):
     )
     fields = ['login', 'password']
 
+    def __init__(self, *args, **kwargs):
+        if args:
+            request = args[0]
+            super(LoginForm, self).__init__(request.POST, **kwargs)
+            RawLogin.__init__(self, request)
+        else:
+            super().__init__(*args, **kwargs)
 
-class ChangePassForm(forms.Form):
+    def clean(self):
+        super().clean()
+        if not self.is_login_exist():
+            raise ValidationError('Клиент с таким логином не существует')
+        client = self.get_clients().first()
+        if client and client.status == 'locked':
+            raise ValidationError('Для входа в личный кабинет обратитесь к Вашему менеджеру по продажам TALANT')
+        try:
+            self.auth(**self.cleaned_data)
+        except AuthenticationError:
+            raise ValidationError('Неверный логин или пароль')
+
+
+class ChangePassForm(forms.Form, RawLogin):
     login = forms.CharField(
         label='ИНН',
         widget=forms.HiddenInput(
@@ -180,43 +192,41 @@ class ChangePassForm(forms.Form):
     fields = ['login', 'old_pass', 'new_pass', 'repeat_pass', 'captcha']
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        if args:
+            request = args[0]
+            super(ChangePassForm, self).__init__(request.POST, **kwargs)
+            RawLogin.__init__(self, request)
+        else:
+            super().__init__(*args, **kwargs)
         self.fields['captcha'].widget.attrs['class'] = 'form-control'
 
+
     def clean_login(self):
-        login = self.cleaned_data['login']  
-        if not RegistrationOrder.objects.filter(identification_number=login).exists():
-            raise ValidationError('Клиент с таким ИНН не существует')
-        return login
+        if not self.is_login_exist():
+            raise ValidationError('Клиент с таким логином не существует')
+        client = self.get_clients().first()
+        if client and client.status == 'locked':
+            raise ValidationError('Для входа в личный кабинет обратитесь к Вашему менеджеру по продажам TALANT')
+        return self.cleaned_data['login']
+        
     
     def clean_old_pass(self):
-        def is_email(email):
-            regex = re.compile(
-                r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+'
-            )
-            return re.fullmatch(regex, email)
-        
-        login    = self.cleaned_data['login']
-        old_pass = self.cleaned_data['old_pass']
-        if is_email(login):
-            obj = Manager.objects.get(email=login)
-            if obj.password != old_pass:
-                raise ValidationError('Неверный пароль')
-        else:
-            obj = Client.objects.get(inn=login)
-            manager = obj.manager.first()
-            if manager.password != old_pass:
-                raise ValidationError('Неверный пароль')
-        
-        return old_pass
+        if self.check_password(self.cleaned_data['old_pass']):
+            return self.cleaned_data['old_pass']
+        raise ValidationError('Неверный пароль')
+
     
     def clean_repeat_pass(self):
         new_pass = self.cleaned_data['new_pass']
         repeat_pass = self.cleaned_data['repeat_pass']
         if not new_pass == repeat_pass:
             raise ValidationError('Пароли не совпадают')
-        return repeat_pass
-
+        with suppress(AuthenticationError):
+            data = self.cleaned_data
+            self.cahnge_pass_and_auth(data['login'], data['old_pass'], data['new_pass'])
+            return repeat_pass
+        raise ValidationError('Неверный логин или пароль')
+    
 
 class LoginFormRecovery(forms.Form):
     login = forms.CharField(
@@ -228,7 +238,7 @@ class LoginFormRecovery(forms.Form):
     fields = ['login']
 
 
-class RecoveryPassForm(forms.Form):
+class RecoveryPassForm(forms.Form, RawLogin):
     login = forms.CharField(
         label='Логин',
         widget=forms.HiddenInput(
@@ -251,15 +261,32 @@ class RecoveryPassForm(forms.Form):
     fields = ['login', 'new_pass', 'repeat_pass', 'captcha']
     
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        if args:
+            request = args[0]
+            super(RecoveryPassForm, self).__init__(request.POST, **kwargs)
+            RawLogin.__init__(self, request)
+        else:
+            super().__init__(*args, **kwargs)
         self.fields['captcha'].widget.attrs['class'] = 'form-control'
+
+    def clean_login(self):
+        if not self.is_login_exist():
+            raise ValidationError('Клиент с таким логином не существует')
+        client = self.get_clients().first()
+        if client and client.status == 'locked':
+            raise ValidationError('Для входа в личный кабинет обратитесь к Вашему менеджеру по продажам TALANT')
+        return self.cleaned_data['login']
 
     def clean_repeat_pass(self):
         new_pass = self.cleaned_data['new_pass']
         repeat_pass = self.cleaned_data['repeat_pass']
         if not new_pass == repeat_pass:
             raise ValidationError('Пароли не совпадают')
-        return repeat_pass
+        with suppress(AuthenticationError):
+            data = self.cleaned_data
+            self.set_pass_and_auth(data['login'], data['new_pass'])
+            return repeat_pass
+        raise ValidationError('Неверный логин или пароль')
 
 
 class ContactDetailForm(forms.ModelForm):
@@ -278,7 +305,7 @@ class ManagerForm(forms.ModelForm):
 
     class Meta:
         model = Manager
-        fields = ['last_name', 'first_name', 'surname', 'email', 'phone']
+        fields = ['name', 'email', 'phone']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -287,8 +314,7 @@ class ManagerForm(forms.ModelForm):
 
     def clean(self):
         '''Переопределяем стандартное описание ошибки, ибо оно на английском'''
-        
         if not self.cleaned_data.get('phone'):
-            self.errors['phone'][0] = 'Не верно указан телефон персонального менеджера (+12125552368)'
+            self.errors['phone'][0] = 'Не верно указан телефон (+12125552368)'
 
         return super().clean()

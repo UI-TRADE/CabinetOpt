@@ -33,6 +33,8 @@ from .forms import (
 )
 from .utils import save_xlsx, read_xlsx
 from utils.exceptions import handle_errors
+from settings_and_conditions.models import NotificationType
+from settings_and_conditions.utils import notification_scheduling
 
 
 class OrderView(ListView):
@@ -460,21 +462,10 @@ def import_xlsx(request):
 
 
 @handle_errors()
-def schedule_send_order(order, status_before):
-    if not order:
-        return
-    if not order.status == 'confirmed' and not status_before == 'introductory':
-        return
-    settings.REDIS_CONN.hmset(
-        f'order_{order.id}',
-        {
-            'notification_type': 'confirm_order',
-            'id': order.id,
-            'form': 'forms/approve.html',
-            'url': '',
-            'subject': 'отправка заказа менеджеру talant',
-            'message': 'отправка заказа менеджеру talant'
-    })
+@notification_scheduling(NotificationType.CONFIM_ORDER)
+@notification_scheduling(NotificationType.GET_ORDER)
+def schedule_send_order(order, *params):
+    pass
 
 
 def save_order(order_params, order_items):
@@ -726,25 +717,30 @@ def update_order_number(request):
     order_number = request.query_params.get('num')
     order_ident = request.query_params.get('ident')
 
-    try:
+    with suppress(ValidationError):
         if order_id and order_number and order_ident:
-            Order.objects.filter(id=order_id).update(**{
+            order = Order.objects.filter(id=order_id).first()
+            if not order:
+                raise ValidationError   
+            order.update(**{
                 'num_in_1C': order_number,
                 'identifier_1C': order_ident
             })
+            schedule_send_order(order,)
         else:
-            raise Order.DoesNotExist
-    except Order.DoesNotExist as err:
+            raise ValidationError
         return JsonResponse(
-            {'replay': 'error', 'message': 'Не найден заказ'},
+            {'replay': 'ok'},
             status=200,
             safe=False,
             json_dumps_params={'ensure_ascii': False}
         )
-    
+
     return JsonResponse(
-        {'replay': 'ok'},
+        {'replay': 'error', 'message': 'Не найден заказ'},
         status=200,
         safe=False,
         json_dumps_params={'ensure_ascii': False}
     )
+    
+    

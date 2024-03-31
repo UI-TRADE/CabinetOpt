@@ -118,22 +118,68 @@ class About(models.Model):
     
     def __str__(self):
         return f'О заводах {self.organization}'
-    
 
-class Notification(models.Model):
-    CONFIM_REG = 'confirm_registration'
-    CONFIM_ORDER = 'confirm_order'
 
-    email = models.EmailField('email', db_index=True)
-    use_up = models.BooleanField('использовать', default=True, db_index=True)
-    notification_type = models.CharField(
-        'тип уведомления',
+class NotificationType(models.Model):
+    REG_REQUEST   = 'registration_request'
+    CONFIM_REG    = 'confirm_registration'
+    CANCEL_REG    = 'cancel_registration'
+    CONFIM_ORDER  = 'confirm_order'
+    GET_ORDER     = 'get_order'
+    RECOVERY_PASS = 'recovery_password'
+    LOCKED_CLIENT = 'locked_client'
+
+    event = models.CharField(
+        'Событие',
         max_length=50,
-        blank=True,
         db_index=True,
         choices=(
-            (CONFIM_REG, 'Подтверждение регистрации на сайте'),
-            (CONFIM_ORDER  , 'Подтверждение заказа клиента')
+            (REG_REQUEST   , 'Получение заявки на регистрацию'),
+            (CONFIM_REG    , 'Подтверждение регистрации на сайте'),
+            (CANCEL_REG    , 'Отмена регистрации на сайте'),
+            (CONFIM_ORDER  , 'Подтверждение заказа клиента'),
+            (GET_ORDER     , 'Заказ получен в 1С'),
+            (RECOVERY_PASS , 'Запрос восстановления пароля'),
+            (LOCKED_CLIENT , 'Временное отключение клиента от входа в ЛК'),
+    ))
+    subject = models.CharField('Тема письма', max_length=100, blank=True)
+    notification = models.TextField('Шаблон письма', blank=True)
+
+    class Meta:
+        verbose_name = 'Тип уведомления'
+        verbose_name_plural = 'Типы уведомлений'
+    
+    def __str__(self):
+        return f'{self.get_event_display()}'
+
+
+class Notification(models.Model):
+    NOTIFICATION_TO_CLIENTS       = 'clients'
+    NOTIFICATION_TO_MANAGERS      = 'managers'
+    NOTIFICATION_CLIENTS_MANAGERS = 'both'
+
+    email = models.EmailField('email', blank=True, db_index=True)
+    use_up = models.BooleanField('использовать', default=True, db_index=True)
+    notification_type = models.ForeignKey(
+        NotificationType,
+        null=True,
+        on_delete=models.CASCADE,
+        verbose_name='тип уведомления',
+        related_name='notifications'
+    )
+    manager_talant = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        verbose_name='Менеджер ЮИ-Трейд',
+        related_name='notified_managers'
+    )
+    notify = models.CharField(
+        'Уведомлять', max_length=20, default='both', choices=(
+            (NOTIFICATION_TO_CLIENTS      , 'Клиентов'),
+            (NOTIFICATION_TO_MANAGERS     , 'Мереджеров ЮИ-Трейд'),
+            (NOTIFICATION_CLIENTS_MANAGERS, 'Клиентов и мереджеров ЮИ-Трейд'),
     ))
 
     class Meta:

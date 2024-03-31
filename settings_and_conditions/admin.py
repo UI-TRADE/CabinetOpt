@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.admin import SimpleListFilter
 from django_summernote.admin import SummernoteModelAdmin
 
 from .models import (
@@ -6,9 +7,11 @@ from .models import (
     Policy,
     Delivery,
     About,
+    NotificationType,
     Notification,
     CatalogFilter,
 )
+
 
 class GuaranteeAdmin(SummernoteModelAdmin): 
     list_display = ('organization',) 
@@ -34,16 +37,27 @@ class AboutAdmin(SummernoteModelAdmin):
     summernote_fields = ('about',)
 
 
+class NotificationTypeAdmin(SummernoteModelAdmin):
+    list_display = ('event',)
+    summernote_fields = ('notification',)
+
+
 class NotificationAdmin(admin.ModelAdmin): 
-    list_display = ('use_up', 'notification_type', 'email',) 
-    search_fields = ['notification_type', 'email']
-    fields = (('use_up', 'notification_type', 'email'),)
+    list_display = ('use_up', 'notification_type', 'notify') 
+    search_fields = ['notification_type', 'notify']
+    fields = ('use_up', 'notification_type', 'notify')
+
+    list_display_links = ('use_up', 'notification_type', 'notify')
 
     def get_form(self, request, obj=None, change=False, **kwargs):
         form = super().get_form(request, obj, change, **kwargs)
-        form.base_fields['use_up'].label = ''
-        form.base_fields['notification_type'].label = ''
+        form.base_fields['use_up'].label = 'использовать'
+        form.base_fields['notification_type'].label = 'событие'
         return form
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(manager_talant__isnull=True)
 
 
 class CatalogFilterAdmin(admin.ModelAdmin):
@@ -94,5 +108,6 @@ admin.site.register(Policy, PolicyAdmin)
 admin.site.register(Delivery, DeliveryAdmin)
 admin.site.register(About, AboutAdmin)
 
+admin.site.register(NotificationType, NotificationTypeAdmin)
 admin.site.register(Notification, NotificationAdmin)
 admin.site.register(CatalogFilter, CatalogFilterAdmin)

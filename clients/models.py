@@ -37,7 +37,8 @@ class RegistrationOrder(models.Model):
         'Статус регистрации', max_length=10, default='pending', choices=(
             ('pending'   , 'Ожидает рассмотрения'),
             ('considered', 'Рассматривается'),
-            ('registered', 'Зарегистрирован')
+            ('registered', 'Зарегистрирован'),
+            ('canceled'  , 'Отменен')
     ))
     created_at = models.DateTimeField(
         'Дата создания', db_index=True, auto_now_add=True
@@ -52,9 +53,7 @@ class RegistrationOrder(models.Model):
 
 
 class Manager(models.Model):
-    last_name = models.CharField('Фамилия', max_length=150)
-    first_name = models.CharField('Имя', max_length=150)
-    surname = models.CharField('Отчество', max_length=150, blank=True)
+    name = models.CharField('ФИО', max_length=150, blank=True)
     email = models.EmailField('email', db_index=True)
     phone = PhoneNumberField('Контактный телефон', db_index=True)
     login = models.CharField(
@@ -67,12 +66,12 @@ class Manager(models.Model):
     password = models.CharField(max_length=128, verbose_name='Пароль')
 
     class Meta:
-        ordering = ('last_name', 'first_name', )
+        ordering = ('name',)
         verbose_name = 'Менеджер клиента'
         verbose_name_plural = 'Менеджеры клиента'
     
     def __str__(self):
-        return f'{self.last_name} {self.first_name}'
+        return f'{self.name}'
     
 
 class Client(models.Model):
@@ -172,3 +171,17 @@ class ContactDetail(models.Model):
 
     def get_address(self):
         return f'{self.city} {self.shoping_address}'
+
+
+class AuthorizationAttempt(models.Model):
+    client_id = models.CharField(
+         error_messages={'unique': 'A user with that client_id already exists.'},
+         help_text='Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.',
+         max_length=150,
+         unique=True,
+         verbose_name='client_id'
+    )
+    attempts = models.IntegerField(
+        'Неудачные попытки входа',
+        default=0
+    )

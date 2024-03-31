@@ -35,14 +35,3 @@ class RegistrationOrderTest(TestCase):
             )
             obj.save()
 
-            uri = reverse('clients:change_pass')
-            settings.REDIS_CONN.hmset(
-                f'registration_order_{obj.id}',
-                {
-                    'notification_type': 'confirm_registration',
-                    'id': obj.id,
-                    'form': 'forms/confirm.html',
-                    'url': uri.rstrip('/'),
-                    'subject': 'доступ к личному кабинету на сайте opt.talantgold.ru',
-                    'message': 'доступ к личному кабинету на сайте opt.talantgold.ru'
-            })

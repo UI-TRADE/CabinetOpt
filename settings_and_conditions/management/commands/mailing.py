@@ -1,5 +1,4 @@
-import os
-import base64
+import json
 import sys
 import schedule
 import time
@@ -9,15 +8,15 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.core.management import BaseCommand
 from django.core.exceptions import ValidationError
+from django.template import Template, Context
 from django.template.loader import render_to_string
 from django.urls import reverse
 from redis.exceptions import ResponseError
 
-from settings_and_conditions.models import Notification
+from settings_and_conditions.models import NotificationType, Notification
 from settings_and_conditions.notify_rollbar import notify_rollbar
-from clients.models import RegistrationOrder, Manager
+from clients.models import RegistrationOrder, Client, Manager
 from orders.models import Order
-from clients.utils import parse_of_name
 
 
 class Command(BaseCommand):
@@ -29,59 +28,92 @@ class Command(BaseCommand):
             timeout, = options['timeout']
             while True:
                 try:
-                    with notify_rollbar():
-                        schedule.every(timeout).minutes.do(launch_mailing)
-                        while True:
-                            time.sleep(60)
-                            schedule.run_pending()
-                            if not schedule.jobs:
-                                break
+                    schedule.every(timeout).minutes.do(launch_mailing)
+                    while True:
+                        time.sleep(60)
+                        schedule.run_pending()
+                        if not schedule.jobs:
+                            break
                 except Exception:
                     continue
         else:
             try:
-                with notify_rollbar():
-                    launch_mailing()
+                launch_mailing()
             finally:
                 sys.exit(1)
 
 
-
 def launch_mailing():
-    redis_storage = settings.REDIS_CONN
 
+    def get_value(conn, key, field):
+        if field == 'params':
+            result = {}
+            with suppress(json.decoder.JSONDecodeError):
+                result = json.loads(conn.hmget(key, field)[0].decode()) 
+        else:
+            result = conn.hmget(key, field)[0].decode()
+        return result
+
+    fields = {'notification_type': '', 'id': '', 'url': '', 'params': ''}
+    redis_storage = settings.REDIS_CONN
     tasks = redis_storage.keys()
     for key in tasks:
         with suppress(
-                Order.DoesNotExist, RegistrationOrder.DoesNotExist, Manager.DoesNotExist,
+                Order.DoesNotExist,
+                Client.DoesNotExist,
+                RegistrationOrder.DoesNotExist,
+                Manager.DoesNotExist,
+                NotificationType.DoesNotExist,
                 ValidationError, ValueError, AttributeError, ResponseError
             ):
-            notification_type = redis_storage.hmget(key, 'notification_type')[0].decode()
-            obj_id            = redis_storage.hmget(key, 'id')[0].decode()
-            url               = redis_storage.hmget(key, 'url')[0].decode()
-            subject           = redis_storage.hmget(key, 'subject')[0].decode()
-            message           = redis_storage.hmget(key, 'message')[0].decode()
-            template          = redis_storage.hmget(key, 'form')[0].decode()
 
-            if not template:
-                raise ValidationError('Не указан шаблон письма', code='')
+            with notify_rollbar():
+                for field in fields.keys():
+                    fields[field] = get_value(redis_storage, key, field)
+                notification_type_obj = NotificationType.objects.filter(event=fields['notification_type']).first()
+                if not notification_type_obj:
+                    continue
+                subject  = notification_type_obj.subject
+                template = notification_type_obj.notification
+                if not template:
+                    raise ValidationError('Не указан шаблон письма', code='')
 
-            email, context = get_context(notification_type, obj_id, url)
-            recipient_list = get_recipient_list(notification_type, email)
+                email, context = get_context(**fields)
+                recipient_list = get_recipient_list(notification_type_obj, email)
 
-            send_email(context, recipient_list, subject=subject, message=message, template=template)
+                send_email(context, recipient_list, subject=subject, template=template)
 
         redis_storage.delete(key)
 
 
 def get_recipient_list(notification_type, email):
+    result = []
     notifications = Notification.objects.filter(use_up=True, notification_type=notification_type)
-    return [email] + [item.email for item in notifications if item.email]
+    for notify in notifications:
+        if notify.email:
+            result = result + [notify.email]
+        if  notify.notify in [
+                Notification.NOTIFICATION_TO_MANAGERS,
+                Notification.NOTIFICATION_CLIENTS_MANAGERS
+            ] and notify.manager_talant and notify.manager_talant.email:
+            result = result + [notify.manager_talant.email]
+    if notifications.exclude(notify=Notification.NOTIFICATION_TO_MANAGERS):
+        result = result + [email]
+    return result
 
 
-def get_context(notification_type, id, url=''):
+def get_context(notification_type, id, url, params):
     result = {}
-    if notification_type == 'confirm_order':
+
+    if notification_type == NotificationType.REG_REQUEST:
+        obj = RegistrationOrder.objects.get(id=id)
+        email = obj.email
+        if not email:
+            raise ValidationError('Не указан email менеджера talant', code='')
+        
+        result = email, params
+
+    if notification_type == NotificationType.CONFIM_ORDER:
         obj = Order.objects.get(id=id)
         manager_talant = obj.client.registration_order.manager_talant
         if not manager_talant:
@@ -95,55 +127,62 @@ def get_context(notification_type, id, url=''):
             'created_at': obj.created_at,
             'client'    : obj.client,
             'manager'   : manager_talant.username
-        } | get_images(['logo.png', 'confirm.jpg'])
+        }
 
-    if notification_type == 'confirm_registration':
-        obj = RegistrationOrder.objects.get(id=id)
-        parsed_manager_name = parse_of_name(obj.name_of_manager)
-        if not parsed_manager_name:
-            raise ValidationError('Не указано ФИО персонального менеджера', code='')
-        personal_manager = Manager.objects.get(
-            last_name = parsed_manager_name['last_name'],
-            first_name = parsed_manager_name['first_name']
-        )
-        email = obj.email
+    if notification_type == NotificationType.CONFIM_REG:
+        client = Client.objects.get(id=id)
+        manager = client.manager.first()
+        email = manager.email
         if not email:
             raise ValidationError('Не указан email менеджера клиента', code='')
         result = email, {
             'url'     : url,
-            'login'   : personal_manager.login,
-            'password': personal_manager.password
-        } | get_images(['logo.png', 'confirm.jpg'])
+            'login'   : manager.login,
+            'password': manager.password
+        }
 
-    if notification_type == 'recovery_password':
-        obj = RegistrationOrder.objects.get(identification_number=id)
-        email = obj.email
+    if notification_type == NotificationType.CANCEL_REG:
+        reg_order = RegistrationOrder.objects.get(pk=id)
+        email = reg_order.email
+        if not email:
+            raise ValidationError('Не указан email в заявке на регистрацию', code='')
+        result = email, {
+            'url'     : url,
+        } | params
+
+    if notification_type == NotificationType.RECOVERY_PASS:
+        client = Client.objects.get(inn=id)
+        manager = client.manager.first()
+        email = manager.email
         if not email:
             raise ValidationError('Не указан email менеджера клиента', code='')
         result = email, {
             'url'     : url,
-        } | get_images(['logo.png', 'confirm.jpg'])
+        } | params
 
-    return result
+    if notification_type == NotificationType.LOCKED_CLIENT:
+        client = Client.objects.get(pk=id)
+        manager = client.manager.first()
+        email = manager.email
+        if not email:
+            raise ValidationError('Не указан email менеджера клиента', code='')
+        result = email, {
+            'url'     : url,
+        } | params
 
+    if notification_type == NotificationType.GET_ORDER:
+        pass
 
-def get_images(images):
-    result = {}
-    static_dir = os.path.join(settings.BASE_DIR, 'static')
-    for img_name in images:
-        image_path = os.path.join(static_dir, 'img', img_name)
-        with open(image_path, 'rb') as image_file:
-            image_data = image_file.read()
-        base64_image = base64.b64encode(image_data).decode()
-        result[img_name.split('.')[0]] = base64_image
     return result
 
 
 def send_email(context, recipient_list, **params):
-    html_content = render_to_string(params['template'], context)
+    template = Template(params['template'])
+    rendered_html = template.render(Context(context))
+    html_content = render_to_string('forms/notify-template.html', {'params': rendered_html})
     send_mail(
         params['subject'],
-        params['message'],
+        '',
         settings.EMAIL_HOST_USER,
         recipient_list,
         html_message=html_content
