@@ -168,22 +168,47 @@ class CollectionAdmin(admin.ModelAdmin):
         'discount',
     ]
 
-
-class ProductActiveFilter(admin.SimpleListFilter):
-    title = ('Доступен на сайте')
-    parameter_name = 'product_active_filter'
+class ProductPriceFilter(admin.SimpleListFilter):
+    title = ('Базовая цена')
+    parameter_name = 'set_price'
 
     def lookups(self, request, model_admin):
         return (
-            ('Активный', ('Активный')),
-            ('Не активный', ('Не активный')),
+            ('set_price', ('Установлена')),
+            ('unset_price', ('Не установлена')),
         )
 
     def queryset(self, request, queryset):
-        active_products = Product.objects.get_active_products()
-        if self.value() == 'Активный':
+        active_products = Product.objects.filter(
+            pk__in=Price.objects.filter(
+                type__name="Базовая", price__gt=0
+            ).values_list(
+                'product_id', flat=True
+        ))
+        if self.value() == 'set_price':
             return active_products
-        if self.value() == 'Не активный':
+        if self.value() == 'unset_price':
+            return queryset.exclude(pk__in=active_products.values_list('id', flat=True))
+
+
+class ProductImageFilter(admin.SimpleListFilter):
+    title = ('Изображения')
+    parameter_name = 'set_img'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('set_img', ('Есть')),
+            ('unset_img', ('Нет')),
+        )
+
+    def queryset(self, request, queryset):
+        active_products = Product.objects.filter(
+            pk__in=ProductImage.objects.values_list(
+                'product_id', flat=True
+        ))
+        if self.value() == 'set_img':
+            return active_products
+        if self.value() == 'unset_img':
             return queryset.exclude(pk__in=active_products.values_list('id', flat=True))
 
 
@@ -194,7 +219,10 @@ class ProductAdmin(admin.ModelAdmin):
         'articul',
     ]
     list_display = [
+        'image_icon',
         'articul',
+        'show_on_site',
+        'price',
         'name',
         'product_type',
         'ct_color',
@@ -204,7 +232,6 @@ class ProductAdmin(admin.ModelAdmin):
         'stock',
         'status',
         'gem_set',
-        'active',
         'brand',
         'collection',
     ]
@@ -223,6 +250,9 @@ class ProductAdmin(admin.ModelAdmin):
         'mark_description'
     ]
     list_filter = [
+        'show_on_site',
+        ProductImageFilter,
+        ProductPriceFilter,
         'brand',
         'collection',
         'product_type',
@@ -231,7 +261,6 @@ class ProductAdmin(admin.ModelAdmin):
         'metal_content',
         'color',
         'available_for_order',
-        ProductActiveFilter,
     ]
     readonly_fields = [
         'image_tag',
@@ -273,16 +302,21 @@ class ProductAdmin(admin.ModelAdmin):
         return ''
     gem_set.short_description = 'Вставки'
 
-    def active(self, obj):
-        result = 'Активный'
-        if not obj.show_on_site:
-            result = 'Не активный'
-        if not Price.objects.filter(type__name="Базовая", product_id=obj.id, price__gt=0):
-            result = 'Не активный'
-        if not ProductImage.objects.filter(product_id=obj.id):
-            result = 'Не активный'
+    def price(self, obj):
+        result = 0
+        base_price = Price.objects.filter(type__name="Базовая", product_id=obj.id, price__gt=0).first()
+        if base_price:
+            result = base_price.price
         return result
-    active.short_description = 'Доступен на сайте'
+    price.short_description = 'Цена, руб.'
+
+    def image_icon(self, obj):
+        img = ProductImage.objects.filter(product_id=obj.id).first()
+        if img:
+            return format_html(
+                '<img src="{0}" width="50" height="50" />'.format(img.image.url)
+            )
+    image_icon.short_description = '.'
 
     def image_tag(self, obj):
         img = ProductImage.objects.filter(product_id=obj.id).first()
