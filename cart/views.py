@@ -68,20 +68,22 @@ def cart_info(request, product_id='', size=''):
     return JsonResponse(cart.info(product_id, size=size), safe=False)
 
 
-def cart_remove(request, product_id, size):
+def cart_remove_size(request, product_id, size):
     cart = Cart(request)
     cart.remove(product_id, size=size)
 
     return redirect('cart:cart_detail')
 
 
-def cart_remove_sizes(request, product_id):
+def cart_remove(request, product_id):
     cart = Cart(request)
-    raw_data = request.POST.get('sizes')
-    if raw_data:
-        sizes = json.loads(raw_data)
+    size_data = request.POST.get('sizes')
+    if size_data:
+        sizes = json.loads(size_data)
         for removed_size in sizes:
             cart.remove(product_id, size=removed_size['size'])
+    else:
+        cart.remove(product_id)
 
     return redirect('cart:cart_detail')
 

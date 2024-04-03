@@ -86,7 +86,7 @@ class Cart(object):
 
 
     def remove(self, product_id, **kwargs):
-        key = self.get_key(product_id, size= kwargs['size'])
+        key = self.get_key(product_id, size= kwargs.get('size', ''))
         if key in self.cart:
             del self.cart[key]
             del self.keys[key]

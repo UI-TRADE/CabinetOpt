@@ -388,9 +388,12 @@ const removeSizesFromCart = async (productId, formData) => {
  * cartKey         - ключ позиции товара в корзине.
  */
 const removeFromCart = (cartKey) => {
+    let url = `/cart/remove/${cartKey.productId}`;
+    if (cartKey.size)
+        url = `${url}/${cartKey.size}`;
     return new Promise((resolve, reject) => {
         $.ajax({
-            url: `/cart/remove/${cartKey.productId}/${cartKey.size}/`,
+            url: url,
             success: (response) => {
                 resolve(response);
             },
