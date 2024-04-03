@@ -325,6 +325,24 @@ class ProductAdmin(admin.ModelAdmin):
         )
     image_tag.short_description = 'Изображение'
 
+    list_display_links = (
+        'image_icon',
+        'articul',
+        'show_on_site',
+        'price',
+        'name',
+        'product_type',
+        'ct_color',
+        'avg_weight',
+        'unit',
+        'available_for_order',
+        'stock',
+        'status',
+        'gem_set',
+        'brand',
+        'collection',
+    )
+
 
 @admin.register(PriceType)
 class PriceTypeAdmin(admin.ModelAdmin):
