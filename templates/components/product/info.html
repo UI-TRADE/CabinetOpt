@@ -84,7 +84,7 @@
             </ul>
         </div>
         {% if is_sized %}
-        <div id="sizes-selection-form-{{ product.id }}" class="d-flex align-items-center">
+        <div id="sizes-selection-form-{{ product.id }}" class="d-flex align-items-center" style="justify-content: space-between;">
             <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
             <div class="product-detail__sizes-container">
                 {% include "components/product/sizes.html" with stock_and_cost=stock_and_cost cart=cart %}
