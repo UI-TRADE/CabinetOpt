@@ -11,10 +11,10 @@ class FilterBadges {
         this.filterTemplates = {
             'default': (value) => `${value}`,
             "size__name": (value) => `${value}`,
-            "weight_min": (value) => `от ${value} гр.`,
-            "weight_max": (value) => `до ${value} гр.`,
-            "price_min": (value) => `от ${value} р.`,
-            "price_max": (value) => `до ${value} р.`,
+            "weight_min": (value) => `от ${value} г`,
+            "weight_max": (value) => `до ${value} г`,
+            "price_min": (value) => `от ${value} руб`,
+            "price_max": (value) => `до ${value} руб`,
             "gem_quantity_min": (value) => `от ${value} шт.`,
             "gem_quantity_max": (value) => `от ${value} шт.`
         }

@@ -71,7 +71,7 @@
                     <div class="d-flex flex-nowrap justify-content-center align-items-end row" id="cart-info">
                         <span class="d-sm-flex cart-total-sum">{{ cart.get_total_price|floatformat:"0"|intcomma }}</span>
                         <span class="d-sm-flex cart-currency">₽</span>
-                        <span class="flex-nowrap cart-total-weight">/ {{ cart.get_total_weight|floatformat:2 }} гр</span>
+                        <span class="flex-nowrap cart-total-weight">/ {{ cart.get_total_weight|floatformat:2 }} г</span>
                     </div>
                     {% endwith %}
                 </div>

@@ -423,14 +423,14 @@ td { padding: 0px; padding-left: 2px;}
 <COL>
 <TR CLASS=R19>
 <TD><SPAN></SPAN></TD>
-<TD CLASS="R21C1" COLSPAN=32><SPAN STYLE="white-space:nowrap;max-width:0px;">Всего&nbsp;наименований&nbsp;{{ order_totals.total_count }},&nbsp;на&nbsp;сумму&nbsp;{{ order_totals.total_sum|stringformat:".2f"|floatformat:2 }}&nbsp;руб.</SPAN></TD>
+<TD CLASS="R21C1" COLSPAN=32><SPAN STYLE="white-space:nowrap;max-width:0px;">Всего&nbsp;наименований&nbsp;{{ order_totals.total_count }},&nbsp;на&nbsp;сумму&nbsp;{{ order_totals.total_sum|stringformat:".2f"|floatformat:2 }}&nbsp;руб</SPAN></TD>
 <TD><SPAN></SPAN></TD>
 <TD></TD>
 </TR>
 <TR CLASS=R19>
 <TD><SPAN></SPAN></TD>
 {% in_words order_totals.total_sum as total_sum_in_words %}
-<TD CLASS="R22C1" COLSPAN=31>{{ total_sum_in_words|capfirst }} руб. {{ order_totals.total_sum|stringformat:".2f"|slice:"-2:" }} коп.</TD>
+<TD CLASS="R22C1" COLSPAN=31>{{ total_sum_in_words|capfirst }} руб {{ order_totals.total_sum|stringformat:".2f"|slice:"-2:" }} коп</TD>
 <TD><SPAN></SPAN></TD>
 <TD><SPAN></SPAN></TD>
 <TD></TD>

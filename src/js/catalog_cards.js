@@ -100,11 +100,11 @@ const updateProductCards = (element) => {
                     const pricePerweightField = elements[i].querySelector('.price-per-weight');
                     const stockField          = inStockBlock.querySelector('.in_stock');
                     if (currentPrice && pricePerweightField) 
-                        pricePerweightField.innerHTML = `${decimalFormat(Math.ceil(currentPrice))} руб/гр.`;
+                        pricePerweightField.innerHTML = `${decimalFormat(Math.ceil(currentPrice))} <span style="font-size: small;">руб/г</span>`;
 
                     if (weight && weightField) {
                         weightField.style.display = "inline-block"
-                        weightField.textContent = `${weightFormat(weight, 3)} гр.`
+                        weightField.textContent = `${weightFormat(weight, 2)} г`
                     }
                     if (inStok && stockField) stockField.textContent = `${inStok} шт`;
 

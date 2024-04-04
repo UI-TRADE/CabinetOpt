@@ -17,8 +17,8 @@ def get_order_settings(context):
         'ПодвалСкидка'        : context["order_totals"]["total_discount"],
         'ПодвалСумма'         : context["order_totals"]["total_sum"],
         'ПодвалНДС'           : 'Без НДС',
-        'ПодвалКоличество'    : f'Всего наименований { context["order_totals"]["total_count"] }, на сумму { context["order_totals"]["total_sum"] } руб.',
-        'ПодвалПропись'       : f'{ in_words(context["order_totals"]["total_sum"]) } руб. {str(context["order_totals"]["total_sum"])[-2:]} коп.'.capitalize()
+        'ПодвалКоличество'    : f'Всего наименований { context["order_totals"]["total_count"] }, на сумму { context["order_totals"]["total_sum"] } руб',
+        'ПодвалПропись'       : f'{ in_words(context["order_totals"]["total_sum"]) } руб {str(context["order_totals"]["total_sum"])[-2:]} коп.'.capitalize()
     }  
 
 

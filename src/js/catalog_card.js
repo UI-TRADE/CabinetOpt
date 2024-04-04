@@ -84,10 +84,10 @@ const updatePriceInProductCard = (context, price) => {
 
     if (context.weight && weightField) {
         weightField.style.display = "inline-block"
-        weightField.textContent = `${weightFormat(context.weight, 3)} гр.`
+        weightField.textContent = `${weightFormat(context.weight, 2)} г`
     }
     if (context.price && pricePerweightField) pricePerweightField.outerHTML =
-        `<p id="price-per-weight">${decimalFormat(Math.ceil(context.price))} руб/гр.</p>`;
+        `<p id="price-per-weight">${decimalFormat(Math.ceil(context.price))} <span style="font-size: small;">руб/г</span></p>`;
 
     if (!formElement) return;
     var inputFields = formElement.querySelectorAll('input');

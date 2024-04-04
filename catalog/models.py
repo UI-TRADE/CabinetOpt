@@ -577,7 +577,7 @@ class Price(models.Model):
         verbose_name_plural = 'Цены'
 
     def __str__(self):
-        return f'{self.product} {self.price} руб. ({self.type})'
+        return f'{self.product} {self.price} руб ({self.type})'
 
 
 class PreciousStone(models.Model):

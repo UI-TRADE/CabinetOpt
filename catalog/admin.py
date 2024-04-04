@@ -308,7 +308,7 @@ class ProductAdmin(admin.ModelAdmin):
         if base_price:
             result = base_price.price
         return result
-    price.short_description = 'Цена, руб.'
+    price.short_description = 'Цена, руб'
 
     def image_icon(self, obj):
         img = ProductImage.objects.filter(product_id=obj.id).first()

@@ -67,7 +67,7 @@ class OrderItemInline(admin.TabularInline):
             ).filter(unit='163').get()
             return found_entry.price
         return 0
-    price_per_weight.short_description = 'Цена, гр.'
+    price_per_weight.short_description = 'Цена, руб/г'
 
     def price_per_quantity(self, obj):
         avg_weight = 0

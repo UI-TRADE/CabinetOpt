@@ -50,8 +50,8 @@ export function updateTotalSizeInfo(productId, price, unit) {
 
     $totalCost.html(decimalFormat(Math.ceil(totalCost)).toLocaleString());
     $totalCount.html(totalCount.toLocaleString());
-    $totalWeight.html(totalWeight.toLocaleString());
-};
+    $totalWeight.html(weightFormat(totalWeight, 2));
+}
 
 
 //Обновление данных о корзине в каталоге
@@ -65,7 +65,7 @@ const updateTotalInfo = (productId) => {
     const $input       = $card.find('input[name="selection-quantity-input"]');
 
     const selectedQuantity = Number($input.val());
-    const totalWeight = selectedQuantity * Number(weight);
+    const totalWeight = weightFormat(selectedQuantity * Number(weight), 2);
 
     $totalCount.html(selectedQuantity.toLocaleString());
     $totalWeight.html(totalWeight.toLocaleString());
@@ -73,7 +73,7 @@ const updateTotalInfo = (productId) => {
     // const price = $form.find('input[name="price"]').val();
     // const $totalCost   = undefined;
     // $totalCost.html(decimalFormat(Math.ceil(totalCost)).toLocaleString());
-};
+}
 
 
 export function addSelectionSizesEvents(productId, price, unit) {
@@ -732,7 +732,7 @@ export function cartViewEvents() {
                 }
             })
             $('.cart-result__total-count', cartViewElement).text(decimalFormat(totalCount) + " шт")
-            $('.cart-result__total-weight', cartViewElement).text(weightFormat(totalWeight, 2) + " гр")
+            $('.cart-result__total-weight', cartViewElement).text(weightFormat(totalWeight, 2) + " г")
             $('.cart-result__total-price', cartViewElement).text(decimalFormat(Math.round(totalSum)) + " р")
         })
     }

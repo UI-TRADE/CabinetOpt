@@ -75,7 +75,7 @@ class Cart {
             this.totalWeight += item.quantity * item.weight
         });
         $(".cart-total-sum", this.miniCartElement).html(`${decimalFormat(Math.ceil(this.totalPrice))}`)
-        $(".cart-total-weight", this.miniCartElement).html(`/ ${weightFormat(this.totalWeight, 2)} гр`)
+        $(".cart-total-weight", this.miniCartElement).html(`/ ${weightFormat(this.totalWeight, 2)} г`)
 
     }
 

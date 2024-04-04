@@ -126,7 +126,7 @@ const updateTotalOrderData = () => {
     });
 
     totalQuantity.text(`${quantity} шт`);
-    totalWeight.text(`${weightFormat(weight, 2)} гр`);
+    totalWeight.text(`${weightFormat(weight, 2)} г`);
     totalPrice.text(`${Math.ceil(sum).toLocaleString()} р`);
 
 }
