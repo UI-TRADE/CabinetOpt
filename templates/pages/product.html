@@ -18,11 +18,11 @@
 
         <div class="row">
 
-            <div class="container col-xl-3 col-md-5 col-sm-6 col-xs-12">
+            <div style="display: none" class="container col-xl-3 col-md-5 col-sm-6 col-xs-12">
                 <div id="filter-container"></div>
             </div>
 
-            <main class="col-xl-9 col-md-7 col-sm-6 col-xs-12 product-detail" >
+            <main class="col-11 product-detail" >
                 <div id="product">
                     {% include "components/product/info.html" with product=product gem_sets=gem_sets stock_and_cost=stock_and_cost cart=cart %}
                 </div>

@@ -309,10 +309,6 @@
     border-bottom: 1px solid #D9D9D9;
   }
 
-  .product-detail__nav-tabs {
-    max-width: 770px;
-  }
-
   &__tab-nav-link {
     padding: 3px 23px;
     background-color: transparent;
@@ -335,9 +331,6 @@
     font-size: 16px;
   }
 
-  .product-detail__tab-content {
-    max-width: 770px;
-  }
 
   .tab-pane-text {
     white-space: pre-wrap;       /* Since CSS 2.1 */

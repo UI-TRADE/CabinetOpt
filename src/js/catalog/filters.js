@@ -98,6 +98,18 @@ const openMenuItems = (element) => {
 }
 
 
+const openSelectedItems = (element) => {
+    try {
+        const patentElement = $(element).parents('li[name="bundle"]').first();
+        patentElement.find('img[class="item-close"]').toggleClass('item-close');
+        const disableItems = patentElement.find('.filter-item-disable');
+        disableItems.each((_, element) => {
+            $(element).removeClass('filter-item-disable');    
+        }); 
+    } catch {;}
+}
+
+
 const showCatalog = () => {
     const filters = JSON.parse(sessionStorage.getItem('filters'));
     const token = document.querySelector('input[name="csrfmiddlewaretoken"]');
@@ -138,15 +150,15 @@ const showCatalog = () => {
 }
 
 
-const canRemoveFilterItem = (currnetIdent) => {
-    const selectedSizes = $('.size-item.filter-item-title-active');
-    for(var i=0; i<selectedSizes.length; i++) {
-        if ($(selectedSizes[i]).data('json').find(f => f['ident'] === currnetIdent)) {
-            return false;
-        }    
-    }
-    return true;
-}
+// const canRemoveFilterItem = (currnetIdent) => {
+//     const selectedSizes = $('.size-item.filter-item-title-active');
+//     for(var i=0; i<selectedSizes.length; i++) {
+//         if ($(selectedSizes[i]).data('json').find(f => f['ident'] === currnetIdent)) {
+//             return false;
+//         }    
+//     }
+//     return true;
+// }
 
 
 const selectMenuItem = (element, filters) => {
@@ -210,8 +222,10 @@ const updateMenuItems = () => {
         const elementName = $(element).attr('name');
         if (elementName)
             currentFilter = filters.filter(item => item['ident'] === elementName);
-        if (currentFilter.length)
+        if (currentFilter.length) {
             $(element).toggleClass('filter-item-title-active');
+            openSelectedItems(element);
+        }
     });
     $('#inStockFilter').each((_, element) => {
         const inStockItem = filters.find(item => 'in_stock' in item);

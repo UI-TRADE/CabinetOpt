@@ -55,14 +55,14 @@ def parse_filters(filters):
 class FiltersView(TemplateView):
     template_name = 'forms/catalog-filters.html'
 
-    def get_filter(self, qs=None, func='', field='', *groups):
+    def get_filter(self, qs=None, func='', field='', *groups, **kwargs):
         if qs:
             if 'size__name' in groups:
                 filter_tree = SizeFilterTree(qs)
             else:   
                 filter_tree = FilterTree(qs)
             method = getattr(filter_tree, func)
-            method(field, *groups)
+            method(field, *groups, **kwargs)
             return filter_tree
         return FilterTree()
     
@@ -83,7 +83,8 @@ class FiltersView(TemplateView):
                 filters['prod_status'] = self.get_filter(qs, 'count', 'status')
             if filter_settings.collections:
                 filters['collections'] = self.get_filter(
-                    qs, 'count', 'collection__group__name', 'collection__name'
+                    qs, 'count', 'collection__group__name', 'collection__name',
+                    root_order=['collection__group__order']
                 )
             if filter_settings.genders:
                 filters['genders'] = self.get_filter(
@@ -92,7 +93,8 @@ class FiltersView(TemplateView):
             if filter_settings.sizes:
                 filters['sizes'] = self.get_filter(
                     StockAndCost.objects.filter(product__in=qs),
-                    'sum', 'product__collection__group__name', 'size__name'
+                    'sum', 'product__collection__group__name', 'size__name',
+                    node_order=['size__size_from']
                 )
             if filter_settings.gems:
                 filters['gems'] = self.get_filter(

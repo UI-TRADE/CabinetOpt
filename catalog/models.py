@@ -32,10 +32,12 @@ class TrimCharField(models.CharField):
 
 class CollectionGroup(models.Model):
     name = models.CharField('Наименование', max_length=100, db_index=True)
-
+    order = models.PositiveIntegerField(
+        'Порядок', default=1, validators=[MinValueValidator(0)]
+    )
     class Meta:
-        verbose_name = 'Группа коллекций'
-        verbose_name_plural = 'Группы коллекций'
+        verbose_name = 'Коллекция'
+        verbose_name_plural = 'Коллекции'
 
     def __str__(self):
         return self.name
@@ -62,8 +64,8 @@ class Collection(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Коллекция'
-        verbose_name_plural = 'Коллекции'
+        verbose_name = 'Вид коллекции'
+        verbose_name_plural = 'Виды коллекций'
 
     def __str__(self):
         return self.name

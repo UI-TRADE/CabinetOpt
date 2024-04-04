@@ -25,6 +25,16 @@ from .models import (
     Style,
 )
 
+class CollectionInLine(admin.TabularInline):
+    model = Collection
+    fk_name = 'group'
+    extra = 0
+    fields = ('name',)
+
+    verbose_name = 'вид коллекции'
+    verbose_name_plural = 'виды коллекций'
+
+
 class GenderInLine(admin.TabularInline):
     model = Product.gender.through
     extra = 0
@@ -140,15 +150,9 @@ class BrandAdmin(admin.ModelAdmin):
 
 @admin.register(CollectionGroup)
 class CollectionGroupAdmin(admin.ModelAdmin):
-    search_fields = [
-        'name',
-    ]
-    fields = [
-        'name',
-    ]
-
-    def get_model_perms(self, *args, **kwargs):
-        return {}
+    search_fields = ['order', 'name',]
+    fields = ['order', 'name',]
+    inlines = [CollectionInLine,]
 
 
 @admin.register(Collection)
@@ -167,6 +171,10 @@ class CollectionAdmin(admin.ModelAdmin):
         'name',
         'discount',
     ]
+
+    # def get_model_perms(self, *args, **kwargs):
+    #     return {}
+
 
 class ProductPriceFilter(admin.SimpleListFilter):
     title = ('Базовая цена')

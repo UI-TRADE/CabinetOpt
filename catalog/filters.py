@@ -49,20 +49,27 @@ class FilterTree(object):
                 ])
         return result
 
-    def count(self, root_field, *node_fields):
+    def count(self, root_field, *node_fields, **kwargs):
         def calc_products_by_precious_gems(precious_filter):
             result = self.qs.filter(precious_filter=precious_filter).values('precious_filter', 'product_id').distinct().count()
             return result
         
         if self.qs:
-            roots = [dict(item) for item in self.qs.values(root_field).annotate(count=Count('id'))]
-            for root in roots:
+            root_order = kwargs.get('root_order', [])
+            node_order = kwargs.get('node_order', [])
+            qs = self.qs.values(root_field).annotate(count=Count('id'))
+            if root_order:
+                qs = qs.order_by(*root_order)
+            for root in qs:
+                # root = dict(item)
                 if not root[root_field]:
                     continue
                 if node_fields:
-                    nodes = self.qs.filter(Q((root_field, root[root_field]))).values(*node_fields).annotate(count=Count('id'))
-                    if nodes:
-                        root['nodes'] = self.__serialize_node(root[root_field], nodes, node_fields)
+                    node_qs = self.qs.filter(Q((root_field, root[root_field]))).values(*node_fields).annotate(count=Count('id'))
+                    if node_order:
+                        node_qs = node_qs.order_by(*node_order)   
+                    if node_qs:
+                        root['nodes'] = self.__serialize_node(root[root_field], node_qs, node_fields)
                 
                 if root_field == 'precious_filter':
                     root['count'] = calc_products_by_precious_gems(root[root_field])    
@@ -99,19 +106,25 @@ class SizeFilterTree(FilterTree):
         
         return [element for element in [item | {'name': '_'.join(node_fields), 'ident': get_ident(item)} for item in node] if element['ident']]
     
-    def sum(self, root_field, *node_fields):
+    def sum(self, root_field, *node_fields, **kwargs):
         if self.qs:
-            roots = self.qs.values(root_field).annotate(sum=Sum(self.annotate_field))
-            for root in roots:
+            root_order = kwargs.get('root_order', [])
+            node_order = kwargs.get('node_order', [])
+            qs = self.qs.values(root_field).annotate(sum=Sum(self.annotate_field))
+            if root_order:
+                qs = qs.order_by(*root_order)
+            for root in qs:
                 if not root[root_field]:
                     continue
                 if node_fields:
-                    nodes = self.qs.filter(Q((root_field, root[root_field]))).values(*node_fields).annotate(count=Count('id'), sum=Sum('stock')).order_by('size__size_from')
-                    if nodes:
-                        root['nodes'] = self.__serialize_node(root[root_field], nodes, node_fields)
+                    node_qs = self.qs.filter(Q((root_field, root[root_field]))).values(*node_fields).annotate(count=Count('id'), sum=Sum('stock'))
+                    if node_order:
+                        node_qs = node_qs.order_by(*node_order)
+                    root['count'] = 0
+                    if node_qs:
+                        root['nodes'] = self.__serialize_node(root[root_field], node_qs, node_fields)
                         root['count'] = len(root['nodes'])
-                    else:
-                        root['count'] = 0    
+                            
                 root['collection__group__name'] = root.pop('product__collection__group__name')
                 self.tree.append(self.__serialize_root(root, 'collection__group__name'))
 
