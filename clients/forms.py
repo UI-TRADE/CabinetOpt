@@ -67,6 +67,11 @@ class RegForm(forms.ModelForm):
                 continue
             self.fields[field].widget.attrs['class'] = 'form-control default-input reg-field-layout'
 
+    def clean(self):
+        '''Переопределяем стандартное описание ошибки, ибо оно на английском'''
+        if not self.cleaned_data.get('phone'):
+            self.errors['phone'][0] = 'Не верно указан телефон (+12125552368)'
+
     def clean_identification_number(self):
         value = self.cleaned_data['identification_number']
         if not (len(value) == 10 or len(value) == 12):
