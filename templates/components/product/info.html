@@ -21,7 +21,7 @@
                 {% endwith %}
             {% endif %}
         </div>
-
+        <div class="img-form hidden"><img/></div>
         <div id="product-carousel-{{ product.id }}" class="carousel slide" data-ride="carousel">
             <div class="carousel-container carousel-inner">
                 {% for image in product.get_images|slice:":5" %}
@@ -32,7 +32,7 @@
                     </div>
                 {% empty %}
                     <div class="carousel-item active">
-                        <img src="{{ MEDIA_URL }}/0.jpg" class="img-fluid rounded" alt="Пустое изображение" />
+                        <img src="{{ MEDIA_URL }}/0.jpg" class="main-image img-fluid rounded" alt="Пустое изображение" />
                     </div>
                 {% endfor %}
             </div>

@@ -6,7 +6,7 @@ import mainMenuEvents from './main_menu';
 import updateContactView, {contactEvents} from './contact';
 import { cartViewEvents } from './cart';
 import initProductFilters, { filtersEvents } from './catalog/filters';
-import updateProductCard from './catalog_card';
+import updateProductCard, { productCardEvents } from './catalog_card';
 import ordersEvents from './orders';
 import orderEvents from './order';
 import showModalForm, {
@@ -39,6 +39,7 @@ const addEvents = () => {
     modalFormEvents();
     mainMenuEvents();
     filtersEvents();
+    productCardEvents();
     cartViewEvents();
     ordersEvents();
     orderEvents();

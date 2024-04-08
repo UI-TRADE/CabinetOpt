@@ -11,6 +11,32 @@ import { decimalFormat } from "./utils/money_format";
 import { handleError } from "./utils/exceptions";
 
 
+export const productCardEvents = () => {
+
+    const closeImgWindow = () => {
+        const $modal = $('.img-form');
+        const $overlay = $('.background-overlay');
+        $modal.html('<img class="show-image"/>');
+        $modal.addClass('hidden');
+        $overlay.addClass('hidden');
+        $overlay.off();
+    };
+
+    $('.main-image').on('click', (event) => {
+        event.preventDefault();
+
+        $('.background-overlay').removeClass('hidden');
+        const $modal = $('.img-form');
+        const $img = $modal.find('img');
+        $img.attr('src', $(event.currentTarget).attr('src'));
+        $img.attr('alt', $(event.currentTarget).attr('alt'));
+        $('.background-overlay').click(closeImgWindow);
+        $modal.removeClass('hidden');
+
+    });
+}
+
+
 // data-ride="carousel"
 const sliderTemplateFn = (items, name) => `
     <div id="${name}-carousel" class="slider">
