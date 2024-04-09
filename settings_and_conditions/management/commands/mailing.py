@@ -99,7 +99,7 @@ def get_recipient_list(notification_type, email):
             result = result + [notify.manager_talant.email]
     if notifications.exclude(notify=Notification.NOTIFICATION_TO_MANAGERS):
         result = result + [email]
-    return result
+    return list(set(result))
 
 
 def get_context(notification_type, id, url, params):
@@ -115,10 +115,11 @@ def get_context(notification_type, id, url, params):
 
     if notification_type == NotificationType.CONFIM_ORDER:
         obj = Order.objects.get(id=id)
+        email = obj.client.manager.values_list('email', flat=True).first()
         manager_talant = obj.client.registration_order.manager_talant
         if not manager_talant:
             raise ValidationError('Не указан менеджер talant', code='')
-        email = manager_talant.email
+        # email = manager_talant.email
         if not email:
             raise ValidationError('Не указан email менеджера talant', code='')
         
