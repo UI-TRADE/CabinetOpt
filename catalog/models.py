@@ -173,7 +173,7 @@ class ProductQuerySet(models.QuerySet):
 
 
 class Product(models.Model):
-    NOVELTY   = 'novelty'
+    NOVELTY   = 'new'
     HIT       = 'hit'
     SALE      = 'sale'
     PROFIT    = 'profit'
