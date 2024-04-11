@@ -140,7 +140,10 @@ class OrderAdmin(admin.ModelAdmin):
     ct_client.short_description = 'ЮЛ клиента'
 
     def ct_manager_ui(self, obj):
-        return obj.client.registration_order.manager_talant
+        result = obj.client.registration_order.manager_talant
+        if not result:
+            result = '-'
+        return result
     ct_manager_ui.short_description = 'менеджер ЮИ-Трейд'
 
     def ct_num_ui(self, obj):
