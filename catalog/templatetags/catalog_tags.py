@@ -43,7 +43,9 @@ def join_qs(qs, key):
 
 @register.filter
 def get_status_repr(status):
-    return Product.objects.get_status_view(status)
+    result = [value for key, value  in Product.STATUS_CHOICES if key == status]
+    if result:
+        return result[0]
 
 
 @register.filter

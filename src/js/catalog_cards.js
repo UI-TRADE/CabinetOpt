@@ -5,6 +5,7 @@ import { cartEvents, waitUpdateCart } from './cart';
 import { weightFormat } from "./utils/weight_format";
 import { decimalFormat } from "./utils/money_format";
 import { handleError } from "./utils/exceptions";
+import updateProductsStatusStyle from "./components/catalog_status";
 import lazyLoads from './components/lazyload';
 
 
@@ -106,11 +107,12 @@ const updateProductCards = (element) => {
                         weightField.style.display = "inline-block"
                         weightField.textContent = `${weightFormat(weight, 2)} г`
                     }
-                    if (inStok && stockField) stockField.textContent = `${inStok} шт`;
 
-                    // if (+inStok === 0) {
-                    //     tagField.setAttribute('data-json', '{ "status": "order" }');
-                    // }
+                    if (stockField) {
+                         if (inStok > 0) {
+                            stockField.outerHTML = `<span class="in_stock"> В наличии: ${inStok} шт </span>`;
+                         }
+                    }
 
                     // Заполняем поля формы добавления в корзину
                     var inputFields = inStockBlock.getElementsByTagName('input');
@@ -179,21 +181,6 @@ const updateProductCards = (element) => {
             } catch (error) {
                 reject(error);
             }
-        });
-    }
-
-    const updateProductsStatusStyle = () => {
-        const statusFields = document.querySelectorAll('div[name="product-status"]');
-        statusFields.forEach((statusField) => {
-            const data = JSON.parse(statusField.getAttribute('data-json'));
-            if (!data) statusField.className += ' text-info';
-            if (data.status === "novelty") statusField.className += ' text-info';
-            if (data.status === "order") {
-                statusField.className += ` badge badge-secondary ${data.status}__status`;
-                $('b', statusField).text('на заказ')
-            }
-            if (data.status === "hit")     statusField.className += ' text-warning';
-            if (data.status === "sale")    statusField.className += ' text-danger';
         });
     }
 

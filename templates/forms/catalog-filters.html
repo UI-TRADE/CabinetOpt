@@ -118,6 +118,7 @@
                 </div>
                 <ul id="prod_status" class="filter-item-disable">
                     {% for item in filters.prod_status.tree %}
+                        {% if item.status %}
                         <li class="filter-item-title-hidden">
                             <div class="d-xl-flex justify-content-xl-start row filter-node-item">
                                 <span 
@@ -132,6 +133,7 @@
                                 </span>
                             </div>
                         </li>
+                        {% endif %}
                     {% endfor %}
                 </ul>
             </li>

@@ -397,10 +397,7 @@ def run_uploading_stock_and_costs(stock_and_costs):
                         'weight': item['weight'],
                         'stock' : item['stock']
                     }
-                )
-                if item['stock'] > 0:
-                    product.status = 'novelty'
-                    product.save()    
+                )   
 
         except Product.DoesNotExist:
             errors.append({

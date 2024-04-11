@@ -30,9 +30,8 @@
                         <div class="product-popup__tags">
                             {% if product.status %}
                                 {% with product_status="status"|addparam:product.status %}
-                                    <div name="product-status" class="fs-3"
-                                       data-json="{{ product_status|tojson }}">
-                                        <b>{{ product.get_status_display }}</b>
+                                    <div name="product-status" class="" data-json="{{ product_status|tojson }}">
+                                        <span class="product-item__status-text">{{ product.get_status_display }}</span>
                                     </div>
                                 {% endwith %}
                             {% endif %}

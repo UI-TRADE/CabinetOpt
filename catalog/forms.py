@@ -1,16 +1,11 @@
 from django import forms
+from .models import Product
 
 
 class ProductFilterForm(forms.Form):
     articul = forms.CharField(max_length=200, required=False, strip=True, label='Артикул')
     status  = forms.ChoiceField(
-        choices=(
-            (''       , '--'),
-            ('novelty', 'NEW!'),
-            ('order'  , 'ЗАКАЗ'),
-            ('hit'    , 'ХИТ'),
-            ('sale'   , 'ВЫГОДНО'),
-        ),
+        choices=Product.STATUS_CHOICES,
         required=False,
         label='Статус'
     )

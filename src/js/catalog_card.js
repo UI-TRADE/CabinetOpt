@@ -5,7 +5,7 @@ import {
     addSelectionSizesEvents,
     addSizeSlider
 } from './cart';
-// import slick from "slick-carousel"
+import updateProductsStatusStyle from "./components/catalog_status";
 import { weightFormat } from "./utils/weight_format";
 import { decimalFormat } from "./utils/money_format";
 import { handleError } from "./utils/exceptions";
@@ -243,11 +243,8 @@ function updateProductCard() {
                         sumOfStock += item['fields'].stock;
                     });
 
-                    if (inStokelement) {
+                    if (inStokelement && sumOfStock > 0)
                         inStokelement.outerHTML = `<span id="in_stock"> В наличии: ${sumOfStock} шт </span>`;
-                    } else {
-                        inStokelement.outerHTML = `<span id="in_stock"> В наличии: -- шт </span>`;
-                    }
 
                     addSelectionSizesEvents(currentId['id'], calcPriceParams.price, currentUnit);    
                     addSizeSlider($('.product-detail__sizes-container'), 6);
@@ -317,22 +314,6 @@ function updateProductCard() {
             }
         });
     }
-
-    const updateProductsStatusStyle = () => {
-        const statusFields = document.querySelectorAll('div[name="product-status"]');
-        statusFields.forEach((statusField) => {
-            const data = JSON.parse(statusField.getAttribute('data-json'));
-            if (!data) statusField.className += ' text-info';
-            if (data.status === "novelty") statusField.className += ' text-info';
-            if (data.status === "order") {
-                statusField.className += ` badge badge-secondary ${data.status}__status`;
-                $('b', statusField).text('на заказ')
-            }
-            if (data.status === "hit")     statusField.className += ' text-warning';
-            if (data.status === "sale")    statusField.className += ' text-danger';
-        });
-    }
-
 
     /**
      * Подготавливает элементы коллекций и сохраняет их в json формате.

@@ -154,16 +154,6 @@ class ProductQuerySet(models.QuerySet):
                 result = result.filter(status=value)
         return result
     
-    def get_status_view(self, status):
-        if status == Product.NOVELTY:
-            return 'NEW!'
-        elif status == Product.ORDER:
-            return 'ЗАКАЗ'
-        elif status == Product.HIT:
-            return 'ХИТ'
-        elif status == Product.SALE:
-            return 'ВЫГОДНО'
-        
     def get_active_products(self, in_stock=True):
         result = self.distinct()
         result = result.filter(product_type='product', show_on_site=True)
@@ -183,10 +173,19 @@ class ProductQuerySet(models.QuerySet):
 
 
 class Product(models.Model):
-    NOVELTY = 'novelty'
-    ORDER   = 'order'
-    HIT     = 'hit'
-    SALE    = 'sale'
+    NOVELTY   = 'novelty'
+    HIT       = 'hit'
+    SALE      = 'sale'
+    PROFIT    = 'profit'
+    EXCLUSIVE = 'exclusive'
+
+    STATUS_CHOICES = (
+        (NOVELTY   , 'NEW!'),
+        (HIT       , 'ХИТ'),
+        (SALE      , 'SALE'),
+        (PROFIT    , 'ВЫГОДНО'),
+        (EXCLUSIVE , 'ЭКСКЛЮЗИВ'),
+    )
 
     name = models.CharField('Наименование', max_length=200, db_index=True)
     articul = models.CharField('Артикул', max_length=200, blank=True)
@@ -253,12 +252,7 @@ class Product(models.Model):
         max_length=20,
         blank=True,
         db_index=True,
-        choices=(
-            (NOVELTY, 'NEW!'),
-            (ORDER  , 'ЗАКАЗ'),
-            (HIT    , 'ХИТ'),
-            (SALE   , 'ВЫГОДНО'),
-    ))
+        choices=STATUS_CHOICES)
     gift = models.ManyToManyField(
         Gift,
         verbose_name='Подарок',

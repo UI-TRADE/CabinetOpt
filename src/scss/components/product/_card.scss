@@ -6,19 +6,21 @@
   .product-item__brand{
     font-size: 0.75em;
   }
+
   .product-item__tags{
     font-size: 1em;
     white-space: nowrap;
     position:absolute; right:18px; top:12px;
-
-    .order__status{
-      min-width:110px;
-      background:#ADADAA;
-      text-align:center;
-      text-transform: uppercase;
-      padding:5px 0;
-    }
+  
+    // .order__status{
+    //   min-width:110px;
+    //   background:#ADADAA;
+    //   text-align:center;
+    //   text-transform: uppercase;
+    //   padding:5px 0;
+    // }
   }
+
   .card-body{
     height: 378px;
     padding:13px 10px;
