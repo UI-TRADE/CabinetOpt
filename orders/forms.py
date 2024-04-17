@@ -112,27 +112,17 @@ class OrderItemForm(forms.ModelForm):
 class OrderItemInlineForm(BaseInlineFormSet):
 
     def add_fields(self, form, index):
-        readonly_fields = ['uin', 'series', 'weight', 'unit', 'price', 'discount', 'sum']
         super().add_fields(form, index)
-        for field in form.fields:
-            if field in readonly_fields:
-                form.fields[field].widget.attrs['class'] = 'order__field form-control'
-                form.fields[field].widget.attrs['readonly'] = True
-                continue
-            if field == 'nomenclature':
-                form.fields[field].widget.attrs['class'] = 'order__field__nomenclature form-control'
-                continue
-            if field == 'nomenclature_size':
-                form.fields[field].widget.attrs['class'] = 'order__field__nomenclature_size form-control'
-                continue
-            if field == 'product':
-                form.fields[field].widget = forms.TextInput()
-                form.fields[field].widget.attrs['class'] = 'order__field__product form-control'
-                continue
-            if field == 'size':
-                form.fields[field].widget = forms.TextInput()
-                form.fields[field].widget.attrs['class'] = 'order__field form-control'
-                continue
+        form.fields['nomenclature'].widget.attrs['class'] = 'order__field__nomenclature form-control'
+        form.fields['nomenclature_size'].widget.attrs['class'] = 'order__field__nomenclature_size form-control'
+        for text_field in ['product', 'size', 'unit']:
+            form.fields[text_field].widget = forms.TextInput()
+            form.fields[text_field].widget.attrs['class'] = 'order__field form-control'
+        form.fields['product'].widget.attrs['class'] += 'order__field__product'
+        for readonly_field in ['weight', 'price', 'discount', 'sum']:
+            form.fields[readonly_field].widget.attrs['class'] = 'order__field form-control'
+            form.fields[readonly_field].widget.attrs['readonly'] = True
+        for field in ['quantity', 'in_stock', 'price_per_gr']:
             form.fields[field].widget.attrs['class'] = 'order__field form-control'
 
     def clean(self):

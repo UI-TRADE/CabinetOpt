@@ -1,4 +1,4 @@
-import getPrice from './price'
+import getPrice, {getUnitRepr} from './price'
 import { extractContent, createSpiner, removeSpiner } from './lib';
 import { updateFilterQuantitiesAndSums } from './catalog/filters';
 import { cartEvents, waitUpdateCart } from './cart';
@@ -49,7 +49,7 @@ const updateProductCards = (element) => {
 
                 for (var i=0; i < elements.length; i++) {
                     let inStok = 0; let weight = 0; let size = '';
-                    let currentPrice = 0; let currentDiscount = 0; let maxPrice = 0;
+                    let currentPrice = 0; let currentDiscount = 0; let maxPrice = 0; let currentUnit = '163';
                     const currentId = JSON.parse(elements[i].getAttribute('data-json'));
                     const product = products.find(el => el['pk'] == currentId['id']);
                     const stock_and_cost = stocks_and_costs.filter(
@@ -68,6 +68,9 @@ const updateProductCards = (element) => {
                         el => el['product'] == currentId['id']
                     ).find(_ => true);
 
+                    if (product)
+                        currentUnit = product['fields'].unit;  
+
                     if (stock_and_cost) {
                         maxPrice = stock_and_cost['fields'].cost;
                         weight = stock_and_cost['fields'].weight;
@@ -83,6 +86,7 @@ const updateProductCards = (element) => {
                     if (actual_price) {
                         currentPrice = actual_price['fields'].price;
                         currentDiscount = actual_price['fields'].discount;
+                        currentUnit = actual_price['fields'].unit;
                     }
 
                     if (discount_price) {
@@ -94,14 +98,14 @@ const updateProductCards = (element) => {
                         inStok = available_stock['total_stock'];    
                     }
 
-                    const price = getPrice(currentPrice, maxPrice, currentDiscount, weight);
+                    const price = getPrice(currentPrice, maxPrice, currentDiscount, weight, currentUnit);
 
                     const inStockBlock        = elements[i].querySelector('.inStock-block');
                     const weightField         = elements[i].querySelector('.weight');
                     const pricePerweightField = elements[i].querySelector('.price-per-weight');
                     const stockField          = inStockBlock.querySelector('.in_stock');
                     if (currentPrice && pricePerweightField) 
-                        pricePerweightField.innerHTML = `${decimalFormat(Math.ceil(currentPrice))} <span style="font-size: small;">руб/г</span>`;
+                        pricePerweightField.innerHTML = `${decimalFormat(Math.ceil(currentPrice))} <span style="font-size: small;">руб/${getUnitRepr(currentUnit)}</span>`;
 
                     if (weight && weightField) {
                         weightField.style.display = "inline-block"
@@ -124,7 +128,7 @@ const updateProductCards = (element) => {
 
                     // Данные для диалогового окна выбора размеров
                     if (stock_and_cost && stock_and_cost['fields'].size?.find(_ => true)) {
-                        currentId['unit'] = '163';
+                        currentId['unit'] = currentUnit;
                         currentId['price'] = currentPrice;
                         elements[i].setAttribute('data-json', JSON.stringify(currentId));
                     }

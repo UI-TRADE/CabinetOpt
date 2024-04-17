@@ -4,6 +4,7 @@ import { createSpiner, removeSpiner } from './lib';
 import { weightFormat } from "./utils/weight_format";
 import { decimalFormat } from "./utils/money_format";
 import { handleError } from "./utils/exceptions";
+import * as settings from './settings.js';
 // import updateOrder from '../js/_old/order';
 
 
@@ -202,13 +203,20 @@ export function orderEvents() {
     });
 
     $('input[name="quantity"]', orderForm).on('change', (event) => {
+        let currentWeight = 0; let currentSum = 0;
         const viewElement = $(event.currentTarget);
         const currentLine = viewElement.parents('tr');
         const quantity = parseInt(viewElement.val());
         const weight = parseFloat(currentLine?.find('input[name$="-weight"]').val());
         const price = parseFloat(currentLine?.find('input[name$="-price_per_gr"]').val());
-        const currentWeight = (quantity * weight);
-        const currentSum = (quantity * (weight * price).toFixed());
+        const unit = parseFloat(currentLine?.find('input[name$="-unit"]').val());
+        if (unit == settings.PIECE) {
+            currentWeight = weight;
+            currentSum = ((quantity * price).toFixed());
+        } else {
+            currentWeight = (quantity * weight);
+            currentSum = (quantity * (weight * price).toFixed());
+        }
         updateOrderItemForm(currentLine, quantity, currentWeight, currentSum);
         updateViewItemForm(currentLine, quantity, currentWeight, currentSum);
         updateTotalOrderData();
@@ -222,11 +230,18 @@ export function orderEvents() {
         const quantity = parseInt(viewElement.val()) + 1;
         viewElement.val(quantity);
 
+        let currentWeight = 0; let currentSum = 0;
         const currentLine = viewElement.parents('tr');
         const weight = parseFloat(currentLine?.find('input[name$="-weight"]').val());
         const price = parseFloat(currentLine?.find('input[name$="-price_per_gr"]').val());
-        const currentWeight = (quantity * weight);
-        const currentSum = (quantity * (weight * price).toFixed(2));
+        const unit = parseFloat(currentLine?.find('input[name$="-unit"]').val());
+        if (unit == settings.PIECE) {
+            currentWeight = weight;
+            currentSum = ((quantity * price).toFixed(2));
+        } else {
+            currentWeight = (quantity * weight);
+            currentSum = (quantity * (weight * price).toFixed(2));
+        }
 
         updateOrderItemForm(currentLine, quantity, currentWeight, currentSum);
         updateViewItemForm(currentLine, quantity, currentWeight, currentSum);
@@ -241,11 +256,18 @@ export function orderEvents() {
         const quantity = parseInt(viewElement.val()) - 1; if (quantity === 0) return;
         viewElement.val(quantity);
 
+        let currentWeight = 0; let currentSum = 0;
         const currentLine = viewElement.parents('tr');
         const weight = parseFloat(currentLine?.find('input[name$="-weight"]').val());
         const price = parseFloat(currentLine?.find('input[name$="-price_per_gr"]').val());
-        const currentWeight = (quantity * weight);
-        const currentSum = (quantity * (weight * price).toFixed(2));
+        const unit = parseFloat(currentLine?.find('input[name$="-unit"]').val());
+        if (unit == settings.PIECE) {
+            currentWeight = weight;
+            currentSum = ((quantity * price).toFixed(2));
+        } else {
+            currentWeight = (quantity * weight);
+            currentSum = (quantity * (weight * price).toFixed(2));
+        }
 
         updateOrderItemForm(currentLine, quantity, currentWeight, currentSum);
         updateViewItemForm(currentLine, quantity, currentWeight, currentSum);

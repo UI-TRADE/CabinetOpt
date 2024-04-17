@@ -5,6 +5,7 @@ import updateProductCard from './catalog_card';
 import { weightFormat } from "./utils/weight_format";
 import { decimalFormat } from "./utils/money_format";
 import { handleError } from "./utils/exceptions";
+import * as settings from './settings.js';
 
 
 const closeAddToCartSettingsWindow = () => {
@@ -44,7 +45,10 @@ export function updateTotalSizeInfo(productId, price, unit) {
         if ( selectedQuantity ) {
             totalCount += selectedQuantity;
             totalWeight += (selectedQuantity * parseFloat($(inputField).attr('data-weight').replace(",", ".")));
-            totalCost += (selectedQuantity * (totalWeight * price).toFixed(2));
+            if (unit == settings.PIECE)
+                totalCost += parseFloat((selectedQuantity * price).toFixed(2));
+            else
+                totalCost += parseFloat(selectedQuantity * (totalWeight * price).toFixed(2));
         }
     });
 
@@ -110,7 +114,10 @@ export function addSelectionSizesEvents(productId, price, unit) {
                         selectedSize['weight'] = parseFloat($(inputField).attr('data-weight').replace(",", "."));
                         selectedSize['quantity'] = selectedQuantity-incartQuantity;
                         selectedSize['unit'] = unit;
-                        selectedSize['price'] = (selectedSize['weight'] * price).toFixed(2);
+                        if (unit == settings.PIECE)
+                            selectedSize['price'] = price;
+                        else
+                            selectedSize['price'] = (selectedSize['weight'] * price).toFixed(2);
                         if (incartQuantity == 0) selectedSize['update'] = 'false';
                         else selectedSize['update'] = 'true';
                         selectedSizes.push(selectedSize);
@@ -656,7 +663,7 @@ export function waitUpdateCart(element, params, product) {
         updateCartElements(element, product, params);
         if (params && 'productId' in params && params.productId)
             updateTotalInfo(params.productId);
-            updateTotalSizeInfo(params.productId, 0, '163');
+            updateTotalSizeInfo(params.productId, 0, product?.unit);
         resolve(product);
     });
 };

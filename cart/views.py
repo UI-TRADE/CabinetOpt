@@ -154,7 +154,7 @@ def add_order(request):
                 size_name = item['size']
                 item['size']    = None
                 item['size']    = Size.objects.get(name=size_name)
-            if item['weight']:
+            if item['weight'] and item['unit'] != '796':
                 item['weight'] = round(item['quantity'] * item['weight'], 3)
             order_items.append(item)
 

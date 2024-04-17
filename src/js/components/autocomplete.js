@@ -1,5 +1,7 @@
 import getPrice from '../price';
 import { handleError } from "../utils/exceptions";
+import * as settings from '../settings.js';
+
 
 export function updateOrderItem(element) {
 
@@ -78,7 +80,7 @@ export function updateOrderItem(element) {
             'currentDiscount': currentDiscount,
             'maxPrice': maxPrice,
             // 'unit': product['fields'].unit,
-            'unit': '796',
+            'unit': settings.PIECE,
             'sizes': sizes
         } 
     }

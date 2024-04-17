@@ -50,12 +50,14 @@ class OrderItemInline(admin.TabularInline):
     articul.short_description = 'Артикул'
 
     def avg_weight(self, obj):
-        if obj.quantity != 0:
-            return format(obj.weight / obj.quantity, '.3f')
-        return 0
+        if obj.quantity == 0 or obj.unit == '796':
+            return obj.weight
+        return format(obj.weight / obj.quantity, '.3f')
     avg_weight.short_description = 'Вес за шт'
 
     def total_weight(self, obj):
+        if obj.unit == '796':
+            return format(obj.weight * obj.quantity, '.3f')
         return format(obj.weight, '.3f')
     total_weight.short_description = 'Общ.вес'
 

@@ -1,4 +1,4 @@
-import getPrice from './price'
+import getPrice, {getUnitRepr} from './price'
 import {
     cartEvents,
     waitUpdateCart,
@@ -102,7 +102,7 @@ const showAnalogues = () => {
  * price     - объект содержащий расчитанные цены
  * 
  */
-const updatePriceInProductCard = (context, price) => {
+const updatePriceInProductCard = (context, price, unit) => {
     const element             = document.querySelector('.good-block');
     const weightField         = element.querySelector('.weight');
     const pricePerweightField = element.querySelector('#price-per-weight');
@@ -113,7 +113,7 @@ const updatePriceInProductCard = (context, price) => {
         weightField.textContent = `${weightFormat(context.weight, 2)} г`
     }
     if (context.price && pricePerweightField) pricePerweightField.outerHTML =
-        `<p id="price-per-weight">${decimalFormat(Math.ceil(context.price))} <span style="font-size: small;">руб/г</span></p>`;
+        `<p id="price-per-weight">${decimalFormat(Math.ceil(context.price))} <span style="font-size: small;">руб/${getUnitRepr(unit)}</span></p>`;
 
     if (!formElement) return;
     var inputFields = formElement.querySelectorAll('input');
@@ -182,7 +182,7 @@ function updateProductCard() {
 
                 for (var i=0; i < elements.length; i++) {
                     let inStok = 0; let weight = 0; let size = '';
-                    let currentPrice = 0; let currentDiscount = 0; let maxPrice = 0; let currentUnit = '';
+                    let currentPrice = 0; let currentDiscount = 0; let maxPrice = 0; let currentUnit = '163';
                     const currentId = JSON.parse(elements[i].getAttribute('data-json'));
                     const product = products.find(el => el['pk'] == currentId['id']);
                     const stock_and_cost = stocks_and_costs.filter(el => el['fields'].product[1] == currentId['id']);
@@ -195,6 +195,9 @@ function updateProductCard() {
                     const defaultSize = default_sizes.filter(
                         el => el['fields'].product[1] == currentId['id']
                     ).find(_ => true);
+
+                    if (product)
+                        currentUnit = product['fields'].unit;
 
                     const firstStockAndCost = stock_and_cost.find(_ => true);
                     if (firstStockAndCost) {
@@ -233,9 +236,10 @@ function updateProductCard() {
                         calcPriceParams.price,
                         calcPriceParams.maxPrice,
                         calcPriceParams.discount,
-                        calcPriceParams.weight
+                        calcPriceParams.weight,
+                        currentUnit
                     );
-                    updatePriceInProductCard(calcPriceParams, price);
+                    updatePriceInProductCard(calcPriceParams, price, currentUnit);
 
                     let sumOfStock = 0;
                     const inStokelement = document.querySelector('.good-block')?.querySelector('#in_stock');

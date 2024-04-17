@@ -1,6 +1,9 @@
+import * as settings from './settings.js';
+
 const calculatePrice = (clientPrice, weight=0) => {
     let result = parseFloat(clientPrice);
-    if (weight) result = (parseFloat(clientPrice) * weight).toFixed(2);
+    if (weight) 
+        result = (parseFloat(clientPrice) * weight).toFixed(2);
 
     return result;
 }
@@ -15,11 +18,18 @@ const calculateMaxPrice = (maxPrice, weight=0) => {
     return result;
 }
 
+export const getUnitRepr = (unit) => {
+    if (unit == settings.GRAMME)
+        return 'г';
+    return 'шт';
+}
 
-function getPrice(clientPrice, maxPrice, clientDiscount, weight=0) {
+
+function getPrice(clientPrice, maxPrice, clientDiscount, weight=0, unit='163') {
     const result = {'clientPrice': 0, 'clientDiscount': 0, 'clientDiscountPrice': 0, 'maxPrice': 0};
 
-    const price = calculatePrice(clientPrice, weight);
+    let price = calculatePrice(clientPrice, weight);
+    if (unit == settings.PIECE) price = calculatePrice(clientPrice);
     if (!price) return result;
 
     result['clientPrice'] = price;
