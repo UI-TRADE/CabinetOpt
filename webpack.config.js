@@ -58,6 +58,7 @@ module.exports = {
             { from: './node_modules/font-awesome', to: './font-awesome' },
             { from: './src/fonts', to: './fonts' },
             { from: './src/img', to: './img' },
+            { from: './src/css/admin', to: './css/admin' },
             { from: './src/xlsx', to: '' }
           ],
         }),

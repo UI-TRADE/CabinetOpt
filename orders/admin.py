@@ -40,6 +40,7 @@ class OrderItemInline(admin.TabularInline):
         'sum',
         'discount',
     ]
+    classes = ('hide-title',)
     extra = 0
     verbose_name = "Номенклатура"
     verbose_name_plural = "Номенклатура"
