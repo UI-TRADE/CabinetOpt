@@ -5,7 +5,7 @@ from django.conf import settings
 from contextlib import suppress
 from itertools import chain
 
-from catalog.models import Product
+from catalog.models import Product, StockAndCost
 
 
 class Cart(object):
@@ -44,7 +44,7 @@ class Cart(object):
             item['total_price'] = round(
                 (item['price'] if item['price'] else 0) * item['quantity'],
                 2
-            )
+            ) 
             yield item
 
 
@@ -173,3 +173,42 @@ class Cart(object):
         key = self.get_key(product_id, **kwargs)
         self.cart[key]['errors'] = errors
         self.save()
+
+
+class CartExtension(Cart):
+    
+    def __init__(self, request, show_errors=False):
+        super().__init__(request, show_errors)
+
+    def __iter__(self):
+        product_ids = [{key: value['product_id']} for key, value in self.keys.items()]
+        products = Product.objects.filter(
+            id__in=list(chain(
+                *[[value for _, value in item.items()] for item in product_ids]
+        ))).values()
+
+        for product in products:
+            with suppress(IndexError):
+                keys = set(chain(
+                    *[[key for key, value in item.items() if value == str(product['id'])] for item in product_ids]
+                ))
+                for key in keys:
+                    self.cart[key]['product'] = product
+
+        for key, item in self.cart.items():
+            item['id'] = key
+            item['total_price'] = round(
+                (item['price'] if item['price'] else 0) * item['quantity'],
+                2
+            )
+            yield item | self.update_stock(key)
+
+
+    def update_stock(self, key):
+        result = {'stock':0}
+        # item = self.cart[key]
+        key_info = self.keys[key]
+        stock = StockAndCost.objects.get_stocks(key_info['product_id'], key_info['size'])
+        if stock and stock.get('total_stock', 0):
+            result['stock'] = stock['total_stock']
+        return result

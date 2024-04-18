@@ -137,6 +137,7 @@ $(document).ready(() => {
             updateProductCard();
             addEvents();
             document.getElementsByTagName("html")[0].style.visibility = "visible";
+            $(document).trigger('cart.updated', {});
 
         },
         error: (xhr, status, error) => {

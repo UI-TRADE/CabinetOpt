@@ -88,8 +88,8 @@
         {% with product=item.product params="id"|addparam:item.product.id price="price"|addparam:item.price unit="unit"|addparam:item.product.unit %}
             {% unique_id as id %}
             <tr id="{{id}}" class="order-preview__cart-row" name="cart-row" data-json="{{ params|addparams:price|addparams:unit|tojson }}">
-                <td class="order-preview__cart-row-warning">
-                    <div class="order-preview__cart-row-warning-logo" style="background-image: url('{% static "img/warning.svg"%}')"></div>
+                <td class="order-preview__cart-row-warning" style="width: 40px;">
+                    <div class="cart-warning order-preview__cart-row-warning-logo" style="display:none!important;background-image: url('{% static "img/warning.svg"%}')"></div>
                 </td>
                 <td class="image">
                     {% first_product_image product.id as image %}
@@ -157,6 +157,7 @@
                     <div name="cart-key" style="display: none;">
                         {{'{'}}"productId":"{{product.id}}","size":"{{item.size}}"{{'}'}}
                     </div>
+                    <div name="cart-stock" style="display: none;">{{ item.stock }}</div>
                 </td>
                 <td class="errors">
                     {% if item.errors %}

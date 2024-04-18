@@ -174,15 +174,14 @@ class SplitOrderView(TemplateView):
 
         for item in order_items:
             product_id = item['product'].id
-
-            qs = StockAndCost.objects.filter(product_id = product_id)
-            if item['size'] and item['size'].size_from: 
-                qs = qs.filter(size__name = item['size'])
-            stocks = None
-            with suppress(IndexError):
-                stocks = qs.values('product', 'size').annotate(total_stock=Sum('stock'))[0]
-
+            if item.get('size') and item['size'].name:
+                stocks = StockAndCost.objects.get_stocks(product_id, item['size'].name)
+            else:
+                stocks = StockAndCost.objects.get_stocks(product_id)   
             if not stocks:
+                _out_of_stock.append(item)
+                continue
+            elif not stocks.get('total_stock', 0):
                 _out_of_stock.append(item)
                 continue
             elif stocks['total_stock'] < item['quantity']:

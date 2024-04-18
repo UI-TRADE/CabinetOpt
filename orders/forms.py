@@ -79,14 +79,10 @@ class OrderItemForm(forms.ModelForm):
         with suppress(IndexError):
             instance = kwargs.get('instance')
             if instance:
-                qs = StockAndCost.objects.filter(product = instance.product)
-                if instance.size and instance.size.size_from: 
-                    qs = qs.filter(size = instance.size)
-                stocks = qs.values('product', 'size').annotate(total_stock=Sum('stock'))[0]
-                if stocks and stocks.get('total_stock', 0) < instance.quantity:
-                    return True
-
-        return False
+                stocks = StockAndCost.objects.get_stocks(instance.product.id, instance.size.name)
+                if stocks and stocks.get('total_stock', 0) >= instance.quantity:
+                    return False
+        return True
     
     def get_price_per_gr(self, kwargs):
         instance = kwargs.get('instance')

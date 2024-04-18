@@ -299,8 +299,10 @@ class ProductAdmin(admin.ModelAdmin):
     avg_weight.short_description = 'Ср.вес, гр'
 
     def stock(self, obj):
-        result = StockAndCost.objects.filter(product_id=obj.id).aggregate(Sum('stock'))
-        return result['stock__sum']
+        stocks = StockAndCost.objects.get_stocks(obj.id)
+        if stocks:
+            return stocks.get('total_stock', 0)
+        return 0
     stock.short_description = 'Остаток, шт'
 
     def gem_set(self, obj):

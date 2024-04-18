@@ -48,7 +48,7 @@ export function updateTotalSizeInfo(productId, price, unit) {
             if (unit == settings.PIECE)
                 totalCost += parseFloat((selectedQuantity * price).toFixed(2));
             else
-                totalCost += parseFloat(selectedQuantity * (totalWeight * price).toFixed(2));
+                totalCost += parseFloat((totalWeight * price).toFixed(2));
         }
     });
 
@@ -412,33 +412,6 @@ const removeFromCart = (cartKey) => {
 }
 
 
-const updateCartElements = (element, cartData, params) => {
-    let is_sized = false;
-    const productCard = $(element).parents('.product-item');
-    if (productCard && productCard.attr('data-json')) {
-        const productItemData = JSON.parse(productCard.attr('data-json'));
-        is_sized = ('is_sized' in productItemData && productItemData.is_sized);
-    }
-    let cartButton     = element.querySelector('input[name="add-to-order"]');
-    if (!cartButton)
-        cartButton     = element.querySelector('input[name="add-to-cart"]');
-    const cartElements = element.querySelector('div[name="cart-row"]');
-    if (cartElements) {
-        const cartElement    = cartElements.querySelector('input');
-        const cartKeyElement = cartElements.querySelector('[name="cart-key"]');
-        cartButton.parentElement.style = "display: block";
-        cartElements.style             = "display: none";
-        cartKeyElement.textContent     = JSON.stringify(params);
-        cartElement.value              = cartData?.quantity || 0;
-        if (!is_sized && cartData) {
-            cartButton.parentElement.style = "display: none";
-            cartElements.style             = "display: flex";
-            cartElement.value              = cartData['quantity'];
-        }
-    }
-}
-
-
 /**
  * Действия при изменении индикатора количество изделий в корзине.
  *
@@ -659,6 +632,33 @@ const handleAddToOrder = (event) => {
 
 // need to refactor and remove this promise
 export function waitUpdateCart(element, params, product) {
+
+    const updateCartElements = (element, cartData, params) => {
+        let is_sized = false;
+        const productCard = $(element).parents('.product-item');
+        if (productCard && productCard.attr('data-json')) {
+            const productItemData = JSON.parse(productCard.attr('data-json'));
+            is_sized = ('is_sized' in productItemData && productItemData.is_sized);
+        }
+        let cartButton     = element.querySelector('input[name="add-to-order"]');
+        if (!cartButton)
+            cartButton     = element.querySelector('input[name="add-to-cart"]');
+        const cartElements = element.querySelector('div[name="cart-row"]');
+        if (cartElements) {
+            const cartElement    = cartElements.querySelector('input');
+            const cartKeyElement = cartElements.querySelector('[name="cart-key"]');
+            cartButton.parentElement.style = "display: block";
+            cartElements.style             = "display: none";
+            cartKeyElement.textContent     = JSON.stringify(params);
+            cartElement.value              = cartData?.quantity || 0;
+            if (!is_sized && cartData) {
+                cartButton.parentElement.style = "display: none";
+                cartElements.style             = "display: flex";
+                cartElement.value              = cartData['quantity'];
+            }
+        }
+    }
+
     return new Promise((resolve) => {
         updateCartElements(element, product, params);
         if (params && 'productId' in params && params.productId)
@@ -718,6 +718,7 @@ export function cartViewEvents() {
     const cartViewElement = $('#cart-table');
     // Temp page fix
     if(cartViewElement.length) {
+
         $(document).on('cart.updated', function (e, data){
             let totalCount = 0;
             let totalWeight = 0;
@@ -736,6 +737,17 @@ export function cartViewEvents() {
                     totalCount += product.quantity;
                     totalWeight += product.weight * product.quantity
                     totalSum += product.sum;
+
+                    const cartStock = parseInt($('[name="cart-stock"]', item)[0]?.textContent);
+                    if (!isNaN(cartStock)) {
+                        const remaining = Math.max(cartStock - product.quantity, -1);
+                        const cartWarning = $('div.cart-warning', item);
+                        if (remaining >= 0) {
+                            cartWarning.css('display', 'none');
+                        } else {
+                            cartWarning.css('display', 'block');
+                        }
+                    }
                 }
             })
             $('.cart-result__total-count', cartViewElement).text(decimalFormat(totalCount) + " шт")

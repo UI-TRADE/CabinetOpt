@@ -383,7 +383,7 @@ def stocks_and_costs(request):
 
         available_stocks = StockAndCost.objects.filter(
             product_id__in = productIds.split(',')
-        ).values('product').annotate(total_stock=Sum('stock')).order_by()
+        ).values('product').annotate(total_stock=Sum('stock')).order_by('product')
 
         return JsonResponse(
             {

@@ -429,6 +429,14 @@ class StockAndCostQuerySet(models.QuerySet):
                 )
 
         return result
+    
+    def get_stocks(self, product_id, size_name=''):
+        qs = self.filter(product_id = product_id)
+        if size_name: 
+            qs = qs.filter(size__name = size_name)
+        return qs.values('product', 'size').\
+            annotate(total_stock=models.Sum('stock')).\
+            order_by('product').first()
 
 
 class StockAndCost(models.Model):

@@ -8,7 +8,7 @@ from contextlib import suppress
 
 from clients.login import Login
 from catalog.models import Product, Size, StockAndCost
-from .cart import Cart
+from .cart import Cart, CartExtension
 from .forms import CartAddProductForm
 from orders.views import save_order
 
@@ -89,12 +89,12 @@ def cart_remove(request, product_id):
 
 
 def cart_detail(request):
-    cart = Cart(request)
+    cart = CartExtension(request)
     return render(request, 'pages/cart.html', {'cart': cart, 'MEDIA_URL': settings.MEDIA_URL})
 
 
 def cart_detail_with_errors(request):
-    cart = Cart(request, True)
+    cart = CartExtension(request, True)
     return render(request, 'pages/cart.html', {'cart': cart, 'MEDIA_URL': settings.MEDIA_URL})
 
 
@@ -124,11 +124,7 @@ def add_order(request):
         for item in cart:
             product_id = item['product']['id']
 
-            qs = StockAndCost.objects.filter(product_id = product_id)
-            if item['size']: 
-                qs = qs.filter(size__name = item['size'])
-            stocks = qs.values('product', 'size').annotate(total_stock=Sum('stock')).first()
-
+            stocks = StockAndCost.objects.get_stocks(product_id, item['size'])
             if not stocks:
                 cart_out_of_stock.append(item)
                 continue

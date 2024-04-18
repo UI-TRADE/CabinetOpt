@@ -179,6 +179,8 @@ table.order-preview__table{
         &.quantity{
           input{
             width:40px; height:40px;
+            padding-left:0;
+            padding-right: 0;
             border-radius: 3px;
             border-color:#e6e6e5;
             text-align:center;
