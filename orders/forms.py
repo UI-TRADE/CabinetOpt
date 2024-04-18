@@ -79,7 +79,9 @@ class OrderItemForm(forms.ModelForm):
         with suppress(IndexError):
             instance = kwargs.get('instance')
             if instance:
-                stocks = StockAndCost.objects.get_stocks(instance.product.id, instance.size.name)
+                stocks = StockAndCost.objects.get_stocks(instance.product.id)
+                if (instance.size):
+                    stocks = StockAndCost.objects.get_stocks(instance.product.id, instance.size.name)
                 if stocks and stocks.get('total_stock', 0) >= instance.quantity:
                     return False
         return True
