@@ -187,7 +187,7 @@ class ProductPriceFilter(admin.SimpleListFilter):
         )
 
     def queryset(self, request, queryset):
-        active_products = Product.objects.filter(
+        active_products = queryset.filter(
             pk__in=Price.objects.filter(
                 type__name="Базовая", price__gt=0
             ).values_list(
@@ -210,7 +210,7 @@ class ProductImageFilter(admin.SimpleListFilter):
         )
 
     def queryset(self, request, queryset):
-        active_products = Product.objects.filter(
+        active_products = queryset.filter(
             pk__in=ProductImage.objects.values_list(
                 'product_id', flat=True
         ))
