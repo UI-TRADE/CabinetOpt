@@ -215,6 +215,7 @@ export function showAuthForm(submitFormId, auth='login') {
         success: (response) => {
             renderModalForm(response, 'registration-form', submitFormId);
             updateModalForm(submitFormId);
+            modalFormEvents();
         },
         error: (xhr, status, error) => {
             handleError(error, 'Ошибка открытия формы');

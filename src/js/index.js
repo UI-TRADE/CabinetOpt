@@ -29,7 +29,7 @@ const initStorages = () => {
         localStorage.setItem('cartView', false);
     if (sessionStorage.getItem('filters') === null)
         sessionStorage.setItem('filters', JSON.stringify([]));
-    if (localStorage.getItem('client_id') === null)
+    if (!localStorage.getItem('client_id'))
         localStorage.setItem('client_id', generateUUID());
 }
 
