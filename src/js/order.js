@@ -36,6 +36,26 @@ const disableSizeSlider = (sizeForm) => {
 }
 
 
+const handleRowAttention = (row, attention=false) => {
+
+    const setBorder = () => {
+        const cells = $(row).find('td');
+        $.each(cells, (_, cell) => {
+            $(cell).toggleClass('attention', attention);
+        });
+    }
+
+    const orderWarning = $('div.order-warning', row);
+    if (!attention) {
+        orderWarning.css('display', 'none');
+        setBorder();
+    } else {
+        orderWarning.css('display', 'block');
+        setBorder();
+    }
+}
+
+
 export const initOrderInfo = () => {
     const orderTableItems = $('#order-items');
 
@@ -49,8 +69,14 @@ export const initOrderInfo = () => {
                     return $(node).find("input").val();
                 }
             }
-        })
+        });
     }
+    $.each($('tr', orderTableItems), (_, el) => {
+        if ($(el).hasClass('order-product-item')) {
+            if ($(el).data()?.status == 'introductory')
+                handleRowAttention(el, ($(el).data()?.stock === "True"));
+        }
+    });
     orderEvents()
     //НЕ ИСПОЛЬЗУЕТСЯ
     //updateOrder()

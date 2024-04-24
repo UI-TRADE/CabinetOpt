@@ -155,16 +155,17 @@
                                     {% if line.DELETE.value %}
                                     <tr class="order-product-item hidden" style="display: table-row" data-id="{{forloop.counter}}"></tr>
                                     {% else %}
-                                    <tr class="order-product-item" style="display: table-row" data-id="{{forloop.counter}}">
+                                    <tr class="order-product-item" style="display: table-row" data-id="{{forloop.counter}}" data-stock="{{line.in_stock.value}}" data-status="{{object.status}}">
                                     {% endif %}
-                                        <td style="border: none;">
-                                            {% if object.status == "introductory" and line.in_stock.value %}
+                                        <td class="order-preview__cart-row-warning">
+                                            <abbr data-title="Вы заказали больше, чем есть в наличии.
+                                                              Недостающие изделия отразятся
+                                                              в разделе заказ производства">
                                                 <div 
-                                                    class="order-preview__cart-row-warning-logo"
-                                                    style="display: block!important; background-image: url('{% static "img/warning.svg"%}')"
-                                                >
-                                                </div>
-                                            {% endif %}
+                                                    class="order-warning order-preview__cart-row-warning-logo"
+                                                    style="display: none!important; background-image: url('{% static "img/attention.svg"%}')"
+                                                ></div>
+                                            </abbr>
                                         </td>
                                         <td class="image">
                                             {% first_product_image line.instance.product as image %}

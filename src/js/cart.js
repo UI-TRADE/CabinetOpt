@@ -80,6 +80,26 @@ const updateTotalInfo = (productId) => {
 }
 
 
+const handleRowAttention = (row, attention=false) => {
+
+    const setBorder = () => {
+        const cells = $(row).find('td');
+        $.each(cells, (_, cell) => {
+            $(cell).toggleClass('attention', attention);
+        });
+    }
+
+    const cartWarning = $('div.cart-warning', row);
+    if (!attention) {
+        cartWarning.css('display', 'none');
+        setBorder();
+    } else {
+        cartWarning.css('display', 'block');
+        setBorder();
+    }
+}
+
+
 export function addSelectionSizesEvents(productId, price, unit) {
 
     const get_stock = ($input) => {
@@ -741,12 +761,7 @@ export function cartViewEvents() {
                     const cartStock = parseInt($('[name="cart-stock"]', item)[0]?.textContent);
                     if (!isNaN(cartStock)) {
                         const remaining = Math.max(cartStock - product.quantity, -1);
-                        const cartWarning = $('div.cart-warning', item);
-                        if (remaining >= 0) {
-                            cartWarning.css('display', 'none');
-                        } else {
-                            cartWarning.css('display', 'block');
-                        }
+                        handleRowAttention(item, (remaining < 0));
                     }
                 }
             })
