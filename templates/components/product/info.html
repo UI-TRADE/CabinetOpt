@@ -190,7 +190,7 @@
                             <td>{{ gem.color_filter }}</td>
                             <td>{{ gem.cut_type }}</td>
                             <td>{{ gem.gem_quantity }} шт</td>
-                            {% if gem.precious_filter == "ДК" %}
+                            {% if gem.precious_filter in "ДК,ПДК,Бриллианты,Драгоценные,Полудрагоценные" %}
                                 <td>{{ gem.gem_weight }} ct</td>
                             {% else %}
                                 <td></td>
