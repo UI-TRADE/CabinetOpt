@@ -37,6 +37,12 @@
         <div class="text-center auth-form-btn">
             <button class="btn btn-primary btn-sign-in font-weight-bold" type="submit">ВОЙТИ</button>
         </div>
+        <a 
+            class="d-sm-flex justify-content-sm-center registration-text-sm registration-form-item"
+            name="forgot-password"
+            href="{% url 'clients:login_recovery' %}">
+            <u>Забыли пароль</u>
+        </a>
         <a
             class="d-sm-flex justify-content-sm-center registration-text-sm registration-form-item"
             id="registration-confidential-text"

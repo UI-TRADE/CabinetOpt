@@ -94,6 +94,14 @@ def logout(request):
     return redirect("start_page")
 
 
+def login_recovery(request):
+    if request.method == 'POST':
+        return redirect("start_page")
+    
+    form = LoginFormRecovery()
+    return render(request, 'forms/auth-recovery.html', {'form': form})
+
+
 def change_password(request, id):
     if request.method != 'POST':
         login = Login(request)

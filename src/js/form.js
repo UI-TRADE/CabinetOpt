@@ -113,11 +113,7 @@ export const updateModalForm = (formId) => {
                     showErrors(formId, data['errors']);
                     data['errors'] = {}
                     updateCaptcha();
-                    // if (event.target.action.indexOf('clients/login') !== -1) {
-                    //     updateLoginAttempts();
-                    // }
                 } else if(data['redirect_url']) {
-                    // if (event.target.action.indexOf('clients/login') !== -1)
                     location.replace(data['redirect_url']);
                 } else if ($(event.target).hasClass('login-form')) {
                     const submitFormId = generateUUID();
@@ -200,6 +196,7 @@ export function switchModalForm(idFrom, idTo, submitFormId) {
             success: (response) => {
                 renderModalForm(response, idTo, submitFormId);
                 updateModalForm((submitFormId) ? submitFormId : idTo);
+                modalFormEvents();
             },
             error: (xhr, status, error) => {
                 handleError(error, 'Ошибка переключения формы');
@@ -226,21 +223,21 @@ export function showAuthForm(submitFormId, auth='login') {
 }
 
 export function modalFormEvents() {
-    $('#registration-form-switch').click((event) => {
-        $.ajax({
-            url: event.currentTarget.getAttribute('data-url'),
-            headers: {
-                'X-Client-Id': localStorage.getItem('client_id')
-            },
-            success: (response) => {
-                renderModalForm(response, 'registration-form', submitFormId);
-                updateModalForm(submitFormId);
-            },
-            error: (xhr, status, error) => {
-                handleError(error, 'Ошибка открытия формы');
-            }
-        });
-    });
+    // $('#registration-form-switch').click((event) => {
+    //     $.ajax({
+    //         url: event.currentTarget.getAttribute('data-url'),
+    //         headers: {
+    //             'X-Client-Id': localStorage.getItem('client_id')
+    //         },
+    //         success: (response) => {
+    //             renderModalForm(response, 'registration-form', submitFormId);
+    //             updateModalForm(submitFormId);
+    //         },
+    //         error: (xhr, status, error) => {
+    //             handleError(error, 'Ошибка открытия формы');
+    //         }
+    //     });
+    // });
     $('a[name="login"]').click((event) => {
         sessionStorage.setItem('auth', 'login');
         window.location.replace(event.currentTarget.getAttribute('data-url'));
@@ -248,6 +245,10 @@ export function modalFormEvents() {
     $('a[name="logout"]').click((event) => {
         sessionStorage.setItem('auth', 'login');
         window.location.replace(event.currentTarget.getAttribute('data-url'));
+    });
+    $('a[name="forgot-password"]').click((event) => {
+        event.preventDefault();
+        showAuthForm(generateUUID(), 'login_recovery');
     });
 } 
 
