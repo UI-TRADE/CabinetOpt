@@ -1,5 +1,6 @@
 import os
 from django.contrib.staticfiles import finders
+from decimal import Decimal
 
 from num2words import num2words
 from openpyxl.cell.cell import MergedCell
@@ -152,7 +153,10 @@ def save_xlsx(context, response):
                 if title_cell.value:
                     for key, value in item_titles.items():
                         if value == title_cell.value:
-                            target_cell.value         = str(order_item[key])
+                            if isinstance(order_item[key], (float, str, int, Decimal)):
+                                target_cell.value         = order_item[key]
+                            else:
+                                target_cell.value         = str(order_item[key])
 
                 target_cell.font          = copy(source_cell.font)
                 target_cell.alignment     = copy(source_cell.alignment)
