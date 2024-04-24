@@ -271,12 +271,20 @@ class ProductFilter(django_filters.FilterSet):
     
 
     def search_filter(self, queryset, name, value):
-        result = []
-        fields = ['name__icontains', 'articul__icontains']
-        converted_value = ast.literal_eval(value)
-        for item in converted_value:
-            for field in fields:
-                selected_ids = list(queryset.filter(Q((field, item))).values_list('id', flat=True))
-                result = [*result, *selected_ids]
-        return queryset.filter(id__in=result)
+
+        def convert_values():
+            result = []
+            converted_value = ast.literal_eval(value)
+            for item in converted_value:
+                result = [*result, *item.split()]
+            return result
+
+        result = Product.objects.none()
+        fields = ['articul__icontains', 'name__iregex', 'mark_description__iregex']
+        converted_values = convert_values()
+        for field in fields:
+            for converted_value in converted_values:
+                result = result | queryset.filter(Q((field, converted_value)))
+
+        return result
 
