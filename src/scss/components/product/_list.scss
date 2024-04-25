@@ -69,4 +69,29 @@
     }
   }
 
+  .search-error {
+
+    &__header {
+      font-size: 16px;
+      font-weight: 400;
+    }
+
+    &__info {
+      font-size: 12px;
+      font-weight: 400;
+      color: #92959A;
+    }
+
+    button {
+      border: none;
+      border-radius: 3px;
+      color: white;
+      width: 156px; height: 38px;
+      background-color: #E3A358;
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+  }
+
 }

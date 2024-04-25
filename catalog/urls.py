@@ -20,4 +20,5 @@ urlpatterns = [
     path('product/analogues'             , views.product_analogues),
     path('product/sizes/<slug:prod_id>/' , views.sizes_selection, name='sizes_selection'),
     path('products/pages/count/'         , views.catalog_pages_count),
+    path('search-error/'                 , views.search_error)
 ]

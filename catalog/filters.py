@@ -3,6 +3,7 @@ import ast
 import django_filters
 from django_filters import BooleanFilter, CharFilter, BaseInFilter
 from django.db.models import Count, Sum, Q
+from django.db.models import Value as V
 
 from .models import Product, StockAndCost, GemSet, PriceType, Price
 
@@ -282,9 +283,15 @@ class ProductFilter(django_filters.FilterSet):
         result = Product.objects.none()
         fields = ['articul__icontains', 'name__iregex', 'mark_description__iregex']
         converted_values = convert_values()
-        for field in fields:
+        for index, field in enumerate(fields):
             for converted_value in converted_values:
-                result = result | queryset.filter(Q((field, converted_value)))
-
+                qs = queryset.filter(Q((field, converted_value)))
+                if not qs:
+                    continue
+                result = result | qs.annotate(source=V(f'{index}'))
+        
+        if result:
+            return result.order_by('source')
         return result
+    
 

@@ -297,6 +297,16 @@ def sizes_selection(request, prod_id):
                 'stock_and_cost': context,
                 'cart': json.dumps([{**item, 'product': None} for item in cart if str(item['product']['id']) == prod_id])
         })
+    
+
+def search_error(request):
+    search_values = request.GET.get('search_values')
+    return render(
+        request,
+        'pages/search-error.html',
+        {'search_values': search_values}
+    )
+
 
 
 @api_view(['POST'])

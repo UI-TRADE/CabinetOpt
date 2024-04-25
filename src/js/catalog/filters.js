@@ -249,11 +249,11 @@ const updateMenuItems = () => {
 }
 
 
-const updateSearchValues = () => {
-    const searchValues = JSON.parse(sessionStorage.getItem('search_values'));
-    $('.product-find').val(searchValues);
+// const updateSearchValues = () => {
+//     const searchValues = JSON.parse(sessionStorage.getItem('search_values'));
+//     $('.').val(searchValues);
 
-}
+// }
 
 // Получаем массив соответствий элементов фильтра и количества и сумм
 export function  updateFilterQuantitiesAndSums(html) {
@@ -363,7 +363,21 @@ export function filtersEvents() {
             sessionStorage.setItem('filters', JSON.stringify(filters));
             showCatalog();
         }
-    })
+    });
+
+    $(document).on('click', '#in-catalog', event => {
+        event.preventDefault();
+        const inputFindField = $('#form-product-find').children('input');
+        if (inputFindField) {
+            inputFindField.val('');
+            const filters = JSON.parse(sessionStorage.getItem('filters'));
+            const searchFilter = filters.find(item => item['search_values'] != undefined);
+            if (searchFilter) filters.splice(filters.indexOf(searchFilter), 1);
+            sessionStorage.setItem('filters', JSON.stringify(filters));
+            showCatalog();
+        }
+    });
+    
 }
 
 

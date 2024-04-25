@@ -9,12 +9,38 @@ import updateProductsStatusStyle from "./components/catalog_status";
 import lazyLoads from './components/lazyload';
 
 
+const getSearchValues = (filters) => {
+    if (!filters) return '';
+    const searchFilter = filters.find(item => item['search_values'] != undefined);
+    const searchValues = searchFilter?.search_values.find(_ => true);
+    return searchValues || '';
+}
+
+
+const getEmptyCatalogPage = () => {
+    const filters = JSON.parse(sessionStorage.getItem('filters'));
+    const searchValues = getSearchValues(filters);
+    if (!searchValues) return Promise.resolve(null);
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: '/catalog/search-error/',
+            data: {'search_values': searchValues},
+            success: (response) => {
+                resolve(response);
+            },
+            error: (error) => {
+                reject(error);
+            }
+        });
+    });
+}
+
 /**
  * Действия при рендеринге каталога номенклатуры.
  *
  * element   - контейнер с каталогом номенклатуры.
  */
-const updateProductCards = (element) => {
+const updateProductCards = (element, ...params) => {
     const productsData = {};
 
     const productStocksAndCosts = (productIds, size='') => {
@@ -32,6 +58,17 @@ const updateProductCards = (element) => {
         });
     }
 
+    const showSearchBadges = () => {
+        const searchBadgesElement = $('.search-badges__list');
+        searchBadgesElement.css('display', 'none');
+        if (searchBadgesElement && params) {
+            const searchValues = params.find(el => 'search_values' in el);
+            if (!searchValues['search_values']) return;
+            searchBadgesElement.text(`Найдено по запросу «${searchValues['search_values']}»`);
+            searchBadgesElement.css('display', 'block');
+        }
+    }
+
     const updateElements = (data) => {
         return new Promise((resolve, reject) => {
             try {
@@ -46,7 +83,7 @@ const updateProductCards = (element) => {
                 const available_stocks = JSON.parse(data['available_stocks']);
                 productsData.products = products;
                 productsData.stockAndCosts = stocks_and_costs;
-
+                
                 for (var i=0; i < elements.length; i++) {
                     let inStok = 0; let weight = 0; let size = '';
                     let currentPrice = 0; let currentDiscount = 0; let maxPrice = 0; let currentUnit = '163';
@@ -139,6 +176,8 @@ const updateProductCards = (element) => {
                             'element': inStockBlock
                     });
                 }
+
+                showSearchBadges();
                 resolve(elemsForUpdate);
 
             } catch (error) {
@@ -194,29 +233,45 @@ const updateProductCards = (element) => {
         return productId
     })
 
-    if (productIds.length == 0) {
-        return
-    }
+    if (!productIds.length) {
 
-    const currentSpin = createSpiner($('.main-content')[0]);
-    productStocksAndCosts(productIds.toString())
-        .then((data) => {
-            return updateElements(data);
-        })
-        .then((data) => {
-            return updateCarts(data);
-        })
-        .then(() => {
-            cartEvents(productsData);
-            element.style.visibility = 'visible';
-            updateProductsStatusStyle();
-            removeSpiner(currentSpin);
-            lazyLoads();
-        })
-        .catch((error) => {
-            removeSpiner(currentSpin);
-            handleError(error, 'Ошибка обновления каталога');
-        });
+        const catalogContainer = $('#products');
+        const searchBadgesElement = $('.search-badges__list');
+        searchBadgesElement.css('display', 'none');
+        getEmptyCatalogPage()
+            .then((response) => {
+                if (response) {
+                    catalogContainer.html(response);
+                    catalogContainer.css('visibility', 'visible');
+                }
+            })
+            .catch((error) => {
+                handleError(error, 'Ошибка обновления каталога');
+            });
+    
+    } else {
+
+        const currentSpin = createSpiner($('.main-content')[0]);
+        productStocksAndCosts(productIds.toString())
+            .then((data) => {
+                return updateElements(data);
+            })
+            .then((data) => {
+                return updateCarts(data);
+            })
+            .then(() => {
+                cartEvents(productsData);
+                element.style.visibility = 'visible';
+                updateProductsStatusStyle();
+                removeSpiner(currentSpin);
+                lazyLoads();
+            })
+            .catch((error) => {
+                removeSpiner(currentSpin);
+                handleError(error, 'Ошибка обновления каталога');
+            });
+
+    }
 }
 
 
@@ -224,16 +279,17 @@ function updateProducts(elementId, data) {
     const mainElement = document.getElementById(elementId);
     if (!document.getElementById(elementId)) return;
     mainElement.style = "visibility: hidden;";
+    const searchFilter = getSearchValues(JSON.parse(data?.filters));
     $.ajax({
         type: 'POST',
         data: data,
         cache: false,
-        success: (data) => {
+        success: (response) => {
             $(`#${elementId}`).html(
-                extractContent(data, elementId)
+                extractContent(response, elementId)
             );
-            updateFilterQuantitiesAndSums(data);
-            updateProductCards(mainElement);
+            updateFilterQuantitiesAndSums(response);
+            updateProductCards(mainElement, {'search_values': searchFilter});
         },
         error: (error) => {
             handleError(error, 'Ошибка получения данных каталога с сервера');

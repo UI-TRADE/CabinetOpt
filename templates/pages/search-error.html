@@ -1,0 +1,13 @@
+{% load static %}
+{% load catalog_tags %}
+
+<div class="row">
+  <div class="col-12 search-error">
+    <p class="search-error__header">По запросу «{{search_values}}» ничего не найдено</p>
+    <p class="search-error__info">
+      К сожалению, поиск по Вашему запросу не дал результатов. <br>
+      Попробуйте изменить запрос или заглянуть в каталог, чтобы найти интересующие Вас товары.
+    </p>
+    <button id="in-catalog">В каталог</button>
+  </div>
+</div>
