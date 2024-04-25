@@ -396,6 +396,7 @@ curl -X POST -H "Content-Type: application/json" -d @media/imgs.json http://127.
         "Удален": false
     },
     "filename": "8adf671b-345b-11ea-ab42-005056bb02df.jpg",
+    "order": 1,
     "image": "/9j/4AAQSkZJRgABAgEBLAEsAAD/4QuARXhpZgAASUkqAAgAAAAQAAABAwABAAAA\r\n/wUAAAEBAwABAAAA/...
     },...
 ]

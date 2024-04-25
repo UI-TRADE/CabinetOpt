@@ -308,7 +308,7 @@ class Product(models.Model):
     
     @property
     def get_images(self):
-        product_images = ProductImage.objects.filter(product_id=self.id)
+        product_images = ProductImage.objects.filter(product_id=self.id).order_by('order')
         return [product_image.image.url for product_image in product_images]
     
     @property
@@ -488,6 +488,9 @@ class ProductImage(models.Model):
         'Имя файла', max_length=100, blank=True, db_index=True
     )
     image = models.ImageField('Фото номенклатуры', upload_to='product_images')
+    order = models.PositiveIntegerField(
+        'Порядок', default=1, validators=[MinValueValidator(0)]
+    )
 
     class Meta:
         verbose_name = 'Фотография'

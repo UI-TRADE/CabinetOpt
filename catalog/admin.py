@@ -70,7 +70,7 @@ class DesignInLine(admin.TabularInline):
 class ProductImageInLine(admin.TabularInline):
     model = ProductImage
     extra = 0
-    fields = ('image', 'filename', 'render_preview')
+    fields = ('render_preview', 'image', 'filename', 'order')
     readonly_fields = ('render_preview',)
     classes = ('collapse', )
 
