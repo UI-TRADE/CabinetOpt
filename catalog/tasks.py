@@ -273,7 +273,7 @@ def run_uploading_images(uploading_images):
                     defaults={
                         'product': product,
                         'filename': item['filename'],
-                        'order': item.get('item', 1),
+                        'order': item.get('order', 1),
                         'image': image
                 })
 
