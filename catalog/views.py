@@ -475,7 +475,7 @@ def catalog_pages_count(request):
         parsed_filter = parse_filters(filters)
         products = Product.objects.get_active_products(parsed_filter.get('in_stock', False))
         filtered_products = ProductFilter(parsed_filter, queryset=products)
-        products = filtered_products.qs.distinct()
+        products = filtered_products.qs
     else:
         products = Product.objects.get_active_products()
 

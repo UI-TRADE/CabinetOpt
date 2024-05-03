@@ -284,13 +284,14 @@ class ProductFilter(django_filters.FilterSet):
         converted_values = convert_values()
         for index, field in enumerate(fields):
             for converted_value in converted_values:
-                qs = queryset.filter(Q((field, converted_value))).exclude(pk__in=result.values('id'))
-                if not qs:
-                    continue
-                result = result.union(qs.annotate(source=V(f'{index}')))
+                qs = queryset.filter(Q((field, converted_value)))\
+                    .annotate(source=V(f'{index}'), relevance=Count('articul'))\
+                    .exclude(pk__in=result.values('id'))
+                if qs:
+                    result = result.union(qs, all=True)
         
         if result:
-            return result.order_by('source')
+            return result.order_by('source','relevance')
         return result
     
 
