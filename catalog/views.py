@@ -152,7 +152,7 @@ class ProductView(FiltersView, ListView):
             filters, _ = self.get_filters(products)
 
             filtered_products = ProductFilter(parsed_filter, queryset=products)
-            products = filtered_products.qs.distinct()
+            products = filtered_products.qs
 
         else:
             products = Product.objects.get_active_products()

@@ -197,7 +197,6 @@ class ProductFilter(django_filters.FilterSet):
                 stock__gte=1
             ).values_list('product_id', flat=True)
         )
-        # return queryset
 
     def stock_filter(self, queryset, name, value):
         filters = {}
@@ -285,10 +284,10 @@ class ProductFilter(django_filters.FilterSet):
         converted_values = convert_values()
         for index, field in enumerate(fields):
             for converted_value in converted_values:
-                qs = queryset.filter(Q((field, converted_value)))
+                qs = queryset.filter(Q((field, converted_value))).exclude(pk__in=result.values('id'))
                 if not qs:
                     continue
-                result = result | qs.annotate(source=V(f'{index}'))
+                result = result.union(qs.annotate(source=V(f'{index}')))
         
         if result:
             return result.order_by('source')
