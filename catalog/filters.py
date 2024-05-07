@@ -2,8 +2,10 @@ import re
 import ast
 import django_filters
 from django_filters import BooleanFilter, CharFilter, BaseInFilter
-from django.db.models import Count, Sum, Q
+from django.db.models import Count, Sum, Q, Case, When, IntegerField
 from django.db.models import Value as V
+from functools import reduce
+from itertools import permutations
 
 from .models import Product, StockAndCost, GemSet, PriceType, Price
 
@@ -76,7 +78,60 @@ class FilterTree(object):
                     root['count'] = calc_products_by_precious_gems(root[root_field])    
                 self.tree.append(self.__serialize_root(root, root_field))
 
+
+class SearchFilter(object):
     
+    def __init__(self, queryset, search_fields='', search_str=''):
+        self.qs = queryset
+        self.fields = search_fields
+        self.search = search_str
+
+    def _convert_values(self):
+        result = []
+        values = ast.literal_eval(self.search)
+        search_params = [value for item in values for value in item.split()]
+        for index in range(1, len(search_params)+1):
+            items = []
+            for search_param in permutations(search_params, (index)):
+                items.append(' '.join(search_param))
+            result = [*result, (index, items)]
+        return result
+
+    def apply_filter(self):
+        querysets = []
+        values = self._convert_values()
+        for index, field in enumerate(self.fields):
+            for relevance, items in values:
+                queries = [Q((f'{field}', f'{item}')) for item in items]
+                qs = self.qs.annotate(source=V(f'{index}'))\
+                    .filter(reduce(lambda field, val: field | val, queries))
+                querysets.extend([{'obj': item, 'source': item.source, 'relevance': relevance} for item in qs])
+
+        return querysets
+    
+    def get_filtered_qs(self, querysets):
+        grp_keys = ('obj', 'source')
+        sum_keys = ['relevance']
+        result = [
+            {
+                **{grp_key: key[i] for i, grp_key in enumerate(grp_keys)},
+                **{skey: sum(sub[skey] for sub in querysets if all(sub[k] == key[i] for i, k in enumerate(grp_keys)))}
+            }
+            for key in set(tuple(sub[k] for k in grp_keys) for sub in querysets)
+            for skey in sum_keys
+        ]
+        result.sort(key=lambda i: (i['source'], -i['relevance']))
+
+        result_qs = Product.objects.filter(pk__in=[item['obj'].id for item in result])
+        return result_qs.annotate(
+            custom_order=Case(
+                *[When(pk=item['obj'].id, then=pos) for pos, item in enumerate(result)],
+                default=len(result),
+                output_field=IntegerField(),
+            )
+        ).order_by('custom_order')
+
+
 
 class SizeFilterTree(FilterTree):
 
@@ -135,7 +190,6 @@ class CharInFilter(BaseInFilter, CharFilter):
     # Оставлено пока для целей отладки фильтров
     def filter(self, qs, value):
         return super().filter(qs, value)
-
 
 
 class ProductFilter(django_filters.FilterSet):
@@ -271,27 +325,6 @@ class ProductFilter(django_filters.FilterSet):
     
 
     def search_filter(self, queryset, name, value):
-
-        def convert_values():
-            result = []
-            converted_value = ast.literal_eval(value)
-            for item in converted_value:
-                result = [*result, *item.split()]
-            return result
-
-        result = Product.objects.none()
-        fields = ['articul__icontains', 'name__iregex', 'mark_description__iregex']
-        converted_values = convert_values()
-        for index, field in enumerate(fields):
-            for converted_value in converted_values:
-                qs = queryset.filter(Q((field, converted_value)))\
-                    .annotate(source=V(f'{index}'), relevance=Count('articul'))\
-                    .exclude(pk__in=result.values('id'))
-                if qs:
-                    result = result.union(qs, all=True)
-        
-        if result:
-            return result.order_by('source','relevance')
-        return result
-    
-
+        fields = ['articul__iregex', 'name__iregex', 'mark_description__iregex']
+        search_obj = SearchFilter(queryset, fields, value)
+        return search_obj.get_filtered_qs(search_obj.apply_filter())
