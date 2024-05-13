@@ -312,6 +312,10 @@ class Product(models.Model):
         return [product_image.image.url for product_image in product_images]
     
     @property
+    def get_image(self):
+        return ProductImage.objects.filter(product_id=self.id).order_by('order').first()
+
+    @property
     def get_default_size(self):
         '''Функция возвращает строку, как этап перехода на учет размеров в БД в строковом варианте'''
         size_value = 0

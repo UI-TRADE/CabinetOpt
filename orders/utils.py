@@ -4,22 +4,28 @@ from decimal import Decimal
 
 from num2words import num2words
 from openpyxl.cell.cell import MergedCell
-from openpyxl import load_workbook
+from openpyxl import load_workbook, drawing
+from openpyxl.drawing.spreadsheet_drawing import OneCellAnchor, AnchorMarker
+from openpyxl.drawing.xdr import XDRPositiveSize2D
+from openpyxl.utils.units import pixels_to_EMU
 from openpyxl.utils import get_column_letter
 from copy import copy
 
+from catalog.models import ProductImage
+
 
 def get_order_settings(context):
+    total_sum = round(context["order_totals"]["total_sum"], 2)
     return {
         'Заголовок'           : f'Заказ клиента № {context["order"].pk} от {context["order"].created_at.strftime("%d.%m.%Y")}',
         'Поставщик'           : 'ИНН 7802669141, КПП 780201001, ЮИ-ТРЕЙД ООО, 194100, Санкт-Петербург г, Кантемировская ул, дом № 5, корпус 8, комната 104',
         'Покупатель'          : f'ИНН { context["order"].client.inn }, { context["order"].client.name }, { context["contact_detail"].get_address() if context["contact_detail"] else "" }, тел.: { context["order"].client.registration_order.phone }',
         'ПодвалСуммаБезСкидки': context["order_totals"]["total_sum_without_discount"],
         'ПодвалСкидка'        : context["order_totals"]["total_discount"],
-        'ПодвалСумма'         : context["order_totals"]["total_sum"],
+        'ПодвалСумма'         : total_sum,
         'ПодвалНДС'           : 'Без НДС',
-        'ПодвалКоличество'    : f'Всего наименований { context["order_totals"]["total_count"] }, на сумму { context["order_totals"]["total_sum"] } руб',
-        'ПодвалПропись'       : f'{ in_words(context["order_totals"]["total_sum"]) } руб {str(context["order_totals"]["total_sum"])[-2:]} коп.'.capitalize()
+        'ПодвалКоличество'    : f'Всего наименований { context["order_totals"]["total_count"] }, на сумму { total_sum } руб',
+        'ПодвалПропись'       : f'{ in_words(total_sum) } руб {str(total_sum)[-2:]} коп.'.capitalize()
     }  
 
 
@@ -27,6 +33,7 @@ def get_line_settings(order_items):
     start_line = 11
     item_titles = {
         'num'                 : '№',
+        'img'                 : 'Фото',
         'product'             : 'Товар',
         'quantity'            : 'Кол-во',
         'weigth'              : 'Вес',
@@ -41,6 +48,7 @@ def get_line_settings(order_items):
     for num, order_item in enumerate(order_items, start=1):
         result.append({
             'num'                 : num,
+            'img'                 : order_item.product.get_image,
             'product'             : order_item.product,
             'quantity'            : order_item.quantity,
             'weigth'              : order_item.weight,
@@ -110,8 +118,27 @@ def move_merged_cells(sheet, merged_cells, row_step=1):
         merged_cells[idx] = ((start_column, new_start_row), (end_column, new_end_row))
 
 
-def save_xlsx(context, response):
-    filepath = os.path.join(finders.find(''), 'template.xlsx')
+def save_xlsx(context, template, response):
+
+    def push_image(image, sheet, cell):
+        picts_offset = 5
+        img = drawing.image.Image(image)
+        img.width, img.height = (default_row_height, default_row_height)
+        sheet.add_image(img, cell.coordinate)
+        anchor = OneCellAnchor(
+            _from=AnchorMarker(
+                row=target_cell.row-1, rowOff=pixels_to_EMU(picts_offset),
+                col=target_cell.column-1, colOff=pixels_to_EMU(picts_offset+2)
+            ),
+            ext=XDRPositiveSize2D(
+                pixels_to_EMU(img.width),
+                pixels_to_EMU(img.height)
+            )
+        )
+        img.anchor = anchor
+
+
+    filepath = os.path.join(finders.find(''), template)
     if not filepath:
         return
 
@@ -122,7 +149,9 @@ def save_xlsx(context, response):
     sheet = wb.active
 
     for key, value in defined_names.items():
-        found_range = wb.defined_names[key]
+        found_range = wb.defined_names.get(key)
+        if not found_range:
+            continue
         dests = found_range.destinations
         for _, coord in dests:
             cell = sheet[coord]
@@ -135,6 +164,7 @@ def save_xlsx(context, response):
         all_merged_cells,
         sheet[f'B{start_row}:{last_column}{last_row}']
     )
+    default_row_height = sheet.row_dimensions[start_row-1].height
 
     line_area = wb.defined_names['Строка']
     for _, coord in line_area.destinations:
@@ -155,6 +185,9 @@ def save_xlsx(context, response):
                         if value == title_cell.value:
                             if isinstance(order_item[key], (float, str, int, Decimal)):
                                 target_cell.value         = order_item[key]
+                            elif isinstance(order_item[key], ProductImage):
+                                if order_item[key] and order_item[key].image:
+                                    push_image(order_item[key].image, sheet, target_cell)                        
                             else:
                                 target_cell.value         = str(order_item[key])
 
@@ -172,7 +205,7 @@ def save_xlsx(context, response):
                             start_row=idx, start_column=first_cell['column'],
                             end_row=idx, end_column=source_cell.column
                         )
-            sheet.row_dimensions[idx].height = sheet.row_dimensions[start_row-1].height
+            sheet.row_dimensions[idx].height = default_row_height
             last_row += 1
 
         sheet.row_dimensions[start_row-1].hidden = True

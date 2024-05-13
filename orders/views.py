@@ -378,12 +378,13 @@ class ExportXLSXView(ExportOrderView):
 
     def render_to_response(self, context, **response_kwargs):
 
+        template = 'order_without _discounts.xlsx'
         context = self.get_context_data()
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
         filename = f'Order-{context["order"].id}.xlsx'
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        save_xlsx(context, response)
+        save_xlsx(context, template, response)
 
         return response
 
