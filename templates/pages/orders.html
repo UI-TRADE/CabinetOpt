@@ -13,8 +13,8 @@
                     </ol>
                 </nav>
             </div>
-            <div class="d-flex flex-column">
-                <div class="order-list col-12">
+            <div class="d-flex flex-row">
+                <div class="order-list col-3">
                     {% include "components/orders/list.html" with orders=orders %}
                 </div>
                 <div id="order" class="order-detail__wrapper"></div>

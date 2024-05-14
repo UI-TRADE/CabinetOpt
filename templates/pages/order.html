@@ -13,21 +13,43 @@
             <div class="order-number__title">№ {{ object.id }}</div>
             <div class="order-item__wrapper">
                 <div class="order-item">
-                    {% if object.status == "introductory" %}
-                        <div class="order-item__full-title">Ваш заказ № {{ object.id }}</div>
-                        {% do_split order_items as split_orders %}
-                    {% else %}
-                        {% if object.provision == "П" %}
-                            <div class="order-item__full-title">Ваш заказ № {{ object.id }}_{{ object.provision }}</div>
-                        {% else %}
-                            <div class="d-flex align-items-center">
-                                <div class="order-item__full-title">Ваш заказ на производство № {{ object.id }}_{{ object.provision }}</div>
-                                <div class="order-preview__cart-row-warning-logo"></div>
-                                <img src='{% static "img/zakaz.svg" %}' alt="" style="width: 100px; height: 55px;">
+
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center order-name-container">
+                                {% if object.status == "introductory" %}
+                                    <div class="order-item__full-title">Ваш заказ № {{ object.id }}_{{ object.provision }}</div>
+                                    {% do_split order_items as split_orders %}
+                                {% else %}
+                                    <div class="order-item__full-title">Ваш заказ на производство № {{ object.id }}_{{ object.provision }}</div>
+                                    <div class="order-preview__cart-row-warning-logo"></div>
+                                    <img src='{% static "img/zakaz.svg" %}' alt="" style="width: 100px; height: 55px;">
+                                    {% do_split None as split_orders %}
+                                {% endif %}
                             </div>
-                        {% endif %}
-                        {% do_split None as split_orders %}
-                    {% endif %}
+                            <div class="d-flex align-items-center order-icons-container">
+                                {% if object.status == "introductory" %}
+                                    <a href="{% url 'orders:remove' order_id=object.id %}"
+                                        name="delete-order"
+                                        type="button"
+                                    >
+                                        <div class="order-item__action-icon order-item__cross-icon" style="background-image: url('{% static "img/cross.svg"%}')"></div>
+                                    </a>
+                                {% endif %}
+                                <a href="#"
+                                name="cart-item"
+                                type="button"
+                                class="hidden"
+                                >
+                                    <div class="order-item__action-icon order-item__cart-plus-icon" style="background-image: url('{% static "img/cart-plus.svg"%}')"></div>
+                                </a>
+                                <a href="{% url 'orders:export-xlsx' order_id=object.id %}"
+                                    name="download-item"
+                                    type="button"
+                                >
+                                    <div class="order-item__action-icon order-item__download-icon" style="background-image: url('{% static "img/download.svg"%}')"></div>
+                                </a>
+                            </div>
+                        </div>
 
                     {% if split_orders %}
                     <form 
@@ -273,7 +295,7 @@
                             </div>
                         </div>
                         <div class="order-item__actions">
-                            {% if object.status == "introductory" %}
+                            <!-- {% if object.status == "introductory" %}
                             <a href="{% url 'orders:remove' order_id=object.id %}"
                                 name="delete-order"
                                 type="button"
@@ -287,18 +309,16 @@
                                class="hidden"
                             >
                                 <div class="order-item__action-icon order-item__cart-plus-icon" style="background-image: url('{% static "img/cart-plus.svg"%}')"></div>
-                            </a>
-                            <a href="{% url 'orders:export-xlsx' order_id=object.id %}"
+                            </a> -->
+                            <!-- <a href="{% url 'orders:export-xlsx' order_id=object.id %}"
                                 name="download-item"
                                 type="button"
                             >
                                 <div class="order-item__action-icon order-item__download-icon" style="background-image: url('{% static "img/download.svg"%}')"></div>
-                            </a>
+                            </a> -->
                             {% if object.status == "introductory" %}
                                 <input id="sendTalant" class="btn btn-primary" data-url="{% url 'orders:orders' %}" data-id="{{object.id}}" value="Отправить в Talant">
                                 <input id="saveOrder" class="btn btn-primary" data-url="{% url 'orders:orders' %}" data-id="{{object.id}}" value="Сохранить">
-                            {% else %}
-                                <input id="closeOrder" class="btn btn-primary" data-url="{% url 'orders:orders' %}" data-id="{{object.id}}" value="Закрыть">
                             {% endif %}
                         </div>
                     </form>
