@@ -17,12 +17,16 @@
                         <div class="d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center order-name-container">
                                 {% if object.status == "introductory" %}
-                                    <div class="order-item__full-title">Ваш заказ № {{ object.id }}_{{ object.provision }}</div>
+                                    <div class="order-item__full-title">Ваш заказ № {{ object.id }}</div>
                                     {% do_split order_items as split_orders %}
                                 {% else %}
-                                    <div class="order-item__full-title">Ваш заказ на производство № {{ object.id }}_{{ object.provision }}</div>
-                                    <div class="order-preview__cart-row-warning-logo"></div>
-                                    <img src='{% static "img/zakaz.svg" %}' alt="" style="width: 100px; height: 55px;">
+                                    {% if object.provision == "П" %}
+                                        <div class="order-item__full-title">Ваш заказ № {{ object.id }}_{{ object.provision }}</div>
+                                    {% else %}
+                                        <div class="order-item__full-title">Ваш заказ на производство № {{ object.id }}_{{ object.provision }}</div>
+                                        <div class="order-preview__cart-row-warning-logo"></div>
+                                        <img src='{% static "img/zakaz.svg" %}' alt="" style="width: 100px; height: 55px;">
+                                    {% endif %}
                                     {% do_split None as split_orders %}
                                 {% endif %}
                             </div>
