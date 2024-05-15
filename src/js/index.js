@@ -82,6 +82,17 @@ $(window).on("load", () => {
 
 $(document).ready(() => {
 
+    $('#add-to-favorites').on('click', _ => {
+        if(window.sidebar)
+            window.sidebar.addPanel(location.href,document.title, '');
+        else {
+            if(window.external && ('AddFavorite' in window.external))
+                window.external.AddFavorite(location.href,document.title);
+            else
+                alert('Браузер не потдерживает добавление, нажмите CTRL + D для добавления в ручную!');
+        }   
+    });
+
     if (window.location.pathname.indexOf('clients/recovery_pass') !== -1) {
         const $modal = $('#change-pass-form');
         applyShowPasswordButtons($modal);
@@ -144,35 +155,6 @@ $(document).ready(() => {
             handleError(error, 'Ошибка получения данных аутентификации с сервера.');
         }
     });
-
-    // if (window.location.pathname == '/') {
-    //     // login
-    //     const mainAuthForm = 'registration-form';
-    //     const auth = sessionStorage.getItem('auth') || 'reg_request';
-    //     showAuthForm(generateUUID(), auth);
-    //     switchModalForm('entry', mainAuthForm, generateUUID());
-    //     switchModalForm('register', mainAuthForm, generateUUID());
-    //     sessionStorage.removeItem('auth');
-    // }
-
-    // change pass
-    // showChangePassForm();
-
-    // file selection
-    // showModalForm('fileSelectionForm');
-
-    // forms
-    // updateContactView('contactForm');
-
-    // products
-    // initProductFilters();
-    // updateProductCard();
-
-    // НЕ ИСПОЛЬЗУЕТСЯ
-    // updateOrder()
-
-    // events
-    // addEvents();
 
 })
 
