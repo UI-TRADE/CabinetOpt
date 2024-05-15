@@ -25,7 +25,7 @@ def get_order_settings(context):
         'ПодвалСумма'         : total_sum,
         'ПодвалНДС'           : 'Без НДС',
         'ПодвалКоличество'    : f'Всего наименований { context["order_totals"]["total_count"] }, на сумму { total_sum } руб',
-        'ПодвалПропись'       : f'{ in_words(total_sum) } руб {str(total_sum)[-2:]} коп.'.capitalize()
+        'ПодвалПропись'       : f'{ in_words("%.0f" % total_sum) } руб. {str(total_sum)[-2:]} коп.'.capitalize()
     }  
 
 
