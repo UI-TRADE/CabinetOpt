@@ -223,6 +223,23 @@ export function orderEvents() {
             });
     });
 
+    $(`#deleteOrder`).on('click', (event) => {
+        const currentSpin = createSpiner($('.main-content')[0]);
+        const url = event.target.getAttribute("data-url");
+        $.ajax({
+            type: 'GET',
+            url: url,
+            success: (_) => {
+                window.location.reload(true);
+            },
+            error: (error) => {
+                removeSpiner(currentSpin);
+                handleError(error, 'Ошибка удаления заказа в Talant');
+            }
+        });
+
+    });
+
     $(`#closeOrder`).on('click', (event) => {
         const redirect_url = event.target.getAttribute("data-url");
         document.location.href = redirect_url;

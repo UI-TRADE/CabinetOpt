@@ -31,14 +31,14 @@
                                 {% endif %}
                             </div>
                             <div class="d-flex align-items-center order-icons-container">
-                                {% if object.status == "introductory" %}
+                                <!-- {% if object.status == "introductory" %}
                                     <a href="{% url 'orders:remove' order_id=object.id %}"
                                         name="delete-order"
                                         type="button"
                                     >
                                         <div class="order-item__action-icon order-item__cross-icon" style="background-image: url('{% static "img/cross.svg"%}')"></div>
                                     </a>
-                                {% endif %}
+                                {% endif %} -->
                                 <a href="#"
                                 name="cart-item"
                                 type="button"
@@ -50,7 +50,7 @@
                                     name="download-item"
                                     type="button"
                                 >
-                                    <div class="order-item__action-icon order-item__download-icon" style="background-image: url('{% static "img/download.svg"%}')"></div>
+                                    <div class="order-item__action-icon order-item__download-icon" style="background-image: url('{% static "img/upload-order.svg"%}')"></div>
                                 </a>
                             </div>
                         </div>
@@ -323,6 +323,7 @@
                             {% if object.status == "introductory" %}
                                 <input id="sendTalant" class="btn btn-primary" data-url="{% url 'orders:orders' %}" data-id="{{object.id}}" value="Отправить в Talant">
                                 <input id="saveOrder" class="btn btn-primary" data-url="{% url 'orders:orders' %}" data-id="{{object.id}}" value="Сохранить">
+                                <input id="deleteOrder" class="btn btn-primary" data-url="{% url 'orders:remove' order_id=object.id %}" data-id="{{object.id}}" value="Удалить">
                             {% endif %}
                         </div>
                     </form>
