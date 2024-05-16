@@ -312,6 +312,13 @@ class Product(models.Model):
         return [product_image.image.url for product_image in product_images]
     
     @property
+    def get_filtered_images_by_order(self):
+        product_images = ProductImage.objects.filter(product_id=self.id, order__gt=0).order_by('order')
+        if not product_images:
+            product_images = ProductImage.objects.filter(product_id=self.id).order_by('order')    
+        return [product_image.image.url for product_image in product_images]
+
+    @property
     def get_image(self):
         return ProductImage.objects.filter(product_id=self.id).order_by('order').first()
 
