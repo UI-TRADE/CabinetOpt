@@ -1,13 +1,15 @@
 import updateProducts from '../catalog_cards';
+import { createSpiner } from '../lib';
 
 const showCatalog = () => {
+    const currentSpin = createSpiner($('.main-content')[0]);
     const filters = JSON.parse(sessionStorage.getItem('filters'));
     const token = document.querySelector('input[name="csrfmiddlewaretoken"]');
     if (filters && token) {
         updateProducts('products', {
             'csrfmiddlewaretoken' : token.value,
             'filters': JSON.stringify(filters)
-        });
+        }, currentSpin);
     }
 }
 

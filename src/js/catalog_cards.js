@@ -233,6 +233,7 @@ const updateProductCards = (element, ...params) => {
         return productId
     })
 
+    const activeSpin = params.find(el => 'spiner' in el);
     if (!productIds.length) {
 
         const catalogContainer = $('#products');
@@ -244,14 +245,15 @@ const updateProductCards = (element, ...params) => {
                     catalogContainer.html(response);
                     catalogContainer.css('visibility', 'visible');
                 }
+                if(activeSpin) removeSpiner(activeSpin['spiner']);
             })
             .catch((error) => {
+                if(activeSpin) removeSpiner(activeSpin['spiner']);
                 handleError(error, 'Ошибка обновления каталога');
             });
     
     } else {
 
-        const currentSpin = createSpiner($('.main-content')[0]);
         productStocksAndCosts(productIds.toString())
             .then((data) => {
                 return updateElements(data);
@@ -263,11 +265,11 @@ const updateProductCards = (element, ...params) => {
                 cartEvents(productsData);
                 element.style.visibility = 'visible';
                 updateProductsStatusStyle();
-                removeSpiner(currentSpin);
+                if(activeSpin) removeSpiner(activeSpin['spiner']);
                 lazyLoads();
             })
             .catch((error) => {
-                removeSpiner(currentSpin);
+                if(activeSpin) removeSpiner(activeSpin['spiner']);
                 handleError(error, 'Ошибка обновления каталога');
             });
 
@@ -275,7 +277,7 @@ const updateProductCards = (element, ...params) => {
 }
 
 
-function updateProducts(elementId, data) {
+function updateProducts(elementId, data, spiner=NaN) {
     const mainElement = document.getElementById(elementId);
     if (!document.getElementById(elementId)) return;
     mainElement.style = "visibility: hidden;";
@@ -289,9 +291,10 @@ function updateProducts(elementId, data) {
                 extractContent(response, elementId)
             );
             updateFilterQuantitiesAndSums(response);
-            updateProductCards(mainElement, {'search_values': searchFilter});
+            updateProductCards(mainElement, {'search_values': searchFilter, 'spiner': spiner});
         },
         error: (error) => {
+            if(spiner) removeSpiner(spiner);
             handleError(error, 'Ошибка получения данных каталога с сервера');
         }
     });

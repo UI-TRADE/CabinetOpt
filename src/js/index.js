@@ -24,6 +24,7 @@ import showModalForm, {
 
 require('jquery-ui');
 
+
 const initStorages = () => {
     if (localStorage.getItem('cartView') === null)
         localStorage.setItem('cartView', false);

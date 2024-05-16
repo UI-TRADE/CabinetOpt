@@ -1,8 +1,10 @@
 import showSliders from './sliders';
 import updateProducts from '../catalog_cards';
 import { handleError } from "../utils/exceptions";
+import { createSpiner } from '../lib';
 
 var selectedFiltersBadges;
+
 class FilterBadges {
     constructor(element, filterContainer) {
         this.element = element;
@@ -111,6 +113,7 @@ const openSelectedItems = (element) => {
 
 
 const showCatalog = () => {
+    const currentSpin = createSpiner($('.main-content')[0]);
     const filters = JSON.parse(sessionStorage.getItem('filters'));
     const token = document.querySelector('input[name="csrfmiddlewaretoken"]');
     if (filters && token) {
@@ -121,7 +124,7 @@ const showCatalog = () => {
             updateProducts('products', {
                 'csrfmiddlewaretoken' : token.value,
                 'filters': JSON.stringify(filters)
-            });
+            }, currentSpin);
             return;    
         }
 
@@ -139,7 +142,7 @@ const showCatalog = () => {
                 updateProducts('products', {
                     'csrfmiddlewaretoken' : token.value,
                     'filters': JSON.stringify(filters)
-                });
+                }, currentSpin);
                 
             },
             error: (error) => {
