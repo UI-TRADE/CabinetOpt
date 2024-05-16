@@ -12,7 +12,13 @@
                 <p style="max-height: 30px;"></p>
                 <p style="margin-bottom: 30px; max-width: 400px;">{{ organization.address }}</p>
                 <p style="margin-bottom: 1px;">{{ organization.phone }}</p>
-                <p>{{ organization.email }}</p>
+                <p style="margin-bottom: 30px;">{{ organization.email }}</p>
+                {% if organization.additional_phone %}
+                <p style="margin-bottom: 1px;">{{ organization.additional_phone }}</p>
+                {% endif %}
+                {%  if organization.additional_email %}
+                <p>{{ organization.additional_email }}</p>
+                {% endif %}
             </div>
             <div class="col-3">
                 {% if not request.session.login %}

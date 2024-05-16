@@ -81,6 +81,7 @@ class OrganizationAdmin(admin.ModelAdmin):
         'name',
         'address',
         ('phone', 'email'),
+        ('additional_phone', 'additional_email'),
     ]
     list_filter = [
         'name',

@@ -9,6 +9,8 @@ class Organization(models.Model):
     address = models.CharField('Адерс', max_length=250, blank=True, default='')
     phone = PhoneNumberField('Телефон', db_index=True)
     email = models.EmailField('email', db_index=True)
+    additional_phone = PhoneNumberField('доп. телефон', blank=True)
+    additional_email = models.CharField('доп. email', max_length=150, blank=True)
 
     class Meta:
         verbose_name = 'Наша организация'
