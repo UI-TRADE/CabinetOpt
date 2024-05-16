@@ -3,6 +3,7 @@ import updateProducts from '../catalog_cards';
 import { handleError } from "../utils/exceptions";
 import { createSpiner } from '../lib';
 
+var currentSpin;
 var selectedFiltersBadges;
 
 class FilterBadges {
@@ -113,7 +114,6 @@ const openSelectedItems = (element) => {
 
 
 const showCatalog = () => {
-    const currentSpin = createSpiner($('.main-content')[0]);
     const filters = JSON.parse(sessionStorage.getItem('filters'));
     const token = document.querySelector('input[name="csrfmiddlewaretoken"]');
     if (filters && token) {
@@ -297,6 +297,7 @@ export function filtersEvents() {
             if (imgOfNode) openMenuItems(imgOfNode);
         } else {
             if ($(event.currentTarget).is('.filter-item-title-disable')) return;
+            currentSpin = createSpiner($('.main-content')[0]);
             const filters = JSON.parse(sessionStorage.getItem('filters'));
             selectMenuItem(event.currentTarget, filters);
             showCatalog();
@@ -319,6 +320,7 @@ export function filtersEvents() {
             deselectMenuItems();
             selectedFiltersBadges.update([]);
         }
+        currentSpin = createSpiner($('.main-content')[0]);
         showCatalog();
     });
 
@@ -364,6 +366,7 @@ export function filtersEvents() {
                 filters.push({'search_values': searchValues});
             
             sessionStorage.setItem('filters', JSON.stringify(filters));
+            currentSpin = createSpiner($('.main-content')[0]);
             showCatalog();
         }
     });
@@ -372,6 +375,7 @@ export function filtersEvents() {
         event.preventDefault();
         const inputFindField = $('#form-product-find').children('input');
         if (inputFindField) {
+            currentSpin = createSpiner($('.main-content')[0]);
             inputFindField.val('');
             const filters = JSON.parse(sessionStorage.getItem('filters'));
             const searchFilter = filters.find(item => item['search_values'] != undefined);
@@ -391,6 +395,7 @@ function initProductFilters() {
         return;
     }
 
+    currentSpin = createSpiner($('.main-content')[0]);
     $.ajax({
         url: '/catalog/filters',
         success: (data) => {
