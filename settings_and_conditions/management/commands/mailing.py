@@ -5,7 +5,7 @@ import time
 
 from contextlib import suppress
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage, send_mail
 from django.core.management import BaseCommand
 from django.core.exceptions import ValidationError
 from django.template import Template, Context
@@ -81,7 +81,7 @@ def launch_mailing():
                 email, context = get_context(**fields)
                 recipient_list = get_recipient_list(notification_type_obj, email)
 
-                send_email(context, recipient_list, subject=subject, template=template)
+                send_email_hide_recipients(context, recipient_list, subject=subject, template=template)
 
         redis_storage.delete(key)
 
@@ -188,3 +188,19 @@ def send_email(context, recipient_list, **params):
         recipient_list,
         html_message=html_content
     )
+
+
+def send_email_hide_recipients(context, recipient_list, **params):
+    template = Template(params['template'])
+    rendered_html = template.render(Context(context))
+    html_content = render_to_string('forms/notify-template.html', {'params': rendered_html})
+    for recipient in recipient_list:
+        email = EmailMessage(
+            params['subject'],
+            html_content,
+            settings.EMAIL_HOST_USER,
+            [recipient],
+            reply_to=['opt@talantgold.ru'],
+        )
+        email.content_subtype = "html"
+        email.send()
