@@ -391,24 +391,28 @@ export function filtersEvents() {
 function initProductFilters() {
     const { pathname } = document.location;
 
-    if (pathname !== "/catalog/products/" && !RegExp('^\/catalog\/product\/[0-9]*\/$').test(pathname)) {
-        return;
-    }
+    // if (pathname !== "/catalog/products/" && !RegExp('^\/catalog\/product\/[0-9]*\/$').test(pathname)) {
+    //     return;
+    // }
 
-    currentSpin = createSpiner($('.main-content')[0]);
-    $.ajax({
-        url: '/catalog/filters',
-        success: (data) => {
-            const filterContainer = $('#filter-container').html(data);
-            selectedFiltersBadges = new FilterBadges($("#selected-filter-container"), filterContainer)
-            showSliders();
-            updateMenuItems();
-            showCatalog();
-        },
-        error: (error) => {
-            handleError(error, 'Ошибка получения данных фильтров с сервера');
-        }
-    });
+    if (pathname == "/catalog/products/") {
+
+        currentSpin = createSpiner($('.main-content')[0]);
+        $.ajax({
+            url: '/catalog/filters',
+            success: (data) => {
+                const filterContainer = $('#filter-container').html(data);
+                selectedFiltersBadges = new FilterBadges($("#selected-filter-container"), filterContainer)
+                showSliders();
+                updateMenuItems();
+                showCatalog();
+            },
+            error: (error) => {
+                handleError(error, 'Ошибка получения данных фильтров с сервера');
+            }
+        });
+
+    }
 
 }
 
