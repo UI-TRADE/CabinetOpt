@@ -45,17 +45,22 @@ var Spinner = /** @class */ (function () {
         this.el.className = this.opts.className;
         this.el.setAttribute('role', 'progressbar');
         css(this.el, {
+            display: this.opts.display,
             position: this.opts.position,
-            width: 0,
             zIndex: this.opts.zIndex,
             left: this.opts.left,
             top: this.opts.top,
-            transform: "scale(" + this.opts.scale + ")",
+            'justify-content': this.opts.jContent,
+            'align-items': this.opts.alItems,
         });
         if (target) {
             target.insertBefore(this.el, target.firstChild || null);
         }
-        drawLines(this.el, this.opts);
+        if('logo' in this.opts && this.opts['logo'])
+            drawLogo(this.el);
+        else
+            drawLines(this.el, this.opts);
+        
         return this;
     };
     /**
@@ -187,4 +192,19 @@ function convertOffset(x, y, degrees) {
         Math.round((x * cos + y * sin) * 1000) / 1000,
         Math.round((-x * sin + y * cos) * 1000) / 1000,
     ];
+}
+function drawLogo(el){
+
+    const baseCircle = document.createElement('div');
+    baseCircle.classList.add('base-circle');
+    el.appendChild(baseCircle);
+
+    const rotatingCircle = document.createElement('div');
+    rotatingCircle.classList.add('rotating-circle');
+    el.appendChild(rotatingCircle);
+
+    const logo = document.createElement('div'); 
+    logo.classList.add('spin-logo');  
+    el.appendChild(logo);
+
 }
