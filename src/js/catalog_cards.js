@@ -1,7 +1,7 @@
 import getPrice, {getUnitRepr} from './price'
 import { extractContent, createSpiner, removeSpiner } from './lib';
 import { updateFilterQuantitiesAndSums } from './catalog/filters';
-import { cartEvents, waitUpdateCart } from './cart';
+import { cartEvents, waitUpdateCarts } from './cart';
 import { weightFormat } from "./utils/weight_format";
 import { decimalFormat } from "./utils/money_format";
 import { handleError } from "./utils/exceptions";
@@ -210,12 +210,9 @@ const updateProductCards = (element, ...params) => {
                 const cart = $(document).data("cart");
                 cart.getProducts()
                     .then(products => {
-                        const result = Promise.all(
-                            cartElements.map((item) => {
-                                const product = products[item.key.productId  + '_' + item.key.size]
-                                return waitUpdateCart(item.element, item.key, product)
-                            })
-                        ).then(() => {
+                        const result = Promise.all([
+                            waitUpdateCarts(cartElements, products)
+                        ]).then(() => {
                             // initProductCardsCarousel();
                         });
                         resolve(result);

@@ -110,6 +110,16 @@
           color:#fff
         }
       }
+      .into-cart__button{
+        background-color: #EDEDED;
+        color: #E3A358;
+        border-color: #EDEDED;
+        font-size: 14px;
+        &:focus,
+        &:hover{
+          color:#E3A358!important
+        }
+      }
     }
 
 

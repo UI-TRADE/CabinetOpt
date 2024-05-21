@@ -187,6 +187,20 @@ export function addSelectionSizesEvents(productId, price, unit) {
         validateInput($input, productId, price, unit);
     });
     $('button[name="sizes-selection-add-to-cart-button"]').off('click').on('click', (event) => {
+
+        const getCartElements = (productId) => {
+            const elemsForUpdate = [];
+            const inStockBlock = $(`#cart-form-${productId}`);
+            const cartKey = inStockBlock.find('div[name="cart-key"]');
+            if (inStockBlock.length && cartKey) {
+                elemsForUpdate.push({
+                    'key': JSON.parse(cartKey.text()),
+                    'element': inStockBlock[0]
+                });
+            }
+            return elemsForUpdate;
+        }
+
         prepareDataForCart(event.currentTarget, productId)
             .then((data) => {
                 return new Promise((resolve, reject) => {
@@ -207,24 +221,27 @@ export function addSelectionSizesEvents(productId, price, unit) {
                         closeProductEditingWindow();
                     if($('.sizes-selection').length) {
                         closeAddToCartSettingsWindow();
-                        const productsInCart = $(document).data("cart").getProducts();
-                        productsInCart.then(cartData => {
-                            const $form = $(event.target).parents(`#sizes-selection-form-${productId}`);
-                            const $inputSizes = $form.find('input[name="sizes-selection-quantity-input"]');
-                            $.each($inputSizes, (_, el) => {
-                                $(el).attr('data-incart', 0);
-                                const dataSize = $(el).attr('data-size');
-                                for (var key in cartData) {
-                                    if (cartData.hasOwnProperty(key)) {
-                                        if (+cartData[key].size == dataSize) {
-                                            $(el).attr('data-incart', cartData[key].quantity);
-                                        }
-                                    }    
-                                }
+                        const cart = $(document).data("cart");
+                        cart.getProducts()
+                            .then(cartData => {
+                                const cartElements = getCartElements(productId);
+                                Promise.all([waitUpdateCarts(cartElements, cartData)]);
+                                // const $form = $(event.target).parents(`#sizes-selection-form-${productId}`);
+                                // const $inputSizes = $form.find('input[name="sizes-selection-quantity-input"]');
+                                // $.each($inputSizes, (_, el) => {
+                                //     $(el).attr('data-incart', 0);
+                                //     const dataSize = $(el).attr('data-size');
+                                //     for (var key in cartData) {
+                                //         if (cartData.hasOwnProperty(key)) {
+                                //             if (+cartData[key].size == dataSize) {
+                                //                 $(el).attr('data-incart', cartData[key].quantity);
+                                //             }
+                                //         }    
+                                //     }
+                                // });
                             });
-                        });
                     }
-                    $(document).data("cart").getProducts()
+                    $(document).data("cart").getProducts();
                 }
             })
             .catch((error) => {
@@ -650,6 +667,24 @@ const handleAddToOrder = (event) => {
 }
 
 
+export function waitUpdateCarts(cartElements, products) {
+    cartElements.map((item) => {
+        // const product = products[item.key.productId  + '_' + item.key.size];
+        let product = Object.values(products).filter(value => value.product_id == item.key.productId);
+        if (product.length) {
+            const { product_id, quantity, unit } = product.reduce((result, value) => {
+                result.quantity += value.quantity;
+                return result;
+            });
+            product = {'product_id': product_id, 'quantity': quantity, 'unit': unit};
+        } else {
+            product = undefined;    
+        }
+        return waitUpdateCart(item.element, item.key, product);
+    })
+}
+
+
 // need to refactor and remove this promise
 export function waitUpdateCart(element, params, product) {
 
@@ -675,6 +710,14 @@ export function waitUpdateCart(element, params, product) {
                 cartButton.parentElement.style = "display: none";
                 cartElements.style             = "display: flex";
                 cartElement.value              = cartData['quantity'];
+            } else if (is_sized) {
+                if (cartData) {
+                    $(cartButton).addClass('into-cart__button');
+                    $(cartButton).val('уже в корзине');
+                } else {
+                    $(cartButton).removeClass('into-cart__button');
+                    $(cartButton).val('в корзину');
+                }
             }
         }
     }
