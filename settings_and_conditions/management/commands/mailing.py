@@ -2,6 +2,7 @@ import json
 import sys
 import schedule
 import time
+import rollbar
 
 from contextlib import suppress
 from django.conf import settings
@@ -14,7 +15,7 @@ from django.urls import reverse
 from redis.exceptions import ResponseError
 
 from settings_and_conditions.models import NotificationType, Notification
-from settings_and_conditions.notify_rollbar import notify_rollbar
+from settings_and_conditions.notify_rollbar import notify_rollbar, init_rollbar
 from clients.models import RegistrationOrder, Client, Manager
 from orders.models import Order
 
@@ -54,10 +55,13 @@ def launch_mailing():
             result = conn.hmget(key, field)[0].decode()
         return result
 
+    init_rollbar()
+    rollbar.report_message('Start mailing', 'info')
     fields = {'notification_type': '', 'id': '', 'url': '', 'params': ''}
     redis_storage = settings.REDIS_CONN
     tasks = redis_storage.keys()
     for key in tasks:
+        rollbar.report_message('Handle tasks', 'info')
         with suppress(
                 Order.DoesNotExist,
                 Client.DoesNotExist,
@@ -84,6 +88,7 @@ def launch_mailing():
                 send_email_hide_recipients(context, recipient_list, subject=subject, template=template)
 
         redis_storage.delete(key)
+    rollbar.report_message('End mailing', 'info')
 
 
 def get_recipient_list(notification_type, email):
@@ -198,7 +203,7 @@ def send_email_hide_recipients(context, recipient_list, **params):
         email = EmailMessage(
             params['subject'],
             html_content,
-            settings.EMAIL_HOST_USER,
+            f'TALANT<{settings.EMAIL_HOST_USER}>',
             [recipient],
             reply_to=['opt@talantgold.ru'],
         )
