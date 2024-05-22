@@ -150,7 +150,7 @@ class NotificationType(models.Model):
         verbose_name_plural = 'Типы уведомлений'
     
     def __str__(self):
-        return f'{self.get_event_display()}'
+        return f'{self.subject if self.subject else self.get_event_display()}'
 
 
 class Notification(models.Model):

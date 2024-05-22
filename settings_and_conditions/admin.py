@@ -38,7 +38,7 @@ class AboutAdmin(SummernoteModelAdmin):
 
 
 class NotificationTypeAdmin(SummernoteModelAdmin):
-    list_display = ('event',)
+    list_display = ('subject', 'event',)
     summernote_fields = ('notification',)
 
 

@@ -62,7 +62,13 @@ def launch_mailing():
     tasks = redis_storage.keys()
     for key in tasks:
         rollbar.report_message('Handle tasks', 'info')
-        with suppress(
+        for field in fields.keys():
+            fields[field] = get_value(redis_storage, key, field)
+        notification_types = NotificationType.objects.filter(event=fields['notification_type'])
+        for notification_type_obj in notification_types:
+            subject  = notification_type_obj.subject
+            template = notification_type_obj.notification
+            with suppress(
                 Order.DoesNotExist,
                 Client.DoesNotExist,
                 RegistrationOrder.DoesNotExist,
@@ -70,22 +76,13 @@ def launch_mailing():
                 NotificationType.DoesNotExist,
                 ValidationError, ValueError, AttributeError, ResponseError
             ):
+                with notify_rollbar():
+                    if not template:
+                        raise ValidationError('Не указан шаблон письма', code='')
+                    email, context = get_context(**fields)
+                    recipient_list = get_recipient_list(notification_type_obj, email)
 
-            with notify_rollbar():
-                for field in fields.keys():
-                    fields[field] = get_value(redis_storage, key, field)
-                notification_type_obj = NotificationType.objects.filter(event=fields['notification_type']).first()
-                if not notification_type_obj:
-                    continue
-                subject  = notification_type_obj.subject
-                template = notification_type_obj.notification
-                if not template:
-                    raise ValidationError('Не указан шаблон письма', code='')
-
-                email, context = get_context(**fields)
-                recipient_list = get_recipient_list(notification_type_obj, email)
-
-                send_email_hide_recipients(context, recipient_list, subject=subject, template=template)
+                    send_email_hide_recipients(context, recipient_list, subject=subject, template=template)
 
         redis_storage.delete(key)
     rollbar.report_message('End mailing', 'info')
@@ -205,7 +202,7 @@ def send_email_hide_recipients(context, recipient_list, **params):
             html_content,
             f'TALANT<{settings.EMAIL_HOST_USER}>',
             [recipient],
-            reply_to=['opt@talantgold.ru'],
+            reply_to=['TALANT<opt@talantgold.ru>'],
         )
         email.content_subtype = "html"
         email.send()
