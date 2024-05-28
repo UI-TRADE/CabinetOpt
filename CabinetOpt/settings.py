@@ -216,3 +216,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Filed login attempts
 MAX_FAILED_LOGIN_ATTEMPTS = 5
+
+
+#The maximum number of parameters that may be received via GET or POST
+DATA_UPLOAD_MAX_NUMBER_FIELDS = None
