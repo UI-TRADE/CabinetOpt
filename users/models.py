@@ -5,6 +5,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 class CustomUser(AbstractUser):
    
+    name = models.CharField('Фамилия Имя Отчество', max_length=150, blank=True)
     email = models.EmailField('email', db_index=True)
     phone = PhoneNumberField('Контактный телефон', blank=True, db_index=True)
     gender = models.CharField(
@@ -24,4 +25,6 @@ class CustomUser(AbstractUser):
         verbose_name_plural = 'Менеджеры ЮИ-Трейд'
 
     def __str__(self):
+        if self.name:
+            return self.name
         return self.username

@@ -19,12 +19,19 @@ class NotificationInLine(admin.TabularInline):
 class CustomUserAdmin(admin.ModelAdmin):
     list_display = (
         'username',
+        'name',
         'email',
         'phone',
         'gender',
         'created_at',
         'is_staff'
     )
-    fields = ['username', ('email', 'phone'), ('gender', 'date_of_birth'), 'groups', 'is_staff']
+    fields = [
+        ('username', 'name'),
+        ('email', 'phone'),
+        ('gender', 'date_of_birth'),
+        'groups',
+        'is_staff'
+    ]
 
     inlines = [NotificationInLine]
