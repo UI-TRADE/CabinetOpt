@@ -3,6 +3,7 @@ import collections
 
 from contextlib import suppress
 from django.shortcuts import render
+from django.core import management
 from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
@@ -327,6 +328,7 @@ def upload_products(request):
 @permission_classes([IsAuthenticated])
 def upload_images(request):
     run_uploading_images(request.data)
+    management.call_command('cleanup_unused_media', noinput=True)
     return JsonResponse({'replay': 'ok'}, status=200)
 
 
