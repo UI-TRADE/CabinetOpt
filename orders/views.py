@@ -4,6 +4,7 @@ from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 from django.contrib.staticfiles import finders
+from django.contrib.auth import get_user_model
 from django.core.serializers import serialize
 from django.core.exceptions import ValidationError
 from django.db.models import F, Sum, Count
@@ -17,6 +18,8 @@ from contextlib import suppress
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.serializers import ModelSerializer
 
 from xhtml2pdf import pisa
 
@@ -35,6 +38,88 @@ from .utils import save_xlsx, read_xlsx
 from utils.exceptions import handle_errors
 from settings_and_conditions.models import NotificationType
 from settings_and_conditions.utils import notification_scheduling
+
+
+class ProductSerializer(ModelSerializer):
+
+    class Meta:
+        model = Product
+        fields = [
+            'id',
+            'name',
+            'articul',
+            'unit',
+            'available_for_order',
+            'show_on_site',
+            'product_type',
+            'metal',
+            'metal_content',
+            'color',
+            'status',
+            'identifier_1C'
+        ]
+
+
+class SizeSerializer(ModelSerializer):
+
+    class Meta:
+        model = Size
+        fields = '__all__'
+
+
+class OrderItemSerializer(ModelSerializer):
+
+    product = ProductSerializer()
+    size = SizeSerializer()
+
+    class Meta:
+        model = OrderItem
+        fields = '__all__'
+
+
+class UserSerializer(ModelSerializer):
+
+    class Meta:
+        model = get_user_model()
+        fields = [
+            'id',
+            'is_superuser',
+            'username',
+            'is_active',
+            'is_staff',
+            'name',
+            'email',
+            'phone',
+            'gender'
+        ]
+
+
+class ManagerSerializer(ModelSerializer):
+
+    class Meta:
+        model = Manager
+        fields = ['id', 'name', 'email', 'phone', 'login']
+
+
+class ClientSerializer(ModelSerializer):
+
+    manager_talant = UserSerializer()
+    manager = ManagerSerializer(many=True)
+
+    class Meta:
+        model = Client
+        fields = '__all__'
+
+
+
+class OrderSerializer(ModelSerializer):
+
+    client = ClientSerializer()
+    manager = ManagerSerializer()
+
+    class Meta:
+        model = Order
+        fields = '__all__'
 
 
 class OrderView(ListView):
@@ -678,36 +763,45 @@ def unload_orders(request, *args, **kwargs):
         period['created_at__lte'] = kwargs['data_to']  
     serialized_orders = []
     for order in Order.objects.filter(status='confirmed', **period):
-        serialized_order = json.loads(
-            serialize('json', Order.objects.filter(pk=order.id))
-        )
-        for item in serialized_order:
-            item['fields']['client'] = json.loads(
-                serialize('json', Client.objects.filter(pk=item['fields']['client']))
-            )
-            item['fields']['manager'] = json.loads(
-                serialize('json', Manager.objects.filter(pk=item['fields']['manager']))
-            )
-
-            serialized_items = json.loads(serialize(
-                "json",
-                OrderItem.objects.filter(order_id=item['pk'])
-            ))
-            for order_item in serialized_items:
-                order_item['fields']['product'] = json.loads(
-                    serialize('json', Product.objects.filter(pk=order_item['fields']['product']))
-                )
-                order_item['fields']['size'] = json.loads(
-                    serialize('json', Size.objects.filter(pk=order_item['fields']['size']))
-                )
-                order_item['fields']['price_type'] = json.loads(
-                    serialize('json', PriceType.objects.filter(pk=order_item['fields']['price_type']))
-                )
-            item['items'] = serialized_items
-
-        serialized_orders.append(item)
+        serialized_order = json.loads(json.dumps(OrderSerializer(order).data))
+        serialized_order['products'] = json.loads(
+            json.dumps(
+                OrderItemSerializer(OrderItem.objects.filter(order_id=order.id), many=True).data
+        ))
+        serialized_orders.append(serialized_order)
 
     return JsonResponse(serialized_orders, status=200, safe=False)
+
+        # serialized_order = json.loads(
+        #     serialize('json', Order.objects.filter(pk=order.id))
+        # )
+        # for item in serialized_order:
+        #     item['fields']['client'] = json.loads(
+        #         serialize('json', Client.objects.filter(pk=item['fields']['client']))
+        #     )
+        #     item['fields']['manager'] = json.loads(
+        #         serialize('json', Manager.objects.filter(pk=item['fields']['manager']))
+        #     )
+
+        #     serialized_items = json.loads(serialize(
+        #         "json",
+        #         OrderItem.objects.filter(order_id=item['pk'])
+        #     ))
+        #     for order_item in serialized_items:
+        #         order_item['fields']['product'] = json.loads(
+        #             serialize('json', Product.objects.filter(pk=order_item['fields']['product']))
+        #         )
+        #         order_item['fields']['size'] = json.loads(
+        #             serialize('json', Size.objects.filter(pk=order_item['fields']['size']))
+        #         )
+        #         order_item['fields']['price_type'] = json.loads(
+        #             serialize('json', PriceType.objects.filter(pk=order_item['fields']['price_type']))
+        #         )
+        #     item['items'] = serialized_items
+
+        # serialized_orders.append(item)
+
+    # return JsonResponse(serialized_orders, status=200, safe=False)
 
 
 @api_view(['GET'])
