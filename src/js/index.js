@@ -5,7 +5,7 @@ import generateUUID from './lib';
 import mainMenuEvents from './main_menu';
 import updateContactView, {contactEvents} from './contact';
 import { cartViewEvents } from './cart';
-import initProductFilters, { filtersEvents } from './catalog/filters';
+import initProductFilters, { filtersAndSortingEvents } from './catalog/filters';
 import updateProductCard, { productCardEvents } from './catalog_card';
 import ordersEvents from './orders';
 import orderEvents from './order';
@@ -30,6 +30,8 @@ const initStorages = () => {
         localStorage.setItem('cartView', false);
     if (sessionStorage.getItem('filters') === null)
         sessionStorage.setItem('filters', JSON.stringify([]));
+    if (sessionStorage.getItem('sorting') === null)
+        sessionStorage.setItem('sorting', JSON.stringify({}));
     if (!localStorage.getItem('client_id'))
         localStorage.setItem('client_id', generateUUID());
 }
@@ -39,7 +41,7 @@ const addEvents = () => {
 
     modalFormEvents();
     mainMenuEvents();
-    filtersEvents();
+    filtersAndSortingEvents();
     productCardEvents();
     cartViewEvents();
     ordersEvents();

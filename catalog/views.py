@@ -136,15 +136,50 @@ class ProductView(FiltersView, ListView):
     model = Product
     template_name = 'pages/catalog.html'
     context_object_name = 'products'
-    allow_empty, filters, paginate_by = True, [], 72
+    allow_empty, filters, sorting, paginate_by = True, [], {}, 72
 
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        raw_filters = request.POST.dict()
-        self.filters = json.loads(raw_filters.get('filters', '[]'))
+        filters_and_sorting = request.POST.dict()
+        self.filters = json.loads(filters_and_sorting.get('filters', '[]'))
+        self.sorting = json.loads(filters_and_sorting.get('sorting', '{ }'))
         return self.get(request)
+
+    def apply_sorting(self, products):
+        if not self.sorting:
+            return
+        
+        result = products
+
+        sorting_fields = []
+        sort_by_articul = self.sorting.get('articul', '')
+        if sort_by_articul:
+            sorting_fields.append(
+                'articul' if sort_by_articul == 'asc' else '-articul'
+            )
+        sort_by_stock = self.sorting.get('stock', '')
+        if sort_by_stock:
+            sorting_fields.append(
+                'total_stock' if sort_by_stock == 'asc' else '-total_stock'
+            )
+        sort_by_weight = self.sorting.get('weight', '')
+        if sort_by_weight:
+            sorting_fields.append(
+                'total_weight' if sort_by_weight == 'asc' else '-total_weight'
+            )
+
+        if not sorting_fields:
+            return result
+
+        result = products.prefetch_related('stocks_and_costs').annotate(
+            total_stock=Sum('stocks_and_costs__stock'),
+            total_weight=Sum('stocks_and_costs__weight')    
+        ).distinct().order_by(*sorting_fields)
+    
+        return result
+   
 
     def get_queryset(self):
         if self.filters:
@@ -158,6 +193,9 @@ class ProductView(FiltersView, ListView):
         else:
             products = Product.objects.get_active_products()
             filters, _ = self.get_filters(products)
+
+        if self.sorting:
+            products = self.apply_sorting(products)
 
         return products, json.dumps({key: value.to_json() for key, value in filters.items()})
 

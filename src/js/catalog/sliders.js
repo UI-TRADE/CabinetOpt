@@ -8,7 +8,8 @@ const showCatalog = () => {
     if (filters && token) {
         updateProducts('products', {
             'csrfmiddlewaretoken' : token.value,
-            'filters': JSON.stringify(filters)
+            'filters': JSON.stringify(filters),
+            'sorting': JSON.stringify({}),
         }, currentSpin);
     }
 }

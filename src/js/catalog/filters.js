@@ -115,6 +115,7 @@ const openSelectedItems = (element) => {
 
 const showCatalog = () => {
     const filters = JSON.parse(sessionStorage.getItem('filters'));
+    const sorting = JSON.parse(sessionStorage.getItem('sorting'));
     const token = document.querySelector('input[name="csrfmiddlewaretoken"]');
     if (filters && token) {
         const url = new URL(window.location.href);
@@ -123,7 +124,8 @@ const showCatalog = () => {
         if (!pageValue) {
             updateProducts('products', {
                 'csrfmiddlewaretoken' : token.value,
-                'filters': JSON.stringify(filters)
+                'filters': JSON.stringify(filters),
+                'sorting': JSON.stringify(sorting),
             }, currentSpin);
             return;    
         }
@@ -131,7 +133,7 @@ const showCatalog = () => {
         $.ajax({
             url: 'pages/count/',
             type: 'POST',
-            data: {'filters': JSON.stringify(filters)},
+            data: {'filters': JSON.stringify(filters), 'sorting': JSON.stringify(sorting)},
             success: (data) => {
                 if (data['pages_count'] < parseInt(pageValue)) {
                     url.searchParams.set('page', data['pages_count']);
@@ -141,7 +143,8 @@ const showCatalog = () => {
 
                 updateProducts('products', {
                     'csrfmiddlewaretoken' : token.value,
-                    'filters': JSON.stringify(filters)
+                    'filters': JSON.stringify(filters),
+                    'sorting': JSON.stringify(sorting),
                 }, currentSpin);
                 
             },
@@ -289,7 +292,45 @@ export function  updateFilterQuantitiesAndSums(html) {
 }
 
 
-export function filtersEvents() {
+const getNameOfSort = (idElement) => {
+    if (idElement === 'stock-sort_button')
+        return 'stock';
+    if (idElement === 'articul-sort_button')
+        return 'articul';
+    if (idElement === 'weight-sort_button')
+        return 'weight';
+    return ''
+}
+
+
+const getSortDirection = (name, sorting) => {
+    if (name in sorting) 
+        return sorting[name];
+
+    return 'asc';
+}
+
+
+const showSortDirection = (currentElement, sortDirect, nameOfSort='', sorting=undefined) => {
+
+    const square1 = currentElement.find('.square-1');
+    const square3 = currentElement.find('.square-3');
+
+    if (sortDirect === 'asc') {
+        square1.removeClass('square-asc');
+        square3.removeClass('square-desc');
+        if (sorting) sorting[nameOfSort] = 'desc';
+    }
+    if (sortDirect === 'desc') {
+        square1.addClass('square-asc');
+        square3.addClass('square-desc');
+        if (sorting) sorting[nameOfSort] = 'asc';
+    }
+
+}
+
+
+export function filtersAndSortingEvents() {
 
     $(document).on('click', '.filter-item-title', event => {
         if (isTopNode(event.currentTarget)) {
@@ -384,7 +425,41 @@ export function filtersEvents() {
             showCatalog();
         }
     });
-    
+   
+    $(document).on('click', '.sort-button', event => {
+
+        const sorting = JSON.parse(sessionStorage.getItem('sorting'));
+
+        const currentElement = $(event.currentTarget);
+        const nameOfSort = getNameOfSort(currentElement.attr('id'));
+        if (nameOfSort) {
+            showSortDirection(
+                currentElement,
+                getSortDirection(nameOfSort, sorting),
+                nameOfSort, sorting
+            );
+            sessionStorage.setItem('sorting', JSON.stringify(sorting));
+
+            showCatalog();
+        }
+    });
+}
+
+
+export function initProductSorting() {
+    const sorting = JSON.parse(sessionStorage.getItem('sorting'));
+
+    $.each($('.sort-button'), (_, el) => {
+        const currentElement = $(el);
+        const nameOfSort = getNameOfSort(currentElement.attr('id')); 
+        if (nameOfSort) {
+            showSortDirection(
+                currentElement,
+                getSortDirection(nameOfSort, sorting)
+            );
+        }   
+    });
+
 }
 
 
@@ -404,6 +479,7 @@ function initProductFilters() {
                 const filterContainer = $('#filter-container').html(data);
                 selectedFiltersBadges = new FilterBadges($("#selected-filter-container"), filterContainer)
                 showSliders();
+                initProductSorting();
                 updateMenuItems();
                 showCatalog();
             },

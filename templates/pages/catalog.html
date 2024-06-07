@@ -19,6 +19,33 @@
         <main class="col-xl-9 col-md-7 col-sm-6 col-xs-12 products products-list" >
             <div class="search-badges__list" style="display: none;"></div>
             <div id="selected-filter-container" class="filter-badges__list"></div>
+            <div class="products-sorting row">
+              <span>Сортировать по:</span>
+              <div id="stock-sort_button" class="sort-button sort-button-text_pos">
+                <span>Остаток</span>
+                <div class="squares">
+                  <div class="square-1"></div>
+                  <div class="square-2"></div>
+                  <div class="square-3"></div>
+                </div>
+              </div>
+              <div id="articul-sort_button" class="sort-button sort-button-text_pos">
+                <span>Артикул</span>
+                <div class="squares">
+                  <div class="square-1"></div>
+                  <div class="square-2"></div>
+                  <div class="square-3"></div>
+                </div>
+              </div>
+              <div id="weight-sort_button" class="sort-button sort-button-text_pos" style="width: 62px;">
+                <span>Вес</span>
+                <div class="squares">
+                  <div class="square-1"></div>
+                  <div class="square-2"></div>
+                  <div class="square-3"></div>
+                </div>
+              </div>
+            </div>
             <div id="products" style="visibility: hidden;">
                 <div class="row">
                   {% for product in products %}
