@@ -188,10 +188,6 @@ class ClientAdmin(admin.ModelAdmin):
     search_fields = [
         'name',
         'inn',
-        'registration_order',
-        'approved_by',
-        'updated_by',
-        'manager_talant',
     ]
     list_display = [
         'status',
