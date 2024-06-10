@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'django_summernote',
     'captcha',
+    'django_cleanup.apps.CleanupConfig',
 ]
 
 MIDDLEWARE = [

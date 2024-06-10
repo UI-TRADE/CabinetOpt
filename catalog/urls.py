@@ -11,6 +11,7 @@ urlpatterns = [
     path('services/'                     , views.ServiceView.as_view(), name='services'),
     path('product/<slug:prod_id>/'       , views.ProductCardView.as_view(), name='product'),
     path('upload/products'               , views.upload_products),
+    path('remove/images/<slug:prod_id>'  , views.remove_images),
     path('upload/images'                 , views.upload_images),
     path('upload/price'                  , views.upload_price),
     path('upload/stock_and_costs'        , views.upload_stock_and_costs),

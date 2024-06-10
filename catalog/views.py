@@ -366,8 +366,23 @@ def upload_products(request):
 @permission_classes([IsAuthenticated])
 def upload_images(request):
     run_uploading_images(request.data)
-    management.call_command('cleanup_unused_media', noinput=True)
     return JsonResponse({'replay': 'ok'}, status=200)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def remove_images(request, prod_id):
+    with suppress(Product.DoesNotExist):
+        product = Product.objects.get(identifier_1C=prod_id)
+        ProductImage.objects.filter(product=product).delete()
+        return JsonResponse({'replay': 'ok'}, status=200)
+    
+    return JsonResponse(
+        {'uuid':prod_id, 'error': 'Не найдена номенклатура'},
+        status=200,
+        safe=False,
+        json_dumps_params={'ensure_ascii': False}
+    )
 
 
 @api_view(['POST'])
