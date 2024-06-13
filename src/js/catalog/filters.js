@@ -156,16 +156,6 @@ const showCatalog = () => {
 }
 
 
-// const canRemoveFilterItem = (currnetIdent) => {
-//     const selectedSizes = $('.size-item.filter-item-title-active');
-//     for(var i=0; i<selectedSizes.length; i++) {
-//         if ($(selectedSizes[i]).data('json').find(f => f['ident'] === currnetIdent)) {
-//             return false;
-//         }    
-//     }
-//     return true;
-// }
-
 
 const selectMenuItem = (element, filters) => {
     $(element).toggleClass('filter-item-title-active');
@@ -255,12 +245,6 @@ const updateMenuItems = () => {
 }
 
 
-// const updateSearchValues = () => {
-//     const searchValues = JSON.parse(sessionStorage.getItem('search_values'));
-//     $('.').val(searchValues);
-
-// }
-
 // Получаем массив соответствий элементов фильтра и количества и сумм
 export function  updateFilterQuantitiesAndSums(html) {
     try {
@@ -303,30 +287,56 @@ const getNameOfSort = (idElement) => {
 }
 
 
-const getSortDirection = (name, sorting) => {
-    if (name in sorting) 
-        return sorting[name];
+const incativeSortButtons = (currentNameOfSort) => {
 
-    return 'asc';
+    $.each($('.sort-button'), (_, el) => {
+        const currentElement = $(el);
+        const nameOfSort = getNameOfSort(currentElement.attr('id'));
+        if (currentNameOfSort != nameOfSort) {
+            const square1 = currentElement.find('.square-1');
+            const square3 = currentElement.find('.square-3');
+            currentElement.removeClass('sort-button-active');
+            square1.removeClass('square-asc');
+            square3.removeClass('square-desc');
+        }
+    });
+
 }
 
 
-const showSortDirection = (currentElement, sortDirect, nameOfSort='', sorting=undefined) => {
+const showSortDirection = (currentElement) => {
+
+    const sortDirect = currentElement.data()?.state;
 
     const square1 = currentElement.find('.square-1');
     const square3 = currentElement.find('.square-3');
 
-    if (sortDirect === 'asc') {
+    if (!sortDirect) {
+        currentElement.removeClass('sort-button-active');
         square1.removeClass('square-asc');
         square3.removeClass('square-desc');
-        if (sorting) sorting[nameOfSort] = 'desc';
-    }
-    if (sortDirect === 'desc') {
-        square1.addClass('square-asc');
-        square3.addClass('square-desc');
-        if (sorting) sorting[nameOfSort] = 'asc';
     }
 
+    if (sortDirect === 'asc') {
+        currentElement.addClass('sort-button-active');
+        square1.removeClass('square-asc');
+        square3.removeClass('square-desc');
+    }
+    if (sortDirect === 'desc') {
+        currentElement.addClass('sort-button-active');
+        square1.addClass('square-asc');
+        square3.addClass('square-desc');
+    }
+
+    return sortDirect;
+
+}
+
+
+const nextSortStatus = (currentStatus) => {
+    if (!currentStatus) return 'asc';
+    if (currentStatus == 'asc') return 'desc';
+    if (currentStatus == 'desc') return '';
 }
 
 
@@ -427,19 +437,16 @@ export function filtersAndSortingEvents() {
     });
    
     $(document).on('click', '.sort-button', event => {
-
-        const sorting = JSON.parse(sessionStorage.getItem('sorting'));
-
         const currentElement = $(event.currentTarget);
         const nameOfSort = getNameOfSort(currentElement.attr('id'));
         if (nameOfSort) {
-            showSortDirection(
-                currentElement,
-                getSortDirection(nameOfSort, sorting),
-                nameOfSort, sorting
-            );
-            sessionStorage.setItem('sorting', JSON.stringify(sorting));
-
+            incativeSortButtons(nameOfSort);
+            const currentStatus = currentElement.data()?.state;
+            currentElement.data('state', nextSortStatus(currentStatus));
+            const obj = {}; obj[`${nameOfSort}`] = showSortDirection(currentElement);
+            if (obj[`${nameOfSort}`]) sessionStorage.setItem('sorting', JSON.stringify(obj));
+            else sessionStorage.setItem('sorting', JSON.stringify({}));
+            currentSpin = createSpiner($('.main-content')[0]);
             showCatalog();
         }
     });
@@ -447,16 +454,16 @@ export function filtersAndSortingEvents() {
 
 
 export function initProductSorting() {
-    const sorting = JSON.parse(sessionStorage.getItem('sorting'));
+    const currentSorting = JSON.parse(sessionStorage.getItem('sorting'));
 
     $.each($('.sort-button'), (_, el) => {
         const currentElement = $(el);
         const nameOfSort = getNameOfSort(currentElement.attr('id')); 
         if (nameOfSort) {
-            showSortDirection(
-                currentElement,
-                getSortDirection(nameOfSort, sorting)
-            );
+            if (nameOfSort in currentSorting) {
+                currentElement.data('state', currentSorting[nameOfSort]);    
+            }
+            showSortDirection(currentElement);
         }   
     });
 
