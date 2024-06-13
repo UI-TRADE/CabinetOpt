@@ -58,6 +58,23 @@
         align-items: center;
         padding-left: 10px;
     }
+    .sort-button-active {
+        border-color: #E3A358;
+
+        span {
+            color: #E3A358;
+        }
+
+        .square-1 {
+            border-color: #E3A358!important;
+        }
+        .square-2 {
+            border-color: #E3A358!important;  
+        }
+        .square-3 {
+            border-color: #E3A358!important;   
+        }
+    }
     &:hover{
         cursor: pointer;
     }
