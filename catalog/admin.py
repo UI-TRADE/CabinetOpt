@@ -1,5 +1,7 @@
+import csv
 from contextlib import suppress
 from django.contrib import admin
+from django.http import HttpResponse
 from django.db.models import Avg, Sum
 from django.utils.html import format_html
 
@@ -283,6 +285,24 @@ class ProductAdmin(admin.ModelAdmin):
         ProductsSetInLine,
         SimilarProductsInLine
     ]
+    list_display_links = (
+        'image_icon',
+        'articul',
+        'show_on_site',
+        'price',
+        'name',
+        'product_type',
+        'ct_color',
+        'avg_weight',
+        'unit',
+        'available_for_order',
+        'stock',
+        'status',
+        'gem_set',
+        'brand',
+        'collection',
+    )
+    actions = ['export_as_csv']
 
     def ct_color(self, obj):
         if obj.str_color:
@@ -335,23 +355,20 @@ class ProductAdmin(admin.ModelAdmin):
         )
     image_tag.short_description = 'Изображение'
 
-    list_display_links = (
-        'image_icon',
-        'articul',
-        'show_on_site',
-        'price',
-        'name',
-        'product_type',
-        'ct_color',
-        'avg_weight',
-        'unit',
-        'available_for_order',
-        'stock',
-        'status',
-        'gem_set',
-        'brand',
-        'collection',
-    )
+    @admin.action(description='Выгрузить в csv файл')
+    def export_as_csv(self, request, queryset):
+        meta = self.model._meta
+        field_names = [field.name for field in meta.fields]
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
+        writer = csv.writer(response)
+
+        writer.writerow(field_names)
+        for obj in queryset:
+            row = writer.writerow([getattr(obj, field) for field in field_names])
+
+        return response
 
 
 @admin.register(PriceType)
