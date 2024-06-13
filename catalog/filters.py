@@ -193,7 +193,7 @@ class CharInFilter(BaseInFilter, CharFilter):
 
 
 class ProductFilter(django_filters.FilterSet):
-    # available_for_order            = BooleanFilter(field_name = 'available_for_order')
+
     metal                            = CharInFilter(field_name = 'metal', lookup_expr='in')
     metal_finish__name               = CharInFilter(field_name = 'metal_finish__name', lookup_expr='in')
     str_color                        = CharInFilter(field_name = 'str_color', lookup_expr='in')
@@ -203,7 +203,6 @@ class ProductFilter(django_filters.FilterSet):
     collection__group__name          = CharInFilter(field_name = 'collection__group__name', lookup_expr='in')
     collection__name                 = CharInFilter(field_name = 'collection__name', lookup_expr='in')
     gender__name                     = CharInFilter(field_name = 'gender__name', lookup_expr='in')
-
     in_stock                         = BooleanFilter(method='in_stock_filter')
     product__collection__group__name = CharFilter(method='size_filter')    
     size__name                       = CharFilter(method='size_filter')
@@ -211,7 +210,6 @@ class ProductFilter(django_filters.FilterSet):
     precious_filter                  = CharFilter(method='gems_filter')
     color_filter                     = CharFilter(method='gems_filter')
     cut_type__cut_type_image__name   = CharFilter(method='cut_type_filter')
-
     weight = django_filters.NumericRangeFilter(
         field_name='weight',
         lookup_expr='range',
@@ -227,13 +225,11 @@ class ProductFilter(django_filters.FilterSet):
         lookup_expr='range',
         method='gem_quantity_filter'
     )
-
     stock = django_filters.NumericRangeFilter(
         field_name='stock',
         lookup_expr='range',
         method='stock_filter'
     )
-
     search_values   = CharFilter(method='search_filter')
 
     class Meta:
@@ -325,6 +321,6 @@ class ProductFilter(django_filters.FilterSet):
     
 
     def search_filter(self, queryset, name, value):
-        fields = ['articul__iregex', 'name__iregex', 'mark_description__iregex']
-        search_obj = SearchFilter(queryset, fields, value)
+        fields = ['articul__iregex', 'name__iregex', 'mark_description__iregex', 'gem_sets__precious_stone__name']
+        search_obj = SearchFilter(queryset.prefetch_related('gem_sets'), fields, value)
         return search_obj.get_filtered_qs(search_obj.apply_filter())
