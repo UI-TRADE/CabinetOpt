@@ -19,4 +19,5 @@ urlpatterns = [
     path('contact/edit/'           , views.ContactDetailCreateView.as_view(), name='edit'),
     path('manager/'                , views.ManagerView.as_view(), name='manager'),
     path('manager/add/'            , views.ManagerAddView.as_view(), name='add_manager'),
+    path('generate-password/'      , views.generate_password, name='generate_password'),
 ]

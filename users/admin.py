@@ -27,7 +27,8 @@ class CustomUserAdmin(admin.ModelAdmin):
         'is_staff'
     )
     fields = [
-        ('username', 'name'),
+        ('username', 'password'),
+        'name',
         ('email', 'phone'),
         ('gender', 'date_of_birth'),
         'groups',
@@ -35,3 +36,9 @@ class CustomUserAdmin(admin.ModelAdmin):
     ]
 
     inlines = [NotificationInLine]
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        form.base_fields["username"].label = 'Логин'
+        form.base_fields["password"].label = 'Пароль'
+        return form

@@ -190,6 +190,11 @@ def check_login(request):
     return JsonResponse({'replay': 'fail'}, status=200)
 
 
+@api_view(['GET'])
+def generate_password(_):
+    return JsonResponse({'password': Login.generate_password()}, status=200)
+
+
 class ContactDetailView(ListView):
     model = ContactDetail
     template_name = 'pages/contact.html'

@@ -9,12 +9,14 @@ from .models import (
     Manager,
     ContactDetail
 )
+from .widgets import PasswordInputWithButton
 
 
 class CustomRegOrderForm(forms.ModelForm):
-    login    = forms.CharField(required=False)
+    login    = forms.CharField(label='Логин', required=False)
     password = forms.CharField(
-        widget=forms.PasswordInput(),
+        label='Пароль',
+        widget=PasswordInputWithButton(render_value=True),
         required=False
     )
 
