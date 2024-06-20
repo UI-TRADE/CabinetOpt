@@ -12,10 +12,11 @@
                         {% csrf_token %}
                         {% for field in form %}
                             <div class="form-group row {{ field.name }}-row">
-                                {% if not field.is_hidden %}
-                                    <label class="col-sm-4 col-form-label">{{ field.label_tag }}</label>
-                                {% endif %}
+                                <label class="col-sm-4 col-form-label">{{ field.label_tag }}</label>
                                 <div class="col-sm-8">
+                                    {% if field.name == 'login' %}
+                                        <label class="col-sm-4 col-form-label">{{ field.value }}</label>
+                                    {% endif %}
                                     {{ field }}
                                 </div>
                             </div>

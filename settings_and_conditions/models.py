@@ -128,6 +128,7 @@ class NotificationType(models.Model):
     GET_ORDER     = 'get_order'
     RECOVERY_PASS = 'recovery_password'
     LOCKED_CLIENT = 'locked_client'
+    NEW_MANAGER   = 'add_manager'
 
     event = models.CharField(
         'Событие',
@@ -141,6 +142,7 @@ class NotificationType(models.Model):
             (GET_ORDER     , 'Заказ получен в 1С'),
             (RECOVERY_PASS , 'Запрос восстановления пароля'),
             (LOCKED_CLIENT , 'Временное отключение клиента от входа в ЛК'),
+            (NEW_MANAGER   , 'Добавление менеджера клиента'),
     ))
     subject = models.CharField('Тема письма', max_length=100, blank=True)
     notification = models.TextField('Шаблон письма', blank=True)

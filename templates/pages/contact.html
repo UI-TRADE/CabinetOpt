@@ -39,6 +39,13 @@
 
                 <div class="font-weight-normal contact-detail__item">E-mail: {{ manager.email }}</div>
                 <div class="font-weight-normal contact-detail__item">телефон: {{ manager.phone }}</div>
+                <div class="contact-detail__item__position"></div>
+                <a 
+                    class="contact-detail__change_pass"
+                    name="add-new-manager"
+                    href="javascript:void(0);">
+                    <u>Добавить нового менеджера</u>
+                </a>
                 <div class="contact-detail__item__position-x2"></div>
 
                 <div>
@@ -140,6 +147,8 @@
         </div>
 
     </div>
+
+    <div class="add-manager-form-layout hidden" id="add-manager-form"></div>
 
 	{% endblock %}
 {% endblock %}

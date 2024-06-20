@@ -10,6 +10,7 @@ from .models import (
     AuthorizationAttempt
 )
 from .forms import CustomRegOrderForm
+from clients.login import Login
 from orders.models import Order
 from settings_and_conditions.models import NotificationType
 from settings_and_conditions.utils import notification_scheduling
@@ -52,8 +53,14 @@ class RegistrationOrderFilter(SimpleListFilter):
 class ManagerInLine(admin.TabularInline):
     model = Client.manager.through
     extra = 0
-    verbose_name = "Персональный менеджер"
-    verbose_name_plural = "Персональные менеджеры"
+    verbose_name = 'Персональный менеджер'
+    verbose_name_plural = 'Персональные менеджеры'
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'manager':
+            client = Client.objects.get(pk=request.resolver_match.kwargs['object_id'])
+            kwargs['queryset'] = client.manager.all()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 class ContactDetailInLine(admin.TabularInline):
@@ -149,6 +156,9 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
+        if obj:
+            form.base_fields['login'].initial = obj.identification_number
+        form.base_fields['password'].initial = Login.generate_password()
         return form
 
     @notification_scheduling(NotificationType.CONFIM_REG)
@@ -161,11 +171,13 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
 class ManagerAdmin(admin.ModelAdmin):
     search_fields = [
         'name',
+        'email',
     ]
     list_display = [
         'name',
+        'email',
     ]
-    list_display_links = ('name',)
+    list_display_links = ('name', 'email',)
 
 
 @admin.register(ContactDetail)

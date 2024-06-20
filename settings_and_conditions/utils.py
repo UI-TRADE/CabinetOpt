@@ -62,6 +62,9 @@ def notification_scheduling(arg1):
                 _, obj, form, *_ = params
                 if form.cleaned_data.get('status') == 'locked':
                     locked_client(obj, form.cleaned_data)
+            elif arg1 == NotificationType.NEW_MANAGER:
+                cleaned_data, = params
+                add_new_manager(cleaned_data)
 
             return result
 
@@ -89,13 +92,13 @@ def do_recovery_password(request, cleaned_data):
         f'recovery_password_{login}',
         {
             'notification_type': 'recovery_password',
-            'id': login, 'url': f'{uri}?usr={hash_login}',
-            'params': ''
-
+            'id': login, 'url': f'{uri}?usr={hash_login}&email={cleaned_data["email"]}',
+            'params': json.dumps(cleaned_data)
     })
 
 
 def approve_registration(request, obj, cleaned_data):
+
     if not cleaned_data.get('name_of_manager'):
         raise ValidationError('Не указано ФИО персонального менеджера', code='')
 
@@ -170,3 +173,17 @@ def locked_client(obj, cleaned_data):
             'url': '',
             'params': json.dumps({key: value for key, value in cleaned_data.items() if key != 'manager_talant'})
     })
+
+
+def add_new_manager(cleaned_data):
+    try:
+        obj = Manager.objects.get(email=cleaned_data['email'])
+        settings.REDIS_CONN.hmset(
+            f'new_manager_{obj.id}',
+            {
+                'notification_type': 'add_manager',
+                'id': obj.id,
+                'url': '',
+                'params': json.dumps({key: value for key, value in cleaned_data.items() if key != 'phone'})
+        })
+    except Manager.DoesNotExist:...

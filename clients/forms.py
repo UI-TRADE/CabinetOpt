@@ -172,9 +172,9 @@ class LoginForm(forms.Form, RawLogin):
 
 class ChangePassForm(forms.Form, RawLogin):
     login = forms.CharField(
-        label='ИНН',
+        label='Логин',
         widget=forms.HiddenInput(
-            attrs={'class': 'form-control default-input reg-field-layout'}
+            attrs={'class': 'form-control default-input reg-field-layout', 'placeholder': 'ИНН'}
         )
     )
     old_pass = forms.CharField(
@@ -207,22 +207,19 @@ class ChangePassForm(forms.Form, RawLogin):
             super().__init__(*args, **kwargs)
         self.fields['captcha'].widget.attrs['class'] = 'form-control'
 
-
     def clean_login(self):
         if not self.is_login_exist():
             raise ValidationError('Клиент с таким логином не существует')
         client = self.get_clients().first()
         if client and client.status == 'locked':
             raise ValidationError('Для входа в личный кабинет обратитесь к Вашему менеджеру по продажам TALANT')
-        return self.cleaned_data['login']
-        
+        return self.cleaned_data['login'] 
     
     def clean_old_pass(self):
         if self.check_password(self.cleaned_data['old_pass']):
             return self.cleaned_data['old_pass']
         raise ValidationError('Неверный пароль')
 
-    
     def clean_repeat_pass(self):
         new_pass = self.cleaned_data['new_pass']
         repeat_pass = self.cleaned_data['repeat_pass']
@@ -237,19 +234,31 @@ class ChangePassForm(forms.Form, RawLogin):
 
 class LoginFormRecovery(forms.Form):
     login = forms.CharField(
-        label='ИНН',
+        label='Логин',
         widget=forms.TextInput(
-            attrs={'class': 'form-control default-input reg-field-layout'}
+            attrs={'class': 'form-control default-input reg-field-layout', 'placeholder': 'ИНН'}
         )
     )
-    fields = ['login']
+    email = forms.CharField(
+        label='Email',
+        widget=forms.EmailInput(
+            attrs={'class': 'form-control default-input reg-field-layout', 'placeholder': 'email'}
+        )
+    )
+    fields = ['login', 'email']
 
 
 class RecoveryPassForm(forms.Form, RawLogin):
     login = forms.CharField(
         label='Логин',
         widget=forms.HiddenInput(
-            attrs={'class': 'form-control default-input reg-field-layout'}
+            attrs={'class': 'form-control default-input reg-field-layout', 'placeholder': 'ИНН'}
+        )
+    )
+    email = forms.CharField(
+        label='Email',
+        widget=forms.HiddenInput(
+            attrs={'class': 'form-control default-input reg-field-layout', 'placeholder': 'email'}
         )
     )
     new_pass = forms.CharField(
@@ -265,7 +274,7 @@ class RecoveryPassForm(forms.Form, RawLogin):
         )
     )
     captcha = CaptchaField(error_messages={'required': 'Неверный код'})
-    fields = ['login', 'new_pass', 'repeat_pass', 'captcha']
+    fields = ['login', 'email', 'new_pass', 'repeat_pass', 'captcha']
     
     def __init__(self, *args, **kwargs):
         if args:
@@ -283,6 +292,15 @@ class RecoveryPassForm(forms.Form, RawLogin):
         if client and client.status == 'locked':
             raise ValidationError('Для входа в личный кабинет обратитесь к Вашему менеджеру по продажам TALANT')
         return self.cleaned_data['login']
+    
+    def clean_email(self):
+        client = self.get_clients().first()
+        if not client:
+            raise ValidationError('Ненайден клиент с таким логином')
+        manager = client.manager.filter(email=self.cleaned_data['email'])
+        if not manager:
+            raise ValidationError('Введенный адрес электронной почты не зарегистрирован')
+        return self.cleaned_data['email']
 
     def clean_repeat_pass(self):
         new_pass = self.cleaned_data['new_pass']
@@ -291,7 +309,7 @@ class RecoveryPassForm(forms.Form, RawLogin):
             raise ValidationError('Пароли не совпадают')
         with suppress(AuthenticationError):
             data = self.cleaned_data
-            self.set_pass_and_auth(data['login'], data['new_pass'])
+            self.set_pass_and_auth(data['login'], data['email'], data['new_pass'])
             return repeat_pass
         raise ValidationError('Неверный логин или пароль')
 
@@ -310,9 +328,16 @@ class ContactDetailForm(forms.ModelForm):
 
 class ManagerForm(forms.ModelForm):
 
+    login = forms.CharField(
+        label='ИНН',
+        widget=forms.HiddenInput(
+            attrs={'class': 'form-control default-input reg-field-layout'}
+        )
+    )
+
     class Meta:
         model = Manager
-        fields = ['name', 'email', 'phone']
+        fields = ['login', 'name', 'email', 'phone']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

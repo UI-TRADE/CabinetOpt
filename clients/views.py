@@ -156,6 +156,7 @@ def recovery_password(request, id):
         login.unauth()
 
         hash_login = request.GET.get('usr')
+        current_email = request.GET.get('email')
         if hash_login:
             inn, hash_inn = '', ''
             registration_orders = RegistrationOrder.objects.all()
@@ -165,7 +166,7 @@ def recovery_password(request, id):
                     inn = registration_order.identification_number
                     break
             if inn:
-                form = RecoveryPassForm(initial={'login': inn})
+                form = RecoveryPassForm(initial={'login': inn, 'email': current_email})
                 return render(
                     request,
                     'pages/recovery-pass.html',
@@ -208,12 +209,16 @@ class ContactDetailView(ListView):
         if contact_detail:
             login = Login(self.request)
             client = Client.objects.filter(pk=contact_detail.client_id).first()
+            manager = client.manager.first()
+            manager_id = login.login.get('manager')
+            if manager_id:
+                manager = client.manager.get(pk=manager_id)
             orders = Order.objects.filter(client=client).order_by('-created_at')
             hash_id = hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest()
             hash_inn = hashlib.sha256(client.inn.encode()).hexdigest()
             return {
                 'client'  : client,
-                'manager' : client.manager.first(),
+                'manager' : manager,
                 'contact' : contact_detail,
                 'login'   : login.login,
                 'orders'  : orders,
@@ -269,20 +274,44 @@ class ManagerView(ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         return dict(list(context.items()))
-    
+
+
+@notification_scheduling(NotificationType.NEW_MANAGER)
+def add_manager(request, cleaned_data):
+    login = Login(request)
+    client = login.get_clients().get()
+    personal_manager, _ = Manager.objects.get_or_create(
+        email = cleaned_data['email'],
+        defaults = cleaned_data
+    )
+    client.manager.add(personal_manager)
+
 
 class ManagerAddView(CreateView):
     form_class = ManagerForm
     template_name = 'forms/manager.html'
     success_url = reverse_lazy('manager')
 
-    def form_valid(self, form):
+    @staticmethod
+    def get_initial():
+        initial = {
+            'login': '',
+        }
+        return initial
+    
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        login = Login(self.request)
+        context['form'].initial['login'] = login.login['login']
+        return dict(list(context.items()))
+
+
+    def post(self, request):
+        form = ManagerForm(request.POST)
+        if not form.is_valid():
+            return JsonResponse({'errors': form.errors.as_json()})
+    
         with transaction.atomic():
-            login = Login(self.request)
-            client = login.get_clients().get()
-            personal_manager, _ = Manager.objects.get_or_create(
-                name = form.cleaned_data['name'],
-                defaults = form.cleaned_data
-            )
-            client.manager.add(personal_manager)
-        return redirect('clients:manager')
+            add_manager(self.request, form.cleaned_data | {'password': Login.generate_password()})
+        return JsonResponse({'redirect_url': reverse('clients:contact')})
+

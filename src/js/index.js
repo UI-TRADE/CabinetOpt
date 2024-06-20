@@ -9,11 +9,10 @@ import initProductFilters, { filtersAndSortingEvents } from './catalog/filters';
 import updateProductCard, { productCardEvents } from './catalog_card';
 import ordersEvents from './orders';
 import orderEvents from './order';
-import showModalForm, {
+import showAuthForm, {
     modalFormEvents,
     switchModalForm,
     showChangePassForm,
-    showAuthForm,
     updateModalForm,
     applyShowPasswordButtons,
     bindEventToCaptcha

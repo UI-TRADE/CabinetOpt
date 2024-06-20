@@ -117,7 +117,6 @@ def get_context(notification_type, id, url, params):
         manager_talant = obj.client.registration_order.manager_talant
         if not manager_talant:
             raise ValidationError('Не указан менеджер talant', code='')
-        # email = manager_talant.email
         if not email:
             raise ValidationError('Не указан email менеджера talant', code='')
         
@@ -152,6 +151,12 @@ def get_context(notification_type, id, url, params):
     if notification_type == NotificationType.RECOVERY_PASS:
         client = Client.objects.get(inn=id)
         manager = client.manager.first()
+        
+        email = params.get('email')
+        if email:
+            with suppress(Manager.DoesNotExist):
+                manager = client.manager.get(email=email)
+            
         email = manager.email
         if not email:
             raise ValidationError('Не указан email менеджера клиента', code='')
@@ -171,6 +176,9 @@ def get_context(notification_type, id, url, params):
 
     if notification_type == NotificationType.GET_ORDER:
         pass
+
+    if notification_type == NotificationType.NEW_MANAGER:
+        result = params['email'], params
 
     return result
 

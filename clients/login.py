@@ -2,6 +2,9 @@ import re
 from django.conf import settings
 from contextlib import suppress
 
+from random import choice
+from string import digits, ascii_letters
+
 from clients.models import Manager, Client, AuthorizationAttempt
 
 
@@ -11,6 +14,13 @@ class AuthenticationError(Exception):
 
 
 class Login(object):
+
+    @classmethod
+    def generate_password(cls, length=6):
+        s = ''
+        for _ in range(length):
+            s += choice(digits + ascii_letters)
+        return s
 
     def __init__(self, request):
         self.session = request.session
@@ -54,13 +64,16 @@ class Login(object):
                 obj = Manager.objects.get(email=login)
                 if obj.password != password:
                     raise AuthenticationError
+                client = Client.objects.get(inn=obj.login)
+                self.login['client'] = client.id
                 self.login['manager'] = obj.id
             else:
                 obj = Client.objects.get(inn=login)
-                manager = obj.manager.first()
-                if manager.password != password:
+                manager = [item for item in obj.manager.all() if item.password == password]
+                if not manager:
                     raise AuthenticationError
                 self.login['client'] = obj.id
+                self.login['manager'] = manager[0].id
 
             self.login['login'] = login
         except (Manager.DoesNotExist, Client.DoesNotExist, IndexError):
@@ -74,11 +87,21 @@ class Login(object):
                 obj = Manager.objects.get(email=login)
                 if obj.password != password:
                     raise AuthenticationError
+                Manager.objects.filter(pk=obj.id).update(password=new_password)
+                client = Manager.objects.all().prefetch_related('clients_by_managers')\
+                    .filter(pk=obj.id)\
+                    .values('clients_by_managers__id')\
+                    .first()
+                self.login['client'] = client.get('clients_by_managers__id', 0)
                 self.login['manager'] = obj.id
             else:
                 obj = Client.objects.get(inn=login)
-                obj.manager.all().update(password=new_password)
+                manager_id = [item.id for item in obj.manager.all() if item.password == password]
+                if not manager_id:
+                    raise AuthenticationError
+                Manager.objects.filter(pk=manager_id[0]).update(password=new_password)
                 self.login['client'] = obj.id
+                self.login['manager'] = manager_id[0]
 
             self.login['login'] = login
         except (Manager.DoesNotExist, Client.DoesNotExist):
@@ -86,15 +109,26 @@ class Login(object):
 
 
     @_add_failed_attempt
-    def set_pass_and_auth(self, login='', new_password=''):
+    def set_pass_and_auth(self, login='', email='', new_password=''):
         try:
             if self.is_email(login):
                 obj = Manager.objects.get(email=login).update(password=new_password)
+                client = Manager.objects.all().prefetch_related('clients_by_managers')\
+                    .filter(pk=obj.id)\
+                    .values('clients_by_managers__id')\
+                    .first()
+                self.login['client'] = client.get('clients_by_managers__id', 0)
                 self.login['manager'] = obj.id
             else:
                 obj = Client.objects.get(inn=login)
-                obj.manager.all().update(password=new_password)
+                manager = obj.manager.all()
+                if email:
+                    manager = obj.manager.filter(email=email)
+                if not manager:
+                    raise AuthenticationError    
+                manager.update(password=new_password)
                 self.login['client'] = obj.id
+                self.login['manager'] = manager[0].id
 
             self.login['login'] = login
         except (Manager.DoesNotExist, Client.DoesNotExist):
@@ -164,8 +198,8 @@ class RawLogin(Login):
                         raise AuthenticationError
                 else:
                     obj = Client.objects.get(inn=self.raw_login)
-                    manager = obj.manager.first()
-                    if manager.password != password:
+                    manager = [item for item in obj.manager.all() if item.password == password]
+                    if not manager:
                         raise AuthenticationError
                 return True
         return False

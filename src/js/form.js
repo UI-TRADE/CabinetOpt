@@ -2,14 +2,6 @@ import generateUUID from './lib';
 import { handleError } from "./utils/exceptions";
 
 
-// const updateLoginAttempts = () => {
-//     let login_attempts = localStorage.getItem('login_attempts');
-//     login_attempts -= 1;
-//     localStorage.setItem('login_attempts', login_attempts);
-//     return login_attempts;
-// }
-
-
 export const applyShowPasswordButtons = ($modal) => {
     const $btnWrappers = $modal.find('.show-password-btn-wrapper');
     for (let i = 0; i < $btnWrappers.length; i+=1) {
@@ -29,21 +21,6 @@ export const applyShowPasswordButtons = ($modal) => {
         });
     }
 }
-
-
-// const showRecoveryPass = ($modal) => {
-//     const authButton = $($modal).find('.auth-form-btn');
-//     if (!authButton.length) return;
-//     const login_attempts = sessionStorage.getItem('login_attempts');
-//     if (login_attempts < 0) {
-//         authButton.toggleClass('hidden');
-//         $($modal).find('.recovery-form-btn').toggleClass('hidden');
-//         const signinItems = $($modal).find('.sign-in-form-item');
-//         const signinItem = signinItems[signinItems.length-1];
-//         $(signinItem).toggleClass('hidden');
-//         $(signinItem).removeAttr('required')
-//     }
-// }
 
 
 const updateCaptcha = () => {
@@ -149,7 +126,6 @@ const renderModalForm = (data, targetId, submitFormId) => {
     $modal.html(currentForm.outerHTML);
     bindEventToCaptcha(targetId);
     applyShowPasswordButtons($modal);
-    // showRecoveryPass($modal);
 }
 
 
@@ -206,7 +182,59 @@ export function switchModalForm(idFrom, idTo, submitFormId) {
 }
 
 
-export function showAuthForm(submitFormId, auth='login') {
+export function modalFormEvents() {
+
+    $('a[name="login"]').click((event) => {
+        sessionStorage.setItem('auth', 'login');
+        window.location.replace(event.currentTarget.getAttribute('data-url'));
+    });
+    $('a[name="logout"]').click((event) => {
+        sessionStorage.setItem('auth', 'login');
+        window.location.replace(event.currentTarget.getAttribute('data-url'));
+    });
+    $('a[name="forgot-password"]').click((event) => {
+        event.preventDefault();
+        showAuthForm(generateUUID(), 'login_recovery');
+    });
+    $('a[name="add-new-manager"]').click((event) => {
+        event.preventDefault();
+        showModalForm('add-manager-form', generateUUID(), 'manager/add');
+    });
+} 
+
+
+function showModalForm(formId, submitFormId, uri) {
+    $.ajax({
+        url: `/clients/${uri}`,
+        headers: {
+            'X-Client-Id': localStorage.getItem('client_id')
+        },
+        success: (response) => {
+            renderModalForm(response, formId, submitFormId);
+            updateModalForm(submitFormId);
+            modalFormEvents();
+            $('.background-overlay').removeClass('hidden');
+            $(`#${formId}`).removeClass('hidden');
+            $('.background-overlay').click(
+                function(){
+                    const $modal = $(`#${formId}`);
+                    const $overlay = $('.background-overlay');
+                    $modal.html('');
+                    $modal.addClass('hidden');
+                    $overlay.addClass('hidden');
+                    $overlay.off();    
+                }
+            );
+        },
+        error: (xhr, status, error) => {
+            handleError(error, 'Ошибка открытия формы');
+        }
+    });
+
+}
+
+
+function showAuthForm(submitFormId, auth='login') {
     $.ajax({
         url: `/clients/${auth}`,
         headers: {
@@ -223,54 +251,5 @@ export function showAuthForm(submitFormId, auth='login') {
     });
 }
 
-export function modalFormEvents() {
-    // $('#registration-form-switch').click((event) => {
-    //     $.ajax({
-    //         url: event.currentTarget.getAttribute('data-url'),
-    //         headers: {
-    //             'X-Client-Id': localStorage.getItem('client_id')
-    //         },
-    //         success: (response) => {
-    //             renderModalForm(response, 'registration-form', submitFormId);
-    //             updateModalForm(submitFormId);
-    //         },
-    //         error: (xhr, status, error) => {
-    //             handleError(error, 'Ошибка открытия формы');
-    //         }
-    //     });
-    // });
-    $('a[name="login"]').click((event) => {
-        sessionStorage.setItem('auth', 'login');
-        window.location.replace(event.currentTarget.getAttribute('data-url'));
-    });
-    $('a[name="logout"]').click((event) => {
-        sessionStorage.setItem('auth', 'login');
-        window.location.replace(event.currentTarget.getAttribute('data-url'));
-    });
-    $('a[name="forgot-password"]').click((event) => {
-        event.preventDefault();
-        showAuthForm(generateUUID(), 'login_recovery');
-    });
-} 
 
-
-function showModalForm(formId, submitFormId) {
-    $(document).on('show.bs.modal',`#${formId}`, (event) => {
-        $.ajax({
-            url: event.relatedTarget.getAttribute('data-url'),
-            headers: {
-                'X-Client-Id': localStorage.getItem('client_id')
-            },
-            success: (response) => {
-                renderModalForm(response, formId, submitFormId);
-                updateModalForm((submitFormId) ? submitFormId : formId);
-            },
-            error: (xhr, status, error) => {
-                handleError(error, 'Ошибка открытия формы');
-            }
-        });
-    });
-}
-
-
-export default showModalForm;
+export default showAuthForm;

@@ -14,7 +14,23 @@
                 </div>
                 <div>
                     {% for field in form %}
-                        {% if field.label != "Captcha" %}
+                        {% if field.label == "Captcha" %}
+                            <div class="registration-form-captcha">
+                                {{ field }}
+                            </div>
+                        {% elif field.name == "login" %}
+                            <div class="sign-in-form-item" data-type="{{ field.name }}" style="margin-bottom: 0px;">
+                                <label class="default-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                <label class="col-sm-4 col-form-label"><b>{{ field.value }}</b></label>
+                                {{ field }}
+                            </div>
+                        {% elif field.name == "email" and field.value %}
+                            <div class="sign-in-form-item" data-type="{{ field.name }}">
+                                <label class="default-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                <label class="col-sm-4 col-form-label"><b>{{ field.value }}</b></label>
+                                {{ field }}
+                            </div>
+                        {% else %}
                             <div class="sign-in-form-item" data-type="{{ field.name }}">
                                 {% if field.name == 'new_pass' or field.name == 'repeat_pass' %}
                                     <div class="show-password-btn-wrapper sign-in-form-item__show-password-btn-wrapper">
@@ -30,13 +46,6 @@
                                     </div>
                                 {% endif %}
                                 <label class="default-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                {% if field.name == 'login' %}
-                                    <div class="form-control default-input reg-field-layout" style="background-color: none">{{ field.value }}</div>
-                                {% endif %}
-                                {{ field }}
-                            </div>
-                        {% else %}
-                            <div class="registration-form-captcha">
                                 {{ field }}
                             </div>
                         {% endif %}

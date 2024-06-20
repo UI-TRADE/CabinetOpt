@@ -56,13 +56,16 @@ class RegistrationOrder(models.Model):
 
 class Manager(models.Model):
     name = models.CharField('ФИО', max_length=150, blank=True)
-    email = models.EmailField('email', db_index=True)
+    email = models.EmailField(
+        error_messages={'unique': 'A user with that email already exists.'},
+        unique=True,
+        verbose_name='email',
+        db_index=True
+    )
     phone = PhoneNumberField('Контактный телефон', db_index=True)
     login = models.CharField(
-         error_messages={'unique': 'A user with that username already exists.'},
          help_text='Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.',
          max_length=150,
-         unique=True,
          verbose_name='Логин'
     )
     password = models.CharField(max_length=128, verbose_name='Пароль')
