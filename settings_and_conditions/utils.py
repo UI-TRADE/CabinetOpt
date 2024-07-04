@@ -11,6 +11,8 @@ from rest_framework import serializers
 
 from clients.models import (RegistrationOrder, Client, Manager)
 from orders.models import Order
+from mailings.models import OutgoingMail
+from mailings.tasks import get_mail_params, create_outgoing_mail
 from settings_and_conditions.models import NotificationType
 from utils.requests import get_uri
 
@@ -72,31 +74,47 @@ def notification_scheduling(arg1):
     return inner
 
 
+def handle_notification():
+    def wrap(func):
+        @wraps(func)
+        def run_func(*args):
+            notification_options = func(*args)
+            if notification_options:
+                create_outgoing_mail(get_mail_params(notification_options))
+            return notification_options
+
+        return run_func
+    return wrap
+
+
+@handle_notification()
 def do_registration_request(obj):
-    settings.REDIS_CONN.hmset(
-        f'registration_request_{obj.id}',
-        {
-            'notification_type': 'registration_request',
-            'id': obj.id,
-            'url': '',
-            'params': json.dumps(RegistrationOrderSerializer(obj).data)
-    })
+    result = {
+        'notification_type': 'registration_request',
+        'id': obj.id,
+        'url': '',
+        'params': json.dumps(RegistrationOrderSerializer(obj).data)
+    }
+    settings.REDIS_CONN.hmset(f'registration_request_{obj.id}', result)
+    return result
 
 
+@handle_notification()
 def do_recovery_password(request, cleaned_data):
     login = cleaned_data['login']
     hash_id = hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest()
     hash_login = hashlib.sha256(login.encode()).hexdigest()
     uri = get_uri(request, 'clients:recovery_pass', id=hash_id)
-    settings.REDIS_CONN.hmset(
-        f'recovery_password_{login}',
-        {
-            'notification_type': 'recovery_password',
-            'id': login, 'url': f'{uri}?usr={hash_login}&email={cleaned_data["email"]}',
-            'params': json.dumps(cleaned_data)
-    })
+    result = {
+        'notification_type': 'recovery_password',
+        'id': login, 'url': f'{uri}?usr={hash_login}&email={cleaned_data["email"]}',
+        'params': json.dumps(cleaned_data)
+    }
+    settings.REDIS_CONN.hmset(f'recovery_password_{login}', result)
+    return result
 
 
+@handle_notification()
 def approve_registration(request, obj, cleaned_data):
 
     if not cleaned_data.get('name_of_manager'):
@@ -123,67 +141,72 @@ def approve_registration(request, obj, cleaned_data):
             hash_id = hashlib.sha256(str(uuid.uuid4()).encode()).hexdigest()
             hash_inn = hashlib.sha256(cleaned_data['identification_number'].encode()).hexdigest()
             uri = get_uri(request, 'clients:change_pass', id=hash_id)
-            settings.REDIS_CONN.hmset(
-                f'registration_order_{obj.id}',
-                {
-                    'notification_type': 'confirm_registration',
-                    'id': client.id,
-                    'url': f'{uri}?usr={hash_inn}',
-                    'params': json.dumps({key: value for key, value in cleaned_data.items() if not key in ['manager_talant','phone']})
-            })
+            result = {
+                'notification_type': 'confirm_registration',
+                'id': client.id,
+                'url': f'{uri}?usr={hash_inn}',
+                'params': json.dumps({key: value for key, value in cleaned_data.items() if not key in ['manager_talant','phone']})
+            }
+            settings.REDIS_CONN.hmset(f'registration_order_{obj.id}', result)
+            return result
 
 
+@handle_notification()
 def confirm_order(order):
-    settings.REDIS_CONN.hmset(
-        f'order_{order.id}',
-        {
-            'notification_type': 'confirm_order',
-            'id': order.id, 'url': '',
-            'params': json.dumps(OrderSerializer(order).data)
-    })
+    result = {
+        'notification_type': 'confirm_order',
+        'id': order.id, 'url': '',
+        'params': json.dumps(OrderSerializer(order).data)
+    }
+    settings.REDIS_CONN.hmset(f'order_{order.id}', result)
+    return result
 
 
+@handle_notification()
 def get_order(order):
-    settings.REDIS_CONN.hmset(
-        f'order_{order.id}',
-        {
-            'notification_type': 'get_order',
-            'id': order.id, 'url': '',
-            'params': json.dumps(OrderSerializer(order).data)
-    })
+    result = {
+        'notification_type': 'get_order',
+        'id': order.id, 'url': '',
+        'params': json.dumps(OrderSerializer(order).data)
+    }
+    settings.REDIS_CONN.hmset(f'order_{order.id}', result)
+    return result
 
 
+@handle_notification()
 def cancel_registration(obj, cleaned_data):
-    settings.REDIS_CONN.hmset(
-        f'cancel_registration_order_{obj.id}',
-        {
-            'notification_type': 'cancel_registration',
-            'id': obj.id,
-            'url': '',
-            'params': json.dumps({key: value for key, value in cleaned_data.items() if not key in ['manager_talant','phone']})
-    })
+    result = {
+        'notification_type': 'cancel_registration',
+        'id': obj.id,
+        'url': '',
+        'params': json.dumps({key: value for key, value in cleaned_data.items() if not key in ['manager_talant','phone']})
+    }
+    settings.REDIS_CONN.hmset(f'cancel_registration_order_{obj.id}', result)
+    return result
 
 
+@handle_notification()
 def locked_client(obj, cleaned_data):
-    settings.REDIS_CONN.hmset(
-        f'locked_client_{obj.id}',
-        {
-            'notification_type': 'locked_client',
-            'id': obj.id,
-            'url': '',
-            'params': json.dumps({key: value for key, value in cleaned_data.items() if key != 'manager_talant'})
-    })
+    result = {
+        'notification_type': 'locked_client',
+        'id': obj.id,
+        'url': '',
+        'params': json.dumps({key: value for key, value in cleaned_data.items() if key != 'manager_talant'})
+    }
+    settings.REDIS_CONN.hmset(f'locked_client_{obj.id}', result)
+    return result
 
 
+@handle_notification()
 def add_new_manager(cleaned_data):
     try:
         obj = Manager.objects.get(email=cleaned_data['email'])
-        settings.REDIS_CONN.hmset(
-            f'new_manager_{obj.id}',
-            {
-                'notification_type': 'add_manager',
-                'id': obj.id,
-                'url': '',
-                'params': json.dumps({key: value for key, value in cleaned_data.items() if key != 'phone'})
-        })
+        result = {
+            'notification_type': 'add_manager',
+            'id': obj.id,
+            'url': '',
+            'params': json.dumps({key: value for key, value in cleaned_data.items() if key != 'phone'})
+        }
+        settings.REDIS_CONN.hmset(f'new_manager_{obj.id}', result)
+        return result
     except Manager.DoesNotExist:...

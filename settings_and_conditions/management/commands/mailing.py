@@ -5,18 +5,9 @@ import time
 
 from contextlib import suppress
 from django.conf import settings
-from django.core.mail import EmailMessage, send_mail
 from django.core.management import BaseCommand
-from django.core.exceptions import ValidationError
-from django.template import Template, Context
-from django.template.loader import render_to_string
-from django.urls import reverse
-from redis.exceptions import ResponseError
 
-from settings_and_conditions.models import NotificationType, Notification
-from settings_and_conditions.notify_rollbar import notify_rollbar
-from clients.models import RegistrationOrder, Client, Manager
-from orders.models import Order
+from mailings.tasks import get_mail_params, send_email_hide_recipients
 
 
 class Command(BaseCommand):
@@ -60,153 +51,13 @@ def launch_mailing():
     for key in tasks:
         for field in fields.keys():
             fields[field] = get_value(redis_storage, key, field)
-        notification_types = NotificationType.objects.filter(event=fields['notification_type'])
-        for notification_type_obj in notification_types:
-            subject  = notification_type_obj.subject
-            template = notification_type_obj.notification
-            with suppress(
-                Order.DoesNotExist,
-                Client.DoesNotExist,
-                RegistrationOrder.DoesNotExist,
-                Manager.DoesNotExist,
-                NotificationType.DoesNotExist,
-                ValidationError, ValueError, AttributeError, ResponseError
-            ):
-                with notify_rollbar():
-                    if not template:
-                        raise ValidationError('Не указан шаблон письма', code='')
-                    email, context = get_context(**fields)
-                    recipient_list = get_recipient_list(notification_type_obj, email)
-
-                    send_email_hide_recipients(context, recipient_list, subject=subject, template=template)
+        mail_params = get_mail_params(fields)
+        if mail_params:
+            send_email_hide_recipients(
+                mail_params['context'],
+                mail_params['recipient_list'],
+                subject=mail_params['subject'],
+                template=mail_params['template']
+            )
 
         redis_storage.delete(key)
-
-
-
-def get_recipient_list(notification_type, email):
-    result = []
-    notifications = Notification.objects.filter(use_up=True, notification_type=notification_type)
-    for notify in notifications:
-        if notify.email:
-            result = result + [notify.email]
-        if  notify.notify in [
-                Notification.NOTIFICATION_TO_MANAGERS,
-                Notification.NOTIFICATION_CLIENTS_MANAGERS
-            ] and notify.manager_talant and notify.manager_talant.email:
-            result = result + [notify.manager_talant.email]
-    if notifications.exclude(notify=Notification.NOTIFICATION_TO_MANAGERS):
-        result = result + [email]
-    return list(set(result))
-
-
-def get_context(notification_type, id, url, params):
-    result = {}
-
-    if notification_type == NotificationType.REG_REQUEST:
-        obj = RegistrationOrder.objects.get(id=id)
-        email = obj.email
-        if not email:
-            raise ValidationError('Не указан email менеджера talant', code='')
-        
-        result = email, params
-
-    if notification_type == NotificationType.CONFIM_ORDER:
-        obj = Order.objects.get(id=id)
-        email = obj.client.manager.values_list('email', flat=True).first()
-        manager_talant = obj.client.registration_order.manager_talant
-        if not manager_talant:
-            raise ValidationError('Не указан менеджер talant', code='')
-        if not email:
-            raise ValidationError('Не указан email менеджера talant', code='')
-        
-        result = email, {
-            'id'        : obj.id,
-            'created_at': obj.created_at,
-            'client'    : obj.client,
-            'manager'   : manager_talant.username
-        }
-
-    if notification_type == NotificationType.CONFIM_REG:
-        client = Client.objects.get(id=id)
-        manager = client.manager.first()
-        email = manager.email
-        if not email:
-            raise ValidationError('Не указан email менеджера клиента', code='')
-        result = email, {
-            'url'     : url,
-            'login'   : manager.login,
-            'password': manager.password
-        }
-
-    if notification_type == NotificationType.CANCEL_REG:
-        reg_order = RegistrationOrder.objects.get(pk=id)
-        email = reg_order.email
-        if not email:
-            raise ValidationError('Не указан email в заявке на регистрацию', code='')
-        result = email, {
-            'url'     : url,
-        } | params
-
-    if notification_type == NotificationType.RECOVERY_PASS:
-        client = Client.objects.get(inn=id)
-        manager = client.manager.first()
-        
-        email = params.get('email')
-        if email:
-            with suppress(Manager.DoesNotExist):
-                manager = client.manager.get(email=email)
-            
-        email = manager.email
-        if not email:
-            raise ValidationError('Не указан email менеджера клиента', code='')
-        result = email, {
-            'url'     : url,
-        } | params
-
-    if notification_type == NotificationType.LOCKED_CLIENT:
-        client = Client.objects.get(pk=id)
-        manager = client.manager.first()
-        email = manager.email
-        if not email:
-            raise ValidationError('Не указан email менеджера клиента', code='')
-        result = email, {
-            'url'     : url,
-        } | params
-
-    if notification_type == NotificationType.GET_ORDER:
-        pass
-
-    if notification_type == NotificationType.NEW_MANAGER:
-        result = params['email'], params
-
-    return result
-
-
-def send_email(context, recipient_list, **params):
-    template = Template(params['template'])
-    rendered_html = template.render(Context(context))
-    html_content = render_to_string('forms/notify-template.html', {'params': rendered_html})
-    send_mail(
-        params['subject'],
-        '',
-        settings.EMAIL_HOST_USER,
-        recipient_list,
-        html_message=html_content
-    )
-
-
-def send_email_hide_recipients(context, recipient_list, **params):
-    template = Template(params['template'])
-    rendered_html = template.render(Context(context))
-    html_content = render_to_string('forms/notify-template.html', {'params': rendered_html})
-    for recipient in recipient_list:
-        email = EmailMessage(
-            params['subject'],
-            html_content,
-            f'TALANT<{settings.EMAIL_HOST_USER}>',
-            [recipient],
-            reply_to=['TALANT<opt@talantgold.ru>'],
-        )
-        email.content_subtype = "html"
-        email.send()

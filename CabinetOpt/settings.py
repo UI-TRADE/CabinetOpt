@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'django_summernote',
     'captcha',
     'django_cleanup.apps.CleanupConfig',
+    'mailings',
 ]
 
 MIDDLEWARE = [
