@@ -1,13 +1,13 @@
-import json
 import sys
 import schedule
 import time
 
-from contextlib import suppress
-from django.conf import settings
+from datetime import timedelta
 from django.core.management import BaseCommand
+from django_rq import get_queue
 
-from mailings.tasks import get_mail_params, send_email_hide_recipients
+from mailings.models import OutgoingMail
+from mailings.tasks import send_email
 
 
 class Command(BaseCommand):
@@ -35,29 +35,14 @@ class Command(BaseCommand):
 
 
 def launch_mailing():
-
-    def get_value(conn, key, field):
-        if field == 'params':
-            result = {}
-            with suppress(json.decoder.JSONDecodeError):
-                result = json.loads(conn.hmget(key, field)[0].decode()) 
-        else:
-            result = conn.hmget(key, field)[0].decode()
-        return result
-
-    fields = {'notification_type': '', 'id': '', 'url': '', 'params': ''}
-    redis_storage = settings.REDIS_CONN
-    tasks = redis_storage.keys()
-    for key in tasks:
-        for field in fields.keys():
-            fields[field] = get_value(redis_storage, key, field)
-        mail_params = get_mail_params(fields)
-        if mail_params:
-            send_email_hide_recipients(
-                mail_params['context'],
-                mail_params['recipient_list'],
-                subject=mail_params['subject'],
-                template=mail_params['template']
-            )
-
-        redis_storage.delete(key)
+    unsent_mails = OutgoingMail.objects.filter(sent_date__isnull=True)
+    for unset_mail in unsent_mails:
+        current_queue = get_queue()
+        current_queue.enqueue_in(
+            timedelta(seconds=1),
+            send_email,
+            unset_mail.html_content,
+            unset_mail.email.split(';'),
+            subject=unset_mail.subject,
+            obj_id=unset_mail.id
+        )

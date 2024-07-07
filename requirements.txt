@@ -25,3 +25,4 @@ redis==5.0.0
 schedule==1.1.0
 django-meta==2.4.0
 django-cleanup==8.1.0
+django-rq==2.10.2

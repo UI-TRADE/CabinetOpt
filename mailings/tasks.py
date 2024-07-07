@@ -1,10 +1,15 @@
+import datetime
+
+from functools import wraps
 from contextlib import suppress
 
 from django.conf import settings
-from django.core.mail import EmailMessage, send_mail
+from django.core.mail import EmailMessage
 
 from django.template import Template, Context
 from django.template.loader import render_to_string
+
+from django_rq import job, get_queue
 
 from django.core.exceptions import ValidationError
 from redis.exceptions import ResponseError
@@ -14,6 +19,25 @@ from settings_and_conditions.notify_rollbar import notify_rollbar
 from .models import OutgoingMail
 from clients.models import RegistrationOrder, Client, Manager
 from orders.models import Order
+
+
+def launch_mailing():
+    def wrap(func):
+        @wraps(func)
+        def run_func(*args):
+            unset_mail = func(*args)
+            current_queue = get_queue()
+            current_queue.enqueue_in(
+                datetime.timedelta(minutes=5),
+                send_email,
+                unset_mail.html_content,
+                unset_mail.email.split(';'),
+                subject=unset_mail.subject,
+                obj_id=unset_mail.id
+            )
+
+        return run_func
+    return wrap
 
 
 def get_recipient_list(notification_type, email):
@@ -144,36 +168,23 @@ def get_mail_params(notification_options):
                 }
 
 
+@launch_mailing()
 def create_outgoing_mail(mail_params):
     if not mail_params:
         return
     template = Template(mail_params['template'])
     rendered_html = template.render(Context(mail_params['context']))
     html_content = render_to_string('forms/notify-template.html', {'params': rendered_html})
-    _ = OutgoingMail.objects.create(
+    return OutgoingMail.objects.create(
         email=';'.join(mail_params['recipient_list']),
         subject=mail_params['subject'],
         html_content=html_content
     )
 
 
-def send_email(context, recipient_list, **params):
-    template = Template(params['template'])
-    rendered_html = template.render(Context(context))
-    html_content = render_to_string('forms/notify-template.html', {'params': rendered_html})
-    send_mail(
-        params['subject'],
-        '',
-        settings.EMAIL_HOST_USER,
-        recipient_list,
-        html_message=html_content
-    )
-
-
-def send_email_hide_recipients(context, recipient_list, **params):
-    template = Template(params['template'])
-    rendered_html = template.render(Context(context))
-    html_content = render_to_string('forms/notify-template.html', {'params': rendered_html})
+@job('default')
+def send_email(html_content, recipient_list, **params):
+    print(recipient_list)
     for recipient in recipient_list:
         email = EmailMessage(
             params['subject'],
@@ -184,3 +195,15 @@ def send_email_hide_recipients(context, recipient_list, **params):
         )
         email.content_subtype = "html"
         email.send()
+    if params.get('obj_id'):
+        OutgoingMail.objects.filter(id=params['obj_id']).update(
+            sent_date=datetime.datetime.now()
+        )
+
+
+
+# def send_email_hide_recipients(context, recipient_list, **params):
+#     template = Template(params['template'])
+#     rendered_html = template.render(Context(context))
+#     html_content = render_to_string('forms/notify-template.html', {'params': rendered_html})
+#     send_email(html_content, recipient_list, params)

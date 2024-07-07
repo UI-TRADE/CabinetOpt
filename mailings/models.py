@@ -5,7 +5,9 @@ class OutgoingMail(models.Model):
     email = models.CharField('Email получателя', max_length=254, db_index=True)
     subject = models.CharField('Тема', max_length=150, blank=True)
     html_content = models.TextField('Содержание письма')
-    sent = models.BooleanField('Отправлено', default=False, db_index=True)
+    sent_date = models.DateTimeField(
+        'Дата отправки', db_index=True, blank=True, null=True
+    )
 
     class Meta:
         verbose_name = 'Исходящее письмо'

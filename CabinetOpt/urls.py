@@ -31,6 +31,7 @@ urlpatterns = [
     path('summernote/', include('django_summernote.urls')),
     path('condition/', include('settings_and_conditions.urls')),
     path('__debug__/', include('debug_toolbar.urls')),
+    path('django-rq/', include('django_rq.urls')),
 ]
 
 urlpatterns += [
