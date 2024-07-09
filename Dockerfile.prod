@@ -50,8 +50,7 @@ WORKDIR $APP_HOME
 
 RUN apk update \
     && apk add libpq postgresql-dev g++ gcc python3-dev \
-    musl-dev libxslt-dev libffi-dev freetype-dev freetype-dev \
-    supervisor
+    musl-dev libxslt-dev libffi-dev freetype-dev freetype-dev
 
 COPY --from=env_builder /usr/src/app/wheels /wheels
 COPY --from=env_builder /usr/src/app/requirements.txt .
@@ -64,11 +63,8 @@ RUN chmod +x  $APP_HOME/entrypoint.prod.sh
 COPY . $APP_HOME
 COPY --from=node_builder /usr/src/app/static $APP_HOME/static
 
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
 RUN chown -R app:app $APP_HOME
 
 USER app
 
-CMD ["/bin/sh", "-c", "$APP_HOME/entrypoint.prod.sh && supervisord -c /etc/supervisor/conf.d/supervisord.conf"]
-# ENTRYPOINT ["/home/app/web/entrypoint.prod.sh"]
+ENTRYPOINT ["/home/app/web/entrypoint.prod.sh"]
