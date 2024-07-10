@@ -184,17 +184,17 @@ def create_outgoing_mail(mail_params):
 
 @job('default')
 def send_email(html_content, recipient_list, **params):
-    print(recipient_list)
     for recipient in recipient_list:
-        email = EmailMessage(
-            params['subject'],
-            html_content,
-            f'TALANT<{settings.EMAIL_HOST_USER}>',
-            [recipient],
-            reply_to=['TALANT<opt@talantgold.ru>'],
-        )
-        email.content_subtype = "html"
-        email.send()
+        with notify_rollbar(extra_data={'recipient': recipient}):
+            email = EmailMessage(
+                params['subject'],
+                html_content,
+                f'TALANT<{settings.EMAIL_HOST_USER}>',
+                [recipient],
+                reply_to=['TALANT<opt@talantgold.ru>'],
+            )
+            email.content_subtype = "html"
+            email.send()
     if params.get('obj_id'):
         OutgoingMail.objects.filter(id=params['obj_id']).update(
             sent_date=datetime.datetime.now()
