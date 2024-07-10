@@ -1,6 +1,12 @@
 from django.contrib import admin
 from django_summernote.admin import SummernoteModelAdmin
 from .models import OutgoingMail
+from .tasks import launch_mailing
+
+
+@launch_mailing()
+def send_outgoing_mail(obj):
+    return obj
 
 
 class OutgoingMailSentFilter(admin.SimpleListFilter):
@@ -29,3 +35,10 @@ class OutgoingMailAdmin(SummernoteModelAdmin):
     list_display_links = ('email', 'subject',)
 
     fields = ['email', 'subject', 'html_content',]
+
+    actions = ['put_in_mail_queue']
+
+    @admin.action(description='Поместить в очередь отправки')
+    def put_in_mail_queue(self, request, queryset):
+        for obj in queryset:
+            send_outgoing_mail(obj)
