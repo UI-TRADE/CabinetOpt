@@ -93,7 +93,6 @@ def do_registration_request(obj):
         'url': '',
         'params': json.dumps(RegistrationOrderSerializer(obj).data)
     }
-    # settings.REDIS_CONN.hmset(f'registration_request_{obj.id}', result)
     return result
 
 
@@ -108,7 +107,6 @@ def do_recovery_password(request, cleaned_data):
         'id': login, 'url': f'{uri}?usr={hash_login}&email={cleaned_data["email"]}',
         'params': json.dumps(cleaned_data)
     }
-    # settings.REDIS_CONN.hmset(f'recovery_password_{login}', result)
     return result
 
 
@@ -145,7 +143,6 @@ def approve_registration(request, obj, cleaned_data):
                 'url': f'{uri}?usr={hash_inn}',
                 'params': json.dumps({key: value for key, value in cleaned_data.items() if not key in ['manager_talant','phone']})
             }
-            # settings.REDIS_CONN.hmset(f'registration_order_{obj.id}', result)
             return result
 
 
@@ -156,7 +153,6 @@ def confirm_order(order):
         'id': order.id, 'url': '',
         'params': json.dumps(OrderSerializer(order).data)
     }
-    # settings.REDIS_CONN.hmset(f'order_{order.id}', result)
     return result
 
 
@@ -167,7 +163,6 @@ def get_order(order):
         'id': order.id, 'url': '',
         'params': json.dumps(OrderSerializer(order).data)
     }
-    # settings.REDIS_CONN.hmset(f'order_{order.id}', result)
     return result
 
 
@@ -179,7 +174,6 @@ def cancel_registration(obj, cleaned_data):
         'url': '',
         'params': json.dumps({key: value for key, value in cleaned_data.items() if not key in ['manager_talant','phone']})
     }
-    # settings.REDIS_CONN.hmset(f'cancel_registration_order_{obj.id}', result)
     return result
 
 
@@ -191,7 +185,6 @@ def locked_client(obj, cleaned_data):
         'url': '',
         'params': json.dumps({key: value for key, value in cleaned_data.items() if key != 'manager_talant'})
     }
-    # settings.REDIS_CONN.hmset(f'locked_client_{obj.id}', result)
     return result
 
 
@@ -205,6 +198,5 @@ def add_new_manager(cleaned_data):
             'url': '',
             'params': json.dumps({key: value for key, value in cleaned_data.items() if key != 'phone'})
         }
-        # settings.REDIS_CONN.hmset(f'new_manager_{obj.id}', result)
         return result
     except Manager.DoesNotExist:...

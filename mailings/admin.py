@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django_summernote.admin import SummernoteModelAdmin
-from .models import OutgoingMail
-from .tasks import launch_mailing
+from .models import OutgoingMail, MailingOfLetters
+from .tasks import launch_mailing, get_email_addresses, create_outgoing_mail
 
 
 @launch_mailing()
@@ -26,6 +26,14 @@ class OutgoingMailSentFilter(admin.SimpleListFilter):
             return queryset.filter(sent_date__isnull=True)
 
 
+class ClientInline(admin.TabularInline):
+
+    extra = 0
+    model = MailingOfLetters.client.through
+    verbose_name = 'Клиент'
+    verbose_name_plural = 'Клиенты'
+
+
 @admin.register(OutgoingMail)
 class OutgoingMailAdmin(SummernoteModelAdmin):
     search_fields = ['email', 'subject']
@@ -37,8 +45,70 @@ class OutgoingMailAdmin(SummernoteModelAdmin):
     fields = ['email', 'subject', 'html_content',]
 
     actions = ['put_in_mail_queue']
-
     @admin.action(description='Поместить в очередь отправки')
     def put_in_mail_queue(self, request, queryset):
         for obj in queryset:
             send_outgoing_mail(obj)
+
+
+@admin.register(MailingOfLetters)
+class MailingOfLettersAdmin(SummernoteModelAdmin):
+    readonly_fields = []
+    search_fields = ['name', 'status']
+    list_display = ['created_at', 'name', 'status', 'subject',]
+    summernote_fields = ('template',)
+    list_filter = ['status',]
+    list_display_links = ('created_at', 'name', 'status', 'subject')
+    fields = ['name', 'subject', 'template',]
+
+    inlines = (ClientInline,)
+
+    actions = ['set_sent_status']
+    @admin.action(description='Установить статус к отправке')
+    def set_sent_status(self, request, queryset):
+        for obj in queryset:
+            obj.status=MailingOfLetters.SENT
+            obj.save(update_fields=['status'])
+            create_outgoing_mail({
+                'recipient_list'   : list(set(get_email_addresses(obj.client.all()))),
+                'subject'          : obj.subject,
+                'template'         : obj.template,
+                'context'          : {},
+                'mailing_of_letter': obj,
+            })
+
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj and obj.status != MailingOfLetters.NEW:
+            return list(self.readonly_fields) + \
+            [field.name for field in obj._meta.fields] + \
+            [field.name for field in obj._meta.many_to_many]
+        return self.readonly_fields
+
+
+    def get_inline_instances(self, request, obj=None):
+        inline_instances = []
+        for inline_class in self.inlines:
+            if self.should_show_inline(request, obj, inline_class):
+                inline = inline_class(self.model, self.admin_site)
+                inline_instances.append(inline)
+        return inline_instances
+    
+
+    def should_show_inline(self, request, obj, inline_class):
+        if not obj:
+            return True
+        if obj.status == MailingOfLetters.NEW:
+            return True
+        return False
+    
+
+    def get_fields(self, request, obj=None):
+        fields = super().get_fields(request, obj)
+        if not 'client' in fields:
+            fields.append('client')    
+        if not obj and 'client' in fields:
+            fields.remove('client')
+        elif obj and obj.status == MailingOfLetters.NEW and 'client' in fields:
+            fields.remove('client')
+        return fields

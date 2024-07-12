@@ -16,28 +16,43 @@ from redis.exceptions import ResponseError
 
 from settings_and_conditions.models import NotificationType, Notification
 from settings_and_conditions.notify_rollbar import notify_rollbar
-from .models import OutgoingMail
+from .models import OutgoingMail, MailingOfLetters
 from clients.models import RegistrationOrder, Client, Manager
 from orders.models import Order
 
+DEFAULT_TIMEOUT_FOR_SENDING_EMAILS = 5
 
 def launch_mailing():
     def wrap(func):
         @wraps(func)
         def run_func(*args):
-            unset_mail = func(*args)
+            mail_params, = args
+            unset_mail = func(mail_params)
+            mail_params = {key: value for key, value in mail_params.items() if key != 'recipient_list'} | {
+                'subject': unset_mail.subject,
+                'obj_id': unset_mail.id
+            }
             current_queue = get_queue()
             current_queue.enqueue_in(
-                datetime.timedelta(minutes=5),
+                datetime.timedelta(minutes=DEFAULT_TIMEOUT_FOR_SENDING_EMAILS),
                 send_email,
                 unset_mail.html_content,
                 unset_mail.email.split(';'),
-                subject=unset_mail.subject,
-                obj_id=unset_mail.id
+                **mail_params
             )
+            return unset_mail
 
         return run_func
     return wrap
+
+
+def get_email_addresses(clients):
+    email_addresses = Manager.objects.all().prefetch_related('clients_by_managers').\
+        filter(clients_by_managers__id__in=clients).\
+        values_list('email', flat=True)
+    
+    if email_addresses:
+        return [email_addresse for email_addresse in email_addresses]
 
 
 def get_recipient_list(notification_type, email):
@@ -140,6 +155,15 @@ def get_context(notification_type, id, url, params):
 
 
 def get_mail_params(notification_options):
+    '''
+        Return dict of mail parametrs.
+
+        notification_options - dict with next keys:
+            notification_type - (str) type of notification
+            id - (str) object id
+            url - (str) url
+            params - (str) json dumps of object
+    '''
     notification_types = NotificationType.objects.filter(event=notification_options['notification_type'])
     for obj in notification_types:
         subject  = obj.subject
@@ -195,15 +219,14 @@ def send_email(html_content, recipient_list, **params):
             )
             email.content_subtype = "html"
             email.send()
+
     if params.get('obj_id'):
         OutgoingMail.objects.filter(id=params['obj_id']).update(
             sent_date=datetime.datetime.now()
         )
 
+    if params.get('mailing_of_letter'):
+        mailing_of_letter = params.get('mailing_of_letter')
+        mailing_of_letter.status = MailingOfLetters.COMPLETED
+        mailing_of_letter.save(update_fields=['status'])
 
-
-# def send_email_hide_recipients(context, recipient_list, **params):
-#     template = Template(params['template'])
-#     rendered_html = template.render(Context(context))
-#     html_content = render_to_string('forms/notify-template.html', {'params': rendered_html})
-#     send_email(html_content, recipient_list, params)
