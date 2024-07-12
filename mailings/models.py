@@ -40,7 +40,7 @@ class MailingOfLetters(models.Model):
 
 
 class OutgoingMail(models.Model):
-    email = models.CharField('Email получателя', max_length=254, db_index=True)
+    email = models.CharField('Email получателя', max_length=1024, db_index=True)
     subject = models.CharField('Тема', max_length=150, blank=True)
     html_content = models.TextField('Содержание письма')
     sent_date = models.DateTimeField(

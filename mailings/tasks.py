@@ -20,6 +20,7 @@ from .models import OutgoingMail, MailingOfLetters
 from clients.models import RegistrationOrder, Client, Manager
 from orders.models import Order
 
+MAX_NUM_OF_EMAIL_ADDRESSES_SENT = 5
 DEFAULT_TIMEOUT_FOR_SENDING_EMAILS = 5
 
 def launch_mailing():
@@ -32,14 +33,18 @@ def launch_mailing():
                 'subject': unset_mail.subject,
                 'obj_id': unset_mail.id
             }
-            current_queue = get_queue()
-            current_queue.enqueue_in(
-                datetime.timedelta(minutes=DEFAULT_TIMEOUT_FOR_SENDING_EMAILS),
-                send_email,
-                unset_mail.html_content,
-                unset_mail.email.split(';'),
-                **mail_params
-            )
+            email_addresses = unset_mail.email.split(';')
+            grouped_email_addresses = [
+                email_addresses[i:i + MAX_NUM_OF_EMAIL_ADDRESSES_SENT]\
+                    for i in range(
+                        0, len(email_addresses), MAX_NUM_OF_EMAIL_ADDRESSES_SENT
+            )]
+            for i, emails in enumerate(grouped_email_addresses):
+                current_queue = get_queue()
+                current_queue.enqueue_in(
+                    datetime.timedelta(minutes=DEFAULT_TIMEOUT_FOR_SENDING_EMAILS+i),
+                    send_email, unset_mail.html_content, emails, **mail_params
+                )
             return unset_mail
 
         return run_func

@@ -91,7 +91,7 @@ def do_registration_request(obj):
         'notification_type': 'registration_request',
         'id': obj.id,
         'url': '',
-        'params': json.dumps(RegistrationOrderSerializer(obj).data)
+        'params': RegistrationOrderSerializer(obj).data
     }
     return result
 
@@ -105,7 +105,7 @@ def do_recovery_password(request, cleaned_data):
     result = {
         'notification_type': 'recovery_password',
         'id': login, 'url': f'{uri}?usr={hash_login}&email={cleaned_data["email"]}',
-        'params': json.dumps(cleaned_data)
+        'params': cleaned_data
     }
     return result
 
@@ -141,7 +141,7 @@ def approve_registration(request, obj, cleaned_data):
                 'notification_type': 'confirm_registration',
                 'id': client.id,
                 'url': f'{uri}?usr={hash_inn}',
-                'params': json.dumps({key: value for key, value in cleaned_data.items() if not key in ['manager_talant','phone']})
+                'params': {key: value for key, value in cleaned_data.items() if not key in ['manager_talant','phone']}
             }
             return result
 
@@ -151,7 +151,7 @@ def confirm_order(order):
     result = {
         'notification_type': 'confirm_order',
         'id': order.id, 'url': '',
-        'params': json.dumps(OrderSerializer(order).data)
+        'params': OrderSerializer(order).data
     }
     return result
 
@@ -161,7 +161,7 @@ def get_order(order):
     result = {
         'notification_type': 'get_order',
         'id': order.id, 'url': '',
-        'params': json.dumps(OrderSerializer(order).data)
+        'params': OrderSerializer(order).data
     }
     return result
 
@@ -172,7 +172,7 @@ def cancel_registration(obj, cleaned_data):
         'notification_type': 'cancel_registration',
         'id': obj.id,
         'url': '',
-        'params': json.dumps({key: value for key, value in cleaned_data.items() if not key in ['manager_talant','phone']})
+        'params': {key: value for key, value in cleaned_data.items() if not key in ['manager_talant','phone']}
     }
     return result
 
@@ -183,7 +183,7 @@ def locked_client(obj, cleaned_data):
         'notification_type': 'locked_client',
         'id': obj.id,
         'url': '',
-        'params': json.dumps({key: value for key, value in cleaned_data.items() if key != 'manager_talant'})
+        'params': {key: value for key, value in cleaned_data.items() if key != 'manager_talant'}
     }
     return result
 
@@ -196,7 +196,7 @@ def add_new_manager(cleaned_data):
             'notification_type': 'add_manager',
             'id': obj.id,
             'url': '',
-            'params': json.dumps({key: value for key, value in cleaned_data.items() if key != 'phone'})
+            'params': {key: value for key, value in cleaned_data.items() if key != 'phone'}
         }
         return result
     except Manager.DoesNotExist:...
