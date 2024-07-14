@@ -1,5 +1,5 @@
 from django.db import models
-from clients.models import Client
+from clients.models import CustomerSegments
 
 
 class MailingOfLetters(models.Model):
@@ -14,10 +14,10 @@ class MailingOfLetters(models.Model):
     )
 
     name = models.CharField('Наименование рассылки', max_length=150, unique=True)
-    client = models.ManyToManyField(
-        Client,
-        verbose_name='Клиенты',
-        related_name='mailing_clients'
+    segment = models.ManyToManyField(
+        CustomerSegments,
+        verbose_name='Сегмент клиентов',
+        related_name='mailing_segments'
     )
     subject = models.CharField('Тема рассылки', max_length=100, blank=True)
     template = models.TextField('Шаблон', blank=True)

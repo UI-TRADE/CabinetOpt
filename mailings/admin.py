@@ -3,6 +3,8 @@ from django_summernote.admin import SummernoteModelAdmin
 from .models import OutgoingMail, MailingOfLetters
 from .tasks import launch_mailing, get_email_addresses, create_outgoing_mail
 
+from clients.models import Client
+
 
 @launch_mailing()
 def send_outgoing_mail(obj):
@@ -26,12 +28,12 @@ class OutgoingMailSentFilter(admin.SimpleListFilter):
             return queryset.filter(sent_date__isnull=True)
 
 
-class ClientInline(admin.TabularInline):
+class CustomerSegmentsInline(admin.TabularInline):
 
     extra = 0
-    model = MailingOfLetters.client.through
-    verbose_name = 'Клиент'
-    verbose_name_plural = 'Клиенты'
+    model = MailingOfLetters.segment.through
+    verbose_name = 'Сегмент'
+    verbose_name_plural = 'Сегменты'
 
 
 @admin.register(OutgoingMail)
@@ -61,7 +63,7 @@ class MailingOfLettersAdmin(SummernoteModelAdmin):
     list_display_links = ('created_at', 'name', 'status', 'subject')
     fields = ['name', 'subject', 'template',]
 
-    inlines = (ClientInline,)
+    inlines = (CustomerSegmentsInline,)
 
     actions = ['set_sent_status']
     @admin.action(description='Установить статус к отправке')
@@ -70,7 +72,9 @@ class MailingOfLettersAdmin(SummernoteModelAdmin):
             obj.status=MailingOfLetters.SENT
             obj.save(update_fields=['status'])
             create_outgoing_mail({
-                'recipient_list'   : list(set(get_email_addresses(obj.client.all()))),
+                'recipient_list'   : list(set(get_email_addresses(
+                    Client.objects.all().prefetch_related('client_segments').filter(client_segments__in=obj.segment.all())    
+                ))),
                 'subject'          : obj.subject,
                 'template'         : obj.template,
                 'context'          : {},
@@ -105,10 +109,10 @@ class MailingOfLettersAdmin(SummernoteModelAdmin):
 
     def get_fields(self, request, obj=None):
         fields = super().get_fields(request, obj)
-        if not 'client' in fields:
-            fields.append('client')    
-        if not obj and 'client' in fields:
-            fields.remove('client')
-        elif obj and obj.status == MailingOfLetters.NEW and 'client' in fields:
-            fields.remove('client')
+        if not 'segment' in fields:
+            fields.append('segment')    
+        if not obj and 'segment' in fields:
+            fields.remove('segment')
+        elif obj and obj.status == MailingOfLetters.NEW and 'segment' in fields:
+            fields.remove('segment')
         return fields

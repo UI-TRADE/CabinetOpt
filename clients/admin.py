@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 
 from .models import (
     Organization,
@@ -7,9 +9,10 @@ from .models import (
     Client,
     Manager,
     ContactDetail,
-    AuthorizationAttempt
+    AuthorizationAttempt,
+    CustomerSegments
 )
-from .forms import CustomRegOrderForm
+from .forms import CustomRegOrderForm, CustomerSegmentsAdminForm
 from clients.login import Login
 from orders.models import Order
 from settings_and_conditions.models import NotificationType
@@ -68,6 +71,25 @@ class ContactDetailInLine(admin.TabularInline):
     extra = 0
     verbose_name = "Контактная информация"
     verbose_name_plural = "Контактная информация"
+
+
+class ClientInline(admin.TabularInline):
+    readonly_fields = (
+        'manager',
+    )
+    fields = [
+        'client',
+        'manager',
+    ]
+
+    extra = 0
+    model = CustomerSegments.client.through
+    verbose_name = 'Клиент'
+    verbose_name_plural = 'Клиенты'
+
+    def manager(self, obj):
+        return obj.client.manager_talant
+    manager.short_description = 'Менеджер'
 
 
 @admin.register(Organization)
@@ -243,3 +265,34 @@ class AuthorizationAttemptAdmin(admin.ModelAdmin):
             'change': False,
             'delete': False,
         }
+
+
+@admin.register(CustomerSegments)
+class CustomerSegmentsAdmin(admin.ModelAdmin):
+    form = CustomerSegmentsAdminForm
+    change_form_template = 'admin/clients/customersegments.html'
+
+    search_fields = ['name',]
+    list_display = ['name',]
+    list_filter = ['name',]
+    fields = ['name', 'manager_field', ]
+
+    inlines = (ClientInline,)
+
+    def response_change(self, request, obj):
+        if "_fill_clients_and_edit" in request.POST:
+            form = self.form(request.POST, instance=obj)
+            if form.is_valid():
+                current_manager = form.cleaned_data.get('manager_field')
+                if current_manager:
+                    clients = Client.objects.filter(manager_talant=current_manager).distinct()
+                    for client in clients:
+                        if obj.client.filter(pk=client.pk).exists():
+                            continue
+                        obj.client.add(client)
+                else:
+                    self.message_user(request, 'Заполните менеджера для добавления клиентов!')
+
+            return HttpResponseRedirect(reverse('admin:%s_%s_change' % (obj._meta.app_label, obj._meta.model_name), args=[obj.pk]))
+        return super().response_change(request, obj)
+ 

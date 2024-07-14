@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from captcha.fields import CaptchaField
 from contextlib import suppress
@@ -7,8 +8,10 @@ from .login import RawLogin, AuthenticationError
 from .models import (
     RegistrationOrder,
     Manager,
-    ContactDetail
+    ContactDetail,
+    CustomerSegments
 )
+from users.models import CustomUser
 from .widgets import PasswordInputWithButton
 
 
@@ -352,3 +355,11 @@ class ManagerForm(forms.ModelForm):
             self.errors['phone'][0] = 'Не верно указан телефон (+12125552368)'
 
         return super().clean()
+
+
+class CustomerSegmentsAdminForm(forms.ModelForm):
+    manager_field = forms.ModelChoiceField(label='Заполнить по менеджеру', queryset=CustomUser.objects.all(), required=False)
+
+    class Meta:
+        model = CustomerSegments
+        fields = '__all__'

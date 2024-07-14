@@ -190,3 +190,23 @@ class AuthorizationAttempt(models.Model):
         'Неудачные попытки входа',
         default=0
     )
+
+
+class CustomerSegments(models.Model):
+    name = models.CharField('Наименование', max_length=150)
+    client = models.ManyToManyField(
+        Client,
+        blank=True,
+        verbose_name='Клиенты',
+        related_name='client_segments'
+    )
+
+    class Meta:
+        verbose_name = 'Сегмент клиентов'
+        verbose_name_plural = 'Сегменты клиентов'
+    
+    def __str__(self):
+        return self.name
+
+
+
