@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 
 from clients.models import Organization
+from mailings.models import NotifyTemplate
 
 
 class SingletonModel(models.Model):
@@ -145,7 +146,15 @@ class NotificationType(models.Model):
             (NEW_MANAGER   , 'Добавление менеджера клиента'),
     ))
     subject = models.CharField('Тема письма', max_length=100, blank=True)
-    notification = models.TextField('Шаблон письма', blank=True)
+    template = models.ForeignKey(
+        NotifyTemplate,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        verbose_name='Шаблон письма',
+        related_name='notification_templates'
+    )
+    notification = models.TextField('Содержание письма', blank=True)
 
     class Meta:
         verbose_name = 'Тип уведомления'

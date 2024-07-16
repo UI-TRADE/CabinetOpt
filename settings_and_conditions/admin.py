@@ -41,6 +41,8 @@ class NotificationTypeAdmin(SummernoteModelAdmin):
     list_display = ('subject', 'event',)
     summernote_fields = ('notification',)
 
+    fields = ['subject', 'event', 'notification', 'template', ]
+
 
 class NotificationAdmin(admin.ModelAdmin): 
     list_display = ('use_up', 'notification_type', 'notify') 

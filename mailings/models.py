@@ -2,6 +2,20 @@ from django.db import models
 from clients.models import CustomerSegments
 
 
+class NotifyTemplate(models.Model):
+    name = models.CharField('Наименование', max_length=150, unique=True)
+    header_template = models.TextField('Заголовок письма', blank=True)
+    footer_template = models.TextField('Подвал письма' , blank=True)
+
+    class Meta:
+        verbose_name = 'Шаблон письма'
+        verbose_name_plural = 'Шаблоны писем'
+
+    def __str__(self):
+        return self.name
+
+
+
 class MailingOfLetters(models.Model):
     COMPLETED  = 'completed'
     SENT       = 'sent'
@@ -20,7 +34,15 @@ class MailingOfLetters(models.Model):
         related_name='mailing_segments'
     )
     subject = models.CharField('Тема рассылки', max_length=100, blank=True)
-    template = models.TextField('Шаблон', blank=True)
+    template = models.ForeignKey(
+        NotifyTemplate,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        verbose_name='Шаблон письма',
+        related_name='mailing_of_letter_templates'
+    )
+    content = models.TextField('Содержание письма', blank=True)
     status = models.CharField(
         'Статус рассылки',
         max_length=20,

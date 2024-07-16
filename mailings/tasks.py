@@ -172,7 +172,8 @@ def get_mail_params(notification_options):
     notification_types = NotificationType.objects.filter(event=notification_options['notification_type'])
     for obj in notification_types:
         subject  = obj.subject
-        template = obj.notification
+        letter_content = obj.notification
+        letter_template = obj.template
         with suppress(
             Order.DoesNotExist,
             Client.DoesNotExist,
@@ -185,15 +186,16 @@ def get_mail_params(notification_options):
             ResponseError
         ):
             with notify_rollbar():
-                if not template:
-                    raise ValidationError('Не указан шаблон письма', code='')
+                if not letter_content:
+                    raise ValidationError('Не указано содержание письма', code='')
                 email, context = get_context(**notification_options)
                 recipient_list = get_recipient_list(obj, email)
                 return {
                     'context': context,
                     'recipient_list': recipient_list,
                     'subject': subject,
-                    'template':template
+                    'template': letter_template,
+                    'content':letter_content
                 }
 
 
@@ -201,9 +203,14 @@ def get_mail_params(notification_options):
 def create_outgoing_mail(mail_params):
     if not mail_params:
         return
-    template = Template(mail_params['template'])
+    letter_content = mail_params['content']
+    template = Template(letter_content)
     rendered_html = template.render(Context(mail_params['context']))
     html_content = render_to_string('forms/notify-template.html', {'params': rendered_html})
+    if mail_params.get('template'):
+        letter_template = mail_params.get('template')
+        html_content = html_content.replace('<header></header>', letter_template.header_template)
+        html_content = html_content.replace('<footer></footer>', letter_template.footer_template)
     return OutgoingMail.objects.create(
         email=';'.join(mail_params['recipient_list']),
         subject=mail_params['subject'],

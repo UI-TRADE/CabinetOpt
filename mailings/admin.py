@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django_summernote.admin import SummernoteModelAdmin
-from .models import OutgoingMail, MailingOfLetters
+from .models import OutgoingMail, MailingOfLetters, NotifyTemplate
 from .tasks import launch_mailing, get_email_addresses, create_outgoing_mail
 
 from clients.models import Client
@@ -36,6 +36,14 @@ class CustomerSegmentsInline(admin.TabularInline):
     verbose_name_plural = 'Сегменты'
 
 
+@admin.register(NotifyTemplate)
+class NotifyTemplateAdmin(SummernoteModelAdmin):
+    search_fields = ['name', ]
+    list_display = ['name', ]
+    summernote_fields = ('header_template', 'footer_template',)
+    fields = ['name', 'header_template', 'footer_template',]
+
+
 @admin.register(OutgoingMail)
 class OutgoingMailAdmin(SummernoteModelAdmin):
     search_fields = ['email', 'subject']
@@ -58,10 +66,10 @@ class MailingOfLettersAdmin(SummernoteModelAdmin):
     readonly_fields = []
     search_fields = ['name', 'status']
     list_display = ['created_at', 'name', 'status', 'subject',]
-    summernote_fields = ('template',)
+    summernote_fields = ('content',)
     list_filter = ['status',]
     list_display_links = ('created_at', 'name', 'status', 'subject')
-    fields = ['name', 'subject', 'template',]
+    fields = ['name', 'subject', 'content', 'template', ]
 
     inlines = (CustomerSegmentsInline,)
 
@@ -69,14 +77,17 @@ class MailingOfLettersAdmin(SummernoteModelAdmin):
     @admin.action(description='Установить статус к отправке')
     def set_sent_status(self, request, queryset):
         for obj in queryset:
+            email_addresses = get_email_addresses(
+                Client.objects.all().prefetch_related('client_segments').filter(client_segments__in=obj.segment.all())    
+            )
+            if not email_addresses: continue
             obj.status=MailingOfLetters.SENT
             obj.save(update_fields=['status'])
             create_outgoing_mail({
-                'recipient_list'   : list(set(get_email_addresses(
-                    Client.objects.all().prefetch_related('client_segments').filter(client_segments__in=obj.segment.all())    
-                ))),
+                'recipient_list'   : list(set(email_addresses)),
                 'subject'          : obj.subject,
                 'template'         : obj.template,
+                'content'          : obj.content,
                 'context'          : {},
                 'mailing_of_letter': obj,
             })
