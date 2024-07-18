@@ -167,7 +167,7 @@ class ProductView(FiltersView, ListView):
         sort_by_weight = self.sorting.get('weight', '')
         if sort_by_weight:
             sorting_fields.append(
-                'total_weight' if sort_by_weight == 'asc' else '-total_weight'
+                'average_weight' if sort_by_weight == 'asc' else '-average_weight'
             )
 
         if not sorting_fields:
@@ -175,7 +175,7 @@ class ProductView(FiltersView, ListView):
 
         result = products.prefetch_related('stocks_and_costs').annotate(
             total_stock=Sum('stocks_and_costs__stock'),
-            total_weight=Sum('stocks_and_costs__weight')    
+            average_weight=Sum('stocks_and_costs__weight') / Count('stocks_and_costs__id')   
         ).distinct().order_by(*sorting_fields)
     
         return result
