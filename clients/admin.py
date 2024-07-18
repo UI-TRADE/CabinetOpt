@@ -127,7 +127,6 @@ class RegistrationOrderAdmin(admin.ModelAdmin):
         'email',
         'phone',
         'status',
-        'manager_talant',
     ]
     list_display = [
         'name',
