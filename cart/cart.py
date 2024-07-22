@@ -22,6 +22,7 @@ class Cart(object):
         self.cart = {key: {
             k: '' if k == 'errors' and not show_errors else item for k, item in value.items()
         } for key, value in self.cart.items()}
+        self.update_sizes()
 
 
     def __iter__(self):
@@ -173,6 +174,12 @@ class Cart(object):
         key = self.get_key(product_id, **kwargs)
         self.cart[key]['errors'] = errors
         self.save()
+
+
+    def update_sizes(self):
+        for key, value in self.keys.items():
+            if value.get('size') == 'None':
+                value['size'] = self.cart[key]['size'] = ''
 
 
 class CartExtension(Cart):

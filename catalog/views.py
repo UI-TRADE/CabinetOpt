@@ -1,5 +1,6 @@
 import json
 import collections
+import rollbar
 
 from contextlib import suppress
 from django.shortcuts import render
@@ -26,6 +27,7 @@ from catalog.models import (
     Product, ProductImage, StockAndCost, Price,
     ProductsSet, GemSet, SimilarProducts
 )
+from settings_and_conditions.notify_rollbar import init_rollbar
 
 from settings_and_conditions.models import CatalogFilter
 
@@ -329,13 +331,24 @@ def sizes_selection(request, prod_id):
     if request.method != 'POST':
         cart = list(Cart(request))
         context = StockAndCost.objects.filter(product_id=prod_id).order_by('size__size_from')
-        return render(
-            request,
-            'forms/size_selection.html',
-            {
-                'stock_and_cost': context,
-                'cart': json.dumps([{**item, 'product': None} for item in cart if str(item['product']['id']) == prod_id])
-        })
+        try:
+            return render(
+                request,
+                'forms/size_selection.html',
+                {
+                    'stock_and_cost': context,
+                    'cart': json.dumps([{**item, 'product': None} for item in cart if str(item['product']['id']) == prod_id])
+            })
+        except KeyError:
+            init_rollbar()
+            rollbar.report_exc_info(level='error', extra_data=[{**item,} for item in cart])
+            return render(
+                request,
+                'forms/size_selection.html',
+                {
+                    'stock_and_cost': context,
+                    'cart': json.dumps([])
+            })
     
 
 def search_error(request):

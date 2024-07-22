@@ -76,7 +76,7 @@ class OrderItemForm(forms.ModelForm):
         return (('0', '--'),) + tuple((('%s' % item, '%s' % item) for item in sizes))
     
     def get_in_stock(self, kwargs):
-        with suppress(IndexError):
+        with suppress(IndexError, AttributeError):
             instance = kwargs.get('instance')
             if instance:
                 stocks = StockAndCost.objects.get_stocks(instance.product.id)
