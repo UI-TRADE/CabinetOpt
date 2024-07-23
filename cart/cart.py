@@ -19,11 +19,12 @@ class Cart(object):
             self.session[settings.CART_SESSION_ID] = json.dumps(self.cart, default=str)
             self.session[settings.CART_SESSION_KEYS] = json.dumps(self.keys, default=str)
 
+
         self.cart = {key: {
             k: '' if k == 'errors' and not show_errors else item for k, item in value.items()
         } for key, value in self.cart.items()}
-        self.update_sizes()
-
+        self.handle_incorrect_items()
+  
 
     def __iter__(self):
         product_ids = [{key: value['product_id']} for key, value in self.keys.items()]
@@ -41,6 +42,7 @@ class Cart(object):
                     self.cart[key]['product'] = product
 
         for key, item in self.cart.items():
+            if not item.get('product'): continue
             item['id'] = key
             item['total_price'] = round(
                 (item['price'] if item['price'] else 0) * item['quantity'],
@@ -176,10 +178,21 @@ class Cart(object):
         self.save()
 
 
-    def update_sizes(self):
+    def handle_incorrect_items(self):
+        removed_items = []
         for key, value in self.keys.items():
+
+            try:
+                Product.objects.get(pk=value['product_id'])
+            except Product.DoesNotExist:
+                removed_items.append(key)
+
             if value.get('size') == 'None':
                 value['size'] = self.cart[key]['size'] = ''
+
+        if removed_items:
+            self.keys = {key: value for key, value in self.keys.items() if not key in removed_items}
+            self.cart = {key: value for key, value in self.cart.items() if not key in removed_items}
 
 
 class CartExtension(Cart):
@@ -203,6 +216,7 @@ class CartExtension(Cart):
                     self.cart[key]['product'] = product
 
         for key, item in self.cart.items():
+            if not item.get('product'): continue
             item['id'] = key
             item['total_price'] = round(
                 (item['price'] if item['price'] else 0) * item['quantity'],
