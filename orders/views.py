@@ -21,7 +21,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 
-from xhtml2pdf import pisa
+# from xhtml2pdf import pisa
 
 from clients.login import Login
 from clients.models import Client, Manager, ContactDetail
@@ -448,13 +448,13 @@ class ExportPDFView(ExportOrderView):
         # filename = f'Order-{context["order"].id}.pdf'
         # response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
-        template = get_template(self.template_name)
-        html_string = template.render(context)
+        # template = get_template(self.template_name)
+        # html_string = template.render(context)
 
-        pisa_status = pisa.CreatePDF(html_string, dest=response, link_callback=self.fetch_pdf_resources)
+        # pisa_status = pisa.CreatePDF(html_string, dest=response, link_callback=self.fetch_pdf_resources)
 
-        if pisa_status.err:
-            return HttpResponse('Произошла ошибка при создании PDF', status=500)
+        # if pisa_status.err:
+        #     return HttpResponse('Произошла ошибка при создании PDF', status=500)
     
         return response
 
