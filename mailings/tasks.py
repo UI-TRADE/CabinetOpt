@@ -28,6 +28,8 @@ def launch_mailing():
         @wraps(func)
         def run_func(*args):
             mail_params, = args
+            if not mail_params:
+                return OutgoingMail.objects.none
             unset_mail = func(mail_params)
             mail_params = {key: value for key, value in mail_params.items() if key != 'recipient_list'} | {
                 'subject': unset_mail.subject,
@@ -201,8 +203,6 @@ def get_mail_params(notification_options):
 
 @launch_mailing()
 def create_outgoing_mail(mail_params):
-    if not mail_params:
-        return
     letter_content = mail_params['content']
     template = Template(letter_content)
     rendered_html = template.render(Context(mail_params['context']))
