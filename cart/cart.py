@@ -5,9 +5,42 @@ from django.conf import settings
 from contextlib import suppress
 from itertools import chain
 
+from clients.login import Login
 from catalog.models import Product, StockAndCost
+from cart.models import Cart as cart_model
 
 
+def duplicate_cart_in_db():
+    def class_decorator(cls):
+        class DecoratedClass(cls):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                login = Login(args[0])
+                clients, managers = login.get_clients(), login.get_managers()
+                if clients and managers:
+                    self.client = clients.first()
+                    self.manager = managers.first()
+                else: self.client = self.manager = None
+
+                if not self.keys:
+                    self.keys, self.cart = cart_model.objects.get_cart_items(
+                        self.client, self.manager
+                    )
+                else:
+                    cart_model.objects.update_cart_items(
+                        self.client, self.manager, self.keys, self.cart
+                    )
+                self.handle_incorrect_items()
+
+            def clear(self):
+                super().clear()
+                cart_model.objects.clear_cart_items(self.client, self.manager)
+
+        return DecoratedClass
+    return class_decorator
+
+
+@duplicate_cart_in_db()
 class Cart(object):
 
     def __init__(self, request, show_errors=False):
@@ -19,11 +52,9 @@ class Cart(object):
             self.session[settings.CART_SESSION_ID] = json.dumps(self.cart, default=str)
             self.session[settings.CART_SESSION_KEYS] = json.dumps(self.keys, default=str)
 
-
         self.cart = {key: {
             k: '' if k == 'errors' and not show_errors else item for k, item in value.items()
         } for key, value in self.cart.items()}
-        self.handle_incorrect_items()
   
 
     def __iter__(self):
@@ -85,6 +116,12 @@ class Cart(object):
     def save(self):
         self.session[settings.CART_SESSION_KEYS] = json.dumps(self.keys, default=str)
         self.session[settings.CART_SESSION_ID] = json.dumps(self.cart, default=str)
+        self.session.modified = True
+
+
+    def clear(self):
+        del self.session[settings.CART_SESSION_ID]
+        del self.session[settings.CART_SESSION_KEYS]
         self.session.modified = True
 
 
@@ -164,13 +201,6 @@ class Cart(object):
             ),
             2
         )
-
-
-    def clear(self):
-        del self.session[settings.CART_SESSION_ID]
-        del self.session[settings.CART_SESSION_KEYS]
-        self.session.modified = True
-
 
     def add_error(self, product_id, errors, **kwargs):
         key = self.get_key(product_id, **kwargs)
