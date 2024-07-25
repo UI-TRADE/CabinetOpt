@@ -22,11 +22,7 @@ def duplicate_cart_in_db():
                     self.manager = managers.first()
                 else: self.client = self.manager = None
 
-                if not self.keys:
-                    self.keys, self.cart = cart_model.objects.get_cart_items(
-                        self.client, self.manager
-                    )
-                else:
+                if self.keys:
                     cart_model.objects.update_cart_items(
                         self.client, self.manager, self.keys, self.cart
                     )
