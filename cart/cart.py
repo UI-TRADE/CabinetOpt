@@ -7,7 +7,53 @@ from itertools import chain
 
 from clients.login import Login
 from catalog.models import Product, StockAndCost
-from cart.models import Cart as cart_model
+from cart.models import Basket
+
+
+def removed_cart_items(client, manager, keys):
+    if not (client or manager):
+        return
+    qs = Basket.objects.filter(client=client) \
+        & Basket.objects.filter(manager=manager)
+    qs.exclude(uuid__in=keys).delete()
+
+
+def update_cart_items(client, manager, keys, cart):
+    if not (client or manager):
+        return
+    cart_items = Basket.objects.filter(uuid__in=[uuid for uuid in keys.keys()])
+    cart_uuids = cart_items.values_list('uuid', flat=True)
+    new_items, updated_items = [], [] 
+    for key, value in keys.items():
+        if key in cart_uuids:
+            with suppress(Basket.DoesNotExist):
+                obj = Basket.objects.get(uuid=key)
+                if set(obj.attributes.items()) ^ set(cart[key].items()):
+                    obj.key=value; obj.attributes=cart[key]
+                    updated_items.append(obj)
+            continue
+        new_items.append(
+            Basket(
+                client=client, manager=manager,
+                uuid=key, key=value, attributes=cart[key]
+            ))
+    if new_items:
+        Basket.objects.bulk_create(new_items)
+    if updated_items:
+        Basket.objects.bulk_update(updated_items, ['key', 'attributes'])
+    removed_cart_items(client, manager, [uuid for uuid in keys.keys()])
+
+
+def get_cart_items(client, manager):
+    keys, items = {}, {}
+    if client and manager:
+        qs = Basket.objects.filter(client=client) \
+            & Basket.objects.filter(manager=manager)
+        for item in qs:
+            keys[item.uuid] = item.key
+            items[item.uuid] = item.attributes
+
+    return keys, items
 
 
 def duplicate_cart_in_db():
@@ -23,14 +69,16 @@ def duplicate_cart_in_db():
                 else: self.client = self.manager = None
 
                 if self.keys:
-                    cart_model.objects.update_cart_items(
+                    update_cart_items(
                         self.client, self.manager, self.keys, self.cart
                     )
                 self.handle_incorrect_items()
 
             def clear(self):
                 super().clear()
-                cart_model.objects.clear_cart_items(self.client, self.manager)
+                Basket.objects.filter(
+                    client=self.client, manager=self.manager
+                ).delete()
 
         return DecoratedClass
     return class_decorator
