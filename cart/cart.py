@@ -72,6 +72,13 @@ def duplicate_cart_in_db():
                     update_cart_items(
                         self.client, self.manager, self.keys, self.cart
                     )
+                else:
+                    # Чистим корзину, если в сессии удалены все данные из корзины
+                    qs = Basket.objects.filter(
+                        client=self.client, manager=self.manager
+                    )
+                    if qs:
+                        qs.delete()
                 self.handle_incorrect_items()
 
             def clear(self):
