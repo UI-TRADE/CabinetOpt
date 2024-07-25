@@ -1,7 +1,10 @@
 from django.contrib import admin
+from django.contrib.auth.hashers import make_password
 
 from .models import CustomUser
 from settings_and_conditions.models import Notification
+
+from .forms import UserPasswordChangeForm
 
 
 class NotificationInLine(admin.TabularInline):
@@ -9,7 +12,6 @@ class NotificationInLine(admin.TabularInline):
     fk_name = 'manager_talant'
     extra = 0
     fields = ('use_up', 'notification_type',)
-    # classes = ('collapse', )
 
     verbose_name = 'Уведомление'
     verbose_name_plural = 'Уведомления'
@@ -17,6 +19,8 @@ class NotificationInLine(admin.TabularInline):
 
 @admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
+    form = UserPasswordChangeForm
+
     list_display = (
         'username',
         'name',
@@ -27,7 +31,7 @@ class CustomUserAdmin(admin.ModelAdmin):
         'is_staff'
     )
     fields = [
-        ('username', 'password'),
+        ('username', 'password_field'),
         'name',
         ('email', 'phone'),
         ('gender', 'date_of_birth'),
@@ -38,7 +42,14 @@ class CustomUserAdmin(admin.ModelAdmin):
     inlines = [NotificationInLine]
 
     def get_form(self, request, obj=None, **kwargs):
+        if obj:
+            kwargs['form'] = self.form 
         form = super().get_form(request, obj, **kwargs)
         form.base_fields["username"].label = 'Логин'
-        form.base_fields["password"].label = 'Пароль'
+        form.base_fields["password_field"].label = 'Пароль'
         return form
+    
+    def save_model(self, request, obj, form, change):
+        if form.cleaned_data['password_field'] and form.cleaned_data['password_field'] != '********':
+            obj.set_password(form.cleaned_data['password_field'])
+        super().save_model(request, obj, form, change)
