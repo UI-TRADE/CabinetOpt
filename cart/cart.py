@@ -1,5 +1,6 @@
 import uuid
 import simplejson as json
+from decimal import Decimal
 
 from django.conf import settings
 from contextlib import suppress
@@ -64,22 +65,17 @@ def duplicate_cart_in_db():
                 login = Login(args[0])
                 clients, managers = login.get_clients(), login.get_managers()
                 if clients and managers:
-                    self.client = clients.first()
-                    self.manager = managers.first()
+                    self.client, self.manager = clients.first(), managers.first()
                 else: self.client = self.manager = None
 
-                if self.keys:
-                    update_cart_items(
-                        self.client, self.manager, self.keys, self.cart
-                    )
-                else:
-                    # Чистим корзину, если в сессии удалены все данные из корзины
-                    qs = Basket.objects.filter(
-                        client=self.client, manager=self.manager
-                    )
-                    if qs:
-                        qs.delete()
+                self.keys, self.cart = get_cart_items(self.client, self.manager)
                 self.handle_incorrect_items()
+
+            def save(self):
+                super().save()
+                update_cart_items(
+                    self.client, self.manager, self.keys, self.cart
+                )
 
             def clear(self):
                 super().clear()
@@ -155,7 +151,10 @@ class Cart(object):
         if not key:
             key = self.set_key(product.id, size = kwargs['size'])
         if key not in self.cart:
-            self.cart[key] = kwargs | {'errors': ''}
+            self.cart[key] = {
+                key: value if not isinstance(value, Decimal) else float(value) \
+                for key, value in kwargs.items()
+            } | {'errors': ''}
             self.cart[key]['quantity'] = 0
         if update_quantity:
             self.cart[key]['quantity'] += quantity
@@ -308,7 +307,6 @@ class CartExtension(Cart):
 
     def update_stock(self, key):
         result = {'stock':0}
-        # item = self.cart[key]
         key_info = self.keys[key]
         stock = StockAndCost.objects.get_stocks(key_info['product_id'], key_info['size'])
         if stock and stock.get('total_stock', 0):

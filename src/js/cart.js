@@ -74,9 +74,6 @@ const updateTotalInfo = (productId) => {
     $totalCount.html(selectedQuantity.toLocaleString());
     $totalWeight.html(totalWeight.toLocaleString());
 
-    // const price = $form.find('input[name="price"]').val();
-    // const $totalCost   = undefined;
-    // $totalCost.html(decimalFormat(Math.ceil(totalCost)).toLocaleString());
 }
 
 
@@ -226,19 +223,6 @@ export function addSelectionSizesEvents(productId, price, unit) {
                             .then(cartData => {
                                 const cartElements = getCartElements(productId);
                                 Promise.all([waitUpdateCarts(cartElements, cartData)]);
-                                // const $form = $(event.target).parents(`#sizes-selection-form-${productId}`);
-                                // const $inputSizes = $form.find('input[name="sizes-selection-quantity-input"]');
-                                // $.each($inputSizes, (_, el) => {
-                                //     $(el).attr('data-incart', 0);
-                                //     const dataSize = $(el).attr('data-size');
-                                //     for (var key in cartData) {
-                                //         if (cartData.hasOwnProperty(key)) {
-                                //             if (+cartData[key].size == dataSize) {
-                                //                 $(el).attr('data-incart', cartData[key].quantity);
-                                //             }
-                                //         }    
-                                //     }
-                                // });
                             });
                     }
                     $(document).data("cart").getProducts();
@@ -783,10 +767,7 @@ export function cartViewEvents() {
     if(cartViewElement.length) {
 
         $(document).on('cart.updated', function (e, data){
-            let totalCount = 0;
-            let totalWeight = 0;
-            let totalSum = 0;
-
+            let totalCount = 0, totalWeight = 0, totalSum = 0;
             $('[name=cart-row]', cartViewElement).each(function (index, item) {
                 const cartKey = $('[name="cart-key"]', item)[0].textContent;
                 const cartItemWeight = $('td.total_weight', item);
@@ -888,5 +869,3 @@ export function cartViewEvents() {
     });
 
 }
-
-
