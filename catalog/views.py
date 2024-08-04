@@ -11,7 +11,7 @@ from django.core.paginator import PageNotAnInteger
 from django.views.generic import ListView, DetailView, TemplateView
 from django.conf import settings
 from django.http import JsonResponse
-from django.db.models import Value, FloatField, Count, Sum
+from django.db.models import Value, FloatField, Count, Sum, Min
 from django.db.models.functions import Cast
 from django.core.serializers import serialize
 
@@ -300,7 +300,7 @@ class ProductCardView(DetailView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         current_product = self.get_object()
-        context['prod_sets']      = ProductsSet.objects.filter(product=current_product)
+        # context['prod_sets']      = ProductsSet.objects.filter(product=current_product)
         context['gem_sets']       = GemSet.objects.filter(product=current_product)
         context['cart']           = json.dumps([
                 {**item, 'product': None} 
@@ -490,17 +490,22 @@ def stocks_and_costs(request):
 @api_view(['GET'])
 def product_accessories(request):
     product_id = request.query_params.get('productId')
-    if product_id:
+    with suppress(Product.DoesNotExist):
+        current_product = Product.objects.get(pk=product_id)   
         product_set_imgs = ProductImage.objects.filter(
-            product_id__in=ProductsSet.objects.filter(
-                product_id=product_id
-            ).values_list('accessory', flat=True)
+            product__articul__regex=f'[\d]{current_product.articul[2:]}'
+        ).exclude(product=current_product)
+        product_set_distinct_imgs = ProductImage.objects.filter(
+            pk__in=product_set_imgs\
+                .values('product')\
+                .annotate(min_id=Min('id'))\
+                .values_list('min_id', flat=True)
         )
-
+        print(serialize("json", product_set_distinct_imgs))
         return JsonResponse(
             {
                 'replay'           : 'ok',
-                'product_sets' : serialize("json", product_set_imgs)
+                'product_sets' : serialize("json", product_set_distinct_imgs)
             },
             status=200,
             safe=False

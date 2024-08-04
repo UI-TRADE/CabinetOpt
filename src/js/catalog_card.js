@@ -72,8 +72,6 @@ const showSets = () => {
 }
 
 // data-ride="carousel"
-
-
 const showAnalogues = () => {
 
     const analoguesBlock = $('#analogues-block');

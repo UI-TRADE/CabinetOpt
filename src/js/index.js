@@ -22,6 +22,7 @@ import showAuthForm, {
 
 
 require('jquery-ui');
+import 'slick-carousel'
 
 
 const initStorages = () => {
