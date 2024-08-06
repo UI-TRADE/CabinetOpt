@@ -62,11 +62,12 @@ def duplicate_cart_in_db():
         class DecoratedClass(cls):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
+                self.client = self.manager = None
+                
                 login = Login(args[0])
                 clients, managers = login.get_clients(), login.get_managers()
                 if clients and managers:
                     self.client, self.manager = clients.first(), managers.first()
-                else: self.client = self.manager = None
 
                 self.keys, self.cart = get_cart_items(self.client, self.manager)
                 self.handle_incorrect_items()
