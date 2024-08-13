@@ -60,7 +60,18 @@
             </div>
             <div class="d-flex align-items-center row" id="main-menu-info">
                 <a class="text-nowrap text-center text-white d-flex justify-content-center align-items-center main-menu-item" id="link-client" href="{% url 'clients:contact' %}">
-                    <p id="login-info">{{ request.session|login_info }}</p>
+                    <img class="d-flex align-items-center main-menu-item" id="pa-user" src="{% static 'img/pa-user-icon.svg' %}">
+                    <!-- <p id="login-info">{{ request.session|login_info }}</p> -->
+                </a>
+                <a class="text-nowrap text-center text-white d-flex justify-content-center align-items-center main-menu-item" name="share-link-dialog" id="link-client" href="javascript:void(0);" style="position: relative;">
+                    <img class="d-flex align-items-center main-menu-item" src="{% static 'img/share-icon.svg' %}">
+                    <div class="alert share-link-alert d-flex rounded" role="alert">
+                        <img src="{% static 'img/checkmark_8224776.svg' %}" alt="">
+                        <div class="alert-message share-link-message d-flex align-items-center">
+                            Ссылка скопированна.
+                        </div>
+                    </div>
+                    <!-- <p id="login-info">{{ request.session|login_info }}</p> -->
                 </a>
                 <!-- <img class="d-flex align-items-center main-menu-item" id="main-menu-hart" src="{% static 'img/hart.svg' %}"> -->
                 <a class="d-flex align-items-center main-menu-item" id="link-cart" href="{% url 'cart:cart_detail' %}">
@@ -95,6 +106,7 @@
     {% endif %}
 
     {% include "components/main/footer.html" with organization=organization%}
+    {% include "forms/share-link.html" with share_link=share_link %}
 
     <div class="sign-in-form-layout" id="registration-form"></div>
     <div class="background-overlay hidden"></div>

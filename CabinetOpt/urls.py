@@ -20,18 +20,18 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api-auth/', include('rest_framework.urls')),
+    path('admin/'       , admin.site.urls),
+    path('api-auth/'    , include('rest_framework.urls')),
+    path('clients/'     , include('clients.urls')),
+    path('users/'       , include('users.urls')),
+    path('catalog/'     , include('catalog.urls')),
+    path('orders/'      , include('orders.urls')),
+    path('cart/'        , include('cart.urls')),
+    path('summernote/'  , include('django_summernote.urls')),
+    path('condition/'   , include('settings_and_conditions.urls')),
+    path('django-rq/'   , include('django_rq.urls')),
+    path('shared_links/', include('shared_links.urls')),
     path('', render, kwargs={'template_name': 'index.html'}, name='start_page'),
-    path('clients/', include('clients.urls')),
-    path('users/', include('users.urls')),
-    path('catalog/', include('catalog.urls')),
-    path('orders/', include('orders.urls')),
-    path('cart/', include('cart.urls')),
-    path('summernote/', include('django_summernote.urls')),
-    path('condition/', include('settings_and_conditions.urls')),
-    path('__debug__/', include('debug_toolbar.urls')),
-    path('django-rq/', include('django_rq.urls')),
 ]
 
 urlpatterns += [
@@ -39,4 +39,7 @@ urlpatterns += [
 ]
 
 if settings.DEBUG:
+    urlpatterns += [
+        path('__debug__/' , include('debug_toolbar.urls')),
+    ]
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

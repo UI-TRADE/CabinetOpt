@@ -30,6 +30,7 @@ from catalog.models import (
 from settings_and_conditions.notify_rollbar import init_rollbar
 
 from settings_and_conditions.models import CatalogFilter
+from shared_links.models import Link
 
 from .tasks import (
     run_uploading_products,
@@ -37,6 +38,8 @@ from .tasks import (
     run_uploading_price,
     run_uploading_stock_and_costs
 )
+
+from utils.requests import handle_get_params, handle_post_params
 
 def parse_filters(filters):
     result = collections.defaultdict(list)
@@ -141,13 +144,18 @@ class ProductView(FiltersView, ListView):
     allow_empty, filters, sorting, paginate_by = True, [], {}, 72
 
     def get(self, request, *args, **kwargs):
+        with suppress(Link.DoesNotExist):
+            link_obj = Link.objects.get(key=kwargs.get('key'))
+            self.filters = json.loads(link_obj.param.get('filters', '[]'))
+            self.sorting = json.loads(link_obj.param.get('sorting', '{ }'))  
         return super().get(request, *args, **kwargs)
 
+    @handle_post_params()
     def post(self, request, *args, **kwargs):
         filters_and_sorting = request.POST.dict()
         self.filters = json.loads(filters_and_sorting.get('filters', '[]'))
         self.sorting = json.loads(filters_and_sorting.get('sorting', '{ }'))
-        return self.get(request)
+        return self.get(request, *args, **kwargs)
 
     def apply_sorting(self, products):
         if not self.sorting:
@@ -182,7 +190,6 @@ class ProductView(FiltersView, ListView):
     
         return result
    
-
     def get_queryset(self):
         if self.filters:
             parsed_filter = parse_filters(self.filters)
@@ -206,6 +213,7 @@ class ProductView(FiltersView, ListView):
         context = {
             'products': self.object_list,
             'filters': {}, 'is_sized': False,
+            'share_link': kwargs.get('link', ''),
             'MEDIA_URL': settings.MEDIA_URL
         }
         ''' 
@@ -226,12 +234,19 @@ class ProductView(FiltersView, ListView):
         except EmptyPage:
             products_page = paginator.page(paginator.num_pages)
 
+        is_sized = StockAndCost.objects.filter(
+            product__in=products_page,
+            size__isnull=False
+        ).values_list('product_id', flat=True)
+
         context = super().get_context_data(**kwargs)
-        context['products']    = products_page
-        context['filters']     = filters
-        context['is_sized']    = StockAndCost.objects.filter(product__in=products_page, size__isnull=False).values_list('product_id', flat=True)
-        context['MEDIA_URL']   = settings.MEDIA_URL
-        return context
+        return context | {
+            'products': products_page,
+            'filters': filters,
+            'is_sized': is_sized,
+            'share_link': kwargs.get('link', ''),
+            'MEDIA_URL': settings.MEDIA_URL
+        }
 
 
 class CertificateView(ListView):
@@ -297,33 +312,38 @@ class ProductCardView(DetailView):
     slug_field = 'pk'
     context_object_name = 'product'
 
+    @handle_get_params()
+    def get(self, request, *args, **kwargs):
+        self.share_link = kwargs.get('link', '')
+        return super().get(request, *args, **kwargs)
+
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         current_product = self.get_object()
-        # context['prod_sets']      = ProductsSet.objects.filter(product=current_product)
-        context['gem_sets']       = GemSet.objects.filter(product=current_product)
-        context['cart']           = json.dumps([
-                {**item, 'product': None} 
-                for item 
-                in list(Cart(self.request)) 
-                if item['product']['id'] == current_product.id
-        ])
-        context['stock_and_cost'] = StockAndCost.objects.filter(
-            product=current_product
-        ).order_by('size__size_from')
-        context['is_sized'] = bool(StockAndCost.objects.filter(
-            product=current_product, size__isnull=False
-        ))
-        context['MEDIA_URL'] = settings.MEDIA_URL
-        context['filters']     = ProductFilterForm(
-            ['articul', 'status'],
-            initial={
-                'articul': current_product.articul,
-                'status' : current_product.status
-            }
-        )
-
-        return dict(list(context.items()))
+        return context | {
+            'gem_sets': GemSet.objects.filter(product=current_product),
+            'cart': json.dumps([
+                    {**item, 'product': None} 
+                    for item 
+                    in list(Cart(self.request)) 
+                    if item['product']['id'] == current_product.id
+                ]),
+            'stock_and_cost': StockAndCost.objects.filter(
+                    product=current_product
+                ).order_by('size__size_from'),
+            'is_sized': bool(StockAndCost.objects.filter(
+                    product=current_product, size__isnull=False
+                )),
+            'filters': ProductFilterForm(
+                    ['articul', 'status'],
+                    initial={
+                        'articul': current_product.articul,
+                        'status' : current_product.status
+                    }
+                ),
+            'share_link' : self.share_link,
+            'MEDIA_URL': settings.MEDIA_URL
+        }
 
 
 def sizes_selection(request, prod_id):

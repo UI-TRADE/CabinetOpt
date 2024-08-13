@@ -287,6 +287,9 @@ function updateProducts(elementId, data, spiner=NaN) {
             $(`#${elementId}`).html(
                 extractContent(response, elementId)
             );
+            const DOMModel = new DOMParser().parseFromString(response, 'text/html');
+            $('#share-link-form').html(DOMModel.querySelector('#share-link-content'));
+
             updateFilterQuantitiesAndSums(response);
             updateProductCards(mainElement, {'search_values': searchFilter, 'spiner': spiner});
         },

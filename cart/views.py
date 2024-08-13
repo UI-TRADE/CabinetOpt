@@ -90,12 +90,26 @@ def cart_remove(request, product_id):
 
 def cart_detail(request):
     cart = CartExtension(request)
-    return render(request, 'pages/cart.html', {'cart': cart, 'MEDIA_URL': settings.MEDIA_URL})
+    return render(
+        request,
+        'pages/cart.html',
+        {
+            'cart': cart,
+            'share_link': request.build_absolute_uri(request.get_full_path()),
+            'MEDIA_URL': settings.MEDIA_URL
+    })
 
 
 def cart_detail_with_errors(request):
     cart = CartExtension(request, True)
-    return render(request, 'pages/cart.html', {'cart': cart, 'MEDIA_URL': settings.MEDIA_URL})
+    return render(
+        request,
+        'pages/cart.html',
+        {
+            'cart': cart,
+            'share_link': request.build_absolute_uri(request.get_full_path()),
+            'MEDIA_URL': settings.MEDIA_URL
+    })
 
 
 def edit_product(request, prod_id):

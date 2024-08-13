@@ -1,0 +1,11 @@
+{% load static %}
+<div class="share-link-dialog hidden" id="share-link-form">
+    <div class="modal-content" id="share-link-content">
+        <div class="modal-body">
+            <input id="share-link" type="text" value="{{ share_link }}" style="width: 500px;">
+            <label class="share-link-label" for="share-link">
+                <img src="{% static 'img/copy_icon.svg' %}" alt="">
+            </label>
+        </div>
+    </div>
+</div>

@@ -28,12 +28,16 @@ import 'slick-carousel'
 const initStorages = () => {
     if (localStorage.getItem('cartView') === null)
         localStorage.setItem('cartView', false);
+    if (!localStorage.getItem('client_id'))
+        localStorage.setItem('client_id', generateUUID());
+
     if (sessionStorage.getItem('filters') === null)
         sessionStorage.setItem('filters', JSON.stringify([]));
     if (sessionStorage.getItem('sorting') === null)
         sessionStorage.setItem('sorting', JSON.stringify({}));
-    if (!localStorage.getItem('client_id'))
-        localStorage.setItem('client_id', generateUUID());
+
+    const segments = window.location.pathname.split('/').filter(segment => segment.length > 0);
+    return $.ajax({url: `/shared_links/${segments.slice(-1).find(_ => true)}`});
 }
 
 
@@ -53,8 +57,6 @@ const addEvents = () => {
 
 $(window).on("load", () => {
 
-    initStorages();
-
     const selectedURI = sessionStorage.getItem('selectedURI');
     if (selectedURI) {
         const mainMenuItems = document.getElementsByClassName('main__menu__item');
@@ -65,17 +67,6 @@ $(window).on("load", () => {
             }
             if (mainMenuItems[i].classList.contains('main__menu__item--selected')) {
                 mainMenuItems[i].classList.remove('main__menu__item--selected');
-            }
-        }
-    }
-
-    // Очищаем список выбора скрытого поля product, за исключением выбранного значения
-    const orderFields = document.getElementsByClassName('order__field__product');
-    for(var i=0; i<orderFields.length; i++) {
-        const fieldOptions = orderFields[i].querySelectorAll('*');
-        for(var j=0; j<fieldOptions.length; j++) {
-            if (!fieldOptions[j].selected) {
-                fieldOptions[j].parentNode.removeChild(fieldOptions[j]);
             }
         }
     }
@@ -96,70 +87,84 @@ $(document).ready(() => {
         }   
     });
 
-    if (window.location.pathname.indexOf('clients/recovery_pass') !== -1) {
-        const $modal = $('#change-pass-form');
-        applyShowPasswordButtons($modal);
-        bindEventToCaptcha('change-pass-form');
-        updateModalForm('change-password-form');
-        document.getElementsByTagName("html")[0].style.visibility = "visible";
-        return;
-    }
-
-    if (window.location.pathname.indexOf('clients/change_pass') !== -1) {
-        const $modal = $('#change-pass-form');
-        applyShowPasswordButtons($modal);
-        bindEventToCaptcha('change-pass-form');
-        updateModalForm('change-password-form');
-        document.getElementsByTagName("html")[0].style.visibility = "visible";
-        return;
-    }
-
-    if (window.location.pathname.indexOf('clients/request_pass') !== -1) {
-        document.getElementsByTagName("html")[0].style.visibility = "visible";
-        return;
-    }
-
-    $.ajax({
-        url: '/clients/check_login',
-        success: (response) => {
-
-            if (response.replay === 'fail') {
-                if (window.location.pathname !== '/') {
-                    window.location.replace('/');
-                    return
-                }
-
-                // login
-                const mainAuthForm = 'registration-form';
-                const auth = sessionStorage.getItem('auth') || 'reg_request';
-                showAuthForm(generateUUID(), auth);
-                switchModalForm('entry', mainAuthForm, generateUUID());
-                switchModalForm('register', mainAuthForm, generateUUID());
-                sessionStorage.removeItem('auth');
-            }
-
-            if (response.replay === 'ok') {
-                if (window.location.pathname === '/') {
-                    window.location.replace('/catalog/products/');
-                    return
-                }
-            }
-
-            showChangePassForm();
-            updateContactView('contactForm');
-            initProductFilters();
-            updateProductCard();
-            addEvents();
-            document.getElementsByTagName("html")[0].style.visibility = "visible";
-            $(document).trigger('cart.updated', {});
-
-        },
-        error: (xhr, status, error) => {
-            handleError(error, 'Ошибка получения данных аутентификации с сервера.');
+    $.when(initStorages())
+    .then(response => {
+        if ('replay' in response && response.replay !== 'error') {
+            if ('filters' in response)
+                sessionStorage.setItem('filters', response.filters);
+            if ('sorting' in response)
+                sessionStorage.setItem('sorting', response.sorting);
+            window.location.replace(response.path);
         }
+    })
+    .always(() => {
+
+        if (window.location.pathname.indexOf('clients/recovery_pass') !== -1) {
+            const $modal = $('#change-pass-form');
+            applyShowPasswordButtons($modal);
+            bindEventToCaptcha('change-pass-form');
+            updateModalForm('change-password-form');
+            document.getElementsByTagName("html")[0].style.visibility = "visible";
+            return;
+        }
+
+        if (window.location.pathname.indexOf('clients/change_pass') !== -1) {
+            const $modal = $('#change-pass-form');
+            applyShowPasswordButtons($modal);
+            bindEventToCaptcha('change-pass-form');
+            updateModalForm('change-password-form');
+            document.getElementsByTagName("html")[0].style.visibility = "visible";
+            return;
+        }
+
+        if (window.location.pathname.indexOf('clients/request_pass') !== -1) {
+            document.getElementsByTagName("html")[0].style.visibility = "visible";
+            return;
+        }
+
+        $.ajax({
+            url: '/clients/check_login',
+            success: (response) => {
+
+                if (response.replay === 'fail') {
+                    if (window.location.pathname !== '/') {
+                        window.location.replace('/');
+                        return
+                    }
+
+                    // login
+                    const mainAuthForm = 'registration-form';
+                    const auth = sessionStorage.getItem('auth') || 'reg_request';
+                    showAuthForm(generateUUID(), auth);
+                    switchModalForm('entry', mainAuthForm, generateUUID());
+                    switchModalForm('register', mainAuthForm, generateUUID());
+                    sessionStorage.removeItem('auth');
+                }
+
+                if (response.replay === 'ok') {
+                    if (window.location.pathname === '/') {
+                        window.location.replace('/catalog/products/');
+                        return
+                    }
+                }
+
+                showChangePassForm();
+                updateContactView('contactForm');
+                initProductFilters();
+                updateProductCard();
+                addEvents();
+                document.getElementsByTagName("html")[0].style.visibility = "visible";
+                $(document).trigger('cart.updated', {});
+
+            },
+            error: (xhr, status, error) => {
+                handleError(error, 'Ошибка получения данных аутентификации с сервера.');
+            }
+        });
+
     });
 
-})
+});
 
 
 import '../scss/main.scss';

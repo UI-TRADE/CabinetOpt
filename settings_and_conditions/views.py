@@ -25,6 +25,7 @@ def delivery(request):
         return render(request, template, {'condition': obj.delivery})
     return render(request, template, {'condition': ''})
 
+
 def about(request):
     template = 'pages/conditions.html'
     obj = About.objects.first()

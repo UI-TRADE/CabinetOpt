@@ -200,6 +200,33 @@ export function modalFormEvents() {
         event.preventDefault();
         showModalForm('add-manager-form', generateUUID(), 'manager/add');
     });
+    $('a[name="share-link-dialog"]').click((event) => {
+        event.preventDefault();
+        const $link = $('#share-link-form input').val();
+        if ($link)
+            navigator.clipboard.writeText($link)
+            .then(() => {
+                $('.share-link-alert').toggleClass('share-link-active');
+                setTimeout(() => {
+                    $('.share-link-alert').toggleClass('share-link-active');
+                }, 1000);
+            })
+            .catch(_ => {
+                $('.background-overlay').removeClass('hidden');
+                $('#share-link-form').removeClass('hidden');
+                $('#share-link-form #share-link').focus();
+                $('#share-link-form #share-link').select();
+                $('.background-overlay').click(
+                    function(){
+                        const $modal = $('#share-link-form');
+                        const $overlay = $('.background-overlay');
+                        $modal.addClass('hidden');
+                        $overlay.addClass('hidden');
+                        $overlay.off();    
+                    }
+                );
+            });
+    });
 } 
 
 

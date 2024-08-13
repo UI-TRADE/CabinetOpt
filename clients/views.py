@@ -35,6 +35,8 @@ from orders.models import Order
 from settings_and_conditions.models import NotificationType
 from settings_and_conditions.utils import notification_scheduling
 
+from utils.requests import handle_get_params
+
 
 def login(request):
     x_client_id = request.META.get('HTTP_X_CLIENT_ID')
@@ -200,6 +202,11 @@ class ContactDetailView(ListView):
     template_name = 'pages/contact.html'
     allow_empty = True
 
+    @handle_get_params()
+    def get(self, request, *args, **kwargs):
+        self.share_link = kwargs.get('link', '')
+        return super().get(request, *args, **kwargs)
+
     def get_queryset(self):
         login = Login(self.request)
         current_clients = login.get_clients()
@@ -229,8 +236,9 @@ class ContactDetailView(ListView):
                 'orders'  : orders,
                 'hash_id' : hash_id,
                 'hash_inn': hash_inn,
+                'share_link' : self.share_link,
             }
-        return {'contact': {}, 'hash_inn': '',}
+        return {'contact': {}, 'hash_inn': '', 'share_link' : self.share_link,}
 
 
 class ContactDetailCreateView(CreateView):

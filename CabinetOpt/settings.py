@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'django_cleanup.apps.CleanupConfig',
     'mailings',
     'django_rq',
+    'shared_links',
 ]
 
 MIDDLEWARE = [

@@ -39,6 +39,8 @@ from utils.exceptions import handle_errors
 from settings_and_conditions.models import NotificationType
 from settings_and_conditions.utils import notification_scheduling
 
+from utils.requests import handle_get_params
+
 
 class ProductSerializer(ModelSerializer):
 
@@ -128,6 +130,11 @@ class OrderView(ListView):
     context_object_name = 'orders'
     allow_empty = True
 
+    @handle_get_params()
+    def get(self, request, *args, **kwargs):
+        self.share_link = kwargs.get('link', '')
+        return super().get(request, *args, **kwargs)
+
     def get_queryset(self):
         login = Login(self.request)
         current_clients = login.get_clients()
@@ -136,10 +143,13 @@ class OrderView(ListView):
         return Order.objects.filter(client__in=current_clients).order_by('-created_at')[:10]
 
     def get_context_data(self, *, object_list=None, **kwargs):
+        print('share_link: ', kwargs)
         context = super().get_context_data(**kwargs)
-        context['MEDIA_URL']   = settings.MEDIA_URL
-        context['order_items'] = OrderItem.objects.filter(order__in=context['orders'])
-        return context
+        return context | {
+            'order_items': OrderItem.objects.filter(order__in=context['orders']),
+            'share_link' : self.share_link,
+            'MEDIA_URL'  : settings.MEDIA_URL
+        }
 
 
 class EditOrderView(UpdateView):

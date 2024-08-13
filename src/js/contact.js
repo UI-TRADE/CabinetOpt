@@ -25,15 +25,18 @@ export function contactEvents(){
 }
 
 function updateContactView(formId) {
-    $.ajax({
-        url: $(`#${formId}`).attr('action'),
-        success: (data) => {
-            $(`#${formId}`).html(data);
-        },
-        error: (xhr, status, error) => {
-            handleError(error, 'Ошибка обновления контактных данных');
-        }
-    });
+    const url = $(`#${formId}`).attr('action');
+    if(url){
+        $.ajax({
+            url: url,
+            success: (data) => {
+                $(`#${formId}`).html(data);
+            },
+            error: (xhr, status, error) => {
+                handleError(error, 'Ошибка обновления контактных данных');
+            }
+        });
+    }
 }
 
 export default updateContactView;
