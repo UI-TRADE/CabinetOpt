@@ -204,14 +204,38 @@ export function modalFormEvents() {
         event.preventDefault();
         const $link = $('#share-link-form input').val();
         if ($link)
-            navigator.clipboard.writeText($link)
-            .then(() => {
-                $('.share-link-alert').toggleClass('share-link-active');
-                setTimeout(() => {
-                    $('.share-link-alert').toggleClass('share-link-active');
-                }, 1000);
-            })
-            .catch(_ => {
+            try {
+                if(navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText($link)
+                    .then(() => {
+                        $('.share-link-alert').toggleClass('share-link-active');
+                        setTimeout(() => {
+                            $('.share-link-alert').toggleClass('share-link-active');
+                        }, 1000);
+                    })
+                    .catch(error => {
+                        throw error;
+                    });
+                } else {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = $link;
+                    textarea.style.position = 'absolute';
+                    textarea.style.left = '-99999999px';
+                    document.body.prepend(textarea);
+                    textarea.select();
+                    try {
+                        document.execCommand('copy');
+                    } catch (error) {
+                        throw error;    
+                    } finally {
+                        textarea.remove();
+                        $('.share-link-alert').toggleClass('share-link-active');
+                        setTimeout(() => {
+                            $('.share-link-alert').toggleClass('share-link-active');
+                        }, 1000);
+                    }
+                }
+            } catch {
                 $('.background-overlay').removeClass('hidden');
                 $('#share-link-form').removeClass('hidden');
                 $('#share-link-form #share-link').focus();
@@ -225,7 +249,7 @@ export function modalFormEvents() {
                         $overlay.off();    
                     }
                 );
-            });
+            }
     });
 } 
 
