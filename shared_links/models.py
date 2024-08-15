@@ -6,6 +6,7 @@ class Link(models.Model):
     path = models.CharField(verbose_name='url', max_length=255)
     param = models.JSONField(verbose_name='Параметры', null=True, blank=True, default=dict)
     created_at = models.DateTimeField(verbose_name='Дата создания', auto_now_add=True)
+    expired_at = models.DateTimeField(verbose_name='Дата окончания действия', blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if not self.key:

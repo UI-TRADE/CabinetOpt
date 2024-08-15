@@ -1,3 +1,5 @@
+from datetime import timedelta
+from django.utils import timezone
 from django.urls import reverse
 from functools import wraps
 from urllib.parse import urlencode
@@ -44,7 +46,8 @@ def handle_post_params():
             if params:
                 link = Link.objects.create(
                     path = full_path,
-                    param = {key: value for key, value in params.items() if key != 'csrfmiddlewaretoken'}
+                    param = {key: value for key, value in params.items() if key != 'csrfmiddlewaretoken'},
+                    expired_at = timezone.now() + timedelta(hours=1)
                 )
             
             if urlencode(request.GET):
