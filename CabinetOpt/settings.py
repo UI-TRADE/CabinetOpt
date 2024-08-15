@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 import os
-import redis
 
 from pathlib import Path
 from environs import Env
@@ -237,3 +236,19 @@ MAX_FAILED_LOGIN_ATTEMPTS = 5
 
 #The maximum number of parameters that may be received via GET or POST
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
+
+
+#Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}
