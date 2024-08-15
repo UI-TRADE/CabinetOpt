@@ -396,7 +396,9 @@ class StockAndCostQuerySet(models.QuerySet):
             Client.objects.none()
         )
         products = Product.objects.filter(pk__in = products_ids)
-        stocks_and_costs = self.filter(product_id__in = products_ids)
+        stocks_and_costs = self.annotate(
+            size_name=F('size__name'),    
+        ).filter(product_id__in = products_ids)
         prices = Price.objects.available_prices(products_ids)
         discount_prices = Price.objects.none()
         with suppress(PriceType.DoesNotExist):
@@ -417,11 +419,12 @@ class StockAndCostQuerySet(models.QuerySet):
         ).values('id', 'collection_name', 'collection_group')
         
         if kwargs.get('size', ''):
-            stocks_and_costs = stocks_and_costs.filter(
-                size_id__in=Size.objects.filter(
-                    name=kwargs['size']
-                ).values_list('pk', flat=True)
-            )
+            stocks_and_costs = stocks_and_costs.filter(size_name__in=kwargs['size'])
+            # stocks_and_costs = stocks_and_costs.filter(
+            #     size_id__in=Size.objects.filter(
+            #         name=kwargs['size']
+            #     ).values_list('pk', flat=True)
+            # )
 
         return collections, products, stocks_and_costs, prices, discount_prices
 
