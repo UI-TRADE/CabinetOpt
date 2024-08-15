@@ -13,6 +13,7 @@ class Command(BaseCommand):
         parser.add_argument('--timeout', nargs='+', type=int, default=0, help='Run a command on a schedule with a specified timeout in minutes.')
 
     def handle(self, *args, **options):
+        print('clear links started')
         if options['timeout']:
             timeout, = options['timeout']
             while True:
@@ -33,7 +34,5 @@ class Command(BaseCommand):
 
 
 def clear_links():
-    print('clean expired links:')
     expired_links = Link.objects.filter(expired_at__lte=timezone.now())
-    print(expired_links)
     expired_links.delete()
