@@ -18,12 +18,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if options['timeout']:
             timeout, = options['timeout']
+            logger.info('start links cleaning')
             while True:
                 try:
+                    schedule.clear()
                     schedule.every(timeout).minutes.do(clear_links)
                     while True:
-                        time.sleep(60)
                         schedule.run_pending()
+                        time.sleep(60)
                         if not schedule.jobs:
                             break
                 except Exception:
@@ -36,6 +38,7 @@ class Command(BaseCommand):
 
 
 def clear_links():
-    logger.info('Start cleaning!')
     expired_links = Link.objects.filter(expired_at__lte=timezone.now())
+    links_count = len(expired_links)
     expired_links.delete()
+    logger.info(f'delete {links_count} links')
