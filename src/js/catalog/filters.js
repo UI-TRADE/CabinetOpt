@@ -450,6 +450,32 @@ export function filtersAndSortingEvents() {
             showCatalog();
         }
     });
+
+    $(document).on('click', '.product-find-cross', event => {
+        const inputFindField = $('#form-product-find input');
+        if (inputFindField) {
+            currentSpin = createSpiner($('.main-content')[0]);
+            inputFindField.val('');
+            const filters = JSON.parse(sessionStorage.getItem('filters'));
+            const searchFilter = filters.find(item => item['search_values'] != undefined);
+            if (searchFilter) filters.splice(filters.indexOf(searchFilter), 1);
+            sessionStorage.setItem('filters', JSON.stringify(filters));
+            showCatalog();
+        }
+    });
+
+    $(document).on('click', '#link-products', event => {
+        const inputFindField = $('#form-product-find input');
+        if (inputFindField) {
+            currentSpin = createSpiner($('.main-content')[0]);
+            inputFindField.val('');
+            const filters = JSON.parse(sessionStorage.getItem('filters'));
+            const searchFilter = filters.find(item => item['search_values'] != undefined);
+            if (searchFilter) filters.splice(filters.indexOf(searchFilter), 1);
+            sessionStorage.setItem('filters', JSON.stringify(filters));
+            showCatalog();
+        }   
+    });
 }
 
 

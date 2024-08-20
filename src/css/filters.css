@@ -1,9 +1,41 @@
 #form-product-find {
   align-items: baseline;
+  margin-left: 14px;
 
-  img {
+  .product-find-container{
+    width: 205px;
+    height: 20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    position: absolute;
+    margin-left: 3px;
+
+    /* img {
+      position: absolute;
+    } */
+  
+    .product-find-cross{
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .product-find-cross-line{
+      border: 0.1px solid #ADADAA;
+      background: #ADADAA;
+      width: 15px;
+      opacity: 0.5;
+    }
+
+  }
+
+  input{
     position: relative;
-    right: -15px;
+    z-index: 9;
+    opacity: 0.5;
   }
 
 }

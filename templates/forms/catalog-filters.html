@@ -2,10 +2,19 @@
 {% load catalog_tags %}
 {% spaceless %}
     <form id="form-product-find" class="form-inline d-flex justify-content">
-        <img class="d-xl-flex" src="{% static 'img/find.svg' %}">
         <input class="form-control product-find" type="text" placeholder="" aria-label="Search">
+        <div class="product-find-container">
+            <img class="d-xl-flex" src="{% static 'img/find.svg' %}">
+            <div class="product-find-cross">
+                <div class="product-find-cross-line" style="transform: rotate(45deg);"></div>
+                <div class="product-find-cross-line" style="transform: rotate(-45deg);"></div>
+            </div>
+        </div>
     </form>
-    <div class="d-flex justify-content row filter-item top-node"><span class="filter-item-title">ФИЛЬТРЫ</span><span class="reset">Сбросить</span></div>
+    <div class="d-flex justify-content row filter-item top-node">
+        <span class="filter-item-title">ФИЛЬТРЫ</span>
+        <span class="reset">Сбросить</span>
+    </div>
     <!-- <div class="filter-item top-node">
         <div class="form-check"><input class="form-check-input" type="checkbox" id="onOrderFilter" name="available_for_order"><label class="form-check-label filter-item-title" for="onOrderFilter">Показать товары под заказ</label></div>
     </div> -->
