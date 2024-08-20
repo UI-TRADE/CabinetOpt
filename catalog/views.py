@@ -143,11 +143,7 @@ class ProductView(FiltersView, ListView):
     context_object_name = 'products'
     allow_empty, filters, sorting, paginate_by = True, [], {}, 72
 
-    def get(self, request, *args, **kwargs):
-        with suppress(Link.DoesNotExist):
-            link_obj = Link.objects.get(key=kwargs.get('key'))
-            self.filters = json.loads(link_obj.param.get('filters', '[]'))
-            self.sorting = json.loads(link_obj.param.get('sorting', '{ }'))  
+    def get(self, request, *args, **kwargs): 
         return super().get(request, *args, **kwargs)
 
     @handle_post_params()
