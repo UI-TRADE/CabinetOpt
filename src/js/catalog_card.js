@@ -15,8 +15,10 @@ export const productCardEvents = () => {
 
     const closeImgWindow = () => {
         const $modal = $('.img-form');
+        $.each($modal.find('.carousel-item'), (_, item) => {
+            $(item).removeClass('active');        
+        });
         const $overlay = $('.background-overlay');
-        $modal.html('<img class="show-image"/>');
         $modal.addClass('hidden');
         $overlay.addClass('hidden');
         $overlay.off();
@@ -27,13 +29,62 @@ export const productCardEvents = () => {
 
         $('.background-overlay').removeClass('hidden');
         const $modal = $('.img-form');
-        const $img = $modal.find('img');
-        $img.attr('src', $(event.currentTarget).attr('src'));
-        $img.attr('alt', $(event.currentTarget).attr('alt'));
+        $.each($modal.find('.carousel-item'), (_, item) => {
+            const $img = $(item).find('img');
+            if ($img.attr('src') === $(event.currentTarget).attr('src')){
+                $(item).addClass('active');        
+            }
+        });
+
         $('.background-overlay').click(closeImgWindow);
         $modal.removeClass('hidden');
 
     });
+
+    $('.img-form-nav-left').on('click', (event) => {
+
+        const getCurrentIndex = ()=> {
+            for(let i=0; i<=carouselItems.length-1; i++){
+                if($(carouselItems[i]).hasClass('active')){
+                    return i;    
+                }   
+            }
+            return -1;
+        }
+        
+        event.preventDefault();
+        const $modal = $('.img-form');
+        const carouselItems = $modal.find('.carousel-item');
+        let currentIndex = getCurrentIndex(), nextIndex = 0;
+        if(currentIndex > 0) nextIndex = currentIndex-1;
+        else if(currentIndex === 0) nextIndex = carouselItems.length-1;
+        else return;
+        $(carouselItems[currentIndex]).removeClass('active');
+        $(carouselItems[nextIndex]).addClass('active');
+    });
+
+    $('.img-form-nav-right').on('click', (event) => {
+
+        const getCurrentIndex = ()=> {
+            for(let i=0; i<=carouselItems.length-1; i++){
+                if($(carouselItems[i]).hasClass('active')){
+                    return i;    
+                }   
+            }
+            return -1;
+        }
+        
+        event.preventDefault();
+        const $modal = $('.img-form');
+        const carouselItems = $modal.find('.carousel-item');
+        let currentIndex = getCurrentIndex(), nextIndex = 0;
+        if(currentIndex < carouselItems.length-1) nextIndex = currentIndex+1;
+        else if(currentIndex === carouselItems.length-1) nextIndex = 0;
+        else return;
+        $(carouselItems[currentIndex]).removeClass('active');
+        $(carouselItems[nextIndex]).addClass('active');
+    });
+
 }
 
 

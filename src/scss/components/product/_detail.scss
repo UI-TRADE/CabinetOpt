@@ -396,3 +396,27 @@
 
   }
 }
+
+
+.img-form{
+
+  .img-form-container{
+    position: relative;
+  }
+
+  .img-form-nav-left{
+    position: absolute;
+    height: 100%;
+    width: 15%;
+    z-index: 11;
+  }
+
+  .img-form-nav-right{
+    position: absolute;
+    right: 0;
+    height: 100%;
+    width: 15%;
+    z-index: 11;
+  }
+
+}
