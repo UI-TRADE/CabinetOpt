@@ -57,14 +57,26 @@
 
                     {% if forloop.counter == 12 %}
                         <div class="col-12 banner">
-                          <img src="{% static 'img/banners/1.png' %}" class="img-fluid" alt="Banner 1">
-                          <!-- <div class="jumbotron jumbotron-fluid banner-jumbotron" style="background-image: url('/static/img/banners/1.png');">
-                              <img src="{% static 'img/banners/1.png' %}" alt="Banner 1">
-                          </div> -->
+                          {% with first_banner=banners|first %}
+                            {% if first_banner %}
+                              <a href="{% if first_banner.link %} {{ first_banner.link }} {% else %} javascript:void(0); {% endif %}">
+                                <img src="{{ first_banner.get_image }}" class="img-fluid" alt="{{ first_banner.description }}">
+                                <!-- <div class="jumbotron jumbotron-fluid banner-jumbotron" style="background-image: url('/static/img/banners/1.png');">
+                                    <img src="{% static 'img/banners/1.png' %}" alt="Banner 1">
+                                </div> -->
+                              </a>
+                            {% endif %}
+                          {% endwith %}
                         </div>
                     {% elif forloop.counter == 24 %}
                         <div class="col-12 banner">
-                          <img src="{% static 'img/banners/2.png' %}" class="img-fluid" alt="Banner 1">
+                          {% with second_banner=banners|last %}
+                            {% if second_banner %}
+                              <a href="{% if second_banner.link %} {{ second_banner.link }} {% else %} javascript:void(0); {% endif %}">
+                                <img src="{{ second_banner.get_image }}" class="img-fluid" alt="{{ second_banner.description }}">
+                              </a>
+                            {% endif %}
+                          {% endwith %}
                         </div>
                     {% endif %}
                   {% endfor %}

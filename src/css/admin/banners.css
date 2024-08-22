@@ -1,0 +1,10 @@
+.field-banner_icon{
+    width: 25%;
+    height: 25%;
+}
+
+.field-banner_tag{
+    .inline{
+        visibility: hidden;
+    }
+}

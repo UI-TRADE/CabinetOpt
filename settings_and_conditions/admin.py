@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import format_html
 from django.contrib.admin import SimpleListFilter
 from django_summernote.admin import SummernoteModelAdmin
 
@@ -10,6 +11,7 @@ from .models import (
     NotificationType,
     Notification,
     CatalogFilter,
+    Banner,
 )
 
 
@@ -105,6 +107,44 @@ class CatalogFilterAdmin(admin.ModelAdmin):
     )
 
 
+class BannerAdmin(admin.ModelAdmin): 
+    list_display = ('banner_icon', 'name', 'priority', 'created_at') 
+    search_fields = ['name', 'link']
+    fields = [
+        'name',
+        ('image', 'banner_tag'),
+        'link',
+        'priority',
+        'description',
+        'created_at'
+    ]
+
+    list_display_links = list_display
+
+    readonly_fields = [
+        'banner_tag',
+        'created_at',
+    ]
+
+    def banner_icon(self, obj):
+        return format_html(
+            '<img src="{0}" width="100%" height="100%" />'.format(obj.image.url)
+        )
+    banner_icon.short_description = 'Изображение'
+
+    def banner_tag(self, obj):
+        return format_html(
+            '<img src="{0}" width="100%" height="100%" />'.format(obj.image.url)
+        )
+    banner_tag.short_description = ''
+
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        form = super().get_form(request, obj, change, **kwargs)
+        # form.base_fields['use_up'].label = 'использовать'
+        # form.base_fields['notification_type'].label = 'событие'
+        return form
+
+
 admin.site.register(Guarantee, GuaranteeAdmin)
 admin.site.register(Policy, PolicyAdmin)
 admin.site.register(Delivery, DeliveryAdmin)
@@ -113,3 +153,5 @@ admin.site.register(About, AboutAdmin)
 admin.site.register(NotificationType, NotificationTypeAdmin)
 admin.site.register(Notification, NotificationAdmin)
 admin.site.register(CatalogFilter, CatalogFilterAdmin)
+
+admin.site.register(Banner, BannerAdmin)

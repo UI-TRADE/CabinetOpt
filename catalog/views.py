@@ -29,7 +29,7 @@ from catalog.models import (
 )
 from settings_and_conditions.notify_rollbar import init_rollbar
 
-from settings_and_conditions.models import CatalogFilter
+from settings_and_conditions.models import CatalogFilter, Banner
 from shared_links.models import Link
 
 from .tasks import (
@@ -209,7 +209,7 @@ class ProductView(FiltersView, ListView):
         context = {
             'products': self.object_list,
             'filters': {}, 'is_sized': False,
-            'share_link': kwargs.get('link', ''),
+            'banners': [], 'share_link': kwargs.get('link', ''),
             'MEDIA_URL': settings.MEDIA_URL
         }
         ''' 
@@ -240,6 +240,7 @@ class ProductView(FiltersView, ListView):
             'products': products_page,
             'filters': filters,
             'is_sized': is_sized,
+            'banners': Banner.objects.get_active_banners(),
             'share_link': kwargs.get('link', ''),
             'MEDIA_URL': settings.MEDIA_URL
         }

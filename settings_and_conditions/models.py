@@ -201,6 +201,43 @@ class Notification(models.Model):
         return self.email
 
 
+class BannerQuerySet(models.QuerySet):
+
+    def get_active_banners(self):
+        first_banner = self.order_by('-created_at').filter(priority=1).first()
+        second_banner = self.order_by('-created_at').filter(priority=2).first()
+        return [first_banner, second_banner]
+
+
+class Banner(models.Model):
+
+    name = models.CharField('Наименование', max_length=200, db_index=True)
+    image = models.ImageField('Изображение', upload_to='banner_images')
+    link = models.URLField('Ссылка', max_length = 200, null=True, blank=True)
+    description = models.TextField('Описание', blank=True)
+    priority = models.PositiveSmallIntegerField(
+       choices=((1, 'первый'), (2, 'второй'),),
+       default=1,
+       db_index=True
+    )
+    created_at = models.DateTimeField(
+        'Дата создания', db_index=True, auto_now_add=True
+    )
+
+    objects = BannerQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = 'Баннер'
+        verbose_name_plural = 'Баннеры'
+    
+    def __str__(self):
+        return self.name
+    
+    @property
+    def get_image(self):
+        return self.image.url
+
+
 class CatalogFilter(SingletonModel):
     metals = models.BooleanField('металл', default=True)
     metal_finish = models.BooleanField('обработка металлов', default=False)
