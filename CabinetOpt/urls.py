@@ -36,11 +36,11 @@ urlpatterns = [
 
 urlpatterns += [
     path('captcha/', include('captcha.urls')),
+    path('silk/', include('silk.urls', namespace='silk')),
 ]
 
 if settings.DEBUG:
     urlpatterns += [
-        path('silk/', include('silk.urls', namespace='silk')),
         path('__debug__/' , include('debug_toolbar.urls')),
     ]
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
