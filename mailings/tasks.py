@@ -15,10 +15,11 @@ from django.core.exceptions import ValidationError
 from redis.exceptions import ResponseError
 
 from settings_and_conditions.models import NotificationType, Notification
-from settings_and_conditions.notify_rollbar import notify_rollbar
 from .models import OutgoingMail, MailingOfLetters
 from clients.models import RegistrationOrder, Client, Manager
 from orders.models import Order
+
+from utils.log_handlers import notify_logging
 
 MAX_NUM_OF_EMAIL_ADDRESSES_SENT = 5
 DEFAULT_TIMEOUT_FOR_SENDING_EMAILS = 5
@@ -187,7 +188,7 @@ def get_mail_params(notification_options):
             AttributeError,
             ResponseError
         ):
-            with notify_rollbar():
+            with notify_logging():
                 if not letter_content:
                     raise ValidationError('Не указано содержание письма', code='')
                 email, context = get_context(**notification_options)
@@ -221,7 +222,7 @@ def create_outgoing_mail(mail_params):
 @job('default')
 def send_email(html_content, recipient_list, **params):
     for recipient in recipient_list:
-        with notify_rollbar(extra_data={'recipient': recipient}):
+        with notify_logging(extra_data={'recipient': recipient}):
             email = EmailMessage(
                 params['subject'],
                 html_content,

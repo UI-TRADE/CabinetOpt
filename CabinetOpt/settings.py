@@ -30,7 +30,6 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', ['127.0.0.1', 'localhost'])
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', ['http://127.0.0.1:8000'])
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -183,12 +182,12 @@ CART_SESSION_KEYS = 'cart_keys'
 if DEBUG:
     INTERNAL_IPS = ['127.0.0.1',]
 
-ROLLBAR = {
-    'access_token': env('ROLLBAR_TOKEN', ''),
-    'environment': 'development' if DEBUG else 'production',
-    'code_version': '1.0',
-    'root': BASE_DIR,
-}
+# ROLLBAR = {
+#     'access_token': env('ROLLBAR_TOKEN', ''),
+#     'environment': 'development' if DEBUG else 'production',
+#     'code_version': '1.0',
+#     'root': BASE_DIR,
+# }
 
 # EMAIL settings
 EMAIL_HOST = env('EMAIL_HOST', '')
@@ -242,15 +241,33 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'filters': {
+        'tg_filter': {
+            '()': 'utils.log_handlers.TelegramFilter',
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
         },
+        'tg': {
+            'level': 'INFO',
+            'class': 'utils.log_handlers.AiogramTelegramHandler',
+            'token': env('TG_TOKEN'),
+            'chat_id': env('TG_CHART_ID'),
+            'formatter': 'tg',
+            'filters': ['tg_filter'],
+        },
+    },
+    'formatters': {
+        'tg': {
+            '()': 'utils.log_handlers.TelegramLogFormatter',
+        },
     },
     'loggers': {
         '': {
-            'handlers': ['console'],
-            'level': 'INFO',
+            'handlers': ['console', 'tg'],
+            'level': 'DEBUG',
         }
     },
 }

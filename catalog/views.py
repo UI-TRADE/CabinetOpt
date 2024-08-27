@@ -1,6 +1,6 @@
 import json
 import collections
-import rollbar
+import logging
 
 from contextlib import suppress
 from django.shortcuts import render
@@ -27,7 +27,6 @@ from catalog.models import (
     Product, ProductImage, StockAndCost, Price,
     ProductsSet, GemSet, SimilarProducts
 )
-from settings_and_conditions.notify_rollbar import init_rollbar
 
 from settings_and_conditions.models import CatalogFilter, Banner
 from shared_links.models import Link
@@ -40,6 +39,9 @@ from .tasks import (
 )
 
 from utils.requests import handle_get_params, handle_post_params
+
+logger = logging.getLogger(__name__)
+
 
 def parse_filters(filters):
     result = collections.defaultdict(list)
@@ -356,9 +358,8 @@ def sizes_selection(request, prod_id):
                     'stock_and_cost': context,
                     'cart': json.dumps([{**item, 'product': None} for item in cart if str(item['product']['id']) == prod_id])
             })
-        except KeyError:
-            init_rollbar()
-            rollbar.report_exc_info(level='error', extra_data=[{**item,} for item in cart])
+        except KeyError as error:
+            logger.error(f'{error}: {[{**item,} for item in cart]}')
             return render(
                 request,
                 'forms/size_selection.html',

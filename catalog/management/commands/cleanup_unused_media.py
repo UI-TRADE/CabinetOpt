@@ -5,8 +5,7 @@ from django.conf import settings
 from django.core.management import BaseCommand
 
 from catalog.models import ProductImage
-from settings_and_conditions.notify_rollbar import notify_rollbar
-
+from utils.log_handlers import notify_logging
 
 IMAGES_PATH = 'product_images'
 
@@ -42,7 +41,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         try:
-            with notify_rollbar():
+            with notify_logging():
                 unused_media = get_unused_media()
                 for filename in unused_media:
                     os.remove(filename)
