@@ -59,7 +59,7 @@ services:
       context: ./
       dockerfile: Dockerfile.prod
     container_name: CabinetOpt_CL
-    command: python manage.py clear_links --timeout 60
+    command: python manage.py clear_links --timeout 3600
     volumes:
       - static_volume:/home/app/web/staticfiles
       - media_volume:/home/app/web/mediafiles
