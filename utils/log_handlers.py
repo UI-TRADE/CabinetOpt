@@ -1,9 +1,8 @@
-import asyncio
 import logging
+import requests
 import html
 import traceback
 
-from aiogram import Bot, Dispatcher
 from django.conf import settings
 from contextlib import contextmanager
 
@@ -17,29 +16,29 @@ class TelegramFilter(logging.Filter):
         return record.levelno in (logging.INFO, logging.ERROR, logging.CRITICAL)
 
 
-class AiogramTelegramHandler(logging.Handler):
+class TgLogHandler(logging.Handler):
     def __init__(self, token, chat_id):
         super().__init__()
-        self.bot = Bot(token=token)
+        self.token = token
         self.chat_id = chat_id
+        self.api_url = f"https://api.telegram.org/bot{self.token}/sendMessage"
 
     def emit(self, record):
         log_entry = self.format(record)
-        # asyncio.run(self.send_log(log_entry))
+        self.send_log(log_entry)
+
+    def send_log(self, log_entry):
+        data = {
+            "chat_id": self.chat_id,
+            "text": log_entry,
+            "parse_mode": "HTML"
+        }
         try:
-            loop = asyncio.get_event_loop()
-            if loop.is_closed():
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        
-        loop.run_until_complete(self.send_log(log_entry))
-
-    async def send_log(self, log_entry):
-        await self.bot.send_message(chat_id=self.chat_id, text=log_entry, parse_mode="HTML")
-
+            response = requests.post(self.api_url, data=data)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as error:
+            # Выкинет ошибку в консоль
+            logger.error(str(error))
 
 
 class TelegramLogFormatter(logging.Formatter):

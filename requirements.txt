@@ -27,4 +27,3 @@ django-meta==2.4.0
 django-cleanup==8.1.0
 django-rq==2.10.2
 django-silk==5.1.0
-aiogram==2.24

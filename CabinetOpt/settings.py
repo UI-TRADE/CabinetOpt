@@ -253,7 +253,7 @@ LOGGING = {
         },
         'tg': {
             'level': 'INFO',
-            'class': 'utils.log_handlers.AiogramTelegramHandler',
+            'class': 'utils.log_handlers.TgLogHandler',
             'token': env('TG_TOKEN'),
             'chat_id': env('TG_CHART_ID'),
             'formatter': 'tg',
