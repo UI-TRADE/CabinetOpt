@@ -1,3 +1,4 @@
+{% load static %}
 {% load catalog_tags %}
 
 {% if is_sized %}
@@ -22,13 +23,17 @@
         </div>
         <div class="img-form hidden">
             <div class="img-form-container row">
-                <div class="img-form-nav-left"></div>
+                <div class="img-form-nav-left">
+                    <img class="d-flex" src="{% static 'img/arrow.svg' %}">
+                </div>
                 {% for image in product.get_filtered_images_by_order|slice:":5" %}
                     <div class="carousel-item">
                         <img src="{{ image }}" class="main-image" alt="{{ prod.name }}" />
                     </div>
                 {% endfor %}
-                <div class="img-form-nav-right"></div>
+                <div class="img-form-nav-right">
+                    <img class="d-flex" src="{% static 'img/arrow.svg' %}">
+                </div>
             </div>
         </div>
         <div id="product-carousel-{{ product.id }}" class="carousel slide" data-ride="carousel">

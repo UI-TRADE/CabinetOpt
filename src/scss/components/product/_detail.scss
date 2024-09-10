@@ -409,6 +409,14 @@
     height: 100%;
     width: 15%;
     z-index: 11;
+
+    img {
+      position: relative;
+      top: 45%;
+      height: 70px;
+      margin-left: 20px;
+      transform:rotate(180deg);
+    }
   }
 
   .img-form-nav-right{
@@ -417,6 +425,13 @@
     height: 100%;
     width: 15%;
     z-index: 11;
+
+    img {
+      position: relative;
+      top: 45%;
+      height: 70px;
+      right: -54px;
+    }
   }
 
 }
