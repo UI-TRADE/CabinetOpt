@@ -325,6 +325,7 @@
                                 <input id="saveOrder" class="btn btn-primary" data-url="{% url 'orders:orders' %}" data-id="{{object.id}}" value="Сохранить">
                                 <input id="deleteOrder" class="btn btn-primary" data-url="{% url 'orders:remove' order_id=object.id %}" data-id="{{object.id}}" value="Удалить">
                             {% endif %}
+                            
                         </div>
                     </form>
                 </div>

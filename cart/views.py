@@ -1,4 +1,6 @@
 import simplejson as json
+
+from django.apps import apps
 from django.http import JsonResponse
 from django.db.models import Sum
 from django.shortcuts import render, redirect, get_object_or_404
@@ -89,6 +91,7 @@ def cart_remove(request, product_id):
 
 
 def cart_detail(request):
+    app_config = apps.get_app_config('cart')
     cart = CartExtension(request)
     return render(
         request,
@@ -96,7 +99,8 @@ def cart_detail(request):
         {
             'cart': cart,
             'share_link': request.build_absolute_uri(request.get_full_path()),
-            'MEDIA_URL': settings.MEDIA_URL
+            'MEDIA_URL': settings.MEDIA_URL,
+            'send_into_talant': app_config.send_into_talant_from_cart
     })
 
 
@@ -138,25 +142,33 @@ def add_order(request):
         for item in cart:
             product_id = item['product']['id']
 
-            stocks = StockAndCost.objects.get_stocks(product_id, item['size'])
+            if item.get('size'):
+                stocks = StockAndCost.objects.get_stocks(product_id, item['size'])
+            else:
+                stocks = StockAndCost.objects.get_stocks(product_id)
+
             if not stocks:
+                cart_out_of_stock.append(item)
+                continue
+            elif not stocks.get('total_stock', 0):
                 cart_out_of_stock.append(item)
                 continue
             elif stocks['total_stock'] < item['quantity']:
                 current_stock = stocks['total_stock']
                 item_out_of_stock = item.copy()
-                item_out_of_stock['quantity'] = current_stock
-                item_out_of_stock['total_price'] = current_stock * item_out_of_stock['price']
+                item_out_of_stock['quantity'] = item['quantity'] - current_stock
+                item_out_of_stock['total_price'] = round(item_out_of_stock['quantity'] * item_out_of_stock['price'], 2)
                 cart_out_of_stock.append(item_out_of_stock)
 
-                item['quantity'] = item['quantity'] - current_stock
-                item['total_price'] = item['quantity'] * item['price']
+                item['quantity'] = current_stock
+                item['total_price'] = round(item['quantity'] * item['price'], 2)
 
-            cart_in_stock.append(item)
+            if item['quantity'] > 0:
+                cart_in_stock.append(item)
 
         return cart_in_stock, cart_out_of_stock
 
-    def create_order(client, manager, provision, cart):
+    def create_order(client, manager, status, provision, cart):
         order_items = []
         for item in cart:
             item['product'] = Product.objects.get(pk=item['product']['id'])
@@ -173,7 +185,7 @@ def add_order(request):
                 'client'   : client,
                 'manager'  : manager,
                 'provision': provision,
-                'status'   : 'introductory'
+                'status'   : status
             },
             order_items
         )
@@ -181,21 +193,24 @@ def add_order(request):
     cart = Cart(request)
     login = Login(request)
 
-    clients = login.get_clients()
-    managers = login.get_managers()
+    clients, managers = login.get_clients(), login.get_managers()
+    if clients and managers:
+        client, manager = clients.first(), managers.first()
 
     if int(request.POST['split_orders']):
+        order_status = 'confirmed'
         cart_in_stock, cart_out_of_stock = split_products(cart)
     else:
+        order_status = 'introductory'
         cart_in_stock, cart_out_of_stock = [item for item in cart], []
 
     try:
 
         if cart_in_stock: 
-            create_order(clients.first(), managers.first(), 'П', cart_in_stock)
+            create_order(client, manager, order_status, 'П', cart_in_stock)
 
         if cart_out_of_stock:
-            create_order(clients.first(), managers.first(), 'З', cart_out_of_stock)
+            create_order(client, manager, order_status, 'З', cart_out_of_stock)
 
     except ValidationError as errors:
         for error in json.loads(errors.message):

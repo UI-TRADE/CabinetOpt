@@ -31,8 +31,13 @@
 
                         <form id="createOrderFromTable" method="post" action="{% url 'cart:create' %}">
                             {% csrf_token %}
-                            <input type="hidden" name="split_orders" value=0 />
+                            {% if send_into_talant %}
+                                <input type="hidden" name="split_orders" value=1 />
+                            {% else %}
+                                <input type="hidden" name="split_orders" value=0 />
+                            {% endif %}
                         </form>
+
                         <div class="text-right">
 
                             <div class="cart-result">
@@ -41,15 +46,26 @@
                                 <div class="cart-result__total-weight">{{ cart.get_total_weight|floatformat:2 }} г</div>
                                 <div class="cart-result__total-price">{{ cart.get_total_price|floatformat:0|intcomma }} р</div>
                             </div>
-
-                            <a
+                            
+                            {% if send_into_talant %}
+                                <a
                                 href="#"
                                 onclick="document.getElementById('createOrderFromTable').submit();"
                                 role="button"
                                 class="btn btn-primary mb-2 mr-sm-2 send-to-order"
-                            >
-                                Оформить заказ
-                            </a>
+                                >
+                                    Отправить в Talant
+                                </a>                            
+                            {% else %}
+                                <a
+                                    href="#"
+                                    onclick="document.getElementById('createOrderFromTable').submit();"
+                                    role="button"
+                                    class="btn btn-primary mb-2 mr-sm-2 send-to-order"
+                                >
+                                    Оформить заказ
+                                </a>
+                            {% endif %}
                         </div>
 
                     </div>
