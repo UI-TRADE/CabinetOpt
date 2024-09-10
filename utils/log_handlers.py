@@ -28,6 +28,8 @@ class TgLogHandler(logging.Handler):
         self.send_log(log_entry)
 
     def send_log(self, log_entry):
+        if not self.token:
+            return
         data = {
             "chat_id": self.chat_id,
             "text": log_entry,
