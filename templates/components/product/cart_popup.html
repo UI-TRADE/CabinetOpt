@@ -2,7 +2,7 @@
 
 {% if is_sized %}
 {% with params="id"|addparam:product.id sizes="is_sized"|addparam:1 %}
-<div id="good-block-{{ product.id }}" class="row good-block product-item product-popup__path" data-json="{{ params|addparams:sizes|tojson }}" style="visibility: hidden;">
+<div id="good-block-{{ product.id }}" class="row good-block product-item product-popup__path" data-json="{{ params|dictupdate:sizes|tojson }}" style="visibility: hidden;">
 {% endwith %}
 {% else %}
 {% with params="id"|addparam:product.id %}

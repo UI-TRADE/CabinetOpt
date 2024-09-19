@@ -1,7 +1,7 @@
 import showSliders from './sliders';
 import updateProducts from '../catalog_cards';
 import { handleError } from "../utils/exceptions";
-import { createSpiner } from '../lib';
+import { createSpiner, removeSpiner } from '../lib';
 
 var currentSpin;
 var selectedFiltersBadges;
@@ -122,11 +122,15 @@ const showCatalog = () => {
         const pageValue = url.searchParams.get('page');
 
         if (!pageValue) {
-            updateProducts('products', {
-                'csrfmiddlewaretoken' : token.value,
-                'filters': JSON.stringify(filters),
-                'sorting': JSON.stringify(sorting),
-            }, currentSpin);
+            updateProducts(
+                'products', 
+                {
+                    'csrfmiddlewaretoken' : token.value,
+                    'filters': JSON.stringify(filters),
+                    'sorting': JSON.stringify(sorting),
+                },
+                currentSpin
+            );
             return;    
         }
 
@@ -141,11 +145,15 @@ const showCatalog = () => {
                     return;
                 }
 
-                updateProducts('products', {
-                    'csrfmiddlewaretoken' : token.value,
-                    'filters': JSON.stringify(filters),
-                    'sorting': JSON.stringify(sorting),
-                }, currentSpin);
+                updateProducts(
+                    'products',
+                    {
+                        'csrfmiddlewaretoken' : token.value,
+                        'filters': JSON.stringify(filters),
+                        'sorting': JSON.stringify(sorting),
+                    },
+                    currentSpin
+                );
                 
             },
             error: (error) => {
@@ -347,6 +355,7 @@ export function filtersAndSortingEvents() {
             const imgOfNode = $(event.currentTarget.closest('.top-node')).find('img');
             if (imgOfNode) openMenuItems(imgOfNode);
         } else {
+            document.getElementById('products').innerHTML = "";
             if ($(event.currentTarget).is('.filter-item-title-disable')) return;
             currentSpin = createSpiner($('.main-content')[0]);
             const filters = JSON.parse(sessionStorage.getItem('filters'));
@@ -360,6 +369,7 @@ export function filtersAndSortingEvents() {
     });
 
     $(document).on('click', '.reset', event => {
+        document.getElementById('products').innerHTML = "";
         const parent = $(event.target).closest('li');
         if (parent.length) {
             $(parent).find('.filter-item-title-active').each((_, element) => {
@@ -506,6 +516,7 @@ function initProductFilters() {
     if (pathname == "/catalog/products/") {
 
         currentSpin = createSpiner($('.main-content')[0]);
+        console.time('filter render');
         $.ajax({
             url: '/catalog/filters',
             success: (data) => {
@@ -514,6 +525,7 @@ function initProductFilters() {
                 showSliders();
                 initProductSorting();
                 updateMenuItems();
+                console.timeEnd('filter render');
                 showCatalog();
             },
             error: (error) => {

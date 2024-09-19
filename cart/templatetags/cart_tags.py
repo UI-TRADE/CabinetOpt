@@ -19,7 +19,7 @@ def addparam(key, param):
 
 
 @register.filter
-def addparams(param1, param2):
+def dictupdate(param1, param2):
     return dict(param1) | dict(param2)
 
 

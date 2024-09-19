@@ -5,6 +5,7 @@ import logging
 from contextlib import suppress
 from django.shortcuts import render
 from django.core import management
+from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
@@ -29,7 +30,8 @@ from catalog.models import (
 )
 
 from settings_and_conditions.models import CatalogFilter, Banner
-from shared_links.models import Link
+from utils.caching import use_cache
+
 
 from .tasks import (
     run_uploading_products,
@@ -131,10 +133,14 @@ class FiltersView(TemplateView):
         return filters, hide_count_of_products
 
     def get_context_data(self, *, object_list=None, **kwargs):
+        with use_cache('active_products', {'in_stock': False}, 60*30) as cache_handler:
+            if cache_handler.cache is None:
+                cache_handler.cache = Product.objects.get_active_products(False)
+        products = cache_handler.cache
         context = super().get_context_data(**kwargs)
         context['MEDIA_URL'] = settings.MEDIA_URL
         context['filters'], context['hide_count_of_products'] = \
-            self.get_filters(Product.objects.get_active_products(False))
+            self.get_filters(products)
 
         return context
 
@@ -191,14 +197,24 @@ class ProductView(FiltersView, ListView):
     def get_queryset(self):
         if self.filters:
             parsed_filter = parse_filters(self.filters)
-            products = Product.objects.get_active_products(parsed_filter.get('in_stock', False))
+            in_stock = parsed_filter.get('in_stock', False)
+            with use_cache('active_products', {'in_stock': in_stock}, 60*30) as cache_handler:
+                if cache_handler.cache is None:
+                    cache_handler.cache = Product.objects.get_active_products(
+                        parsed_filter.get('in_stock', False)
+                    )
+            products = cache_handler.cache
+
             filters, _ = self.get_filters(products)
 
             filtered_products = ProductFilter(parsed_filter, queryset=products)
             products = filtered_products.qs
 
         else:
-            products = Product.objects.get_active_products()
+            with use_cache('active_products', {'in_stock': True}, 60*30) as cache_handler:
+                if cache_handler.cache is None:
+                    cache_handler.cache = Product.objects.get_active_products()
+            products = cache_handler.cache
             filters, _ = self.get_filters(products)
 
         if self.sorting:
@@ -210,8 +226,11 @@ class ProductView(FiltersView, ListView):
         self.object_list = Product.objects.none()
         context = {
             'products': self.object_list,
-            'filters': {}, 'is_sized': False,
-            'banners': [], 'share_link': kwargs.get('link', ''),
+            'filters': {},
+            'is_sized': False,
+            'cart': [],
+            'banners': [],
+            'share_link': kwargs.get('link', ''),
             'MEDIA_URL': settings.MEDIA_URL
         }
         ''' 
@@ -232,16 +251,29 @@ class ProductView(FiltersView, ListView):
         except EmptyPage:
             products_page = paginator.page(paginator.num_pages)
 
-        is_sized = StockAndCost.objects.filter(
-            product__in=products_page,
-            size__isnull=False
-        ).values_list('product_id', flat=True)
+        with use_cache('products', 'is_sized', 60*1440) as cache_handler:
+            if cache_handler.cache is None:
+                cache_handler.cache = StockAndCost.objects.filter(
+                    # product__in=products_page,
+                    size__isnull=False
+                ).values_list('product_id', flat=True)
+        is_sized = cache_handler.cache
+
+
+        cart = [
+            {
+                key: value['id'] if key == 'product' else value \
+                for key, value in cart_el.items() \
+                if key in ['product', 'size', 'quantity']
+            } for cart_el in Cart(self.request)
+        ]
 
         context = super().get_context_data(**kwargs)
         return context | {
             'products': products_page,
             'filters': filters,
             'is_sized': is_sized,
+            'cart': cart,
             'banners': Banner.objects.get_active_banners(),
             'share_link': kwargs.get('link', ''),
             'MEDIA_URL': settings.MEDIA_URL
@@ -463,9 +495,8 @@ def pickup_products(request):
 
 @api_view(['GET'])
 def stocks_and_costs(request):
-    productIds = request.query_params.get('productIds')
-    size = request.query_params.get('size')
-    if productIds:
+
+    def get_serialized_stocks_and_costs():
         _, products, stocks_and_costs, prices, discount_prices = \
             StockAndCost.objects.available_stocks_and_costs(
                 productIds.split(','),
@@ -481,20 +512,35 @@ def stocks_and_costs(request):
             product_id__in = productIds.split(',')
         ).values('product').annotate(total_stock=Sum('stock')).order_by('product')
 
+        return {
+            'replay'           : 'ok',
+            'products'         : serialize("json", products),
+            'stocks_and_costs' : serialize(
+                "json", stocks_and_costs, use_natural_foreign_keys=True
+            ),
+            'actual_prices'    : serialize("json", prices),
+            'discount_prices'  : serialize("json", discount_prices),
+            'default_sizes'    : serialize(
+                "json", stocks_and_costs_with_default_size, use_natural_foreign_keys=True
+            ),
+            'available_stocks' : json.dumps([item for item in available_stocks])
+        }
+
+    productIds = request.query_params.get('productIds')
+    size = request.query_params.get('size')
+    if productIds:
+        ids = sorted(productIds.split(","))
+        with use_cache(
+            'stocks_and_costs',
+            dict(zip(ids, [i for i in range(len(ids)-1)])),
+            60*30
+        ) as cache_handler:
+            if cache_handler.cache is None:
+                cache_handler.cache = get_serialized_stocks_and_costs()
+        cached_data = cache_handler.cache
+
         return JsonResponse(
-            {
-                'replay'           : 'ok',
-                'products'         : serialize("json", products),
-                'stocks_and_costs' : serialize(
-                    "json", stocks_and_costs, use_natural_foreign_keys=True
-                ),
-                'actual_prices'    : serialize("json", prices),
-                'discount_prices'  : serialize("json", discount_prices),
-                'default_sizes'    : serialize(
-                    "json", stocks_and_costs_with_default_size, use_natural_foreign_keys=True
-                ),
-                'available_stocks' : json.dumps([item for item in available_stocks])
-            },
+            cached_data,
             status=200,
             safe=False
         )
@@ -519,7 +565,7 @@ def product_accessories(request):
                 .annotate(min_id=Min('id'))\
                 .values_list('min_id', flat=True)
         )
-        print(serialize("json", product_set_distinct_imgs))
+
         return JsonResponse(
             {
                 'replay'           : 'ok',

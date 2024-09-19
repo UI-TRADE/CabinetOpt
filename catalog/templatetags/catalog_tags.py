@@ -19,7 +19,7 @@ def addparam(key, param):
 
 
 @register.filter
-def addparams(param1, param2):
+def dictupdate(param1, param2):
     return dict(param1) | dict(param2)
 
 
@@ -70,3 +70,10 @@ def accumulate(seq, key):
         items = json.loads(seq)
         return reduce(lambda a, b: a+b, [item[key] for item in items if key in item])
     return 0
+
+
+@register.simple_tag
+def findparam(param, key, value):
+    with suppress(AttributeError, IndexError, KeyError):
+        return [item for item in param if item.get(key) == value][0]
+    return {}

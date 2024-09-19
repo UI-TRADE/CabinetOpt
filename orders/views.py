@@ -143,7 +143,6 @@ class OrderView(ListView):
         return Order.objects.filter(client__in=current_clients).order_by('-created_at')[:10]
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        print('share_link: ', kwargs)
         context = super().get_context_data(**kwargs)
         return context | {
             'order_items': OrderItem.objects.filter(order__in=context['orders']),

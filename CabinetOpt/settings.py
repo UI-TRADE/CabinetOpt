@@ -183,12 +183,6 @@ CART_SESSION_KEYS = 'cart_keys'
 if DEBUG:
     INTERNAL_IPS = ['127.0.0.1',]
 
-# ROLLBAR = {
-#     'access_token': env('ROLLBAR_TOKEN', ''),
-#     'environment': 'development' if DEBUG else 'production',
-#     'code_version': '1.0',
-#     'root': BASE_DIR,
-# }
 
 # EMAIL settings
 EMAIL_HOST = env('EMAIL_HOST', '')
@@ -203,10 +197,6 @@ EMAIL_USE_SSL = env.bool('EMAIL_USE_SSL', True)
 REDIS_HOST = env('REDIS_HOST', '127.0.0.1')
 REDIS_PORT = env.int('REDIS_PORT', 6379)
 
-# REDIS_CONN = redis.StrictRedis(
-#     host=REDIS_HOST, port=REDIS_PORT,
-#     db=0, password=env('REDIS_PWD', '')
-# )
 
 RQ_QUEUES = {
     'default': {
@@ -236,6 +226,15 @@ MAX_FAILED_LOGIN_ATTEMPTS = 5
 
 #The maximum number of parameters that may be received via GET or POST
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
+
+
+#Caching
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+    }
+}
 
 
 #Logging

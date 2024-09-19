@@ -46,13 +46,11 @@
                 </div>
               </div>
             </div>
-            <div id="products" style="visibility: hidden;">
+            <div id="products" style="visibility: visible;">
                 <div class="row">
                   {% for product in products %}
-                    {% with product_id="id"|addparam:product.id%}
-                    <div class="product-item__col col-xxl-3 col-xl-4 col-lg-6 col-md-12 col-sm-12 col-xs-12" data-json="{{ product_id|tojson }}">
-                    {% endwith %}
-                    {% include "components/product/card.html" with product=product %}
+                    <div class="product-item__col col-xxl-3 col-xl-4 col-lg-6 col-md-12 col-sm-12 col-xs-12">
+                      {% include "components/product/card.html" with product=product %}
                     </div>
 
                     {% if forloop.counter == 12 %}

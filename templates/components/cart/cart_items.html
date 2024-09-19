@@ -87,7 +87,7 @@
         {% for item in cart %}
         {% with product=item.product params="id"|addparam:item.product.id price="price"|addparam:item.price unit="unit"|addparam:item.product.unit %}
             {% unique_id as id %}
-            <tr id="{{id}}" class="order-preview__cart-row" name="cart-row" data-json="{{ params|addparams:price|addparams:unit|tojson }}">
+            <tr id="{{id}}" class="order-preview__cart-row" name="cart-row" data-json="{{ params|dictupdate:price|dictupdate:unit|tojson }}">
                 <td class="order-preview__cart-row-warning">
                     <abbr data-title="Вы заказали больше, чем есть в наличии.
                                       Недостающие изделия отразятся

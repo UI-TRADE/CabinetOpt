@@ -7,6 +7,7 @@ import { decimalFormat } from "./utils/money_format";
 import { handleError } from "./utils/exceptions";
 import updateProductsStatusStyle from "./components/catalog_status";
 import lazyLoads from './components/lazyload';
+import { showChangePassForm } from './form';
 
 
 const getSearchValues = (filters) => {
@@ -43,6 +44,19 @@ const getEmptyCatalogPage = () => {
 const updateProductCards = (element, ...params) => {
     const productsData = {};
 
+    const handleProductData = (elements) => {
+        const productIds = elements.map((element) => {
+            const productId = JSON.parse(element.getAttribute('data-json')).id;
+            return productId
+        })
+        return productStocksAndCosts(productIds.toString())
+            .then((data) => updateElements(data, elements))
+            .then((data) => updateCarts(data))
+            .catch((error) => {
+                handleError(error, 'Ошибка обновления каталога');
+            });
+    };
+
     const productStocksAndCosts = (productIds, size='') => {
         return new Promise((resolve, reject) => {
             $.ajax({
@@ -69,7 +83,7 @@ const updateProductCards = (element, ...params) => {
         }
     }
 
-    const updateElements = (data) => {
+    const updateElements = (data, elements) => {
         return new Promise((resolve, reject) => {
             try {
                 if (data['replay'] == 'error') throw new Error(data['message']);
@@ -81,9 +95,7 @@ const updateProductCards = (element, ...params) => {
                 const discount_prices  = JSON.parse(data['discount_prices']);
                 const default_sizes    = JSON.parse(data['default_sizes']);
                 const available_stocks = JSON.parse(data['available_stocks']);
-                productsData.products = products;
-                productsData.stockAndCosts = stocks_and_costs;
-                
+
                 for (var i=0; i < elements.length; i++) {
                     let inStok = 0; let weight = 0; let size = '';
                     let currentPrice = 0; let currentDiscount = 0; let maxPrice = 0; let currentUnit = '163';
@@ -188,35 +200,19 @@ const updateProductCards = (element, ...params) => {
         });
     }
 
-    const initProductCardsCarousel = () => {
-        const $carousels = $('.carousel');
-        for (const carousel of $carousels) {
-            const $carousel = $(carousel);
-            $carousel.carousel({
-                interval: 2000
-            }).carousel('pause');
-            $carousel.on('mouseenter', () => {
-                $carousel.carousel('cycle');
-            });
-            $carousel.on('mouseleave', () => {
-                $carousel.carousel(0).carousel('pause');
-            });
-        }
-    };
-
     const updateCarts = (cartElements) => {
         return new Promise((resolve, reject) => {
             try {
                 const cart = $(document).data("cart");
                 cart.getProducts()
                     .then(products => {
-                        const result = Promise.all([
-                            waitUpdateCarts(cartElements, products)
-                        ]).then(() => {
-                            // initProductCardsCarousel();
-                        });
-                        resolve(result);
-                    })
+                        const serving_size = 5, promises = [];
+                        for (let i = 0; i <cartElements.length; i += serving_size) {
+                            let cart_items = cartElements.slice(i, i + serving_size)
+                            promises.push(waitUpdateCarts(cart_items, products));
+                        }
+                        resolve(Promise.all(promises));
+                })
 
             } catch (error) {
                 reject(error);
@@ -224,14 +220,8 @@ const updateProductCards = (element, ...params) => {
         });
     }
 
-    const elements = $('.good-block, .product-item').toArray() || []
-    const productIds = elements.map((element) => {
-        const productId = JSON.parse(element.getAttribute('data-json')).id;
-        return productId
-    })
-
-    const activeSpin = params.find(el => 'spiner' in el);
-    if (!productIds.length) {
+    const all_product_cards = $('.good-block, .product-item').toArray() || []
+    if (!all_product_cards.length) {
 
         const catalogContainer = $('#products');
         const searchBadgesElement = $('.search-badges__list');
@@ -240,35 +230,28 @@ const updateProductCards = (element, ...params) => {
             .then((response) => {
                 if (response) {
                     catalogContainer.html(response);
-                    catalogContainer.css('visibility', 'visible');
                 }
-                if(activeSpin) removeSpiner(activeSpin['spiner']);
             })
             .catch((error) => {
-                if(activeSpin) removeSpiner(activeSpin['spiner']);
-                handleError(error, 'Ошибка обновления каталога');
+                throw error;
             });
     
     } else {
 
-        productStocksAndCosts(productIds.toString())
-            .then((data) => {
-                return updateElements(data);
-            })
-            .then((data) => {
-                return updateCarts(data);
-            })
-            .then(() => {
-                cartEvents(productsData);
-                element.style.visibility = 'visible';
-                updateProductsStatusStyle();
-                if(activeSpin) removeSpiner(activeSpin['spiner']);
-                lazyLoads();
-            })
-            .catch((error) => {
-                if(activeSpin) removeSpiner(activeSpin['spiner']);
-                handleError(error, 'Ошибка обновления каталога');
-            });
+        const serving_size = 15, promises = [];
+        for (let i = 0; i <all_product_cards.length; i += serving_size) {
+            let elements = all_product_cards.slice(i, i + serving_size)
+            promises.push(handleProductData(elements));
+        }
+
+        console.time('catalog update');
+        Promise.all(promises).then(() => {
+            cartEvents(productsData);
+            updateProductsStatusStyle();
+            console.timeEnd('catalog update');
+        }).catch((error) => {
+            throw error;
+        });
 
     }
 }
@@ -277,8 +260,8 @@ const updateProductCards = (element, ...params) => {
 function updateProducts(elementId, data, spiner=NaN) {
     const mainElement = document.getElementById(elementId);
     if (!document.getElementById(elementId)) return;
-    mainElement.style = "visibility: hidden;";
     const searchFilter = getSearchValues(JSON.parse(data?.filters));
+    console.time('catalog render');
     $.ajax({
         type: 'POST',
         data: data,
@@ -291,10 +274,12 @@ function updateProducts(elementId, data, spiner=NaN) {
             $('#share-link-form').html(DOMModel.querySelector('#share-link-content'));
 
             updateFilterQuantitiesAndSums(response);
-            updateProductCards(mainElement, {'search_values': searchFilter, 'spiner': spiner});
+            console.timeEnd('catalog render');
+            if(spiner) removeSpiner(spiner);
+            updateProductCards(mainElement, {'search_values': searchFilter});
+            lazyLoads();
         },
         error: (error) => {
-            if(spiner) removeSpiner(spiner);
             handleError(error, 'Ошибка получения данных каталога с сервера');
         }
     });

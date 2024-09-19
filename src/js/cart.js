@@ -145,13 +145,13 @@ export function addSelectionSizesEvents(productId, price, unit) {
                         removedSizes.push(removedSize);                
                     }
                 });
-                if (selectedSizes) {
+                if (selectedSizes.length > 0) {
                     const formData = new FormData();
                     formData.append('csrfmiddlewaretoken', $form.find('input[name="csrfmiddlewaretoken"]').val());
                     formData.append('sizes', JSON.stringify(selectedSizes));
                     result['selectedSizes'] = formData;
                 }
-                if (removedSizes) {
+                if (removedSizes.length > 0) {
                     const formData = new FormData();
                     formData.append('csrfmiddlewaretoken', $form.find('input[name="csrfmiddlewaretoken"]').val());
                     formData.append('sizes', JSON.stringify(removedSizes));
@@ -200,12 +200,14 @@ export function addSelectionSizesEvents(productId, price, unit) {
 
         prepareDataForCart(event.currentTarget, productId)
             .then((data) => {
+                const promises = [];
+                if ('selectedSizes' in data && data['selectedSizes'])
+                    promises.push(sendSizesToCart(productId, data['selectedSizes']));
+                if ('removedSizes' in data && data['removedSizes'])
+                    promises.push(removeSizesFromCart(productId, data['removedSizes']));
                 return new Promise((resolve, reject) => {
                     try {
-                        const result = Promise.all([
-                            sendSizesToCart(productId, data['selectedSizes']),
-                            removeSizesFromCart(productId, data['removedSizes'])
-                        ]);
+                        const result = Promise.all(promises);
                         resolve(result);
                     } catch (error) {
                         reject(error);
@@ -679,31 +681,42 @@ export function waitUpdateCart(element, params, product) {
             const productItemData = JSON.parse(productCard.attr('data-json'));
             is_sized = ('is_sized' in productItemData && productItemData.is_sized);
         }
-        let cartButton     = element.querySelector('input[name="add-to-order"]');
-        if (!cartButton)
-            cartButton     = element.querySelector('input[name="add-to-cart"]');
+
         const cartElements = element.querySelector('div[name="cart-row"]');
         if (cartElements) {
             const cartElement    = cartElements.querySelector('input');
             const cartKeyElement = cartElements.querySelector('[name="cart-key"]');
-            cartButton.parentElement.style = "display: block";
+
             cartElements.style             = "display: none";
             cartKeyElement.textContent     = JSON.stringify(params);
             cartElement.value              = cartData?.quantity || 0;
-            if (!is_sized && cartData) {
-                cartButton.parentElement.style = "display: none";
-                cartElements.style             = "display: flex";
-                cartElement.value              = cartData['quantity'];
-            } else if (is_sized) {
-                if (cartData) {
-                    $(cartButton).addClass('into-cart__button');
-                    $(cartButton).val('уже в корзине');
+
+            const cartButton = Array.from(element.querySelectorAll(
+                'input[name="add-to-cart"], input[name="add-to-order"]'
+            )).find(_=>true);
+            if (cartButton) {
+                const cartContainer = Array.from(
+                    $(cartButton).parents('div[name="cart-form-container"]')
+                ).find(_=>true);
+                const cartBlock = (cartContainer) ? cartContainer : cartButton;
+                if (!cartData) {
+                    cartBlock.style   = "display: block";
+                    cartButton.value = "в корзину";
+                    cartButton.classList.remove('into-cart__button'); 
                 } else {
-                    $(cartButton).removeClass('into-cart__button');
-                    $(cartButton).val('в корзину');
+                    if (is_sized) {
+                        cartBlock.style   = "display: block";
+                        cartButton.value = "уже в корзине";
+                        cartButton.classList.add('into-cart__button');
+                    } else {
+                        cartBlock.style   = "display: none";
+                        cartElements.style = "display: flex";
+                    }
                 }
-            }
+            } 
+
         }
+
     }
 
     return new Promise((resolve) => {
@@ -721,21 +734,7 @@ $(document).ready(() => {
     cart = new Cart();
 })
 
-
-// События номенклатуры связанные с корзиной
-export function cartEvents(productsData) {
-    const productsDataMap = {};
-    if (productsData)
-        for (const product of productsData.products) {
-            const stockAndCosts = productsData.stockAndCosts
-                .filter(data => data.fields.product[1] === product.pk);
-            if (stockAndCosts.length) {
-                productsDataMap[stockAndCosts[0].fields.product[1]] = {
-                    product,
-                    stockAndCosts
-                }
-            }
-        }
+const addEvents = () => {
 
     $('input[name="add-to-cart"]').on('click', (event) => {
         event.preventDefault();
@@ -757,6 +756,24 @@ export function cartEvents(productsData) {
         handleAddToOrder(event);
     });
 
+}
+
+// События номенклатуры связанные с корзиной
+export function cartEvents() {
+    // const productsDataMap = {};
+    // if (productsData)
+    //     for (const product of productsData.products) {
+    //         const stockAndCosts = productsData.stockAndCosts
+    //             .filter(data => data.fields.product[1] === product.pk);
+    //         if (stockAndCosts.length) {
+    //             productsDataMap[stockAndCosts[0].fields.product[1]] = {
+    //                 product,
+    //                 stockAndCosts
+    //             }
+    //         }
+    //     }
+
+    addEvents();
 }
 
 
