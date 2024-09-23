@@ -516,7 +516,6 @@ function initProductFilters() {
     if (pathname == "/catalog/products/") {
 
         currentSpin = createSpiner($('.main-content')[0]);
-        console.time('filter render');
         $.ajax({
             url: '/catalog/filters',
             success: (data) => {
@@ -525,7 +524,6 @@ function initProductFilters() {
                 showSliders();
                 initProductSorting();
                 updateMenuItems();
-                console.timeEnd('filter render');
                 showCatalog();
             },
             error: (error) => {

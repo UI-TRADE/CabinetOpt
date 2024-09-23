@@ -246,11 +246,9 @@ const updateProductCards = (element, ...params) => {
             promises.push(handleProductData(elements));
         }
 
-        console.time('catalog update');
         Promise.all(promises).then(() => {
             cartEvents(productsData);
             updateProductsStatusStyle();
-            console.timeEnd('catalog update');
         }).catch((error) => {
             throw error;
         });
@@ -263,7 +261,6 @@ function updateProducts(elementId, data, spiner=NaN) {
     const mainElement = document.getElementById(elementId);
     if (!document.getElementById(elementId)) return;
     const searchFilter = getSearchValues(JSON.parse(data?.filters));
-    console.time('catalog render');
     $.ajax({
         type: 'POST',
         data: data,
@@ -276,7 +273,6 @@ function updateProducts(elementId, data, spiner=NaN) {
             $('#share-link-form').html(DOMModel.querySelector('#share-link-content'));
 
             updateFilterQuantitiesAndSums(response);
-            console.timeEnd('catalog render');
             if(spiner) removeSpiner(spiner);
             updateProductCards(mainElement, {'search_values': searchFilter});
             lazyLoads();
