@@ -164,6 +164,8 @@ const updateProductCards = (element, ...params) => {
                     if (stockField) {
                          if (inStok > 0) {
                             stockField.outerHTML = `<span class="in_stock"> В наличии: ${inStok} шт </span>`;
+                         } else {
+                            stockField.outerHTML = '<span class="in_stock"> Товар под заказ </span>';
                          }
                     }
 
