@@ -200,22 +200,30 @@ class ProductView(FiltersView, ListView):
             in_stock = parsed_filter.get('in_stock', False)
             with use_cache('active_products', {'in_stock': in_stock}, 60*30) as cache_handler:
                 if cache_handler.cache is None:
-                    cache_handler.cache = Product.objects.get_active_products(
-                        parsed_filter.get('in_stock', False)
-                    )
+                    cache_handler.cache = Product.objects.get_active_products(in_stock)
             products = cache_handler.cache
 
-            filters, _ = self.get_filters(products)
-
-            filtered_products = ProductFilter(parsed_filter, queryset=products)
-            products = filtered_products.qs
+            with use_cache('filters', {'in_stock': in_stock}, 60*30) as cache_handler:
+                if cache_handler.cache is None:
+                    cache_handler.cache, _ = self.get_filters(products)
+            filters = cache_handler.cache
+    
+            with use_cache('product_filters', self.filters, 60*30) as cache_handler:
+                if cache_handler.cache is None:
+                    filtered_products = ProductFilter(parsed_filter, queryset=products)
+                    cache_handler.cache = filtered_products.qs
+            products = cache_handler.cache
 
         else:
             with use_cache('active_products', {'in_stock': True}, 60*30) as cache_handler:
                 if cache_handler.cache is None:
                     cache_handler.cache = Product.objects.get_active_products()
             products = cache_handler.cache
-            filters, _ = self.get_filters(products)
+
+            with use_cache('filters', {'in_stock': True}, 60*30) as cache_handler:
+                if cache_handler.cache is None:
+                    cache_handler.cache, _ = self.get_filters(products)
+            filters = cache_handler.cache
 
         if self.sorting:
             products = self.apply_sorting(products)
