@@ -51,7 +51,6 @@ INSTALLED_APPS = [
     'orders',
     'cart',
     'settings_and_conditions',
-    'debug_toolbar',
     'django_summernote',
     'captcha',
     'django_cleanup.apps.CleanupConfig',
@@ -69,10 +68,18 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'silk.middleware.SilkyMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'rollbar.contrib.django.middleware.RollbarNotifierMiddleware',
 ]
+
+if DEBUG:
+    INSTALLED_APPS += [
+        'debug_toolbar',
+    ]
+    MIDDLEWARE += [
+        'silk.middleware.SilkyMiddleware',
+        'debug_toolbar.middleware.DebugToolbarMiddleware',
+        'rollbar.contrib.django.middleware.RollbarNotifierMiddleware',
+    ]
+
 
 ROOT_URLCONF = 'CabinetOpt.urls'
 
