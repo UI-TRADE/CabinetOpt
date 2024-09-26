@@ -536,11 +536,12 @@ def stocks_and_costs(request):
 
     productIds = request.query_params.get('productIds')
     size = request.query_params.get('size')
+
     if productIds:
         ids = sorted(productIds.split(","))
         with use_cache(
             'stocks_and_costs',
-            dict(zip(ids, [i for i in range(len(ids)-1)])),
+            dict(zip([i for i in range(len(ids))], ids)),
             60*30
         ) as cache_handler:
             if cache_handler.cache is None:
