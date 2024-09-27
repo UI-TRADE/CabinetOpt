@@ -14,8 +14,10 @@ from django.views.generic import (
 from django.template.loader import get_template
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
+from collections import defaultdict
 from contextlib import suppress
 
+from more_itertools import first
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -263,8 +265,8 @@ class SplitOrderView(TemplateView):
     fields = ['status', 'client', 'manager',]
 
     def split_products(self, order_items):
-        _in_stock = []
         _out_of_stock = []
+        _in_stock = defaultdict(list)
 
         for item in order_items:
             product_id = item['product'].id
@@ -289,7 +291,7 @@ class SplitOrderView(TemplateView):
                 item['total_price'] = item['quantity'] * item['price']
 
             if item['quantity'] > 0:
-                _in_stock.append(item)
+                _in_stock[item['product'].metal].append(item)
 
         return _in_stock, _out_of_stock
 
@@ -312,15 +314,37 @@ class SplitOrderView(TemplateView):
             current_status = context['fields']['status']
             _in_stock, _out_of_stock = self.split_products(order_items.cleaned_data)
             if _in_stock:
-                update_order(context['object'], self.request.POST, _in_stock)
+                if isinstance(_in_stock, defaultdict):
+                    for key, item in _in_stock.items():
+                        if key == first([key for key, _ in _in_stock.items()], ''):
+                            update_order(context['object'], self.request.POST, item)
+                            schedule_send_order(context['object'], current_status)
+                        else:
+                            new_instance = create_order(
+                                context['fields'],
+                                form.cleaned_data['status'],
+                                'П', item
+                            )
+                            schedule_send_order(new_instance, current_status)
 
-                new_context = {key: value for key, value in context['fields'].items()}
-                new_context['status'] = form.cleaned_data['status']
-                new_context['provision'] = 'З'
-                new_instance = save_order(new_context, _out_of_stock)
+                    if _out_of_stock:
+                        new_instance = create_order(
+                            context['fields'],
+                            form.cleaned_data['status'],
+                            'З', _out_of_stock
+                        )
+                        schedule_send_order(new_instance, current_status)
 
-                schedule_send_order(context['object'], current_status)
-                schedule_send_order(new_instance, current_status)
+                else:
+                    update_order(context['object'], self.request.POST, _in_stock)
+                    new_instance = create_order(
+                        context['fields'],
+                        form.cleaned_data['status'],
+                        'З', _out_of_stock
+                    )
+
+                    schedule_send_order(context['object'], current_status)
+                    schedule_send_order(new_instance, current_status)
 
             else:
                 context['object'].provision = 'З'
@@ -611,6 +635,13 @@ def save_order(order_params, order_items):
         return order_instance
 
 
+def create_order(order_params, status, provision, order_items):
+    context = {key: value for key, value in order_params.items()}
+    context['status'] = status
+    context['provision'] = provision
+    return save_order(context, order_items)
+
+
 def update_order(instance, order_params, order_items):
 
     def delete_instances():
@@ -780,37 +811,6 @@ def unload_orders(request, *args, **kwargs):
         serialized_orders.append(serialized_order)
 
     return JsonResponse(serialized_orders, status=200, safe=False)
-
-        # serialized_order = json.loads(
-        #     serialize('json', Order.objects.filter(pk=order.id))
-        # )
-        # for item in serialized_order:
-        #     item['fields']['client'] = json.loads(
-        #         serialize('json', Client.objects.filter(pk=item['fields']['client']))
-        #     )
-        #     item['fields']['manager'] = json.loads(
-        #         serialize('json', Manager.objects.filter(pk=item['fields']['manager']))
-        #     )
-
-        #     serialized_items = json.loads(serialize(
-        #         "json",
-        #         OrderItem.objects.filter(order_id=item['pk'])
-        #     ))
-        #     for order_item in serialized_items:
-        #         order_item['fields']['product'] = json.loads(
-        #             serialize('json', Product.objects.filter(pk=order_item['fields']['product']))
-        #         )
-        #         order_item['fields']['size'] = json.loads(
-        #             serialize('json', Size.objects.filter(pk=order_item['fields']['size']))
-        #         )
-        #         order_item['fields']['price_type'] = json.loads(
-        #             serialize('json', PriceType.objects.filter(pk=order_item['fields']['price_type']))
-        #         )
-        #     item['items'] = serialized_items
-
-        # serialized_orders.append(item)
-
-    # return JsonResponse(serialized_orders, status=200, safe=False)
 
 
 @api_view(['GET'])

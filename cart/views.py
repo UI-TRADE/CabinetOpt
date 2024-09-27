@@ -6,6 +6,7 @@ from django.db.models import Sum
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.core.exceptions import ValidationError
+from collections import defaultdict
 from contextlib import suppress
 
 from clients.login import Login
@@ -136,8 +137,8 @@ def edit_product(request, prod_id):
 def add_order(request):
     
     def split_products(cart):
-        cart_in_stock = []
         cart_out_of_stock = []
+        cart_in_stock = defaultdict(list)
 
         for item in cart:
             product_id = item['product']['id']
@@ -164,7 +165,7 @@ def add_order(request):
                 item['total_price'] = round(item['quantity'] * item['price'], 2)
 
             if item['quantity'] > 0:
-                cart_in_stock.append(item)
+                cart_in_stock[item['product']['metal']].append(item)
 
         return cart_in_stock, cart_out_of_stock
 
@@ -205,9 +206,12 @@ def add_order(request):
         cart_in_stock, cart_out_of_stock = [item for item in cart], []
 
     try:
-
-        if cart_in_stock: 
-            create_order(client, manager, order_status, 'П', cart_in_stock)
+        if cart_in_stock:
+            if isinstance(cart_in_stock, defaultdict):
+                for _, item in cart_in_stock.items():
+                    create_order(client, manager, order_status, 'П', item)
+            else: 
+                create_order(client, manager, order_status, 'П', cart_in_stock)
 
         if cart_out_of_stock:
             create_order(client, manager, order_status, 'З', cart_out_of_stock)

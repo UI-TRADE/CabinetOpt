@@ -31,6 +31,7 @@ class OrderItemForm(forms.ModelForm):
     nomenclature_size = forms.ChoiceField(required = False)
     price_per_gr = forms.DecimalField(required = False, validators=[MinValueValidator(0)])
     in_stock = forms.BooleanField()
+    metal = forms.CharField(max_length=50, required = False)
 
     class Meta:
         model = OrderItem
@@ -48,21 +49,23 @@ class OrderItemForm(forms.ModelForm):
             'nomenclature_size',
             'in_stock',
             'price_per_gr',
+            'metal',
         ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['discount'].required = False
-        self.fields['size'].required = False
-        self.fields['unit'].required = False
-        self.fields['in_stock'].required = False
-        self.fields['price_per_gr'].required = False
+        self.fields['discount'].required         = False
+        self.fields['size'].required             = False
+        self.fields['unit'].required             = False
+        self.fields['in_stock'].required         = False
+        self.fields['price_per_gr'].required     = False
 
-        self.fields['nomenclature'].initial = self.current_product(kwargs)
+        self.fields['nomenclature'].initial      = self.current_product(kwargs)
         self.fields['nomenclature_size'].choices = self.get_sizes()
-        self.fields['in_stock'].initial = self.get_in_stock(kwargs)
-        self.fields['price_per_gr'].initial = self.get_price_per_gr(kwargs)
+        self.fields['in_stock'].initial          = self.get_in_stock(kwargs)
+        self.fields['price_per_gr'].initial      = self.get_price_per_gr(kwargs)
+        self.fields['metal'].initial             = self.get_metal(kwargs)
 
     def current_product(self, kwargs):
         instance = kwargs.get('instance')
@@ -105,6 +108,11 @@ class OrderItemForm(forms.ModelForm):
 
         return 0
 
+    def get_metal(self, kwargs):
+        with suppress(AttributeError):
+            instance = kwargs.get('instance')
+            return instance.product.metal
+        return ''
 
 
 class OrderItemInlineForm(BaseInlineFormSet):
@@ -120,7 +128,7 @@ class OrderItemInlineForm(BaseInlineFormSet):
         for readonly_field in ['weight', 'price', 'discount', 'sum']:
             form.fields[readonly_field].widget.attrs['class'] = 'order__field form-control'
             form.fields[readonly_field].widget.attrs['readonly'] = True
-        for field in ['quantity', 'in_stock', 'price_per_gr']:
+        for field in ['quantity', 'in_stock', 'price_per_gr', 'metal']:
             form.fields[field].widget.attrs['class'] = 'order__field form-control'
 
     def clean(self):
@@ -144,6 +152,7 @@ OrderItemInline = inlineformset_factory(
         'product',
         'size',
         'in_stock',
+        'metal',
     ],
     extra=0,
     can_delete=True

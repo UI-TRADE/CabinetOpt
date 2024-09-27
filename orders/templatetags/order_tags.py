@@ -43,7 +43,10 @@ def first_product_image(id):
 @register.simple_tag
 def do_split(items):
     if items:
-        return any([item['in_stock'].value() for item in items])
+        return any(
+            [item['in_stock'].value() for item in items]+\
+            [len([item['metal'].value() for item in items]) > 1]
+        )
     return False
 
 
