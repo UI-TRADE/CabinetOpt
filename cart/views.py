@@ -14,8 +14,18 @@ from catalog.models import Product, Size, StockAndCost
 from .cart import Cart, CartExtension
 from .forms import CartAddProductForm
 from orders.views import save_order
+from utils.exceptions import handle_errors
+from settings_and_conditions.models import NotificationType
+from settings_and_conditions.utils import notification_scheduling
 
 from django.conf import settings
+
+
+@handle_errors()
+@notification_scheduling(NotificationType.CONFIM_ORDER)
+@notification_scheduling(NotificationType.GET_ORDER)
+def schedule_send_order(order, *params):
+    pass
 
 
 @require_POST
@@ -181,7 +191,7 @@ def add_order(request):
                 item['weight'] = round(item['quantity'] * item['weight'], 3)
             order_items.append(item)
 
-        save_order(
+        return save_order(
             {
                 'client'   : client,
                 'manager'  : manager,
@@ -209,12 +219,15 @@ def add_order(request):
         if cart_in_stock:
             if isinstance(cart_in_stock, defaultdict):
                 for _, item in cart_in_stock.items():
-                    create_order(client, manager, order_status, 'П', item)
+                    order_instance = create_order(client, manager, order_status, 'П', item)
+                    schedule_send_order(order_instance, order_status)
             else: 
-                create_order(client, manager, order_status, 'П', cart_in_stock)
+                order_instance = create_order(client, manager, order_status, 'П', cart_in_stock)
+                schedule_send_order(order_instance, order_status)
 
         if cart_out_of_stock:
-            create_order(client, manager, order_status, 'З', cart_out_of_stock)
+            order_instance = create_order(client, manager, order_status, 'З', cart_out_of_stock)
+            schedule_send_order(order_instance, order_status)
 
     except ValidationError as errors:
         for error in json.loads(errors.message):

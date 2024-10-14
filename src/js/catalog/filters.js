@@ -372,14 +372,21 @@ export function filtersAndSortingEvents() {
         document.getElementById('products').innerHTML = "";
         const parent = $(event.target).closest('li');
         if (parent.length) {
-            $(parent).find('.filter-item-title-active').each((_, element) => {
+            const activeItems = $(parent).find('.filter-item-title-active');
+            if (activeItems.length) {
                 const filters = JSON.parse(sessionStorage.getItem('filters'));
-                selectMenuItem(element, filters);
-            });
+                selectMenuItem(activeItems[0], filters);
+            }
+            // .each((_, element) => {
+            //     const filters = JSON.parse(sessionStorage.getItem('filters'));
+            //     selectMenuItem(element, filters);
+            // });
         } else {
             sessionStorage.setItem('filters', JSON.stringify([{'in_stock': true}]));
             deselectMenuItems();
             selectedFiltersBadges.update([]);
+            $('.search-badges__list')?.css('display', 'none');
+            $('#form-product-find input')?.val('');
         }
         currentSpin = createSpiner($('.main-content')[0]);
         showCatalog();

@@ -7,8 +7,8 @@ from clients.models import Client
 
 
 @launch_mailing()
-def send_outgoing_mail(obj):
-    return obj
+def send_outgoing_mail(patams):
+    return OutgoingMail.objects.get(id=patams['id'])
 
 
 class OutgoingMailSentFilter(admin.SimpleListFilter):
@@ -58,7 +58,7 @@ class OutgoingMailAdmin(SummernoteModelAdmin):
     @admin.action(description='Поместить в очередь отправки')
     def put_in_mail_queue(self, request, queryset):
         for obj in queryset:
-            send_outgoing_mail(obj)
+            send_outgoing_mail({'id': obj.id})
 
 
 @admin.register(MailingOfLetters)
