@@ -1,12 +1,15 @@
 import csv
 from contextlib import suppress
 from django.contrib import admin
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import path, reverse
+from django.shortcuts import render
 from django.db.models import Avg, Sum
 from django.utils.html import format_html
 
 from .models import (
-    CollectionGroup,
+    СategoryGroup,
+    Сategory,
     Collection,
     Brand,
     ProductImage,
@@ -26,15 +29,17 @@ from .models import (
     Design,
     Style,
 )
+from .forms import FileSelectionForm
 
-class CollectionInLine(admin.TabularInline):
-    model = Collection
+
+class СategoryInLine(admin.TabularInline):
+    model = Сategory
     fk_name = 'group'
     extra = 0
     fields = ('name',)
 
-    verbose_name = 'вид коллекции'
-    verbose_name_plural = 'виды коллекций'
+    verbose_name = 'вид товарной категории'
+    verbose_name_plural = 'виды товарных категорий'
 
 
 class GenderInLine(admin.TabularInline):
@@ -67,6 +72,29 @@ class DesignInLine(admin.TabularInline):
     classes = ('collapse', )
     verbose_name = "Дизайн"
     verbose_name_plural = "Дизайны"
+
+
+class ProductInLine(admin.TabularInline):
+    model = Product
+    can_delete = False
+    extra = 0
+    fields = ['articul', 'name', 'item_link']
+    readonly_fields = ('articul', 'name', 'item_link')
+
+    verbose_name = "Продукт"
+    verbose_name_plural = "Продукты"
+
+    def item_link(self, obj):
+        if obj.pk:
+            url = reverse('admin:catalog_product_change', args=[obj.pk])
+            return format_html('<a href="{}">Редактировать</a>', url)
+    item_link.short_description = "Ссылка"
+
+    # def get_queryset(self, request):
+    #     qs = super().get_queryset(request)
+    #     if self.parent_object:
+    #         return qs.filter(order=self.parent_object)
+    #     return qs.none()
 
 
 class ProductImageInLine(admin.TabularInline):
@@ -150,15 +178,15 @@ class BrandAdmin(admin.ModelAdmin):
     readonly_fields = ['identifier_1C',]
 
 
-@admin.register(CollectionGroup)
-class CollectionGroupAdmin(admin.ModelAdmin):
+@admin.register(СategoryGroup)
+class СategoryGroupAdmin(admin.ModelAdmin):
     search_fields = ['order', 'name',]
     fields = ['order', 'name',]
-    inlines = [CollectionInLine,]
+    inlines = [СategoryInLine,]
 
 
-@admin.register(Collection)
-class CollectionAdmin(admin.ModelAdmin):
+@admin.register(Сategory)
+class СategoryAdmin(admin.ModelAdmin):
     search_fields = [
         'group',
         'name',
@@ -243,14 +271,15 @@ class ProductAdmin(admin.ModelAdmin):
         'status',
         'gem_set',
         'brand',
-        'collection',
+        'сategory',
+        'сollection',
     ]
     fields = [
         'image_tag',
         'product_type',
         'status',
         ('name', 'articul', 'unit'),
-        ('brand', 'collection'),
+        ('brand', 'сategory', 'сollection'),
         ('metal', 'metal_content', 'color', 'str_color'),
         ('show_on_site', 'available_for_order'),
         ('lock_type_earings', 'lock_type_chain', 'lock_type_bracelet'),
@@ -264,7 +293,8 @@ class ProductAdmin(admin.ModelAdmin):
         ProductImageFilter,
         ProductPriceFilter,
         'brand',
-        'collection',
+        'сategory',
+        'сollection',
         'product_type',
         'status',
         'metal',
@@ -300,7 +330,8 @@ class ProductAdmin(admin.ModelAdmin):
         'status',
         'gem_set',
         'brand',
-        'collection',
+        'сategory',
+        'сollection',
     )
     actions = ['export_as_csv']
 
@@ -531,3 +562,65 @@ class DesignAdmin(admin.ModelAdmin):
 class StyleAdmin(admin.ModelAdmin):
     search_fields = ['name',]
     fields = ['name',]
+
+
+@admin.register(Collection)
+class CollectionAdmin(admin.ModelAdmin):
+    search_fields = [
+        'name',
+    ]
+    list_display = [
+        'name',
+    ]
+    fields = [
+        'name',
+    ]
+    inlines = [ProductInLine,]
+    actions = ['upload_csv_action',]
+
+    def __init__(self, *args, **kwargs):
+        self.qs = Collection.objects.none()
+        super().__init__(*args, **kwargs)
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                'upload-csv/',
+                self.admin_site.admin_view(self.upload_csv),
+                name="upload-csv"
+            ),
+        ]
+        return custom_urls + urls
+
+    @admin.action(description='Загрузить из csv файла')
+    def upload_csv_action(self, request, queryset):
+        self.qs = queryset
+        return self.upload_csv(request)
+
+    def upload_csv(self, request):
+        if request.method == "POST":
+            form = FileSelectionForm(request.POST, request.FILES)
+            if form.is_valid():
+                csv_file = request.FILES['file_path']
+                decoded_file = csv_file.read().decode('utf-8').splitlines()
+                reader = csv.reader(decoded_file)
+
+                for row in reader:
+                    with suppress(IndexError, Product.DoesNotExist):
+                        product = Product.objects.get(articul=row[0])
+                        product.сollection = self.qs.first()
+                        product.save()
+
+                self.message_user(request, "Файл успешно загружен и обработан")
+                return HttpResponseRedirect(reverse('admin:catalog_collection_changelist'))
+        else:
+            form = FileSelectionForm()
+
+        return render(
+            request,
+            'admin/csv_upload_form.html',
+            {
+                'form': form,
+                'action_url': reverse('admin:upload-csv')
+        })

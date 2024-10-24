@@ -94,7 +94,8 @@ $(document).ready(() => {
                 sessionStorage.setItem('filters', response.filters);
             if ('sorting' in response)
                 sessionStorage.setItem('sorting', response.sorting);
-            window.location.replace(response.path);
+            // window.location.replace(response.path);
+            window.history.pushState({}, "", response.path);
         }
     })
     .always(() => {

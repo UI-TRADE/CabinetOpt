@@ -89,11 +89,16 @@
                 {% if product.brand %}
                     <li>{{ product.brand|upper }}</li>
                 {% endif %}
-                {% if product.collection.group %}
-                    <li>{{ product.collection.group|lower|title }} {{ product.collection|lower }}</li>
+                {% if product.сategory.group %}
+                    <li>{{ product.сategory.group|lower|title }} {{ product.сategory|lower }}</li>
                 {% endif %}
-                {% if product.collection.group %}
+                {% if product.сategory.group %}
                     <li>{{ product.str_color|default:product.color }}</li>
+                {% endif %}
+                {% if product.сollection %}
+                    {% with param="сollection__name"|addparam:product.сollection.name %}
+                    <li class="product-detail__list-unstyled__link" data-url="{% url 'shared_links:create' param|tojson %}">коллекция: {{ product.сollection|upper }}</li>
+                    {% endwith %}
                 {% endif %}
             </ul>
         </div>

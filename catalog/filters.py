@@ -132,7 +132,6 @@ class SearchFilter(object):
         ).order_by('custom_order')
 
 
-
 class SizeFilterTree(FilterTree):
 
     def __init__(self, qs=None):
@@ -181,8 +180,8 @@ class SizeFilterTree(FilterTree):
                         root['nodes'] = self.__serialize_node(root[root_field], node_qs, node_fields)
                         root['count'] = len(root['nodes'])
                             
-                root['collection__group__name'] = root.pop('product__collection__group__name')
-                self.tree.append(self.__serialize_root(root, 'collection__group__name'))
+                root['сategory__group__name'] = root.pop('product__сategory__group__name')
+                self.tree.append(self.__serialize_root(root, 'сategory__group__name'))
 
 
 class CharInFilter(BaseInFilter, CharFilter):
@@ -199,12 +198,13 @@ class ProductFilter(django_filters.FilterSet):
     str_color                        = CharInFilter(field_name = 'str_color', lookup_expr='in')
     metal_content                    = CharInFilter(field_name = 'metal_content', lookup_expr='in')
     brand__name                      = CharInFilter(field_name = 'brand__name', lookup_expr='in')
+    сollection__name                 = CharInFilter(field_name = 'сollection__name', lookup_expr='in')
     status                           = CharInFilter(field_name = 'status', lookup_expr='in')
-    collection__group__name          = CharInFilter(field_name = 'collection__group__name', lookup_expr='in')
-    collection__name                 = CharInFilter(field_name = 'collection__name', lookup_expr='in')
+    сategory__group__name            = CharInFilter(field_name = 'сategory__group__name', lookup_expr='in')
+    сategory__name                   = CharInFilter(field_name = 'сategory__name', lookup_expr='in')
     gender__name                     = CharInFilter(field_name = 'gender__name', lookup_expr='in')
     in_stock                         = BooleanFilter(method='in_stock_filter')
-    product__collection__group__name = CharFilter(method='size_filter')    
+    product__сategory__group__name   = CharFilter(method='size_filter')    
     size__name                       = CharFilter(method='size_filter')
     # precious_stone__name             = CharFilter(method='gems_filter')
     precious_filter                  = CharFilter(method='gems_filter')
@@ -321,6 +321,6 @@ class ProductFilter(django_filters.FilterSet):
     
 
     def search_filter(self, queryset, name, value):
-        fields = ['articul__iregex', 'name__iregex', 'mark_description__iregex', 'gem_sets__precious_stone__name']
+        fields = ['articul__iregex', 'name__iregex', 'сollection__name__iregex', 'mark_description__iregex', 'gem_sets__precious_stone__name']
         search_obj = SearchFilter(queryset.prefetch_related('gem_sets'), fields, value)
         return search_obj.get_filtered_qs(search_obj.apply_filter())

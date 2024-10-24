@@ -30,25 +30,26 @@ class TrimCharField(models.CharField):
         return super().pre_save(model_instance, add)
 
 
-class CollectionGroup(models.Model):
+
+class СategoryGroup(models.Model):
     name = models.CharField('Наименование', max_length=100, db_index=True)
     order = models.PositiveIntegerField(
         'Порядок', default=1, validators=[MinValueValidator(0)]
     )
     class Meta:
-        verbose_name = 'Коллекция'
-        verbose_name_plural = 'Коллекции'
+        verbose_name = 'Группа товара'
+        verbose_name_plural = 'Группы товаров'
 
     def __str__(self):
         return self.name
 
 
-class Collection(models.Model):
+class Сategory(models.Model):
     group = models.ForeignKey(
-        CollectionGroup,
+        СategoryGroup,
         on_delete=models.PROTECT,
         verbose_name='Группа',
-        related_name='collections',
+        related_name='сategories',
         db_index=True,
     )
     name = models.CharField('Наименование', max_length=100, db_index=True)
@@ -64,8 +65,19 @@ class Collection(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Вид коллекции'
-        verbose_name_plural = 'Виды коллекций'
+        verbose_name = 'Подгруппа товара'
+        verbose_name_plural = 'Подгруппы товаров'
+
+    def __str__(self):
+        return self.name
+
+
+class Collection(models.Model):
+    name = models.CharField('Наименование', max_length=100, db_index=True)
+
+    class Meta:
+        verbose_name = 'Коллекция'
+        verbose_name_plural = 'Коллекции'
 
     def __str__(self):
         return self.name
@@ -189,13 +201,13 @@ class Product(models.Model):
 
     name = models.CharField('Наименование', max_length=200, db_index=True)
     articul = models.CharField('Артикул', max_length=200, blank=True)
-    collection = models.ForeignKey(
-        Collection,
+    сategory = models.ForeignKey(
+        Сategory,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        verbose_name='Коллекция',
-        related_name='collection_products',
+        verbose_name='Группа',
+        related_name='сategory_products',
         db_index=True,
     )
     brand = models.ForeignKey(
@@ -205,6 +217,15 @@ class Product(models.Model):
         on_delete=models.SET_NULL,
         verbose_name='Бренд',
         related_name='brand_products'        
+    )
+    сollection = models.ForeignKey(
+        Collection,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        verbose_name='Коллекция',
+        related_name='сollection_products',
+        db_index=True,
     )
     unit = models.CharField(
         'Единица измерения',
@@ -413,10 +434,10 @@ class StockAndCostQuerySet(models.QuerySet):
                 product_id__in = client_prices.values_list('product_id', flat=True)
             ) | client_prices
     
-        collections = products.annotate(
-            collection_name=F('collection__name'),
-            collection_group=F('collection__group__name')
-        ).values('id', 'collection_name', 'collection_group')
+        сategories = products.annotate(
+            сategory_name=F('сategory__name'),
+            сategory_group=F('сategory__group__name')
+        ).values('id', 'сategory_name', 'сategory_group')
         
         if kwargs.get('size', ''):
             stocks_and_costs = stocks_and_costs.filter(size_name__in=kwargs['size'])
@@ -426,7 +447,7 @@ class StockAndCostQuerySet(models.QuerySet):
             #     ).values_list('pk', flat=True)
             # )
 
-        return collections, products, stocks_and_costs, prices, discount_prices
+        return сategories, products, stocks_and_costs, prices, discount_prices
 
     def default_stocks_and_costs(self, products_ids, **kwargs):
         result = StockAndCost.objects.none()

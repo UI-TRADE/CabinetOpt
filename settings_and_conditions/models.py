@@ -243,7 +243,7 @@ class CatalogFilter(SingletonModel):
     metal_finish = models.BooleanField('обработка металлов', default=False)
     brands = models.BooleanField('бренд', default=False)
     prod_status = models.BooleanField('маркетинговый статус', default=False)
-    collections = models.BooleanField('коллекции', default=True)
+    сategories = models.BooleanField('группы товаров', default=True)
     genders = models.BooleanField('для кого', default=False)
     sizes = models.BooleanField('размеры', default=True)
     gems = models.BooleanField('вставки', default=True)

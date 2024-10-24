@@ -9,10 +9,10 @@ from django.core.exceptions import ValidationError
 
 from clients.models import Client
 from catalog.models import (
+    СategoryGroup,
+    Сategory,
     Product,
     ProductImage,
-    CollectionGroup,
-    Collection,
     Brand,
     MetalFinish,
     StockAndCost,
@@ -39,7 +39,7 @@ def run_uploading_products(uploading_products):
                     defaults = {
                         'name'               : item['nomenclature']['Наименование'],
                         'articul'            : item['articul'],
-                        'collection'         : update_or_create_collection(item['collection'], item['group']),
+                        'category'           : update_or_create_category(item['collection'], item['group']),
                         'brand'              : update_or_create_brand(item['brand']),
                         'unit'               : item['unit'],
                         'available_for_order': True,
@@ -143,11 +143,11 @@ def run_uploading_products(uploading_products):
     return errors
 
 
-def update_or_create_collection_group(group):
+def update_or_create_category_group(group):
     if not group:
         return
     
-    group_obj, _ = CollectionGroup.objects.update_or_create(name=group.strip())
+    group_obj, _ = СategoryGroup.objects.update_or_create(name=group.strip())
     return group_obj
 
 
@@ -173,27 +173,27 @@ def update_or_create_brand(brand):
     return brand_obj
 
 
-def update_or_create_collection(collection, group):
-    if not collection:
+def update_or_create_category(category, group):
+    if not category:
         return
 
-    identifier_1C = collection['Идентификатор']
+    identifier_1C = category['Идентификатор']
     if identifier_1C == '00000000-0000-0000-0000-000000000000':
         return
     
-    if collection['Удален']:
-        found_collecion = Collection.objects.get(identifier_1C=identifier_1C)
+    if category['Удален']:
+        found_collecion = Сategory.objects.get(identifier_1C=identifier_1C)
         found_collecion.delete()
         return
     
-    collection_obj, _ = Collection.objects.update_or_create(
+    category_obj, _ = Сategory.objects.update_or_create(
         identifier_1C=identifier_1C,
         defaults={
-            'name': collection['Наименование'].strip(),
-            'group': update_or_create_collection_group(group)
+            'name': category['Наименование'].strip(),
+            'group': update_or_create_category_group(group)
     })
 
-    return collection_obj
+    return category_obj
 
 
 def update_or_create_gender(genders):

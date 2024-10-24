@@ -29,3 +29,7 @@ class ProductFilterForm(forms.Form):
                 self.fields[readonly_field].widget.attrs['disabled'] = True
                 continue
             self.fields[readonly_field].widget.attrs['readonly'] = True
+
+
+class FileSelectionForm(forms.Form):
+    file_path = forms.FileField(label='Выберите CSV файл', validators = [], widget=forms.FileInput())

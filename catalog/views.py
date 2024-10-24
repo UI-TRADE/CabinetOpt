@@ -5,7 +5,6 @@ import logging
 from contextlib import suppress
 from django.shortcuts import render
 from django.core import management
-from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
@@ -25,8 +24,11 @@ from .filters import FilterTree, SizeFilterTree, ProductFilter
 from cart.cart import Cart
 from clients.login import Login
 from catalog.models import (
-    Product, ProductImage, StockAndCost, Price,
-    ProductsSet, GemSet, SimilarProducts
+    Product,
+    ProductImage,
+    StockAndCost,
+    GemSet,
+    SimilarProducts
 )
 
 from settings_and_conditions.models import CatalogFilter, Banner
@@ -91,10 +93,10 @@ class FiltersView(TemplateView):
                 filters['brands'] = self.get_filter(qs, 'count', 'brand__name')
             if filter_settings.prod_status:
                 filters['prod_status'] = self.get_filter(qs, 'count', 'status')
-            if filter_settings.collections:
-                filters['collections'] = self.get_filter(
-                    qs, 'count', 'collection__group__name', 'collection__name',
-                    root_order=['collection__group__order']
+            if filter_settings.сategories:
+                filters['сategories'] = self.get_filter(
+                    qs, 'count', 'сategory__group__name', 'сategory__name',
+                    root_order=['сategory__group__order']
                 )
             if filter_settings.genders:
                 filters['genders'] = self.get_filter(
@@ -103,7 +105,7 @@ class FiltersView(TemplateView):
             if filter_settings.sizes:
                 filters['sizes'] = self.get_filter(
                     StockAndCost.objects.filter(product__in=qs),
-                    'sum', 'product__collection__group__name', 'size__name',
+                    'sum', 'product__сategory__group__name', 'size__name',
                     node_order=['size__size_from']
                 )
             if filter_settings.gems:
@@ -128,6 +130,7 @@ class FiltersView(TemplateView):
             if filter_settings.price_range:
                 filters['price-range'] = self.get_filter()
 
+            filters['сollections'] = self.get_filter(qs, 'count', 'сollection__name')
             hide_count_of_products = filter_settings.hide_count_of_products
 
         return filters, hide_count_of_products
@@ -151,7 +154,7 @@ class ProductView(FiltersView, ListView):
     context_object_name = 'products'
     allow_empty, filters, sorting, paginate_by = True, [], {}, 72
 
-    def get(self, request, *args, **kwargs): 
+    def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
     @handle_post_params()
@@ -207,7 +210,7 @@ class ProductView(FiltersView, ListView):
                 if cache_handler.cache is None:
                     cache_handler.cache, _ = self.get_filters(products)
             filters = cache_handler.cache
-    
+
             with use_cache('product_filters', self.filters, 60*30) as cache_handler:
                 if cache_handler.cache is None:
                     filtered_products = ProductFilter(parsed_filter, queryset=products)

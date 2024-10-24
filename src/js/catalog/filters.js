@@ -66,7 +66,24 @@ class FilterBadges {
                     return $(element).data("json")['ident'] === filter['ident'];
                 }
             });
-            $(foundFilters[0]).trigger("click");
+            if (foundFilters.length) $(foundFilters[0]).trigger("click");
+            else {
+                const current_filter_key = Object.keys(filter).find(_ => true);
+                const current_filters = JSON.parse(sessionStorage.getItem('filters'));
+                const found_filter = current_filters.findIndex(item => current_filter_key in item);
+                if (found_filter !== -1) {
+                    const filters = [
+                        ...current_filters.slice(0, found_filter),
+                        ...current_filters.slice(found_filter+1)
+                    ];
+                    document.getElementById('products').innerHTML = "";
+                    currentSpin = createSpiner($('.main-content')[0]);
+                    sessionStorage.setItem('filters', JSON.stringify(filters));
+                    selectedFiltersBadges.update(filters);
+                    showCatalog();
+                }
+            
+            }
         }
     }
 }
@@ -492,6 +509,22 @@ export function filtersAndSortingEvents() {
             sessionStorage.setItem('filters', JSON.stringify(filters));
             showCatalog();
         }   
+    });
+
+    $(document).on('click', '.product-detail__list-unstyled__link', event => {
+        const url = $(event.currentTarget).data('url') || ''
+        if (url) {
+            $.ajax({
+                url: url,
+                data: {'target': '/catalog/products/'},
+                success: (response) => {
+                    if (response && 'link' in response && response['link']) {
+                        location.replace(response['link']);
+                    }
+                }    
+            });    
+        }
+
     });
 }
 

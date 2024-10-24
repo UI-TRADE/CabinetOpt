@@ -147,20 +147,20 @@
                 </ul>
             </li>
             {% endif %}
-            {% if "collections" in filters %}
-            <li id="collections">
+            {% if "сategories" in filters %}
+            <li id="сategories">
                 <div class="d-xl-flex row filter-item top-node"><img class="d-xl-flex f-open" src="{% static 'img/f-open.svg' %}" style="padding: 0px;">
                     <div style="width: 5px; margin-left: 8px;"></div>
                     <span class="filter-item-title">Тип ювелирных изделий</span>
                     <span class="reset">Сбросить</span>
                 </div>
                 <ul style="padding: 0px;">
-                    {% for item in filters.collections.tree %}
+                    {% for item in filters.сategories.tree %}
                         <li class="filter-item-title-hidden" name="bundle">
                             <div class="d-xl-flex row filter-item slave-node">
                                 <img class="d-xl-flex f-open item-close" src="{% static 'img/f-open.svg' %}" style="padding: 0px;" width="12" height="17">
                                 <div style="width: 5px; margin-left: 8px;"></div>
-                                <span class="filter-point filter-item-title" name="{{item.ident}}" data-json="{{item|filtertojson}}">{{ item.collection__group__name }}
+                                <span class="filter-point filter-item-title" name="{{item.ident}}" data-json="{{item|filtertojson}}">{{ item.сategory__group__name }}
                                     {% if hide_count_of_products %}
                                     <span class="count"></span>
                                     {% endif %}
@@ -200,7 +200,7 @@
                                                     name="{{node.ident}}"
                                                     data-json="{{ root_params|updateparam:node_params }}"
                                                     style="font-weight: normal !important;">
-                                                        {{ node.collection__name }}
+                                                        {{ node.сategory__name }}
                                                     {% if hide_count_of_products %}
                                                     <span class="count"></span>
                                                     {% endif %}
