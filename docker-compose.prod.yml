@@ -6,6 +6,7 @@ services:
       context: ./
       dockerfile: Dockerfile.prod
     container_name: CabinetOpt
+    restart: always
     command: gunicorn CabinetOpt.wsgi:application --bind 0.0.0.0:8000 --timeout 3600
     volumes:
       - static_volume:/home/app/web/staticfiles
@@ -44,6 +45,7 @@ services:
       context: ./
       dockerfile: Dockerfile.prod
     container_name: CabinetOpt_RQWorker
+    restart: always
     command: python manage.py rqworker default --with-scheduler
     volumes:
       - static_volume:/home/app/web/staticfiles
