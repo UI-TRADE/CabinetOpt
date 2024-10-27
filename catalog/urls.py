@@ -7,9 +7,9 @@ app_name = "catalog"
 urlpatterns = [
     path('filters/'                       , views.FiltersView.as_view()),
     path('products/'                      , views.ProductView.as_view(), name='products'),
-    path('products/<str:key>/'            , views.ProductView.as_view()),
-    path('сertificates/'                  , views.CertificateView.as_view(), name='сertificates'),
-    path('services/'                      , views.ServiceView.as_view(), name='services'),
+    # path('products/<str:key>/'            , views.ProductView.as_view()),
+    # path('сertificates/'                  , views.CertificateView.as_view(), name='сertificates'),
+    # path('services/'                      , views.ServiceView.as_view(), name='services'),
     path('product/<slug:prod_id>/'        , views.ProductCardView.as_view(), name='product'),
     path('upload/products'                , views.upload_products),
     path('remove/images/<slug:prod_id>'   , views.remove_images),
