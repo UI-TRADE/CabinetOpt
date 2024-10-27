@@ -15,6 +15,7 @@ postgres-data
 *.env.stage
 *.env.prod
 static
+staticfiles
 media/*
 !media/cut_type_images
 mediafiles
