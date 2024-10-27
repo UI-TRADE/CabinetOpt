@@ -1,0 +1,26 @@
+{% extends "main.html" %}
+{% load static %}
+
+{% block page %}
+	{% block content %}
+
+        <div class="container-fluid error-messages">
+            <div class="title">{{ title }}</div>
+            <div class="row">
+                <span class="error-title error-messages__common-position">Ой... К сожалению,</span>
+                <span class="error-title error-messages__common-position">страница не найдена :(</span>
+            </div>
+            <div class="row">
+                <div class="error-content error-messages__common-position">
+                    <span style="width:531px;word-wrap:break-word;display:inline-block;">
+                        {{ error_message }}
+                    </span>
+                </div>
+            </div>
+            <div class="row error-messages__common-position">
+                <button id="in-catalog">В каталог</button>
+            </div>
+        </div>
+
+    {% endblock %}
+{% endblock %}

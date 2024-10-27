@@ -459,7 +459,7 @@ export function filtersAndSortingEvents() {
     $(document).on('click', '#in-catalog', event => {
         event.preventDefault();
         const inputFindField = $('#form-product-find').children('input');
-        if (inputFindField) {
+        if (inputFindField.length) {
             currentSpin = createSpiner($('.main-content')[0]);
             inputFindField.val('');
             const filters = JSON.parse(sessionStorage.getItem('filters'));
@@ -467,6 +467,8 @@ export function filtersAndSortingEvents() {
             if (searchFilter) filters.splice(filters.indexOf(searchFilter), 1);
             sessionStorage.setItem('filters', JSON.stringify(filters));
             showCatalog();
+        } else {
+            window.location.replace('/catalog/products/');
         }
     });
    

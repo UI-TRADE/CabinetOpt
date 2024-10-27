@@ -19,6 +19,14 @@ from django.shortcuts import render
 from django.conf import settings
 from django.conf.urls.static import static
 
+from . import views
+from .views import custom_404_handler, custom_500_handler, custom_403_handler
+
+
+handler404 = custom_404_handler
+handler500 = custom_500_handler
+handler403 = custom_403_handler
+
 urlpatterns = [
     path('admin/'       , admin.site.urls),
     path('api-auth/'    , include('rest_framework.urls')),
@@ -32,6 +40,7 @@ urlpatterns = [
     path('django-rq/'   , include('django_rq.urls')),
     path('shared_links/', include('shared_links.urls')),
     path('', render, kwargs={'template_name': 'index.html'}, name='start_page'),
+    path('forbidden/'   , views.forbidden_view, name='forbidden_view'),
 ]
 
 urlpatterns += [

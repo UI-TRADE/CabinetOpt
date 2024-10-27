@@ -1,0 +1,46 @@
+.error-messages {
+
+    margin-top: 100px;
+
+    &__common-position {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+        height: 44px;
+    }
+
+    .title {
+        display: none;
+    }
+
+    .row {
+        margin-bottom: 30px;
+    }
+
+    .row:last-child {
+        margin-bottom: 500px;
+    }
+    
+    .error-title {
+        font-family: "Cormorant Garamond";
+        font-weight: 700;
+        font-size: 36px;
+    }
+
+    .error-content {
+        font-family: "Open Sans";
+        font-weight: 400;
+        font-size: 16px;
+    }
+
+    button {
+        border: none;
+        border-radius: 3px;
+        color: white;
+        width: 156px; height: 38px;
+        background-color: #E3A358;
+        font-weight: 700;
+        font-size: 16px;
+    }
+
+}

@@ -79,6 +79,15 @@
             url("../fonts/OpenSans-BoldItalic.ttf") format("truetype");
 
 }
+@font-face {
+    font-family: "Cormorant Garamond";
+    font-weight: bold;
+    font-style: normal;
+
+    src: local("CormorantGaramond-Bold"),
+            url("../fonts/CormorantGaramond-Bold.ttf") format("truetype");
+
+}
 
 body {
     background-color: #fafbf6!important;
