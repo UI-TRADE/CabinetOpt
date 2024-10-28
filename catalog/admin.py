@@ -1,4 +1,3 @@
-import csv
 from contextlib import suppress
 from django.contrib import admin
 from django.http import HttpResponse, HttpResponseRedirect
@@ -30,7 +29,7 @@ from .models import (
     Style,
 )
 from .forms import FileSelectionForm
-
+from utils.file_handlers import read_csv_inmemory
 
 class СategoryInLine(admin.TabularInline):
     model = Сategory
@@ -602,13 +601,12 @@ class CollectionAdmin(admin.ModelAdmin):
         if request.method == "POST":
             form = FileSelectionForm(request.POST, request.FILES)
             if form.is_valid():
-                csv_file = request.FILES['file_path']
-                decoded_file = csv_file.read().decode('utf-8').splitlines()
-                reader = csv.reader(decoded_file)
-
+                reader = read_csv_inmemory(request.FILES['file_path'])
                 for row in reader:
                     with suppress(IndexError, Product.DoesNotExist):
-                        product = Product.objects.get(articul=row[0])
+                        products = Product.objects.filter(articul=row[0])
+                        if not products: raise Product.DoesNotExist
+                        product = products.first()
                         product.сollection = self.qs.first()
                         product.save()
 
