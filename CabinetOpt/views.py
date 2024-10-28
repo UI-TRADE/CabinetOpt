@@ -4,7 +4,7 @@ from django.shortcuts import render
 def custom_404_handler(request, exception):
     return render(request=request, template_name='components/errors/404.html', status=404, context={
         'title': 'Страница не найдена: 404',
-        'error_message': 'Страницы по данной ссылке не существует. Перейдите в «Каталог». Или воспользуйтесь фильтром.', 
+        'error_message': 'Страницы по данной ссылке не существует. Перейдите в «Каталог».', 
     })
 
 def custom_500_handler(request):
