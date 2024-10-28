@@ -11,6 +11,7 @@ services:
     volumes:
       - static_volume:/home/app/web/staticfiles
       - media_volume:/home/app/web/mediafiles
+      - maintenance_volume:/maintenance
     expose:
       - 8000
     env_file:
@@ -75,6 +76,7 @@ services:
     volumes:
       - static_volume:/home/app/web/staticfiles
       - media_volume:/home/app/web/mediafiles
+      - maintenance_volume:/maintenance
       - ./certbot/conf:/etc/letsencrypt:ro
       - ./certbot/www:/var/www/certbot:ro
 
@@ -99,3 +101,4 @@ volumes:
   postgres_data:
   static_volume:
   media_volume:
+  maintenance_volume:
