@@ -8,22 +8,27 @@ def custom_404_handler(request, exception):
     })
 
 def custom_500_handler(request):
-    import pdb; pdb.set_trace()
-    return render(request=request, template_name='components/errors/500.html', status=404, context={
-        'title': 'Ошибка на сервере: 500',
-        'error_message': 'Мы уже работаем над ее устранением. Перейдите в «Каталог».', 
-    })
+    if request.path.startswith('/admin'):
+        return render(request=request, template_name='admin/errors/500.html', status=500, context={
+            'title': 'Ошибка на сервере: 500',
+            'error_message': 'Мы уже работаем над ее устранением.', 
+        })
+    else:
+        return render(request=request, template_name='components/errors/500.html', status=500, context={
+            'title': 'Ошибка на сервере: 500',
+            'error_message': 'Мы уже работаем над ее устранением. Перейдите в «Каталог».', 
+        })
 
 
 def custom_403_handler(request, exception):
-    return render(request=request, template_name='components/errors/403.html', status=404, context={
+    return render(request=request, template_name='components/errors/403.html', status=403, context={
         'title': 'Ошибка проверки подлинности: 403',
         'error_message': 'Обновите страницу и попробуйте заново.', 
     })
 
 
 def forbidden_view(request):
-    return render(request=request, template_name='components/errors/403.html', status=404, context={
+    return render(request=request, template_name='components/errors/403.html', status=403, context={
         'title': 'Ошибка проверки подлинности: 403',
         'error_message': 'Обновите страницу и попробуйте заново.', 
     })
