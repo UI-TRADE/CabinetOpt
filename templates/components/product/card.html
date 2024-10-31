@@ -24,20 +24,16 @@
                 {% endif %}
             </div>
             <div class="col col-12">
-                <div id="product-carousel-{{ product.id }}" class="carousel slide" data-ride="carousel">
+                <div id="product-carousel-{{ product.id }}" class="carousel">
                     <div class="carousel-inner">
-                        {% for image in product.get_images|slice:":7" %}
-                            <div class="carousel-item{% if forloop.first %} active{% endif %}">
-                                <figure>
-                                    <img
-                                        data-src="{{ image }}"
-                                        class="lazy img-fluid rounded img-thumbnail thumbnail-210"
-                                        alt="{{ product.name }}"
-                                        style="border: none; text-indent: -9999999px;"
-                                    >
-                                </figure>
-                            </div>
-                        {% endfor %}
+                        <figure>
+                            <img
+                                data-src="{{ product.get_images|first }}"
+                                class="lazy img-fluid rounded img-thumbnail thumbnail-210"
+                                alt="{{ product.name }}"
+                                style="border: none; text-indent: -9999999px;"
+                            >
+                        </figure>
                     </div>
                 </div>
             </div>
