@@ -39,7 +39,7 @@ def run_uploading_products(uploading_products):
                     defaults = {
                         'name'               : item['nomenclature']['Наименование'],
                         'articul'            : item['articul'],
-                        'category'           : update_or_create_category(item['collection'], item['group']),
+                        'сategory'           : update_or_create_category(item['collection'], item['group']),
                         'brand'              : update_or_create_brand(item['brand']),
                         'unit'               : item['unit'],
                         'available_for_order': True,
@@ -147,7 +147,10 @@ def update_or_create_category_group(group):
     if not group:
         return
     
-    group_obj, _ = СategoryGroup.objects.update_or_create(name=group.strip())
+    group_obj = СategoryGroup.objects.filter(name=group.strip()).first()
+    if not group_obj:   
+        group_obj = СategoryGroup.objects.create(name=group.strip())
+
     return group_obj
 
 
@@ -180,7 +183,7 @@ def update_or_create_category(category, group):
     identifier_1C = category['Идентификатор']
     if identifier_1C == '00000000-0000-0000-0000-000000000000':
         return
-    
+
     if category['Удален']:
         found_collecion = Сategory.objects.get(identifier_1C=identifier_1C)
         found_collecion.delete()
