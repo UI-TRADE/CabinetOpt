@@ -3,6 +3,7 @@ from django import template
 from contextlib import suppress
 from catalog.models import Product
 from functools import reduce
+from urllib.parse import urlparse, urlsplit
 
 
 register = template.Library()
@@ -77,3 +78,12 @@ def findparam(param, key, value):
     with suppress(AttributeError, IndexError, KeyError):
         return [item for item in param if item.get(key) == value][0]
     return {}
+
+
+@register.filter(name='get_extension')
+def get_extension(value):
+    parsed_url = urlsplit(value)
+    path = parsed_url.path
+    extension = path.split('.')[-1]
+    
+    return extension.lower() if '.' in path else ''

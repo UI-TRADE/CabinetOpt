@@ -421,6 +421,11 @@
       margin-left: 20px;
       transform:rotate(180deg);
     }
+
+    img:hover {
+      cursor: pointer;
+    }
+  
   }
 
   .img-form-nav-right{
@@ -436,6 +441,24 @@
       height: 70px;
       right: -54px;
     }
+
+    img:hover {
+      cursor: pointer;
+    }
+  
+  }
+
+  .play-button{
+    position: absolute;
+    top: 43%;
+    left: 45%;
+    width: 90px;
+    height: 90px;
+    z-index: 11;
+  }
+
+  .play-button:hover{
+    cursor: pointer;
   }
 
 }

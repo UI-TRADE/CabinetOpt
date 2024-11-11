@@ -21,49 +21,93 @@
                 {% endwith %}
             {% endif %}
         </div>
-        <div class="img-form hidden">
-            <div class="img-form-container row">
-                <div class="img-form-nav-left">
-                    <img class="d-flex" src="{% static 'img/arrow.svg' %}">
+
+        {% with product_media=product.get_filtered_images_by_order|slice:":5"|add:product.get_videos|slice:":3" %}
+
+            <div class="img-form hidden">
+                <div class="img-form-container row">
+                    <div class="img-form-nav-left">
+                        <img class="d-flex" src="{% static 'img/arrow.svg' %}">
+                    </div>
+                    {% for media_url in product_media %}
+                        {% with extension=media_url|get_extension %}
+                            {% if extension == "mp4" or extension == "webm" %}
+                            <div class="carousel-item">
+                                <video 
+                                    width="100%" height="100%"
+                                    class="main-image"
+                                    style="display: block;"
+                                    onended="document.querySelector('.play-button').style.display='block';"
+                                >
+                                    <source src="{{ media_url }}" type="video/mp4">
+                                </video>
+                                <img class="d-flex play-button" src="{% static 'img/play-button.svg' %}">
+                            </div>
+                            {% else %}
+                            <div class="carousel-item">
+                                <img src="{{ media_url }}" class="main-image" alt="{{ prod.name }}" />
+                            </div>
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
+                    <div class="img-form-nav-right">
+                        <img class="d-flex" src="{% static 'img/arrow.svg' %}">
+                    </div>
                 </div>
-                {% for image in product.get_filtered_images_by_order|slice:":5" %}
-                    <div class="carousel-item">
-                        <img src="{{ image }}" class="main-image" alt="{{ prod.name }}" />
-                    </div>
-                {% endfor %}
-                <div class="img-form-nav-right">
-                    <img class="d-flex" src="{% static 'img/arrow.svg' %}">
+            </div>
+            <div id="product-carousel-{{ product.id }}" class="carousel slide" data-ride="carousel">
+                <div class="carousel-container carousel-inner">
+                    {% for media_url in product_media %}
+                        {% with extension=media_url|get_extension %}
+                            {% if extension == "mp4" or extension == "webm" %}
+                            <div class="carousel-item{% if forloop.first %} active{% endif %}">
+                                <a href="{{ media_url }}">
+                                    <video width="100%" height="100%" autoplay muted loop class="main-image" style="display: block;">
+                                        <source src="{{ media_url }}" type="video/mp4">
+                                    </video>
+                                </a>
+                            </div>
+                            {% else %}
+                            <div class="carousel-item{% if forloop.first %} active{% endif %}">
+                                <a href="{{ media_url }}">
+                                    <img src="{{ media_url }}" class="main-image" alt="{{ prod.name }}" />
+                                </a>
+                            </div>
+                            {% endif %}
+                        {% endwith %}
+                    {% empty %}
+                        <div class="carousel-item active">
+                            <img src="{{ MEDIA_URL }}/0.jpg" class="main-image img-fluid rounded" alt="Пустое изображение" />
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="carousel-navigation">
+                    <ol class="carousel-indicators">
+                    {% for media_url in product_media %}
+                        {% with extension=media_url|get_extension %}
+                            {% if extension == "mp4" or extension == "webm" %}
+                            <li data-target="#product-carousel-{{ product.id }}" data-slide-to="{{ forloop.counter0 }}" class="img-thumbnail">
+                                <video width="100%" height="100%" muted style="display: block;">
+                                    <source src="{{ media_url }}" type="video/mp4">
+                                </video>
+                            </li>
+                            {% else %}
+                            <li data-target="#product-carousel-{{ product.id }}" data-slide-to="{{ forloop.counter0 }}" class="img-thumbnail{% if forloop.first %} active{% endif %}">
+                                <img
+                                    src="{{ media_url }}"
+                                    class="img-fluid product__thumbnail__block product__thumbnail__block--position"
+                                    alt="{{ product.name }}"
+                                />
+                            </li>
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
+                    </ol>
                 </div>
             </div>
-        </div>
-        <div id="product-carousel-{{ product.id }}" class="carousel slide" data-ride="carousel">
-            <div class="carousel-container carousel-inner">
-                {% for image in product.get_filtered_images_by_order|slice:":5" %}
-                    <div class="carousel-item{% if forloop.first %} active{% endif %}">
-                        <a href="{{ image }}">
-                            <img src="{{ image }}" class="main-image" alt="{{ prod.name }}" />
-                        </a>
-                    </div>
-                {% empty %}
-                    <div class="carousel-item active">
-                        <img src="{{ MEDIA_URL }}/0.jpg" class="main-image img-fluid rounded" alt="Пустое изображение" />
-                    </div>
-                {% endfor %}
-            </div>
-            <div class="carousel-navigation">
-                <ol class="carousel-indicators">
-                {% for image in product.get_filtered_images_by_order|slice:":7" %}
-                    <li data-target="#product-carousel-{{ product.id }}" data-slide-to="{{ forloop.counter0 }}" class="img-thumbnail{% if forloop.first %} active{% endif %}">
-                        <img
-                            src="{{ image }}"
-                            class="img-fluid product__thumbnail__block product__thumbnail__block--position"
-                            alt="{{ product.name }}"
-                        />
-                    </li>
-                {% endfor %}
-                </ol>
-            </div>
-        </div>
+
+        {% endwith %}
+
         <div class="row product-detail__similar-products">
             <div class="product-detail__similar-products-list-wrapper">
                 <div class="product-detail__similar-products-title">Комплекты</div>

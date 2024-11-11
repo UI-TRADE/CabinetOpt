@@ -344,6 +344,11 @@ class Product(models.Model):
         return ProductImage.objects.filter(product_id=self.id).order_by('order').first()
 
     @property
+    def get_videos(self):
+        product_videos = ProductVideo.objects.filter(product_id=self.id)
+        return [product_video.video.url for product_video in product_videos]
+
+    @property
     def get_default_size(self):
         '''Функция возвращает строку, как этап перехода на учет размеров в БД в строковом варианте'''
         size_value = 0
@@ -530,6 +535,24 @@ class ProductImage(models.Model):
     class Meta:
         verbose_name = 'Фотография'
         verbose_name_plural = 'Фотографии'
+
+
+class ProductVideo(models.Model):
+    product = models.ForeignKey(
+        Product,
+        null=True,
+        on_delete=models.CASCADE,
+        verbose_name='Видео',
+        related_name='product_videos'
+    )
+    filename = models.CharField(
+        'Имя файла', max_length=100, blank=True, db_index=True
+    )
+    video = models.FileField('Видео номенклатуры', upload_to='product_videos')
+
+    class Meta:
+        verbose_name = 'Видео'
+        verbose_name_plural = 'Видео'
 
 
 class PriceType(models.Model):

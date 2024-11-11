@@ -11,9 +11,38 @@ import { decimalFormat } from "./utils/money_format";
 import { handleError } from "./utils/exceptions";
 
 
+const handleVideoPlayer = (control, action) => {
+    if (action == 'play')
+        $(control).attr("style", "display: none !important;");
+    else
+        $(control).attr("style", "display:  block !important;");
+    
+    const carouselItems = $('.img-form .carousel-item');
+    $.each(carouselItems, (_, item) => {
+        if ($(item).hasClass('active') && $(item).children('video').length) {
+            if (action == 'play')
+                $(item).children('video')[0].play();
+            else if (action == 'pause')
+                $(item).children('video')[0].pause();
+        }
+    });
+}
+
+
 export const productCardEvents = () => {
 
     const closeImgWindow = () => {
+
+        const videos = $('.carousel-container video');
+        $.each(videos, (_, videoItem) => {
+            videoItem.play();
+        });
+
+        const carusels = $('.carousel-container').parent();
+        $.each(carusels, (_, caruselItem) => {
+            $(caruselItem).carousel();
+        });
+
         const $modal = $('.img-form');
         $.each($modal.find('.carousel-item'), (_, item) => {
             $(item).removeClass('active');        
@@ -27,12 +56,31 @@ export const productCardEvents = () => {
     $('.main-image').on('click', (event) => {
         event.preventDefault();
 
+        const videos = $('.carousel-container video');
+        $.each(videos, (_, videoItem) => {
+            videoItem.pause();
+        });
+
+        const carusels = $('.carousel-container').parent();
+        $.each(carusels, (_, caruselItem) => {
+            $(caruselItem).carousel('pause');
+        });
+
+        handleVideoPlayer($('.play-button')[0], 'pause');
+
         $('.background-overlay').removeClass('hidden');
         const $modal = $('.img-form');
         $.each($modal.find('.carousel-item'), (_, item) => {
-            const $img = $(item).find('img');
-            if ($img.attr('src') === $(event.currentTarget).attr('src')){
-                $(item).addClass('active');        
+            const $video = $(item).find('source');
+            if ($video.length) {
+                if ($video.attr('src') === $(event.currentTarget).find('source').attr('src')){
+                    $(item).addClass('active');        
+                }
+            } else {
+                const $img = $(item).find('img');
+                if ($img.attr('src') === $(event.currentTarget).attr('src')){
+                    $(item).addClass('active');        
+                }
             }
         });
 
@@ -83,6 +131,10 @@ export const productCardEvents = () => {
         else return;
         $(carouselItems[currentIndex]).removeClass('active');
         $(carouselItems[nextIndex]).addClass('active');
+    });
+
+    $('.play-button').on('click', (event) => {
+        handleVideoPlayer(event.currentTarget, 'play');
     });
 
 }

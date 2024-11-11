@@ -12,6 +12,7 @@ from .models import (
     Collection,
     Brand,
     ProductImage,
+    ProductVideo,
     Product,
     PriceType,
     Price,
@@ -113,6 +114,46 @@ class ProductImageInLine(admin.TabularInline):
             )
         else:
             return '(No image)'
+
+    render_preview.short_description = 'Preview'
+
+
+class ProductVideoInLine(admin.TabularInline):
+    model = ProductVideo
+    extra = 0
+    fields = ('render_preview', 'video',)
+    readonly_fields = ('render_preview',)
+    classes = ('collapse', )
+
+    verbose_name = "Видео"
+    verbose_name_plural = "Видео"
+
+    def render_preview(self, obj):
+        if obj.video:
+            return format_html(
+                '''<div style="position: relative; display: inline-block;">
+                    <video id="video-{0}" 
+                        width="50" height="50" muted 
+                        onended="document.getElementById('arrow-{0}').style.display='block';">
+                        <source src="{1}" type="video/mp4">
+                        video unsupport.
+                    </video>
+                    <div id="arrow-{0}" style="
+                        position: absolute; top: 50%; left: 50%;
+                        transform: translate(-50%, -50%);
+                        background-image: url('data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3C!--%20License%3A%20PD.%20Made%20by%20stephenhutchings%3A%20https%3A%2F%2Fgithub.com%2Fstephenhutchings%2Fmicrons%20--%3E%3Csvg%20fill%3D%22%23000000%22%20width%3D%22800px%22%20height%3D%22800px%22%20viewBox%3D%22-60%200%20512%20512%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20%3E%3Ctitle%3Eplay%3C%2Ftitle%3E%3Cpath%20d%3D%22M64%2096L328%20256%2064%20416%2064%2096Z%22%20%2F%3E%3C%2Fsvg%3E');
+                        background-size: contain; background-repeat: no-repeat;
+                        width: 40px; height: 40px;
+                        cursor: pointer; opacity: 0.4;"
+                        onmouseover="this.style.opacity=0.9"
+                        onmouseout="this.style.opacity=0.4"
+                        onclick="this.style.display='none'; document.getElementById('video-{0}').play();"
+                        >
+                    </div>
+                   </div>'''.format(obj.id, obj.video.url)
+            )
+        else:
+            return '(No video)'
 
     render_preview.short_description = 'Preview'
 
@@ -311,6 +352,7 @@ class ProductAdmin(admin.ModelAdmin):
         GemSetInLine,
         StockAndCostInLine,
         ProductImageInLine,
+        ProductVideoInLine,
         ProductsSetInLine,
         SimilarProductsInLine
     ]
