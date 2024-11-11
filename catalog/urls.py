@@ -14,6 +14,7 @@ urlpatterns = [
     path('upload/products'                , views.upload_products),
     path('remove/images/<slug:prod_id>'   , views.remove_images),
     path('upload/images'                  , views.upload_images),
+    path('upload/videos'                  , views.upload_videos),
     path('upload/price'                   , views.upload_price),
     path('upload/stock_and_costs'         , views.upload_stock_and_costs),
     path('pickup_products/'               , views.pickup_products),
@@ -22,5 +23,5 @@ urlpatterns = [
     path('product/analogues'              , views.product_analogues),
     path('product/sizes/<slug:prod_id>/'  , views.sizes_selection, name='sizes_selection'),
     path('products/pages/count/'          , views.catalog_pages_count),
-    path('search-error/'                  , views.search_error)
+    path('search-error/'                  , views.search_error),
 ]

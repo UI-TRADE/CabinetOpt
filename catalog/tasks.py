@@ -1,11 +1,20 @@
 import io
 import base64
 import datetime
+import six
+import uuid
+
 from contextlib import suppress
 from django.db import transaction
 from django.db.models import Q
 from django.core.files.images import ImageFile
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.serializers import (
+    ModelSerializer, ListSerializer, FileField
+)
 
 from clients.models import Client
 from catalog.models import (
@@ -13,6 +22,7 @@ from catalog.models import (
     Сategory,
     Product,
     ProductImage,
+    ProductVideo,
     Brand,
     MetalFinish,
     StockAndCost,
@@ -26,6 +36,75 @@ from catalog.models import (
     Style,
 )
 from catalog.models import PriceType, Price
+
+class Base64FileField(FileField):
+    
+    def to_internal_value(self, data):
+        if isinstance(data, six.string_types):
+            if 'data:' in data and ';base64,' in data:
+                header, data = data.split(';base64,')
+
+            try:
+                decoded_file = base64.b64decode(data)
+            except TypeError:
+                self.fail('invalid_file')
+
+            file_name = str(uuid.uuid4())[:12]
+            file_extension = self.get_file_extension(header)
+            complete_file_name = f"{file_name}.{file_extension}"
+
+            return ContentFile(decoded_file, name=complete_file_name)
+
+        self.fail('invalid_file')
+
+    def get_file_extension(self, header):
+        if 'mp4' in header:
+            return 'mp4'
+        elif 'avi' in header:
+            return 'avi'
+        elif 'mkv' in header:
+            return 'mkv'
+        return 'bin'
+
+
+class ProductSerializer(ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['identifier_1C']
+
+
+class ProductVideoListSerializer(ListSerializer):
+
+    def get_product(self, data):
+        product_data = dict(data.pop('product'))
+        with suppress(Product.DoesNotExist):
+            return Product.objects.get(
+                identifier_1C=product_data.get('identifier_1C', '')
+            )
+        return Product.objects.none()
+
+    def update(self, _, validated_data):
+        ret = []
+        for item in validated_data:
+            product = self.get_product(item)
+            product_video, _ = ProductVideo.objects.update_or_create(
+                filename = item['filename'],
+                defaults = item | {'product': product}
+            )
+            ret.append(product_video)
+
+        return ret
+
+
+class ProductVideoSerializer(ModelSerializer):
+
+    product = ProductSerializer()
+    video = Base64FileField()
+
+    class Meta:
+        model = ProductVideo
+        fields = ['product', 'filename', 'video']
+        list_serializer_class = ProductVideoListSerializer
 
 
 def run_uploading_products(uploading_products):
@@ -279,6 +358,14 @@ def run_uploading_images(uploading_images):
                         'order': item.get('order', 1),
                         'image': image
                 })
+
+
+def run_uploading_videos(request):
+    serializer = ProductVideoSerializer(instance='', data=request.data, many=True)
+    if serializer.is_valid(raise_exception=True):
+        serializer.save()
+        return Response('success upload', status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 def run_uploading_price(uploading_price):

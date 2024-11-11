@@ -38,6 +38,7 @@ from utils.caching import use_cache
 from .tasks import (
     run_uploading_products,
     run_uploading_images,
+    run_uploading_videos,
     run_uploading_price,
     run_uploading_stock_and_costs
 )
@@ -443,6 +444,12 @@ def upload_images(request):
     return JsonResponse({'replay': 'ok'}, status=200)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def upload_videos(request):
+    return run_uploading_videos(request)
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def remove_images(request, prod_id):
@@ -637,4 +644,3 @@ def catalog_pages_count(request):
         status=200,
         safe=False
     )
-
