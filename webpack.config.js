@@ -59,7 +59,9 @@ module.exports = {
             { from: './src/fonts', to: './fonts' },
             { from: './src/img', to: './img' },
             { from: './src/css/admin', to: './css/admin' },
-            { from: './src/xlsx', to: '' }
+            { from: './src/xlsx', to: '' },
+            { from: './src/favicon.ico', to: '' },
+            { from: './src/site.webmanifest', to: '' }
           ],
         }),
         new webpack.ProvidePlugin({
