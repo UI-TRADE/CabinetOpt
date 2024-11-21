@@ -805,3 +805,22 @@ class ColorOfStone(models.Model):
     name = models.CharField('Наименование', max_length=100, db_index=True)
     site = models.CharField('наименование для сайта', max_length=10, blank=True)
     name_of_filter = models.CharField('наименование для фильтра', max_length=10, blank=True)
+
+
+class ProductRating(models.Model):
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        verbose_name='Номенклатура',
+        db_index=True
+    )
+    rating = models.PositiveIntegerField(
+        default=1,
+        validators=[MinValueValidator(0)],
+        verbose_name='Рейтинг'
+    )
+
+    class Meta:
+        verbose_name = 'Рейтинг'
+        verbose_name_plural = 'Рейтинги'
+  
