@@ -29,15 +29,6 @@
 
                     <div class="cart-actions">
 
-                        <form id="createOrderFromTable" method="post" action="{% url 'cart:create' %}">
-                            {% csrf_token %}
-                            {% if send_into_talant %}
-                                <input type="hidden" name="split_orders" value=1 />
-                            {% else %}
-                                <input type="hidden" name="split_orders" value=0 />
-                            {% endif %}
-                        </form>
-
                         <div class="text-right">
 
                             <div class="cart-result">
@@ -47,6 +38,18 @@
                                 <div class="cart-result__total-price">{{ cart.get_total_price|floatformat:0|intcomma }} р</div>
                             </div>
                             
+                            <form id="createOrderFromTable" method="post" action="{% url 'cart:create' %}">
+                                {% csrf_token %}
+                                {% if send_into_talant %}
+                                    <input type="hidden" name="split_orders" value=1 />
+                                {% else %}
+                                    <input type="hidden" name="split_orders" value=0 />
+                                {% endif %}
+                                <div class="cart-comment">
+                                    <textarea name="order-note" placeholder="Дополнительная информация о заказе"></textarea>
+                                </div>
+                            </form>
+
                             {% if send_into_talant %}
                                 <a
                                 href="#"

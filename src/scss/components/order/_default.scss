@@ -198,4 +198,14 @@
       }
     }
   }
+
+  .order-comment {
+    max-width: 1000px;
+    margin: 48px 36px 16px 36px;
+
+    textarea {
+      width: 100%;
+      border: 1px solid #EAEAEB;
+    }
+  }
 }

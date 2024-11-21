@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 from django.core.exceptions import ValidationError
 from collections import defaultdict
 from contextlib import suppress
+from functools import wraps
 
 from clients.login import Login
 from catalog.models import Product, Size, StockAndCost
@@ -146,6 +147,21 @@ def edit_product(request, prod_id):
 @require_POST
 def add_order(request):
     
+    def add_comment(request):
+        def wrap(func):
+            @wraps(func)
+            def run_func(client, manager, status, provision, cart):
+                instance = func(client, manager, status, provision, cart)
+                with suppress(IndexError):
+                    import ipdb; ipdb.set_trace()
+                    order_note = dict(request.POST).get('order-note')
+                    instance.comment = order_note[0]
+                    instance.save(update_fields=["comment"])
+
+                return instance
+            return run_func
+        return wrap
+
     def split_products(cart):
         cart_out_of_stock = []
         cart_in_stock = defaultdict(list)
@@ -179,6 +195,7 @@ def add_order(request):
 
         return cart_in_stock, cart_out_of_stock
 
+    @add_comment(request)
     def create_order(client, manager, status, provision, cart):
         order_items = []
         for item in cart:

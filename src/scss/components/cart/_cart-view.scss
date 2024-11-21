@@ -70,4 +70,18 @@
       min-width: 100px;
     }
   }
+
+  .cart-comment{
+    max-width: 1000px;
+    margin: 48px 0px 16px 80px;
+    position: relative;
+    left: -11px;
+    top: 0;
+
+    textarea {
+      width: 100%;
+      border: 1px solid #EAEAEB;
+    }
+  }
+
 }

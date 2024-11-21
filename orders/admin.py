@@ -101,7 +101,8 @@ class OrderAdmin(admin.ModelAdmin):
         'client',
         'ct_client',
         'ct_manager_ui',
-        'ct_num_ui'
+        'ct_num_ui',
+        'comment',
     ]
     list_display_links = ('ct_id', 'ct_num_ui')
     list_filter = ['status', 'client', 'manager']
@@ -110,6 +111,7 @@ class OrderAdmin(admin.ModelAdmin):
         'client',
         'manager',
         'ct_created_at',
+        'comment',
     ]
     ordering = ('id', 'created_at', 'status', 'client', 'manager', 'num_in_1C')
     readonly_fields = [

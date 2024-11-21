@@ -50,6 +50,7 @@ class Order(models.Model):
     identifier_1C = models.CharField(
         'Идентификатор 1С', max_length=50, blank=True, db_index=True
     )
+    comment = models.TextField('Дополнительная информация', blank=True)
 
     class Meta:
         # ordering = ('-created_at',)

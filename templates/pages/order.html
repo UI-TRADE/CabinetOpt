@@ -327,6 +327,13 @@
                             {% endif %}
                             
                         </div>
+                        <div class="order-comment">
+                            {% if object.status == "introductory" %}
+                                <textarea name="order-note" placeholder="Дополнительная информация о заказе">{{ object.comment }}</textarea>
+                            {% else %}
+                                <textarea name="order-note" placeholder="Дополнительная информация о заказе" readonly>{{ object.comment }}</textarea>
+                            {% endif %}
+                        </div>
                     </form>
                 </div>
             </div>
