@@ -45,9 +45,11 @@
                                 {% else %}
                                     <input type="hidden" name="split_orders" value=0 />
                                 {% endif %}
+                                {% if cart %}
                                 <div class="cart-comment">
                                     <textarea name="order-note" placeholder="Комментарии к заказу:"></textarea>
                                 </div>
+                                {% endif %}
                             </form>
 
                             {% if send_into_talant %}
