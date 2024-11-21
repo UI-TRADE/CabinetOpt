@@ -153,7 +153,6 @@ def add_order(request):
             def run_func(client, manager, status, provision, cart):
                 instance = func(client, manager, status, provision, cart)
                 with suppress(IndexError):
-                    import ipdb; ipdb.set_trace()
                     order_note = dict(request.POST).get('order-note')
                     instance.comment = order_note[0]
                     instance.save(update_fields=["comment"])
