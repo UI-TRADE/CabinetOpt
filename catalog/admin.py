@@ -28,6 +28,7 @@ from .models import (
     Gift,
     Design,
     Style,
+    ProductRating,
 )
 from .forms import FileSelectionForm
 from utils.file_handlers import read_csv_inmemory
@@ -664,3 +665,49 @@ class CollectionAdmin(admin.ModelAdmin):
                 'form': form,
                 'action_url': reverse('admin:upload-csv')
         })
+
+
+@admin.register(ProductRating)
+class ProductRatingAdmin(admin.ModelAdmin):
+    search_fields = ['name',]
+    list_display = ['product', 'rating',]
+    fields = [('product', 'rating')]
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                'upload-rating/',
+                self.admin_site.admin_view(self.upload_csv),
+                name="upload-rating"
+            ),
+        ]
+        return custom_urls + urls
+    
+    def upload_csv(self, request):
+        if request.method == "POST":
+            form = FileSelectionForm(request.POST, request.FILES)
+            if form.is_valid():
+                reader = read_csv_inmemory(request.FILES['file_path'])
+                for row in reader:
+                    with suppress(IndexError, Product.DoesNotExist):
+                        products = Product.objects.filter(articul=row[0])
+                        if not products: raise Product.DoesNotExist
+                        ProductRating.objects.get_or_create(
+                            product=products.first(),
+                            defaults={'rating':1}
+                        )
+
+                self.message_user(request, "Файл успешно загружен и обработан")
+                return HttpResponseRedirect(reverse('admin:catalog_productrating_changelist'))
+        else:
+            form = FileSelectionForm()
+
+        return render(
+            request,
+            'admin/csv_upload_form.html',
+            {
+                'form': form,
+                'action_url': reverse('admin:upload-rating')
+        })
+
