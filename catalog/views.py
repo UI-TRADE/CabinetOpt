@@ -165,6 +165,12 @@ class ProductView(FiltersView, ListView):
         self.sorting = json.loads(filters_and_sorting.get('sorting', '{ }'))
         return self.get(request, *args, **kwargs)
 
+    def apply_default_sorting(self, products):
+        return products\
+            .prefetch_related('ratings')\
+            .distinct()\
+            .order_by('-ratings__rating')
+
     def apply_sorting(self, products):
         if not self.sorting:
             return
@@ -231,6 +237,8 @@ class ProductView(FiltersView, ListView):
 
         if self.sorting:
             products = self.apply_sorting(products)
+        else:
+            products = self.apply_default_sorting(products)
 
         return products, json.dumps({key: value.to_json() for key, value in filters.items()})
 

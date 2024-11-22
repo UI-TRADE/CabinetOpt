@@ -812,7 +812,8 @@ class ProductRating(models.Model):
         Product,
         on_delete=models.CASCADE,
         verbose_name='Номенклатура',
-        db_index=True
+        db_index=True,
+        related_name='ratings'
     )
     rating = models.PositiveIntegerField(
         default=1,
