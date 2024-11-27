@@ -169,7 +169,7 @@ class ProductView(FiltersView, ListView):
         return products\
             .prefetch_related('ratings')\
             .distinct()\
-            .order_by('-ratings__rating')
+            .order_by('ratings__rating')
 
     def apply_sorting(self, products):
         if not self.sorting:
