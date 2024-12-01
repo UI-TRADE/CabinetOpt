@@ -774,7 +774,7 @@ class AlikeProductGroupAdmin(admin.ModelAdmin):
                     if not products: raise Product.DoesNotExist
                     alike_products.append(products.first())
             if alike_products:
-                if not self.instance.pk: self.instance.save()
+                if self.instance and not self.instance.pk: self.instance.save()
             self.instance.alike_product.add(*alike_products)
                 
             self.message_user(request, "Файл успешно загружен и обработан")
