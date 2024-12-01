@@ -631,6 +631,32 @@ def product_analogues(request):
     )
 
 
+@api_view(['GET'])
+def alike_products(request):
+    product_id = request.query_params.get('productId')
+    if product_id:
+        alike_product_imgs = []
+        alike_products =  Product.objects.filter(
+            alike_products__alike_product__id=product_id
+        ).exclude(id=product_id).distinct()
+        for alike_product in alike_products:
+            alike_product_imgs.append(
+                ProductImage.objects.filter(product=alike_product).first()
+            )
+        return JsonResponse(
+            {
+                'replay'            : 'ok',
+                'alike_products' : serialize("json", alike_product_imgs)
+            },
+            status=200,
+            safe=False
+        )
+
+    return JsonResponse(
+        {'replay': 'error', 'message': 'Отсутствуют Продукты для получения данных'},
+        status=200
+    )
+
 @api_view(['POST'])
 def catalog_pages_count(request):
     raw_filters = request.POST.dict()

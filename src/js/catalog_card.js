@@ -196,6 +196,30 @@ const showAnalogues = () => {
     })
 }
 
+
+// data-ride="carousel"
+const showAlikeProducts = () => {
+
+    const alikeBlock = $('#alike-block');
+    const alikeElements = alikeBlock.data('json');
+    if (!alikeElements.length) {
+        alikeBlock.parent().addClass('hidden');
+        return;
+    }
+    const carouselOfAlikeProducts = $(sliderTemplateFn(alikeElements, 'alikeProducts', 2, 1));
+    alikeBlock.append(carouselOfAlikeProducts)
+    $('.slider', alikeBlock).slick({
+        draggable: false,
+        infinite: false,
+        nextArrow: `<button class="slick-next product-detail__alike-products-carousel-arrow" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
+        prevArrow: `<button class="slick-prev product-detail__alike-products-carousel-arrow" type="button" style="background-image: url('/static/img/arrow.svg')"></button>`,
+        respondTo: 'min',
+        slidesToShow: 3,
+        variableWidth: true,
+    })
+}
+
+
 /**
  * Обновляет элементы цен в карточке номенклатуры.
  *
@@ -410,9 +434,28 @@ function updateProductCard() {
             });
         });
 
+        const alikeProducts = new Promise((resolve, reject) => {
+            $.ajax({
+                url: '/catalog/product/alike-products',
+                data: {'productId': productId},
+                success: (response) => {
+                    if (response['replay'] == 'error') throw new Error(response['message']);
+                    addAlikeElements(
+                        document.querySelector('#alike-block'),
+                        JSON.parse(response['alike_products'])
+                    );
+                    showAlikeProducts();
+                    resolve(true);
+                },
+                error: () => {
+                    reject(false);
+                }
+            });
+        });
+
         return new Promise((resolve, reject) => {
             try {
-                const result = Promise.all([accessories, analogues]);
+                const result = Promise.all([accessories, analogues, alikeProducts]);
                 resolve(result);
             } catch (error) {
                 reject(error);
@@ -489,6 +532,37 @@ function updateProductCard() {
         >
     </a>`
 
+
+    /**
+     * Подготавливает элементы похожих товаров и сохраняет их в json формате.
+     *
+     * element - элемент alike-block в котором будут сохранены подготовленные элементы.
+     * alike_products - массив данных о похожих товарах полученные с бэка.
+     */
+    const addAlikeElements = (element, alike_products) => {
+        const prepared_sets = [];
+        alike_products.forEach((item, idx) => {
+            const element = addAlikeElement(idx, item['fields']);
+            prepared_sets.push({ 'id': idx, 'element': element });
+        });
+        element.setAttribute('data-json', JSON.stringify(prepared_sets));
+    }
+
+    /**
+     * Подготавливает похожие товары и сохраняет их в json формате.
+     *
+     * idx - индекс элемента.
+     * item - данные изображений полученные с бэка.
+     */
+    const addAlikeElement = (idx, item) => `<a href="/catalog/product/${item.product}/"
+        target="_blank"
+        data-id="${idx}"
+    >
+        <img
+            src="/media/${item.image}"
+            class="product-detail__alike-products-carousel-item" alt="${item.product}"
+        >
+    </a>`
 
     // if(document.location.pathname.indexOf("/catalog/product/") === -1 || 
     //     document.location.pathname.indexOf("/cart/") === -1){

@@ -5,6 +5,7 @@ from django.urls import path, reverse
 from django.shortcuts import render
 from django.db.models import Avg, Sum
 from django.utils.html import format_html
+from django.test.client import RequestFactory
 
 from .models import (
     СategoryGroup,
@@ -29,8 +30,9 @@ from .models import (
     Design,
     Style,
     ProductRating,
+    AlikeProductGroup,
 )
-from .forms import FileSelectionForm
+from .forms import FileSelectionForm, AlikeProductGroupForm
 from utils.file_handlers import read_csv_inmemory
 
 class СategoryInLine(admin.TabularInline):
@@ -709,5 +711,81 @@ class ProductRatingAdmin(admin.ModelAdmin):
             {
                 'form': form,
                 'action_url': reverse('admin:upload-rating')
+        })
+
+
+@admin.register(AlikeProductGroup)
+class AlikeProductGroupAdmin(admin.ModelAdmin):
+    instance = None
+    add_form_template = "admin/catalog/alikeproductgroup/add_form.html"
+    form = AlikeProductGroupForm
+    search_fields = ['name',]
+    list_display = ['name',]
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        instance = self.get_object(request, object_id)
+        form = self.form(instance=instance)
+
+        extra_context = extra_context or {}
+        extra_context['form'] = form  # Передаём форму в контекст
+
+        return super().change_view(request, object_id, form_url, extra_context=extra_context)
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                'upload-alike-products/',
+                self.admin_site.admin_view(self.upload_csv),
+                name="upload-alike-products"
+            ),
+            path(
+                'select-file/',
+                self.admin_site.admin_view(self.select_csv),
+                name="select-file"
+            ),
+        ]
+        return custom_urls + urls
+
+    def select_csv(self, request):
+        obj = AlikeProductGroupForm(request.GET or None)
+        if obj.is_valid():
+            object_id = dict(obj.data).get('object_id')
+            if object_id:
+                self.instance = AlikeProductGroup.objects.get(id=object_id[0])
+            else:
+                self.instance = obj.save(commit=False)
+        return render(
+            request,
+            'forms/csv_upload_form.html',
+            {
+                'form': FileSelectionForm(),
+                'action_url': reverse('admin:upload-alike-products')
+        })
+
+    def upload_csv(self, request):
+        form = FileSelectionForm(request.POST, request.FILES)
+        if form.is_valid():
+            alike_products = []
+            reader = read_csv_inmemory(request.FILES['file_path'])
+            for row in reader:
+                with suppress(IndexError, Product.DoesNotExist):
+                    products = Product.objects.filter(articul=row[0])
+                    if not products: raise Product.DoesNotExist
+                    alike_products.append(products.first())
+            if alike_products:
+                if not self.instance.pk: self.instance.save()
+            self.instance.alike_product.add(*alike_products)
+                
+            self.message_user(request, "Файл успешно загружен и обработан")
+            change_url = reverse('admin:%s_%s_change' % (self.opts.app_label, self.opts.model_name), args=[self.instance.pk])
+            return HttpResponseRedirect(change_url)
+
+        return render(
+            request,
+            'forms/csv_upload_form.html',
+            {
+                'form': form,
+                'action_url': reverse('admin:upload-alike-products')
         })
 

@@ -1,6 +1,6 @@
 from django import forms
-from .models import Product
-
+from .models import Product, AlikeProductGroup
+from .widgets import FilterHorizontalWidgetWithImport
 
 class ProductFilterForm(forms.Form):
     articul = forms.CharField(max_length=200, required=False, strip=True, label='Артикул')
@@ -33,3 +33,21 @@ class ProductFilterForm(forms.Form):
 
 class FileSelectionForm(forms.Form):
     file_path = forms.FileField(label='Выберите CSV файл', validators = [], widget=forms.FileInput())
+
+
+class AlikeProductGroupForm(forms.ModelForm):
+
+    alike_product = forms.ModelMultipleChoiceField(
+        label = "Похожие товары",
+        queryset=Product.objects.all(),
+        widget=FilterHorizontalWidgetWithImport("Похожие товары", is_stacked=False),
+        required=False
+    )
+
+    class Meta:
+        model = AlikeProductGroup
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+    

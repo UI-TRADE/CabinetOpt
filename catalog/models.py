@@ -801,6 +801,22 @@ class SimilarProducts(models.Model):
         super(SimilarProducts, self).save(*args, **kwargs)
 
 
+class AlikeProductGroup(models.Model):
+    name = models.CharField('Наименование', max_length=100, db_index=True)
+    alike_product = models.ManyToManyField(
+        Product,
+        verbose_name='Похожий товар',
+        related_name='alike_products'
+    )
+
+    class Meta:
+        verbose_name = 'Группа похожести'
+        verbose_name_plural = 'Группы похожести'
+
+    def __str__(self):
+        return f'{self.name}'   
+
+
 class ColorOfStone(models.Model):
     name = models.CharField('Наименование', max_length=100, db_index=True)
     site = models.CharField('наименование для сайта', max_length=10, blank=True)

@@ -1,0 +1,71 @@
+{% extends "admin/change_form.html" %}
+
+{% block object-tools %}
+	{{ block.super }}
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <div id="modal-overlay"></div>
+    <div id="modal"></div>
+    <style>
+        #modal {
+            width: min(80vw, 500px);
+            background-color: var(--body-bg);
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            position: absolute;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            left: 50%;
+            display: none;
+            z-index: 2; /* Above Overlay */
+
+        }
+        #modal-overlay {
+            position: fixed; /*Full Screen*/
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            /*Semi Transparent Black*/
+            z-index: 1; /* Below Modal*/
+        }
+    </style>
+    <script type="text/javascript">
+        window.onload = () => {
+            let modal = document.getElementById("modal");
+            let modalOverlay = document.getElementById("modal-overlay");
+            const alikeProductsLink = document.getElementById('alike-products-link');
+            alikeProductsLink?.addEventListener('click', (event) => {
+                event.preventDefault();
+                const url = alikeProductsLink.getAttribute('data-url');
+                const form = document.getElementById('alikeproductgroup_form');
+                const formData = new FormData(form);
+                const params = new URLSearchParams(formData);
+
+                fetch(`${url}?${params.toString()}`,)
+                    .then(response => response.text())
+                    .then(html => {
+                        modal.innerHTML = html;
+                        modal.style.display = "block";
+                        modalOverlay.style.display = "block";
+                    })
+                    .catch(error => console.log('Ошибка при загрузке формы:', error));
+            });
+            function closeModal() {
+                modal.style.display = "none";
+                modalOverlay.style.display = "none";
+            }
+            window.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closeModal();
+            }
+            });
+            modalOverlay.addEventListener("click", closeModal);
+        };
+    </script>
+{% endblock %}
+
