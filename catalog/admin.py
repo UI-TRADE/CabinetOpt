@@ -1,3 +1,4 @@
+import csv
 from contextlib import suppress
 from django.contrib import admin
 from django.http import HttpResponse, HttpResponseRedirect
@@ -5,7 +6,6 @@ from django.urls import path, reverse
 from django.shortcuts import render
 from django.db.models import Avg, Sum
 from django.utils.html import format_html
-from django.test.client import RequestFactory
 
 from .models import (
     СategoryGroup,
@@ -293,6 +293,32 @@ class ProductImageFilter(admin.SimpleListFilter):
             return queryset.exclude(pk__in=active_products.values_list('id', flat=True))
 
 
+class ProductInStockFilter(admin.SimpleListFilter):
+    title = ('В наличии')
+    parameter_name = 'instok_products'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('instok_products', ('В наличии')),
+            ('outstok_products', ('Под заказ')),
+        )
+    
+    def queryset(self, request, queryset):
+        if self.value() == 'instok_products':
+            return queryset.filter(
+                pk__in=StockAndCost.objects.filter(
+                    stock__gte=1
+                ).values_list('product_id', flat=True)
+            )
+        if self.value() == 'outstok_products':
+            return queryset.exclude(
+                pk__in=StockAndCost.objects.filter(
+                    stock__gte=1
+                ).values_list('product_id', flat=True)
+            )
+        return queryset
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     search_fields = [
@@ -333,6 +359,7 @@ class ProductAdmin(admin.ModelAdmin):
     ]
     list_filter = [
         'show_on_site',
+        ProductInStockFilter,
         ProductImageFilter,
         ProductPriceFilter,
         'brand',
