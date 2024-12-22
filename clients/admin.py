@@ -1,6 +1,7 @@
+import csv
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 
 from .models import (
@@ -250,10 +251,35 @@ class ClientAdmin(admin.ModelAdmin):
         'status',
     ]
     inlines = [ManagerInLine, ContactDetailInLine, OrderInLine]
+    actions = ['export_as_csv']
 
     @notification_scheduling(NotificationType.LOCKED_CLIENT)
     def save_model(self, request, obj, form, change):
         return super().save_model(request, obj, form, change)
+    
+    @admin.action(description='Выгрузить в csv файл')
+    def export_as_csv(self, request, queryset):
+        meta = self.model._meta
+        field_names = ['client', 'inn', 'manager_talant', 'manager', 'email', 'phone']
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename={}.csv'.format(meta)
+        writer = csv.writer(response)
+
+        writer.writerow(field_names)
+        for obj in queryset:
+            managers = obj.manager.all()
+            for manager in managers:
+                writer.writerow([
+                    obj.name,
+                    obj.inn,
+                    obj.manager_talant.name,
+                    manager.name,
+                    manager.email,
+                    manager.phone
+                ])
+
+        return response
 
 
 @admin.register(AuthorizationAttempt)
