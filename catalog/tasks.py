@@ -176,8 +176,8 @@ def run_uploading_products(uploading_products):
                         continue
                     product.design.add(design)
 
+                GemSet.objects.filter(product=product).delete()
                 if item.get('gem_sets'):
-                    GemSet.objects.filter(product=product).delete()
                     for gem_set in item['gem_sets']:
                         if not gem_set['precious_stone']:
                             raise PreciousStone.DoesNotExist
