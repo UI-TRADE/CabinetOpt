@@ -263,3 +263,22 @@ class CatalogFilter(SingletonModel):
 
     def __str__(self):
         return 'Настройка фильтров каталога'
+
+
+class Promo(models.Model):
+    organization = models.OneToOneField(
+        Organization,
+        on_delete=models.CASCADE,
+        primary_key = True,
+        verbose_name='Организация',
+        related_name='promotions'
+    )
+    description = models.TextField('Акция', blank=True)
+
+
+    class Meta:
+        verbose_name = 'Акция'
+        verbose_name_plural = 'Акции'
+    
+    def __str__(self):
+        return f'Акции: {self.organization}'

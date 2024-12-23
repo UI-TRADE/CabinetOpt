@@ -4,7 +4,7 @@
 {% block page %}
 	{% block content %}
 
-    <div class="container-fluid conditions">
+    <div class="container-fluid promotions">
 
         <div class="row">
             <div class="col-2">
@@ -25,15 +25,13 @@
                 </p>
             </div>
             <div class="col-10">
-                <main id="conditions" >
-                    {% if condition %}
-                        <div>{{ condition|safe }}</div>
+                <main id="promotions" >
+                    {% if description %}
+                        <div>{{ description|safe }}</div>
                     {% endif %}
                 </main>
             </div>
         </div>
-
-        
 
     </div>
 

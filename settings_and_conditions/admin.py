@@ -12,6 +12,7 @@ from .models import (
     Notification,
     CatalogFilter,
     Banner,
+    Promo,
 )
 
 
@@ -145,6 +146,12 @@ class BannerAdmin(admin.ModelAdmin):
         return form
 
 
+class PromoAdmin(SummernoteModelAdmin): 
+    list_display = ('organization',) 
+    search_fields = ['organization',]
+    summernote_fields = ('description',)
+
+
 admin.site.register(Guarantee, GuaranteeAdmin)
 admin.site.register(Policy, PolicyAdmin)
 admin.site.register(Delivery, DeliveryAdmin)
@@ -155,3 +162,5 @@ admin.site.register(Notification, NotificationAdmin)
 admin.site.register(CatalogFilter, CatalogFilterAdmin)
 
 admin.site.register(Banner, BannerAdmin)
+
+admin.site.register(Promo, PromoAdmin)

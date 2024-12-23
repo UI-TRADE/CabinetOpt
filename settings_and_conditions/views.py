@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from .models import Guarantee, Policy, Delivery, About
+from .models import Guarantee, Policy, Delivery, About, Promo
 
 def guarantee(request):
     template = 'pages/conditions.html'
@@ -71,4 +71,22 @@ def about(request):
         request,
         template,
         {'condition': '', 'share_link': request.build_absolute_uri(request.get_full_path()),}
+    )
+
+
+def promo(request):
+    template = 'pages/promotions.html'
+    obj = Promo.objects.first()
+    if obj:
+        return render(
+            request,
+            template,
+            {
+                'description': obj.description,
+                'share_link': request.build_absolute_uri(request.get_full_path()),
+        })
+    return render(
+        request,
+        template,
+        {'description': '', 'share_link': request.build_absolute_uri(request.get_full_path()),}
     )

@@ -5,6 +5,7 @@ from . import views
 app_name = "settings_and_conditions"
 
 urlpatterns = [
+    path('promo/', views.promo, name='promo'),
     path('guarantee/', views.guarantee, name='guarantee'),
     path('policy/', views.policy, name='policy'),
     path('delivery/', views.delivery, name='delivery'),
