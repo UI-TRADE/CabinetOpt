@@ -17,6 +17,7 @@ import showAuthForm, {
     applyShowPasswordButtons,
     bindEventToCaptcha
 } from './form';
+import * as ymaps3 from 'ymaps3';
 
 // import updateOrder from '../js/_old/order';
 
@@ -53,6 +54,60 @@ const addEvents = () => {
     contactEvents();
 
 }
+
+async function initMap() {
+    await ymaps3.ready;
+    const {YMap, YMapDefaultSchemeLayer, YMapDefaultFeaturesLayer, YMapMarker} = ymaps3;
+  
+    const map = new YMap(
+        document.getElementById('where-to-buy'),
+        {
+            location: {
+                center: [40.996244, 57.760530],
+                zoom: 6
+            },
+            searchControlProvider: 'yandex#search',
+            showScaleInCopyrights: true
+        }
+    );
+  
+    map.addChild(new YMapDefaultSchemeLayer());
+    map.addChild(new YMapDefaultFeaturesLayer());
+
+    const markers = [
+        [30.328750, 59.981267],
+        [49.140685, 55.742225],
+        [40.996244, 57.760530]
+    ];
+
+    markers.forEach((coordinate) => {
+        // Создание маркера
+        const el = document.createElement('img');
+        el.className = 'map-marker';
+        el.src = "/static/img/map-icon.svg";
+        el.title = '';
+        el.onclick = () => map.update({
+            location: {
+                center: coordinate,
+                zoom: 13
+            }
+        });
+
+        // Создание заголовка маркера
+        const markerTitle = document.createElement('div');
+        markerTitle.className = 'marker-title';
+        markerTitle.innerHTML = '';
+
+        // Контейнер для элементов маркера
+        const imgContainer = document.createElement('div');
+        imgContainer.appendChild(el);
+        imgContainer.appendChild(markerTitle);
+
+        map.addChild(new YMapMarker({coordinates: coordinate}, imgContainer));
+
+    });
+
+  }
 
 
 $(window).on("load", () => {
@@ -154,6 +209,7 @@ $(document).ready(() => {
                 initProductFilters();
                 updateProductCard();
                 addEvents();
+                initMap();
                 document.getElementsByTagName("html")[0].style.visibility = "visible";
                 $(document).trigger('cart.updated', {});
 

@@ -27,6 +27,7 @@
     "@babel/core": "^7.22.10",
     "@babel/preset-env": "^7.22.10",
     "babel-loader": "^9.1.3",
+    "@yandex/ymaps3-types": "^0.0.27",
     "copy-webpack-plugin": "^11.0.0",
     "file-loader": "^6.2.0",
     "font-awesome": "^4.7.0",

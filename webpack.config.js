@@ -69,4 +69,8 @@ module.exports = {
             jQuery: require.resolve('jquery')
         }),
     ],
+    externals: {
+        ymaps3: 'ymaps3'
+    },
+    devtool: 'cheap-source-map'
 }

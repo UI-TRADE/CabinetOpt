@@ -90,3 +90,11 @@ def promo(request):
         template,
         {'description': '', 'share_link': request.build_absolute_uri(request.get_full_path()),}
     )
+
+def where_to_buy(request):
+    template = 'pages/where-to-buy.html'
+    return render(
+        request,
+        template,
+        {'condition': '', 'share_link': request.build_absolute_uri(request.get_full_path()),}
+    )
