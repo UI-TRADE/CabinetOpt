@@ -164,6 +164,10 @@ export function addSelectionSizesEvents(productId, price, unit) {
         });
     }
 
+    $('input[name="sizes-selection-quantity-input"]').on('input', (event) => {
+        const $input = $(event.target);
+        if ($input.val() < 0) $input.val(0);
+    });
     $('input[name="sizes-selection-quantity-input"]').on('change', (event) => {
         const $input = $(event.target);
         if ($input.val() > 999) $input.val(999);
@@ -336,7 +340,6 @@ const addToCart = (formId) => {
 
 export const addOneToCart = (element) => {
     const cartElement = $(element).closest("[name='cart-row']").get(0).querySelector('input');
-
     cartElement.value = parseInt(cartElement.value) + 1;
     OnQuantityChange(cartElement, true);
 }
@@ -344,10 +347,9 @@ export const addOneToCart = (element) => {
 
 export const delOneFromCart = (element) => {
     const cartElement = $(element).closest("[name='cart-row']").get(0).querySelector('input');
-    if(Number(cartElement.value) > 0) {
-        cartElement.value = parseInt(cartElement.value) - 1;
-        OnQuantityChange(cartElement, true);
-    }
+    const quantity = Number(cartElement.value);
+    cartElement.value = quantity > 0 ? quantity - 1 : 0;
+    OnQuantityChange(cartElement, true);
 }
 
 
@@ -844,6 +846,10 @@ export function cartViewEvents() {
         })
     }
 
+    $('input[name="cart-quantity"]').on('input', (event) => {
+        const $input = $(event.target);
+        if ($input.val() < 0) $input.val(1);
+    });
 
     $('input[name="cart-quantity"]').on('change', (event) => {
         OnQuantityChange(event.currentTarget);
