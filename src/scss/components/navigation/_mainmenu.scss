@@ -28,7 +28,7 @@
     // width: 138px;
     height: 18px;
     flex-shrink: 0;
-    margin-right: 10px;
+    // margin-right: 10px;
 }
 
 #link-cart {
@@ -36,12 +36,13 @@
     height: 24px;
     flex-shrink: 0;
     margin-bottom: 2px;
-    margin-right: 25px;
+    margin-right: 20px;
 }
 
 #main-menu-info {
     position: absolute;
     right: 64px;
+    gap: 10px
 }
 
 #main-menu-hart {
