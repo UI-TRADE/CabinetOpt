@@ -32,4 +32,5 @@ certbot
 *.json
 package-lock.json
 !package.json
+_*_tmp.sh
 
