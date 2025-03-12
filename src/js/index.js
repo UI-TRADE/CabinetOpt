@@ -209,7 +209,7 @@ $(document).ready(() => {
                 initProductFilters();
                 updateProductCard();
                 addEvents();
-                initMap();
+                if (window.location.pathname.includes('where-to-buy')) initMap();
                 document.getElementsByTagName("html")[0].style.visibility = "visible";
                 $(document).trigger('cart.updated', {});
 
