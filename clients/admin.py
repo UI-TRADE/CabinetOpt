@@ -11,7 +11,8 @@ from .models import (
     Manager,
     ContactDetail,
     AuthorizationAttempt,
-    CustomerSegments
+    CustomerSegments,
+    Office
 )
 from .forms import CustomRegOrderForm, CustomerSegmentsAdminForm
 from clients.login import Login
@@ -321,3 +322,24 @@ class CustomerSegmentsAdmin(admin.ModelAdmin):
             return HttpResponseRedirect(reverse('admin:%s_%s_change' % (obj._meta.app_label, obj._meta.model_name), args=[obj.pk]))
         return super().response_change(request, obj)
  
+
+@admin.register(Office)
+class OfficeAdmin(admin.ModelAdmin):
+    search_fields = [
+        'address',
+    ]
+    list_display = [
+        'organization',
+        'address',
+        'phone',
+        'email',
+    ]
+    fields = [
+        'organization',
+        'address',
+        ('lng', 'lat'),
+        ('phone', 'email'),
+    ]
+    list_filter = [
+        'address',
+    ]

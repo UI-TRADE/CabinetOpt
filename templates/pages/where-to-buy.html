@@ -4,8 +4,70 @@
 {% block page %}
 	{% block content %}
 
-    <div class="container-fluid where-to-buy">
+    <script type="text/javascript">
 
+        async function initMap() {
+            await ymaps3.ready;
+            const {YMap, YMapDefaultSchemeLayer, YMapDefaultFeaturesLayer, YMapMarker} = ymaps3;
+        
+            const addresses = document.getElementById('markers');
+            const markers = JSON.parse(addresses.textContent);
+
+            if (markers === undefined || markers.length == 0) return;
+
+            const map = new YMap(
+                document.getElementById('where-to-buy'),
+                {
+                    location: {
+                        center: [markers[0].lng, markers[0].lat],
+                        zoom: 5
+                    },
+                    searchControlProvider: 'yandex#search',
+                    showScaleInCopyrights: true
+                }
+            );
+        
+            map.addChild(new YMapDefaultSchemeLayer());
+            map.addChild(new YMapDefaultFeaturesLayer());
+
+            markers.forEach((marker) => {
+                let coordinate = [marker.lng, marker.lat];
+                // Создание маркера
+                const el = document.createElement('img');
+                el.className = 'map-marker';
+                el.src = "/static/img/map-icon.svg";
+                el.title = '';
+                el.onclick = () => map.update({
+                    location: {
+                        center: coordinate,
+                        zoom: 15
+                    }
+                });
+
+                // Создание заголовка маркера
+                const markerTitle = document.createElement('div');
+                markerTitle.className = 'marker-title';
+                markerTitle.innerHTML = '';
+
+                // Контейнер для элементов маркера
+                const imgContainer = document.createElement('div');
+                imgContainer.appendChild(el);
+                imgContainer.appendChild(markerTitle);
+
+                map.addChild(new YMapMarker({coordinates: coordinate}, imgContainer));
+
+            });
+
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            initMap();
+        });
+
+    </script>
+
+    <div class="container-fluid where-to-buy">
+        <div id="markers" style="display: none;">{{ json_context }}</div>
         <div class="row">
             <div class="col-2">
                 <p>
@@ -25,9 +87,43 @@
                 </p>
             </div>
             <div class="col-10">
-                <main id="where-to-buy" >
-                    <!-- <script type="text/javascript" charset="utf-8" async src="https://api-maps.yandex.ru/services/constructor/1.0/js/?um=constructor%3A0725daf6bc79d12f6db02c65092d25dcd4cbfa08b0d44f894c8222afde235a48&amp;width=100%&amp;height=541&amp;lang=ru_RU&amp;scroll=true"></script> -->
-                </main>
+                <div class="row">
+                    <div class="col-8">
+                        <h3 class="where-to-buy__item-title">Ювелирный завод «Талант»</h3>
+                        {% for marker in context %}
+                            <div class="where-to-buy__item-row">
+                                <span class="where-to-buy__item-icon-wrapper">
+                                    <img src="{% static 'img/icon-map-pin-gray.svg' %}" alt="" loading="lazy">
+                                </span>
+                                <span>{{ marker.address }}</span>
+                            </div>
+                        {% endfor %}
+                        {% with first_marker=context|first %}
+                            <div class="where-to-buy__item-row">
+                                <span class="where-to-buy__item-icon-wrapper">
+                                    <img src="{% static 'img/icon-phone-gray.svg' %}" alt="" loading="lazy">
+                                </span>
+                                <a href="tel:{{ first_marker.phone }}">
+                                    <span>{{ first_marker.phone }}</span>
+                                </a>
+                            </div>
+                            <div class="where-to-buy__item-row">
+                                <span class="where-to-buy__item-icon-wrapper">
+                                    <img src="{% static 'img/icon-mail-gray.svg' %}" alt="" loading="lazy">
+                                </span>
+                                <a href="mailto:{{ first_marker.email }}">
+                                    <span>{{ first_marker.email }}</span>
+                                </a>
+                            </div>
+                        {% endwith %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <main id="where-to-buy" >
+                        </main>
+                    </div>
+                </div>
             </div>
         </div>
 

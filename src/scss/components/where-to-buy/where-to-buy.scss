@@ -8,4 +8,19 @@
     a {
         color: black;
     }
+
+    &__item-title {
+        font-weight: 600;
+        margin-bottom: 30px!important;
+        font-size: 22px;
+        font-family: cursive;
+    }
+
+    &__item-row {
+        margin-bottom: 20px!important;
+    }
+
+    &__item-icon-wrapper {
+        margin-right: 15px;
+    }
 }

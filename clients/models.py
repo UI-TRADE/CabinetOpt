@@ -209,4 +209,23 @@ class CustomerSegments(models.Model):
         return self.name
 
 
+class Office(models.Model):
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE,
+        verbose_name='Организация',
+        related_name='offices'
+    )
+    address = models.CharField('Адерс', max_length=250, blank=True, default='')
+    phone = PhoneNumberField('Телефон', db_index=True)
+    email = models.EmailField('email', db_index=True)
+    lng = models.FloatField(verbose_name='Долгота', default=0.0)
+    lat = models.FloatField(verbose_name='Широта', default=0.0)
+
+    class Meta:
+        verbose_name = 'Адрес'
+        verbose_name_plural = 'Наши офисы'
+
+    def __str__(self):
+        return self.address
 

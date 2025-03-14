@@ -1,6 +1,18 @@
+import json
 from django.shortcuts import render
 
+from rest_framework.serializers import ModelSerializer
+
 from .models import Guarantee, Policy, Delivery, About, Promo
+from clients.models import Office
+
+
+class OfficeSerializer(ModelSerializer):
+    
+    class Meta:
+        model = Office
+        fields = ['address', 'lng', 'lat', 'phone', 'email']
+
 
 def guarantee(request):
     template = 'pages/conditions.html'
@@ -93,8 +105,14 @@ def promo(request):
 
 def where_to_buy(request):
     template = 'pages/where-to-buy.html'
+    context = Office.objects.all()
     return render(
         request,
         template,
-        {'condition': '', 'share_link': request.build_absolute_uri(request.get_full_path()),}
-    )
+        {
+            'context': context,
+            'json_context': json.dumps(
+                OfficeSerializer(context, many=True).data
+            ),
+            'share_link': request.build_absolute_uri(request.get_full_path()),
+    })
