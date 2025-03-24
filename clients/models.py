@@ -221,6 +221,7 @@ class Office(models.Model):
     email = models.EmailField('email', db_index=True)
     lng = models.FloatField(verbose_name='Долгота', default=0.0)
     lat = models.FloatField(verbose_name='Широта', default=0.0)
+    image = models.ImageField('Карта', upload_to='map_images', null=True, blank=True)
 
     class Meta:
         verbose_name = 'Адрес'
@@ -228,4 +229,8 @@ class Office(models.Model):
 
     def __str__(self):
         return self.address
+    
+    @property
+    def get_image(self):
+        return self.image.url
 

@@ -61,7 +61,8 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            initMap();
+            if (document.getElementById('where-to-buy'))
+                initMap();
         });
 
     </script>
@@ -120,8 +121,15 @@
                 </div>
                 <div class="row">
                     <div class="col-12">
-                        <main id="where-to-buy" >
-                        </main>
+                        {% with first_marker=context|first %}
+                            {% if first_marker.image %}
+                                <img src="{{ first_marker.get_image }}" class="img-fluid" alt="where to buy">
+                            {% else %}
+                                <main id="where-to-buy" >
+                                </main>
+                            {% endif %}
+                        {% endwith %}
+
                     </div>
                 </div>
             </div>

@@ -339,6 +339,7 @@ class OfficeAdmin(admin.ModelAdmin):
         'address',
         ('lng', 'lat'),
         ('phone', 'email'),
+        'image',
     ]
     list_filter = [
         'address',
